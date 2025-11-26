@@ -1,0 +1,2301 @@
+[
+  {
+    "id_desarrollo": "2846",
+    "nombre": "Paseos del Sur",
+    "constructora": "Casas Javer",
+    "zona": "Oriente",
+    "ubicacion": {
+      "latitud": "21.810341",
+      "longitud": "-102.271835",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Paseos del Sur",
+      "calle": "José Cirilo Gómez s/n",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Ubicado en la mayor zona industrial de Aguascalientes, Paseos del Sur ofrece a tu familia una sensación de serenidad y prosperidad. Disfruta de un entorno cercano a comercios y servicios.",
+    "amenidades": [
+      "Áreas verdes",
+      "Andador central",
+      "Avenida de concreto",
+      "Juegos infantiles",
+      "Parques"
+    ],
+    "precios": {
+      "desde": "756000",
+      "apartado": "2030"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "5800",
+      "unidades_vendidas": "",
+      "inventario": "2030",
+      "fecha_entrega": "01/09/2019"
+    },
+    "multimedia": {
+      "portada": "https://javer-api-dev-page.s3.us-east-2.amazonaws.com/javer-api-dev/image-jpeg/1757350085633.jpg",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2847",
+    "nombre": "Paseos del Sur CD",
+    "constructora": "Casas Javer",
+    "zona": "Oriente",
+    "ubicacion": {
+      "latitud": "21.811329",
+      "longitud": "-102.271889",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Paseos del Sur",
+      "calle": "Trento 112 Mz.38 Lt.16",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Es una excelente opción para iniciar tu patrimonio en un lugar pensado para crecer y convivir.",
+    "amenidades": [
+      "Áreas verdes",
+      "Andador central",
+      "Juegos infantiles"
+    ],
+    "precios": {
+      "desde": "655000",
+      "apartado": "1409"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "5800",
+      "unidades_vendidas": "",
+      "inventario": "1409",
+      "fecha_entrega": "14/03/2024"
+    },
+    "multimedia": {
+      "portada": "https://javer-api-dev-page.s3.us-east-2.amazonaws.com/javer-api-dev/image-jpeg/1757350085633.jpg",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2848",
+    "nombre": "Santa Teresita II",
+    "constructora": "Grupo San Cristóbal",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.928388",
+      "longitud": "-102.243175",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "La Florida",
+      "calle": "Martin Pescador",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "En el oriente consolidado de Aguascalientes, Santa Teresita II ofrece a tu familia una propuesta con cuatro modelos de casa que garantizan espacios amplios.",
+    "amenidades": [
+      "Regadera y baños ecológicos",
+      "Protecciones incluidas",
+      "Focos led",
+      "Calentador solar",
+      "Grandes vialidades"
+    ],
+    "precios": {
+      "desde": "810000",
+      "apartado": "320"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "500",
+      "unidades_vendidas": "",
+      "inventario": "320",
+      "fecha_entrega": "01/06/2025"
+    },
+    "multimedia": {
+      "portada": "https://www.gruposancristobal.com.mx/wp-content/uploads/2023/03/Ermita_930x465.jpg",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2849",
+    "nombre": "Arroyo San Emilion",
+    "constructora": "Mazzivo Marketing",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.951548",
+      "longitud": "-102.338764",
+      "estado": "Aguascalientes",
+      "ciudad": "Jesús María",
+      "colonia": "Lomas de Jesús María",
+      "calle": "Xochicalco 406",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Arroyo San Emilion Residencial está ubicado al norponiente de Aguascalientes, a solo 4 minutos del Tec de Monterrey.",
+    "amenidades": [
+      "Alberca",
+      "Asadores",
+      "Juegos infantiles",
+      "Cancha de pádel",
+      "Pet Park"
+    ],
+    "precios": {
+      "desde": "2404500",
+      "apartado": "44"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "107",
+      "unidades_vendidas": "",
+      "inventario": "44",
+      "fecha_entrega": "01/10/2023"
+    },
+    "multimedia": {
+      "portada": "",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2850",
+    "nombre": "Cantelli Etapa II Coto Granito",
+    "constructora": "GIG Desarrollos",
+    "zona": "Sur",
+    "ubicacion": {
+      "latitud": "21.848531",
+      "longitud": "-102.336203",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Cantelli Residencial",
+      "calle": "Av. Cantelli No. 1001",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "En el sur poniente de Aguascalientes, Cantelli Etapa II (Coto Granito) te ofrece casas de diseño moderno, privacidad, seguridad y amenidades.",
+    "amenidades": [
+      "Acceso controlado",
+      "Áreas verdes",
+      "Terraza de usos múltiples",
+      "Alberca",
+      "Juegos infantiles"
+    ],
+    "precios": {
+      "desde": "2140000",
+      "apartado": "20"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "827",
+      "unidades_vendidas": "",
+      "inventario": "20",
+      "fecha_entrega": "01/04/2025"
+    },
+    "multimedia": {
+      "portada": "https://cantelli.mx/wp-content/uploads/2025/01/cantelli-residencial.webp",
+      "video": "https://cantelli.mx/wp-content/uploads/2024/12/Cantelli-Video-Comercial-FHD-01.mp4",
+      "brochure": "https://drive.google.com/file/d/1nWaoWPNjEk7I3tUnwFs6VgT3d6bZ0Laz/view?usp=drive_link"
+    }
+  },
+  {
+    "id_desarrollo": "2851",
+    "nombre": "Carena Residencial Circuito de la Asunción",
+    "constructora": "Impulsa Inmuebles",
+    "zona": "Poniente",
+    "ubicacion": {
+      "latitud": "21.883237",
+      "longitud": "-102.347502",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Fraccionamiento Carena",
+      "calle": "Casas de Campo S/N",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Carena Residencial es la opción ideal en el poniente de Aguascalientes para familias que desean construir la vida de sus sueños en un entorno seguro.",
+    "amenidades": [
+      "Dog Park",
+      "Área de ejercicio",
+      "Asadores",
+      "Juegos infantiles",
+      "Cancha deportiva"
+    ],
+    "precios": {
+      "desde": "1776000",
+      "apartado": "60"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "367",
+      "unidades_vendidas": "",
+      "inventario": "60",
+      "fecha_entrega": "30/09/2024"
+    },
+    "multimedia": {
+      "portada": "https://impulsainmuebles.com.mx/_next/image?url=https%3A%2F%2Fcms.impulsainmuebles.com.mx%2Ffiles%2Fdesarrollos%2F2023%2F05%2FDJI-0398.jpg&w=1080&q=75",
+      "video": "",
+      "brochure": "https://drive.google.com/file/d/1LiBq1ZJ8pzP8NJY8tRd-tfWFFY_9NEDy/view?usp=drive_link"
+    }
+  },
+  {
+    "id_desarrollo": "4696",
+    "nombre": "Castelo San Francisco",
+    "constructora": "Urbika",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.973552",
+      "longitud": "-102.267012",
+      "estado": "Aguascalientes",
+      "ciudad": "San Francisco de los Romo",
+      "colonia": "San Francisco de los Romo",
+      "calle": "La Casita - Carretera Aguascalientes - Loreto Km. 10",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Castelo San Francisco es un condominio privado con casas equipadas, tranquilidad, zonas verdes y una amplia variedad de amenidades.",
+    "amenidades": [
+      "Cancha deportiva multiusos",
+      "Asadores",
+      "Área de juegos para niños",
+      "Parque para mascotas",
+      "Trotapista arbolada"
+    ],
+    "precios": {
+      "desde": "1380000",
+      "apartado": "310"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "448",
+      "unidades_vendidas": "",
+      "inventario": "310",
+      "fecha_entrega": "20/06/2024"
+    },
+    "multimedia": {
+      "portada": "https://www.castelosanfrancisco.com/images/bull5.png",
+      "video": "https://youtu.be/tWnol0WLhvE",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2854",
+    "nombre": "Colinas de San Patricio Privada Altamura",
+    "constructora": "Davivir",
+    "zona": "Oriente",
+    "ubicacion": {
+      "latitud": "21.886702",
+      "longitud": "-102.235755",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Real del sol",
+      "calle": "Av. Colinas de San Patricio",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Colinas de San Patricio Privada Altamura es un fraccionamiento residencial pensado para el bienestar de tu familia, con seguridad y áreas verdes.",
+    "amenidades": [
+      "Acceso controlado",
+      "Áreas verdes",
+      "Canchas deportivas",
+      "Juegos infantiles",
+      "Espacios de convivencia"
+    ],
+    "precios": {
+      "desde": "1590000",
+      "apartado": "20"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "3200",
+      "unidades_vendidas": "",
+      "inventario": "20",
+      "fecha_entrega": "31/12/2024"
+    },
+    "multimedia": {
+      "portada": "https://www.davivir.com.mx/assets/imagenes/San%20patricio/Location/entrada.png",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2856",
+    "nombre": "Ferrara Entorno Residencial Condominio",
+    "constructora": "Impulsa Bienes Raíces",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.971835",
+      "longitud": "-102.299958",
+      "estado": "Aguascalientes",
+      "ciudad": "Jesús María",
+      "colonia": "Paseos de Jesús María",
+      "calle": "Paseos de Tepezala s/n",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Ferrara Residencial es un proyecto novedoso al norte de Aguascalientes, en una zona de alta plusvalía y crecimiento. Disfruta de un ambiente seguro.",
+    "amenidades": [
+      "Alberca con chapoteadero",
+      "Zona de regaderas",
+      "Casa club",
+      "Área de gimnasio techada",
+      "Área de juegos infantiles"
+    ],
+    "precios": {
+      "desde": "1999000",
+      "apartado": "116"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "539",
+      "unidades_vendidas": "",
+      "inventario": "116",
+      "fecha_entrega": "01/05/2024"
+    },
+    "multimedia": {
+      "portada": "https://cms.impulsainmuebles.com.mx/files/desarrollos/2024/02/entrada-cuadrada.png",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2858",
+    "nombre": "Fraccionamiento Gran Reserva Los Angeles",
+    "constructora": "Almikia",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.954352",
+      "longitud": "-102.273751",
+      "estado": "Aguascalientes",
+      "ciudad": "San Francisco de los Romo",
+      "colonia": "Los Boyuyos",
+      "calle": "Calle Alessandra 129",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Gran Reserva Los Angeles es un fraccionamiento diseñado para ofrecerte exclusividad, seguridad y calidad de vida al norte de Aguascalientes.",
+    "amenidades": [
+      "Acceso controlado",
+      "Áreas verdes ajardinadas",
+      "Alberca",
+      "Terraza social y asadores",
+      "Casa club"
+    ],
+    "precios": {
+      "desde": "1453000",
+      "apartado": "150"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "650",
+      "unidades_vendidas": "",
+      "inventario": "150",
+      "fecha_entrega": "01/08/2025"
+    },
+    "multimedia": {
+      "portada": "",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "4713",
+    "nombre": "La Cartuja",
+    "constructora": "Ranman / Constructora",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.986816",
+      "longitud": "-102.335764",
+      "estado": "Aguascalientes",
+      "ciudad": "Jesús María",
+      "colonia": "La Cartuja Residencial",
+      "calle": "Carr. Jesús María Valladolid",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "La Cartuja Residencial, ubicada al norte de Aguascalientes en Jesús María, es un fraccionamiento ideal para familias que valoran tranquilidad.",
+    "amenidades": [
+      "Acceso monumental y controlado",
+      "Reservas de zonas verdes",
+      "Diversidad de modelos arquitectónicos",
+      "Equipamiento e instalaciones ecológicas",
+      "Paisajismo planificado"
+    ],
+    "precios": {
+      "desde": "1560000",
+      "apartado": "283"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "1200",
+      "unidades_vendidas": "",
+      "inventario": "283",
+      "fecha_entrega": "01/06/2019"
+    },
+    "multimedia": {
+      "portada": "https://s3.us-west-2.amazonaws.com/uploads.ranman.com.mx/cartuja/img/slide/tren_viviendas_principal.jpg",
+      "video": "",
+      "brochure": "https://drive.google.com/file/d/1ajLf4D13OCr1VjJbTXtU5F-Hgj8ZWP-z/view?usp=drive_link"
+    }
+  },
+  {
+    "id_desarrollo": "4717",
+    "nombre": "La Nueva Stacia",
+    "constructora": "Grupo San Cristóbal",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.966373",
+      "longitud": "-102.302680",
+      "estado": "Aguascalientes",
+      "ciudad": "Jesús María",
+      "colonia": "Paseos de Aguascalientes",
+      "calle": "Paseos de Aguascalientes S/N",
+      "cp": ""
+    },
+    "status": "Pre-Venta",
+    "descripcion": "La Nueva Stacia es un fraccionamiento residencial al norte de Aguascalientes que ofrece alta plusvalía, seguridad y acceso estratégico.",
+    "amenidades": [
+      "Áreas verdes y parques",
+      "Juegos infantiles",
+      "Servicios ocultos/subterráneos",
+      "Casa club",
+      "Acceso controlado"
+    ],
+    "precios": {
+      "desde": "1868000",
+      "apartado": "350"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "940",
+      "unidades_vendidas": "",
+      "inventario": "350",
+      "fecha_entrega": "28/02/2026"
+    },
+    "multimedia": {
+      "portada": "https://propiedadescom.s3.amazonaws.com/files/600x400/stacia-paseos-de-aguascalientes-jesus-maria-aguascalientes-13942419-foto-01.jpg",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "4719",
+    "nombre": "Landa Residencial",
+    "constructora": "Grupo Soldi",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.985049",
+      "longitud": "-102.334949",
+      "estado": "Aguascalientes",
+      "ciudad": "Jesús María",
+      "colonia": "El Barreno",
+      "calle": "Blvd. El Chichimeco",
+      "cp": ""
+    },
+    "status": "Pre-Venta",
+    "descripcion": "Landa Residencial es un entorno moderno y seguro al norte de Aguascalientes, pensado para quienes buscan tranquilidad, plusvalía y calidad de vida.",
+    "amenidades": [
+      "Acceso controlado y circuito cerrado",
+      "Áreas verdes",
+      "Cancha deportiva y espacios de juegos",
+      "Casa club social",
+      "Seguridad 24/7"
+    ],
+    "precios": {
+      "desde": "1050000",
+      "apartado": "12"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "948",
+      "unidades_vendidas": "",
+      "inventario": "12",
+      "fecha_entrega": "30/10/2026"
+    },
+    "multimedia": {
+      "portada": "https://gruposoldi.com.mx/wp-content/uploads/2025/03/Landa_acceso_sin-scaled.jpg",
+      "video": "",
+      "brochure": "https://drive.google.com/file/d/1gzGYn6Vg4LFBkeUZz-N-GojrxwYM4BJ5/view?usp=drive_link"
+    }
+  },
+  {
+    "id_desarrollo": "4726",
+    "nombre": "Lucerna Residencial",
+    "constructora": "G100 Desarrollos",
+    "zona": "Sur",
+    "ubicacion": {
+      "latitud": "21.815357",
+      "longitud": "-102.289739",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Lucerna Residencial",
+      "calle": "Carr. Panamericana sur Km. 45",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Lucerna Residencial está al sur de Aguascalientes, cerca de los principales centros de trabajo, universidades, centros comerciales.",
+    "amenidades": [
+      "Acceso controlado",
+      "Grandes áreas verdes y parques",
+      "Casa club",
+      "Juegos infantiles",
+      "Gimnasio equipado"
+    ],
+    "precios": {
+      "desde": "2108000",
+      "apartado": "135"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "844",
+      "unidades_vendidas": "",
+      "inventario": "135",
+      "fecha_entrega": "01/05/2023"
+    },
+    "multimedia": {
+      "portada": "",
+      "video": "",
+      "brochure": "https://drive.google.com/file/d/1P4Mhna8Lg-A3MjVAEUb0zUvl2uzMTlcL/view?usp=drive_link"
+    }
+  },
+  {
+    "id_desarrollo": "2865",
+    "nombre": "Mangata Torres Kamorebi",
+    "constructora": "Grupo San Cristóbal",
+    "zona": "Sur",
+    "ubicacion": {
+      "latitud": "21.830489",
+      "longitud": "-102.325188",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Rancho Santa Monica",
+      "calle": "Avenida de los Maestros s/n",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Mangata Torres Kamorebi es un conjunto de departamentos verticales con diseño contemporáneo y alto nivel de equipamiento dentro de Mangata Residencial.",
+    "amenidades": [
+      "Acceso controlado 24h",
+      "Áreas verdes",
+      "Alberca",
+      "Trotapista",
+      "Área común y terraza"
+    ],
+    "precios": {
+      "desde": "1599000",
+      "apartado": "36"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "640",
+      "unidades_vendidas": "",
+      "inventario": "36",
+      "fecha_entrega": "01/09/2024"
+    },
+    "multimedia": {
+      "portada": "https://static.wixstatic.com/media/5d5607_8438e3427569411c933f73d549465937~mv2.png",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2866",
+    "nombre": "Mangata Torres Verona",
+    "constructora": "Grupo San Cristóbal",
+    "zona": "Sur",
+    "ubicacion": {
+      "latitud": "21.829752",
+      "longitud": "-102.327672",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Rancho Santa Monica",
+      "calle": "Avenida de los Maestros s/n",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Mangata Torres Verona es un desarrollo vertical de departamentos dentro de Mangata Residencial, con torres de 3 niveles, diseño contemporáneo.",
+    "amenidades": [
+      "Acceso controlado 24 horas",
+      "Áreas verdes",
+      "Alberca",
+      "Casa club",
+      "Juegos infantiles"
+    ],
+    "precios": {
+      "desde": "1339000",
+      "apartado": "22"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "640",
+      "unidades_vendidas": "",
+      "inventario": "22",
+      "fecha_entrega": "30/09/2023"
+    },
+    "multimedia": {
+      "portada": "https://static.wixstatic.com/media/5d5607_8438e3427569411c933f73d549465937~mv2.png",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2867",
+    "nombre": "Punto Portia",
+    "constructora": "Grupo Terrahomes",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.952781",
+      "longitud": "-102.341532",
+      "estado": "Aguascalientes",
+      "ciudad": "Jesús María",
+      "colonia": "Vistas del Sauz",
+      "calle": "Alejandro de la Cruz S/N",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Punto Portia es un complejo departamental único al norponiente de Aguascalientes. Está conformado por 12 torres y 150 departamentos.",
+    "amenidades": [
+      "Triple control de seguridad",
+      "12 torres departamentales",
+      "Casa club de dos plantas",
+      "Club de pádel",
+      "Cancha de Fut 7"
+    ],
+    "precios": {
+      "desde": "1628500",
+      "apartado": "51"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "150",
+      "unidades_vendidas": "",
+      "inventario": "51",
+      "fecha_entrega": "31/01/2024"
+    },
+    "multimedia": {
+      "portada": "https://puntoportia.com.mx/assets/img/service/sr1.jpg",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "4733",
+    "nombre": "Real del Sol",
+    "constructora": "GIG Desarrollos",
+    "zona": "Oriente",
+    "ubicacion": {
+      "latitud": "21.898086",
+      "longitud": "-102.236788",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Real Del Sol",
+      "calle": "Hacienda de Ojo Caliente s/n",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Real del Sol se ubica al oriente de Aguascalientes, en la zona de mayor desarrollo habitacional. Destaca por su ambiente familiar.",
+    "amenidades": [
+      "Canchas deportivas",
+      "Áreas verdes y parques",
+      "Escuela dentro del fraccionamiento",
+      "Centro comercial propio",
+      "Áreas infantiles"
+    ],
+    "precios": {
+      "desde": "1590000",
+      "apartado": "190"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "5000",
+      "unidades_vendidas": "",
+      "inventario": "190",
+      "fecha_entrega": ""
+    },
+    "multimedia": {
+      "portada": "https://realdelsolags.mx/media/amenidades/amenidad_05.jpg",
+      "video": "",
+      "brochure": "https://drive.google.com/file/d/1Hx7Qcr2jC3jT65YPG7SA70CRVZz7M5da/view?usp=drive_link"
+    }
+  },
+  {
+    "id_desarrollo": "4742",
+    "nombre": "Reserva San Matías Residencial",
+    "constructora": "Grupo Soldi",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.829037",
+      "longitud": "-102.273765",
+      "estado": "Aguascalientes",
+      "ciudad": "San Francisco de Los Romo",
+      "colonia": "San Francisco de Los Romo",
+      "calle": "Flor de Noche Buena 104",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Reserva San Matías es uno de los residenciales más completos al sur de Aguascalientes, con más de 10 amenidades exclusivas.",
+    "amenidades": [
+      "Casa club equipada",
+      "Alberca",
+      "Gimnasio",
+      "Áreas deportivas",
+      "Espacios sociales"
+    ],
+    "precios": {
+      "desde": "1840000",
+      "apartado": "50"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "512",
+      "unidades_vendidas": "",
+      "inventario": "50",
+      "fecha_entrega": ""
+    },
+    "multimedia": {
+      "portada": "https://gruposoldi.com.mx/wp-content/uploads/2024/03/RSM_Acceso-02-scaled.jpg",
+      "video": "",
+      "brochure": "https://drive.google.com/file/d/193QypXwAl5GldI0fqBgYBg9yIPE2BJii/view?usp=drive_link"
+    }
+  },
+  {
+    "id_desarrollo": "2870",
+    "nombre": "Residencial Cholula 665",
+    "constructora": "Cholula Residencial",
+    "zona": "Centro",
+    "ubicacion": {
+      "latitud": "21.886361",
+      "longitud": "-102.304678",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Barrio de Guadalupe",
+      "calle": "Larrategui 665",
+      "cp": ""
+    },
+    "status": "Pre-Venta",
+    "descripcion": "Residencial Cholula 665 es un complejo exclusivo de solo 37 departamentos con ubicación privilegiada en el Centro Histórico de Aguascalientes.",
+    "amenidades": [
+      "Seguridad 24/7",
+      "Lobby y elevador",
+      "Roof Garden común",
+      "Áreas verdes",
+      "Estacionamiento privado"
+    ],
+    "precios": {
+      "desde": "2068000",
+      "apartado": "6"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "35",
+      "unidades_vendidas": "",
+      "inventario": "6",
+      "fecha_entrega": "01/12/2025"
+    },
+    "multimedia": {
+      "portada": "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=945,h=826,fit=crop,trim=0;1368.8328075709778;0;0/A1aK4kKW8JSploz3/8-AzG3EgZpXKiVqDn6.png",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2873",
+    "nombre": "Torres Fátima",
+    "constructora": "Veneto Inmobiliaria",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.913566",
+      "longitud": "-102.305165",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Fátima",
+      "calle": "San Jose de los Reynoso No.115",
+      "cp": ""
+    },
+    "status": "Pre-Venta",
+    "descripcion": "Torres Fátima es un desarrollo vertical compuesto por 2 torres de 20 departamentos cada una, ubicado en la colonia Fátima.",
+    "amenidades": [
+      "Pisos de lujo",
+      "Acabados de lujo",
+      "2 elevadores",
+      "Cocina con Granito",
+      "Calentador"
+    ],
+    "precios": {
+      "desde": "2150000",
+      "apartado": "25"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "40",
+      "unidades_vendidas": "",
+      "inventario": "25",
+      "fecha_entrega": "01/12/2026"
+    },
+    "multimedia": {
+      "portada": "https://vivati.com.mx/wp-content/uploads/2025/05/80e954c9-58d4-4b0e-832e-6ed8b0181be9.jpg",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2874",
+    "nombre": "Toscana San Gerardo Residencial Platinum",
+    "constructora": "Muro Luciano",
+    "zona": "Sur",
+    "ubicacion": {
+      "latitud": "21.801670",
+      "longitud": "-102.299391",
+      "estado": "Aguascalientes",
+      "ciudad": "Jesús María",
+      "colonia": "San Gerardo Residencial",
+      "calle": "",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "San Gerardo Residencial es un macroproyecto con más de 150 hectáreas de extensión, ubicado al sur de Aguascalientes.",
+    "amenidades": [
+      "Acceso controlado",
+      "Áreas verdes y paisajismo",
+      "Juegos infantiles",
+      "Aparatos deportivos",
+      "Alberca y lago central"
+    ],
+    "precios": {
+      "desde": "2177000",
+      "apartado": "100"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "163",
+      "unidades_vendidas": "",
+      "inventario": "100",
+      "fecha_entrega": "01/10/2024"
+    },
+    "multimedia": {
+      "portada": "https://sangerardoresidencial.com.mx/img/SLIDE2/2.webp",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "4764",
+    "nombre": "Tremezzo Departamentos",
+    "constructora": "Grupo MGI",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.951906",
+      "longitud": "-102.339729",
+      "estado": "Aguascalientes",
+      "ciudad": "Jesús María",
+      "colonia": "Lomas de Jesús María",
+      "calle": "Xochicalco 408",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Tremezzo es un condominio habitacional conformado por 6 edificios, ubicado al norponiente de la ciudad de Aguascalientes.",
+    "amenidades": [
+      "6 edificios",
+      "2 pent-house por edificio",
+      "Estacionamiento privado",
+      "Desarrollo cerrado",
+      "Áreas verdes"
+    ],
+    "precios": {
+      "desde": "1875000",
+      "apartado": "24"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "48",
+      "unidades_vendidas": "",
+      "inventario": "24",
+      "fecha_entrega": "01/11/2024"
+    },
+    "multimedia": {
+      "portada": "https://images.squarespace-cdn.com/content/v1/64624e394541db2d5cdb99bd/5b77c768-ced2-4549-ac2b-8347be06bd00/EDITADO+6.png?format=2500w",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "4766",
+    "nombre": "VilaNova Residencial - Casas",
+    "constructora": "Impulsa Inmuebles",
+    "zona": "Sur",
+    "ubicacion": {
+      "latitud": "21.823809",
+      "longitud": "-102.320364",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Rancho Santa Monica",
+      "calle": "Av. Sta. Monica",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "VilaNova Residencial es un fraccionamiento diseñado para vida familiar y plusvalía, ubicado al sur de Aguascalientes.",
+    "amenidades": [
+      "Condominio privado",
+      "Grandes áreas verdes",
+      "Hermosas áreas comunes",
+      "Juegos interactivos",
+      "Alberca semi techada"
+    ],
+    "precios": {
+      "desde": "1675999",
+      "apartado": "192"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "250",
+      "unidades_vendidas": "",
+      "inventario": "192",
+      "fecha_entrega": "01/04/2024"
+    },
+    "multimedia": {
+      "portada": "https://cms.impulsainmuebles.com.mx/files/desarrollos/2024/06/new-home.png",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "4781",
+    "nombre": "Villas de Montecassino",
+    "constructora": "Grupo Sadasi",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.995595",
+      "longitud": "-102.312722",
+      "estado": "Aguascalientes",
+      "ciudad": "Jesús María",
+      "colonia": "Villas de Montecassino",
+      "calle": "Carretera Estatal 28 Km 1.5",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Villas de Montecassino es una comunidad residencial al norte de Aguascalientes, desarrollada por Grupo Sadasi.",
+    "amenidades": [
+      "Acceso controlado",
+      "Palapa",
+      "Asador",
+      "Andadores",
+      "Área de juegos infantiles"
+    ],
+    "precios": {
+      "desde": "1300000",
+      "apartado": "170"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "1250",
+      "unidades_vendidas": "",
+      "inventario": "170",
+      "fecha_entrega": "02/06/2025"
+    },
+    "multimedia": {
+      "portada": "",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2880",
+    "nombre": "Zekkei",
+    "constructora": "Casas Javer",
+    "zona": "Sur",
+    "ubicacion": {
+      "latitud": "21.800813",
+      "longitud": "-102.297802",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "San Gerardo",
+      "calle": "Paseo San Gerardo No. 101",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Privada Zekkei es un desarrollo residencial de casas inteligentes y sostenibles al sur de la ciudad de Aguascalientes.",
+    "amenidades": [
+      "Alberca",
+      "Andador central",
+      "Avenida de concreto",
+      "Barda permietral",
+      "Cableado oculto"
+    ],
+    "precios": {
+      "desde": "1704000",
+      "apartado": "70"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "118",
+      "unidades_vendidas": "",
+      "inventario": "70",
+      "fecha_entrega": "04/12/2023"
+    },
+    "multimedia": {
+      "portada": "https://javer-api-dev-page.s3.us-east-2.amazonaws.com/javer-api-dev/image-webp/1757354616084.webp",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2881",
+    "nombre": "Zekkei II",
+    "constructora": "Casas Javer",
+    "zona": "Sur",
+    "ubicacion": {
+      "latitud": "21.801920",
+      "longitud": "-102.297856",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "San Gerardo",
+      "calle": "Paseo de la Asunción s/n",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Ubicado frente a Privada Zekkei, este residencial complementa sus amenidades, ofreciendo una experiencia aún más completa.",
+    "amenidades": [
+      "Alberca",
+      "Andador central",
+      "Áreas verdes",
+      "Avenida de concreto",
+      "Barda perimetral"
+    ],
+    "precios": {
+      "desde": "1945000",
+      "apartado": "28"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "140",
+      "unidades_vendidas": "",
+      "inventario": "28",
+      "fecha_entrega": "01/09/2025"
+    },
+    "multimedia": {
+      "portada": "https://javer-api-dev-page.s3.us-east-2.amazonaws.com/javer-api-dev/image-jpeg/1757446635368.jpg",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "4799",
+    "nombre": "Abada Residencial",
+    "constructora": "Grupo Terrahomes",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.942957",
+      "longitud": "-102.344596",
+      "estado": "Aguascalientes",
+      "ciudad": "Jesús María",
+      "colonia": "Yalta Campestre",
+      "calle": "Madre Selva 110",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Abada Residencial es un proyecto único en el nor-poniente de Aguascalientes, concebido como un ecosistema en armonía.",
+    "amenidades": [
+      "Casa club",
+      "Alberca exterior",
+      "Cancha de tenis",
+      "Cancha de pasto sintético",
+      "Terraza con asador"
+    ],
+    "precios": {
+      "desde": "2190000",
+      "apartado": "140"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "180",
+      "unidades_vendidas": "",
+      "inventario": "140",
+      "fecha_entrega": "01/11/2023"
+    },
+    "multimedia": {
+      "portada": "https://abadaresidencial.mx/images/resource/about.png",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2883",
+    "nombre": "Albaserra Habitacional",
+    "constructora": "Garcas Desarrollos",
+    "zona": "Poniente",
+    "ubicacion": {
+      "latitud": "21.875539",
+      "longitud": "-102.325586",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "La Soledad",
+      "calle": "",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Albaserrada Grand Residencial es un desarrollo exclusivo con alta plusvalía en la zona centro-poniente de Aguascalientes.",
+    "amenidades": [
+      "Acceso y circuito hacia Albaserrada Living Mall",
+      "Plaza comercial y zona de servicios",
+      "Hermoso diseño arquitectónico",
+      "Acceso doble carril",
+      "Circuito y estacionamiento para visitas"
+    ],
+    "precios": {
+      "desde": "2370000",
+      "apartado": "15"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "83",
+      "unidades_vendidas": "",
+      "inventario": "15",
+      "fecha_entrega": "16/06/2025"
+    },
+    "multimedia": {
+      "portada": "https://albaserradaresidencial.mx/wp-content/uploads/2024/03/imagen-living-mall-1500px_Mesa-de-trabajo-1-1.png",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2884",
+    "nombre": "Amandra Fraccionamiento Selecto",
+    "constructora": "Grupo Terrahome",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.942849",
+      "longitud": "-102.311352",
+      "estado": "Aguascalientes",
+      "ciudad": "Jesús María",
+      "colonia": "El Llano",
+      "calle": "",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Amandra es un fraccionamiento selecto con solo 68 residencias, ubicado en la denominada zona diamante al norte de la ciudad de Aguascalientes.",
+    "amenidades": [
+      "Cancha de pádel tenis",
+      "Cancha de fútbol 5 con pasto sintético",
+      "Trotapista",
+      "Kids playground",
+      "Zona fitness"
+    ],
+    "precios": {
+      "desde": "2765100",
+      "apartado": "33"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "66",
+      "unidades_vendidas": "",
+      "inventario": "33",
+      "fecha_entrega": "01/01/2025"
+    },
+    "multimedia": {
+      "portada": "https://amandra.com.mx/images/gallery/pic2.jpg",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2885",
+    "nombre": "Amura Residencial",
+    "constructora": "Grupo San Cristóbal",
+    "zona": "Sur",
+    "ubicacion": {
+      "latitud": "21.824520",
+      "longitud": "-102.330223",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Condominio Amura",
+      "calle": "",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Amura Residencial es un proyecto contemporáneo en la zona sur de Aguascalientes, dentro de Rancho Santa Mónica.",
+    "amenidades": [
+      "Casa club",
+      "Alberca con camastros",
+      "Gimnasio equipado",
+      "Juegos infantiles",
+      "Cancha de pádel"
+    ],
+    "precios": {
+      "desde": "2500000",
+      "apartado": "247"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "352",
+      "unidades_vendidas": "",
+      "inventario": "247",
+      "fecha_entrega": "29/07/2022"
+    },
+    "multimedia": {
+      "portada": "https://static.wixstatic.com/media/5d5607_acadd1cc15624580b6bece0f5f59712f~mv2.png",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2886",
+    "nombre": "Andrea Residencial",
+    "constructora": "Grupo Emporium",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.945589",
+      "longitud": "-102.311353",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "C. José López Portillo No. 601",
+      "calle": "",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Andrea Residencial es un clúster de arquitectura vanguardista al norte de Aguascalientes, con diseño contemporáneo.",
+    "amenidades": [
+      "Acabados de lujo",
+      "Cisterna prefabricada",
+      "Calentador de paso",
+      "Clósets en recámaras",
+      "Bomba de presión continua"
+    ],
+    "precios": {
+      "desde": "2960000",
+      "apartado": "44"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "82",
+      "unidades_vendidas": "",
+      "inventario": "44",
+      "fecha_entrega": "01/11/2023"
+    },
+    "multimedia": {
+      "portada": "https://andrea.grupoemporium.mx/wp-content/uploads/2023/07/0H0A8595.jpg",
+      "video": "https://www.youtube.com/embed/_Om9dDZVGKI",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2887",
+    "nombre": "Aunna",
+    "constructora": "Aunna Departamentos",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.949707",
+      "longitud": "-102.324610",
+      "estado": "Aguascalientes",
+      "ciudad": "Jesús María",
+      "colonia": "Corral de Barrancos",
+      "calle": "Av. Paseo de las Maravillas No.512",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Aunna es un desarrollo de usos mixtos con una torre de departamentos y amenidades premium, diseñado para quienes buscan vivir en un entorno citadino.",
+    "amenidades": [
+      "Alberca",
+      "Yoga Deck",
+      "Coworking",
+      "Game Room",
+      "Baños y vestidores"
+    ],
+    "precios": {
+      "desde": "2763900",
+      "apartado": "20"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "70",
+      "unidades_vendidas": "",
+      "inventario": "20",
+      "fecha_entrega": "01/10/2025"
+    },
+    "multimedia": {
+      "portada": "https://www.aunna-ags.com/wp-content/themes/aunna/assets/img/inicio/aunna.webp",
+      "video": "",
+      "brochure": "https://drive.google.com/file/d/1ePgVZ45oZvM8xnJLHy3sE6pnES3KyWi6/view?usp=drive_link"
+    }
+  },
+  {
+    "id_desarrollo": "5147",
+    "nombre": "Beara Torre",
+    "constructora": "Almikia",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.910252",
+      "longitud": "-102.331991",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Pocitos",
+      "calle": "Av. Guadalupe González No.1111",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Beara es un proyecto residencial vertical que ofrece una vida extraordinaria en una comunidad tranquila.",
+    "amenidades": [
+      "Alberca",
+      "Roof garden",
+      "Ludoteca",
+      "Juegos infantiles",
+      "Área Pet Friendly"
+    ],
+    "precios": {
+      "desde": "3205539",
+      "apartado": "83"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "180",
+      "unidades_vendidas": "",
+      "inventario": "83",
+      "fecha_entrega": "01/08/2024"
+    },
+    "multimedia": {
+      "portada": "https://beara.mx/wp-content/uploads/2025/06/vida_maravillosa.webp",
+      "video": "",
+      "brochure": "https://drive.google.com/file/d/1prIJIv6h_qs4dqLoi7yswJLt7RAvZTL2/view?usp=drive_link"
+    }
+  },
+  {
+    "id_desarrollo": "2892",
+    "nombre": "Caranday II Sector Betel",
+    "constructora": "Casas Javer",
+    "zona": "Sur",
+    "ubicacion": {
+      "latitud": "21.823166",
+      "longitud": "-102.323846",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Residencial Betel",
+      "calle": "Av. Atlántico S/N",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Caranday II Sector Betel es un fraccionamiento exclusivo ubicado en la zona Santa Mónica al sur de Aguascalientes.",
+    "amenidades": [
+      "Alberca",
+      "Andador central",
+      "Áreas verdes",
+      "Avenida de concreto",
+      "Barda perimetral"
+    ],
+    "precios": {
+      "desde": "2930000",
+      "apartado": "305"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "391",
+      "unidades_vendidas": "",
+      "inventario": "305",
+      "fecha_entrega": "01/07/2024"
+    },
+    "multimedia": {
+      "portada": "https://javer-api-dev-page.s3.us-east-2.amazonaws.com/javer-api-dev/image-jpeg/1757458284959.jpg",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2893",
+    "nombre": "Caranday II Sector II Creta",
+    "constructora": "Casas Javer",
+    "zona": "Sur",
+    "ubicacion": {
+      "latitud": "21.823888",
+      "longitud": "-102.324562",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Santa Monica",
+      "calle": "Av. Atlántico S/N",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Caranday II Sector Creta es un fraccionamiento premium al sur de Aguascalientes (Zona Santa Mónica), que ofrece una vida residencial en casas inteligentes.",
+    "amenidades": [
+      "Alberca",
+      "Andador central",
+      "Áreas verdes",
+      "Avenidas de concreto",
+      "Barda perimetral"
+    ],
+    "precios": {
+      "desde": "2768000",
+      "apartado": "417"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "482",
+      "unidades_vendidas": "",
+      "inventario": "417",
+      "fecha_entrega": "01/08/2025"
+    },
+    "multimedia": {
+      "portada": "https://javer-api-dev-page.s3.us-east-2.amazonaws.com/javer-api-dev/image-jpeg/1757528184894.jpg",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2894",
+    "nombre": "Diana Tower",
+    "constructora": "Grupo ABA",
+    "zona": "Centro",
+    "ubicacion": {
+      "latitud": "21.879279",
+      "longitud": "-102.303148",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Zona Centro",
+      "calle": "Eduardo J. Correa No. 115",
+      "cp": ""
+    },
+    "status": "Pre-Venta",
+    "descripcion": "Diana Tower es un desarrollo vertical de 5 niveles y 43 unidades en el corazón del centro de Aguascalientes, ubicado en el Barrio de San Marcos.",
+    "amenidades": [
+      "Lobby con concierge digital",
+      "Bike site",
+      "Buzón de entregas",
+      "Zona wifi",
+      "Acceso controlado"
+    ],
+    "precios": {
+      "desde": "3100000",
+      "apartado": "33"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "42",
+      "unidades_vendidas": "",
+      "inventario": "33",
+      "fecha_entrega": "01/07/2027"
+    },
+    "multimedia": {
+      "portada": "https://dianatower.mx/wp-content/uploads/2025/10/DNT_CorteProyecto_Correa-1024x419.png",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2895",
+    "nombre": "Distrito Kauré Etapa I Torre Koa",
+    "constructora": "Land Boutique Realty",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.936220",
+      "longitud": "-102.318790",
+      "estado": "Aguascalientes",
+      "ciudad": "Jesús María",
+      "colonia": "El Llano",
+      "calle": "Av. el Molino s/n",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Distrito Kauré es un complejo residencial vertical premium ubicado al norte de Aguascalientes, en Arroyo El Molino.",
+    "amenidades": [
+      "Sunset terrace",
+      "Sunrise terrace",
+      "Área grill",
+      "Sky Dog Run",
+      "Co-working"
+    ],
+    "precios": {
+      "desde": "3964755",
+      "apartado": "26"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "41",
+      "unidades_vendidas": "",
+      "inventario": "26",
+      "fecha_entrega": "01/06/2024"
+    },
+    "multimedia": {
+      "portada": "https://distritokaure.com/wp-content/uploads/2023/11/kaure-plano-Frontal-after-14.11.webp",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2896",
+    "nombre": "Ébano Carmel Residencial Etapa I",
+    "constructora": "CC Homes",
+    "zona": "Sur",
+    "ubicacion": {
+      "latitud": "21.857669",
+      "longitud": "-102.370908",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Fraccionamiento Carmel",
+      "calle": "Blvd. Carmel No.107",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Ébano Carmel Residencial es un exclusivo complejo de 122 casas dentro del gran masterplan de Carmel Residencial en Aguascalientes.",
+    "amenidades": [
+      "Club cottage",
+      "Alberca con camastros",
+      "Fogateros",
+      "Cancha polivalente",
+      "Andador de lectura"
+    ],
+    "precios": {
+      "desde": "2900000",
+      "apartado": "109"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "122",
+      "unidades_vendidas": "",
+      "inventario": "109",
+      "fecha_entrega": "30/10/2023"
+    },
+    "multimedia": {
+      "portada": "https://images.prismic.io/cchomes/Z7kHCZ7c43Q3gFuR_ebano-residencias-fachadas.2770c3f3.jpeg?auto=format%2Ccompress&width=2048",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2899",
+    "nombre": "Hacienda el Cobano — Cluster Cedro Blanco",
+    "constructora": "Serena",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.906355",
+      "longitud": "-102.275762",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Fracc. Hacienda El Cobano",
+      "calle": "Maple, Hacienda El Cobano",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Clúster Cedro Blanco es la nueva privada dentro de Hacienda el Cobano, ubicada a solo 5 minutos del centro de Aguascalientes.",
+    "amenidades": [
+      "Acceso controlado",
+      "Palapa multiusos",
+      "Juegos infantiles",
+      "Jardines amplios privados",
+      "Barda perimetral"
+    ],
+    "precios": {
+      "desde": "2999000",
+      "apartado": "32"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "39",
+      "unidades_vendidas": "",
+      "inventario": "32",
+      "fecha_entrega": "01/06/2024"
+    },
+    "multimedia": {
+      "portada": "https://serena.com.mx/wp-content/uploads/2025/04/NUEVO-SUR-FINAL-web.png",
+      "video": "https://youtu.be/vMfSapoxsTY",
+      "brochure": "https://drive.google.com/file/d/15pzAgVhnDkKCFcIJHUSPPIHKHS1-U_n1/view?usp=drive_link"
+    }
+  },
+  {
+    "id_desarrollo": "5178",
+    "nombre": "Kerarta Residencial",
+    "constructora": "El Encino Desarrollos",
+    "zona": "Sur",
+    "ubicacion": {
+      "latitud": "21.807928",
+      "longitud": "-102.288726",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Kerrata Residencial",
+      "calle": "Paseo San Gerardo No.150",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Kerrata Residencial es un fraccionamiento exclusivo al sur de Aguascalientes, sobre Paseo San Gerardo, que destaca por su diseño moderno.",
+    "amenidades": [
+      "Acceso controlado",
+      "Áreas verdes",
+      "Viviendas EcoCasa",
+      "Casas inclusivas",
+      "Estacionamiento propio"
+    ],
+    "precios": {
+      "desde": "1998000",
+      "apartado": "53"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "90",
+      "unidades_vendidas": "",
+      "inventario": "53",
+      "fecha_entrega": "01/12/2023"
+    },
+    "multimedia": {
+      "portada": "https://elencino.com.mx/wp-content/uploads/2017/05/1.jpg",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2901",
+    "nombre": "La Perla Norte Coto II",
+    "constructora": "Grupo San Cristóbal",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.943933",
+      "longitud": "-102.287500",
+      "estado": "Aguascalientes",
+      "ciudad": "Jesús María",
+      "colonia": "La Perla Norte",
+      "calle": "Av. La Perla Norte No. 111",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "La Perla Norte Coto II es un fraccionamiento exclusivo ubicado en la zona norte de Aguascalientes, sobre Blvd. a Zacatecas.",
+    "amenidades": [
+      "Acceso controlado y vigilancia 24/7",
+      "Casa club",
+      "Alberca",
+      "Gimnasio",
+      "Salón de usos múltiples"
+    ],
+    "precios": {
+      "desde": "3429000",
+      "apartado": "362"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "443",
+      "unidades_vendidas": "",
+      "inventario": "362",
+      "fecha_entrega": "30/06/2020"
+    },
+    "multimedia": {
+      "portada": "https://drive.google.com/file/d/1GVbAADE6u2wUcyRVAjmEfx_GtxDfZKGz/view?usp=drive_link",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2903",
+    "nombre": "Lúzia Residencial Etapa I",
+    "constructora": "Grupo Emporium",
+    "zona": "Sur",
+    "ubicacion": {
+      "latitud": "21.825396",
+      "longitud": "-102.317614",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Rancho Santa Monica",
+      "calle": "Av. Mangata No.558",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Lúzia Residencial es un desarrollo medio residencial de Grupo Emporium, ubicado en la zona Rancho Santa Mónica.",
+    "amenidades": [
+      "Acceso monumental y controlado",
+      "Alberca semi olímpica",
+      "Casa club",
+      "Palapas sociales",
+      "Pet park"
+    ],
+    "precios": {
+      "desde": "1890000",
+      "apartado": "200"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "416",
+      "unidades_vendidas": "",
+      "inventario": "200",
+      "fecha_entrega": "15/03/2024"
+    },
+    "multimedia": {
+      "portada": "https://luziaresidencial.grupoemporium.mx/wp-content/uploads/2023/11/Master-Plan-Luzia.png",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2904",
+    "nombre": "Misión 208",
+    "constructora": "Aujas",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.932174",
+      "longitud": "-102.309867",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Calicantos II",
+      "calle": "Av. De las Misiones, De la Misión No. 208",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Misión 208 es un complejo de departamentos de lujo en condominio vertical, ubicado al norte de Aguascalientes.",
+    "amenidades": [
+      "Acceso digital y vigilancia 24/7",
+      "Alberca climatizada",
+      "Terraza social ajardinada",
+      "500 m² de áreas verdes",
+      "Elevador"
+    ],
+    "precios": {
+      "desde": "3415000",
+      "apartado": "16"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "24",
+      "unidades_vendidas": "",
+      "inventario": "16",
+      "fecha_entrega": "31/03/2024"
+    },
+    "multimedia": {
+      "portada": "https://aujaus.com/images/desarrollos/mision-208-1677358595.jpg",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2905",
+    "nombre": "Molino de Flores Condominio",
+    "constructora": "BCD Desarrollos",
+    "zona": "Sur",
+    "ubicacion": {
+      "latitud": "21.854044",
+      "longitud": "-102.329669",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Vergel de la cantera",
+      "calle": "Av. Vigía del Río No.119",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Molino de Flores Condominio es un fraccionamiento privado en Vergel de la Cantera al poniente de Aguascalientes.",
+    "amenidades": [
+      "Casa Club",
+      "Salón de eventos",
+      "Cocineta equipada",
+      "Área de gimnasio",
+      "Sanitarios"
+    ],
+    "precios": {
+      "desde": "2645000",
+      "apartado": "79"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "87",
+      "unidades_vendidas": "",
+      "inventario": "79",
+      "fecha_entrega": "30/09/2022"
+    },
+    "multimedia": {
+      "portada": "https://desarrollosbcd.com.mx/molinodeflores/img/Portada-2.jpg",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2906",
+    "nombre": "Montecristo Desarrollo Vertical Torre Bosco",
+    "constructora": "Grupo Acasia",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.928750",
+      "longitud": "-102.319415",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Villas del Campestre",
+      "calle": "Monte Vista No. 106",
+      "cp": ""
+    },
+    "status": "Pre-Venta",
+    "descripcion": "Montecristo Torre Bosco es la primera torre de un exclusivo desarrollo vertical que marca un nuevo estándar de vivienda residencial.",
+    "amenidades": [
+      "Lobby tipo hotel",
+      "Acceso con tres filtros de seguridad",
+      "Gimnasio panorámico",
+      "Terrazas abiertas y lounge",
+      "Espacios de coworking"
+    ],
+    "precios": {
+      "desde": "2805000",
+      "apartado": "90"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "102",
+      "unidades_vendidas": "",
+      "inventario": "90",
+      "fecha_entrega": "01/10/2026"
+    },
+    "multimedia": {
+      "portada": "https://montecristovertical.com/assets/bosco-Gui7-sWk.jpg",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2907",
+    "nombre": "Olena Residencial Etapa Norte",
+    "constructora": "Grupo Plusvalterra",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.982170",
+      "longitud": "-102.403598",
+      "estado": "Aguascalientes",
+      "ciudad": "Jesús María",
+      "colonia": "Fraccionamiento Olena",
+      "calle": "Francisco Villa No. 700",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Olena Residencial Etapa Norte es un entorno vanguardista que integra diseño innovador y acabados de primer nivel.",
+    "amenidades": [
+      "Casa Club",
+      "Acceso controlado",
+      "Barda perimetral de piedra",
+      "Circuito cerrado",
+      "Zona Grill"
+    ],
+    "precios": {
+      "desde": "2899450",
+      "apartado": "160"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "436",
+      "unidades_vendidas": "",
+      "inventario": "160",
+      "fecha_entrega": "12/11/2024"
+    },
+    "multimedia": {
+      "portada": "https://assets.easybroker.com/property_images/4041931/70965482/EB-ON1931.jpg",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2908",
+    "nombre": "Privada Roble Premium Residences",
+    "constructora": "LOM Residencial",
+    "zona": "Sur",
+    "ubicacion": {
+      "latitud": "21.831657",
+      "longitud": "-102.431403",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Rancho Santa Mónica",
+      "calle": "Av. San Antonio 100",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Privada Roble Premium Residences es un concepto residencial exclusivo, destacado en el norte de Aguascalientes por su alto nivel de distinción.",
+    "amenidades": [
+      "Malla perimetral y seguridad 24/7",
+      "Acceso controlado doble",
+      "Circuito cerrado de videovigilancia",
+      "Casa club",
+      "Alberca semiolímpica"
+    ],
+    "precios": {
+      "desde": "3272200",
+      "apartado": "86"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "109",
+      "unidades_vendidas": "",
+      "inventario": "86",
+      "fecha_entrega": "01/04/2024"
+    },
+    "multimedia": {
+      "portada": "https://privadaroble.mx/wp-content/uploads/2024/06/contexto-santa-monica-2.jpg",
+      "video": "https://youtu.be/5cu0lBuv_dM",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2909",
+    "nombre": "Punta del Cielo Privada Punta Coral",
+    "constructora": "Grupo Emporium",
+    "zona": "Poniente",
+    "ubicacion": {
+      "latitud": "21.901914",
+      "longitud": "-102.351291",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Fraccionamiento Punta del Cielo",
+      "calle": "Av. Guadalupe González Km. 18",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Privada Punta Coral, dentro de Punta del Cielo, es un clúster residencial exclusivo que redefine el lujo, la autenticidad y el confort.",
+    "amenidades": [
+      "Recepción",
+      "Alberca",
+      "Jacuzzi",
+      "Gym",
+      "Terraza con Asador"
+    ],
+    "precios": {
+      "desde": "4077000",
+      "apartado": "154"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "2000",
+      "unidades_vendidas": "",
+      "inventario": "154",
+      "fecha_entrega": "31/03/2023"
+    },
+    "multimedia": {
+      "portada": "https://puntadelcielo.grupoemporium.mx/wp-content/uploads/2022/10/0H0A2882.jpg",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2910",
+    "nombre": "Punta del Cielo Torre II Residencial",
+    "constructora": "Grupo Emporium",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.901920",
+      "longitud": "-102.354570",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Fraccionamiento Punta del Cielo",
+      "calle": "Av. Guadalupe González Km. 18",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Torre II de Punta del Cielo es un desarrollo departamental de lujo que eleva el estilo de vida en Aguascalientes.",
+    "amenidades": [
+      "Lobby de acceso",
+      "Vigilancia CCTV",
+      "Estacionamiento semi-techado",
+      "Elevadores de alta velocidad",
+      "Palapa/casa club"
+    ],
+    "precios": {
+      "desde": "2670000",
+      "apartado": "32"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "2000",
+      "unidades_vendidas": "",
+      "inventario": "32",
+      "fecha_entrega": "01/07/2024"
+    },
+    "multimedia": {
+      "portada": "https://puntadelcielo.grupoemporium.mx/wp-content/uploads/2025/03/Torre-II-3.jpg",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2911",
+    "nombre": "San Javier 240 Torre I",
+    "constructora": "Grupo Hero Bienes Raíces",
+    "zona": "Sur",
+    "ubicacion": {
+      "latitud": "21.856820",
+      "longitud": "-102.335427",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Canteras de San Javier",
+      "calle": "Paseo de Yahualica No.240",
+      "cp": ""
+    },
+    "status": "Pre-Venta",
+    "descripcion": "San Javier 240 Torre I es un desarrollo vertical de diseño vanguardista enfocado en brindar funcionalidad, estilo y tecnología.",
+    "amenidades": [
+      "Gimnasio equipado",
+      "Salón de usos múltiples",
+      "Coworking",
+      "Área de juegos infantiles",
+      "Fogateros"
+    ],
+    "precios": {
+      "desde": "2800000",
+      "apartado": "19"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "64",
+      "unidades_vendidas": "",
+      "inventario": "19",
+      "fecha_entrega": "01/01/2026"
+    },
+    "multimedia": {
+      "portada": "https://240sanjavier.com/wp-content/uploads/2023/07/slide_exp_4.png",
+      "video": "https://240sanjavier.com/videos/ext_dia-noche.mp4",
+      "brochure": "https://drive.google.com/file/d/1TPM070O-Fjb3ljHx80DM9L9_XB0cvIFR/view?usp=drive_link"
+    }
+  },
+  {
+    "id_desarrollo": "2913",
+    "nombre": "Torre Cadaqués",
+    "constructora": "Parivar Conceptos",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.930213",
+      "longitud": "-102.307210",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Calicantos II",
+      "calle": "P.º Sierra Hermosa 201A",
+      "cp": ""
+    },
+    "status": "Pre-Venta",
+    "descripcion": "Torre Cadaqués es el nuevo ícono vertical de lujo y vanguardia en Aguascalientes. Con 29 niveles y más de 100 metros de altura.",
+    "amenidades": [
+      "Alberca de 300 m²",
+      "Área recreativa",
+      "Sauna y vapor",
+      "Gimnasio de dos niveles",
+      "Pared para rapel"
+    ],
+    "precios": {
+      "desde": "2930000",
+      "apartado": "92"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "131",
+      "unidades_vendidas": "",
+      "inventario": "92",
+      "fecha_entrega": "30/06/2026"
+    },
+    "multimedia": {
+      "portada": "https://scontent.fcul2-1.fna.fbcdn.net/v/t39.30808-6/484301753_655966793644444_1035961369042626331_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeF810XS-NagJQizjBuNaJTKuL5j1KIA_2S4vmPUogD_ZMcowJyLqA-fC361KRMsAqd8Oym8n3AeTZfR1eEbBpQV&_nc_ohc=r3yY2HofdbIQ7kNvwElWvGH&_nc_oc=Adlvd2pQnI7TzluyGs4VMH46NBaJVl_ys2E0EKLWxxCmNgkXNo44TTzJwQ-2fCEiqXX7M-XyYgUawbgSB9WeWLjc&_nc_zt=23&_nc_ht=scontent.fcul1-1.fna&_nc_gid=-r8pRdFga8pd4X-uihKjAg&oh=00_Afe6FlfVLxDzMH9w5A6EeEaO7pFaHOps1BZehZnrBRmYJw&oe=68F832FD",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2915",
+    "nombre": "Torre Omega Black",
+    "constructora": "Omega Desarrollos",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.926949",
+      "longitud": "-102.339509",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Poctos",
+      "calle": "Av. Eugenio Garza Sada No.506",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Torre Omega Black es un desarrollo residencial vertical de lujo diseñado para quienes buscan exclusividad, ubicación privilegiada y diseño de vanguardia.",
+    "amenidades": [
+      "Gimnasio equipado",
+      "Terrazas panorámicas",
+      "Asadores",
+      "Jacuzzis privados",
+      "Sauna y vapor"
+    ],
+    "precios": {
+      "desde": "4638000",
+      "apartado": "47"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "49",
+      "unidades_vendidas": "",
+      "inventario": "47",
+      "fecha_entrega": "01/12/2023"
+    },
+    "multimedia": {
+      "portada": "https://scontent.fcul2-1.fna.fbcdn.net/v/t39.30808-6/473568555_594507223332767_557721551447212754_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeGcp5_sWI20_AEqN7i7WUSbUgOLF9Iq25VSA4sX0irbldqraNHLdQTTAH3ngiSAOfTGdypxwZyz7Q5x_BymBwfh&_nc_ohc=dKiycVcg8jkQ7kNvwFs9zPX&_nc_oc=Adn2-JZI2YNxTqFW3o1pWICNgHlZxYWzUqyHbkQKRGsdrpSpi1jC39rIGhielXH6k17annIVjMrDcmTNmFNOEvMi&_nc_zt=23&_nc_ht=scontent.fcul2-1.fna&_nc_gid=W7rvI05jvGFJ6_zAl4Lgyw&oh=00_AfelA0EXRsGbJGwyex4aFFOm0uevDt5CgWNuyXYXUzKCkw&oe=68F740DB",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2916",
+    "nombre": "Torre Sentzia",
+    "constructora": "Proihmek",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.955155",
+      "longitud": "-102.308203",
+      "estado": "Aguascalientes",
+      "ciudad": "Jesús María",
+      "colonia": "Tepeztates",
+      "calle": "Bosques de Parras No.112",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "El único modelo de inversión inmobiliaria profesional en Aguascalientes. SENTZIA se diseño minuciosamente para dar solución a la necesidad de vivienda.",
+    "amenidades": [
+      "Roof garden panorámico",
+      "Zona de coworking",
+      "Gimnasio equipado",
+      "Salón multifuncional",
+      "Lobby con recepción"
+    ],
+    "precios": {
+      "desde": "3144770",
+      "apartado": "11"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "47",
+      "unidades_vendidas": "",
+      "inventario": "11",
+      "fecha_entrega": "01/03/2025"
+    },
+    "multimedia": {
+      "portada": "https://sentzia.mx/wp-content/uploads/2022/10/nueblado_Post.jpg",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2917",
+    "nombre": "Torre Trigales",
+    "constructora": "Finverr Desarrollos",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.925537",
+      "longitud": "-102.311610",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Valle del Campestre",
+      "calle": "Trigales s/n",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Torre Trigales es un exclusivo proyecto vertical en la zona dorada de Aguascalientes, diseñado para ofrecer una experiencia de vida de alto nivel.",
+    "amenidades": [
+      "Acceso controlado",
+      "Seguridad 24/7",
+      "Lobby",
+      "Elevador inteligente",
+      "Roof garden"
+    ],
+    "precios": {
+      "desde": "4600000",
+      "apartado": "9"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "12",
+      "unidades_vendidas": "",
+      "inventario": "9",
+      "fecha_entrega": "01/07/2024"
+    },
+    "multimedia": {
+      "portada": "https://www.finverrdesarrollos.com/wp-content/uploads/2025/07/UBICACION-1024x1024.jpg",
+      "video": "https://youtu.be/kSzadypoyx4",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2919",
+    "nombre": "Váltica Departamentos",
+    "constructora": "Grupo Pluslarterra",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.911704",
+      "longitud": "-102.284997",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Váltica",
+      "calle": "Av. Paseo de la Solidaridad No.1100",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Váltica Departamentos es un desarrollo vertical contemporáneo dentro del Distrito Gómez Morín, al norte de Aguascalientes.",
+    "amenidades": [
+      "Casa club equipada",
+      "Alberca",
+      "Terraza grill",
+      "Áreas verdes ajardinadas",
+      "Gimnasio equipado"
+    ],
+    "precios": {
+      "desde": "2959000",
+      "apartado": "12"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "16",
+      "unidades_vendidas": "",
+      "inventario": "12",
+      "fecha_entrega": "01/12/2024"
+    },
+    "multimedia": {
+      "portada": "https://scontent.fcul2-1.fna.fbcdn.net/v/t51.82787-15/548898172_18337692835202177_3383457479373378377_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeFGa8KlE603RwsHg9zbyrK50nwHe9zQQPHSfAd73NBA8bnrRNKM65uFzww_cxcw-SJpYSfxMHqT-kuDDK5RrfZI&_nc_ohc=kU1_jCaAeKwQ7kNvwHiMCwb&_nc_oc=AdnbRQMfz6tzqu6PKNTz3Q7J2-61IyuQTwz3tIypk9kxx05LBtR-Q1kkU-6p-3Km20BsvOqqh9ru_U8t-XqNfNj-&_nc_zt=23&_nc_ht=scontent.fcul2-1.fna&_nc_gid=7wPVz8JLxrzYjtCOD0VyMA&oh=00_AfesSmraDZHvY884lQxY4QCMYghx8-gizJwSZlqUjxKhfg&oe=68F75C63",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2922",
+    "nombre": "Vivanta Residencial",
+    "constructora": "Grupo Emporium",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.938076",
+      "longitud": "-102.293071",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Trojes de Alonso",
+      "calle": "Av. Niños Heroes No.106",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Vivanta Residencial es un macro proyecto privado al norte de Aguascalientes creado por Grupo Emporium, enfocado en ofrecer hogares únicos.",
+    "amenidades": [
+      "Casa club equipada",
+      "Fogatero",
+      "Terraza grill",
+      "Alberca climatizada",
+      "Chapoteadero"
+    ],
+    "precios": {
+      "desde": "3160000",
+      "apartado": "263"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "375",
+      "unidades_vendidas": "",
+      "inventario": "263",
+      "fecha_entrega": "06/06/2022"
+    },
+    "multimedia": {
+      "portada": "https://vivanta.grupoemporium.mx/wp-content/uploads/2022/02/Vivanta.jpg",
+      "video": "https://youtu.be/rlCRJKwlcQQ",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2923",
+    "nombre": "Xaramá Residencial Etapa I",
+    "constructora": "Garcam Desarrollos",
+    "zona": "Poniente",
+    "ubicacion": {
+      "latitud": "21.875224",
+      "longitud": "-102.325898",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Xarama Residencial",
+      "calle": "Crcuito la Estancia s/n",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Xaramá Residencial Etapa I es un entorno privado con enfoque en diseño, bienestar y exclusividad, situado en Av. Del Valle s/n.",
+    "amenidades": [
+      "Acceso controlado",
+      "Vigilancia privada 24/7",
+      "Alberca",
+      "Chapoteadero",
+      "Área de camastros"
+    ],
+    "precios": {
+      "desde": "2936799",
+      "apartado": "223"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "400",
+      "unidades_vendidas": "",
+      "inventario": "223",
+      "fecha_entrega": "31/07/2019"
+    },
+    "multimedia": {
+      "portada": "https://scontent.fcul1-1.fna.fbcdn.net/v/t39.30808-6/484301753_655966793644444_1035961369042626331_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeF810XS-NagJQizjBuNaJTKuL5j1KIA_2S4vmPUogD_ZMcowJyLqA-fC361KRMsAqd8Oym8n3AeTZfR1eEbBpQV&_nc_ohc=r3yY2HofdbIQ7kNvwElWvGH&_nc_oc=Adlvd2pQnI7TzluyGs4VMH46NBaJVl_ys2E0EKLWxxCmNgkXNo44TTzJwQ-2fCEiqXX7M-XyYgUawbgSB9WeWLjc&_nc_zt=23&_nc_ht=scontent.fcul1-1.fna&_nc_gid=-r8pRdFga8pd4X-uihKjAg&oh=00_Afe6FlfVLxDzMH9w5A6EeEaO7pFaHOps1BZehZnrBRmYJw&oe=68F832FD",
+      "video": "",
+      "brochure": ""
+    }
+  },
+  {
+    "id_desarrollo": "2924",
+    "nombre": "Zatae",
+    "constructora": "Almikia / 2eme Desarrollos",
+    "zona": "Norte",
+    "ubicacion": {
+      "latitud": "21.928235",
+      "longitud": "-102.306392",
+      "estado": "Aguascalientes",
+      "ciudad": "Aguascalientes",
+      "colonia": "Valle de las Trojes",
+      "calle": "Silos 115",
+      "cp": ""
+    },
+    "status": "Entrega Inmediata",
+    "descripcion": "Zatae es una torre boutique ubicada en la zona norte premium de Aguascalientes, diseñada para ofrecer exclusividad.",
+    "amenidades": [
+      "Lobby con control de acceso",
+      "Elevador inteligente",
+      "Estacionamiento techado",
+      "Digital concierge",
+      "Roof garden panorámico"
+    ],
+    "precios": {
+      "desde": "3052202",
+      "apartado": "4"
+    },
+    "info_comercial": {
+      "unidades_proyectadas": "9",
+      "unidades_vendidas": "",
+      "inventario": "4",
+      "fecha_entrega": "30/10/2025"
+    },
+    "multimedia": {
+      "portada": "https://www.zatae.mx/img/panel1_.jpg",
+      "video": "",
+      "brochure": ""
+    }
+  }
+]

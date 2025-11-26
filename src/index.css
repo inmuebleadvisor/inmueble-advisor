@@ -1,0 +1,57 @@
+/* Reinicio básico para ocupar toda la pantalla */
+:root {
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  
+  /* Tus colores de marca globales */
+  --primary-color: #00396a;
+  --bg-color: #f4f6f9;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-color); /* Fondo gris claro en toda la ventana */
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: block; /* Importante: quita el display flex/grid por defecto de Vite */
+  max-width: none; /* Importante: quita el límite de ancho */
+  text-align: left;
+}
+
+/* Opcional: Para que los inputs y botones se comporten bien */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* ESTILOS PARA TODA LA APP */
+a { text-decoration: none; color: inherit; }
+button { cursor: pointer; }
+
+/* --- CLASE RESPONSIVA PARA EL CONTENEDOR PRINCIPAL --- */
+
+.main-content {
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box; /* Para que el padding no rompa el ancho */
+  
+  /* MÓVIL (Por defecto): Márgenes muy pequeños para ganar espacio */
+  padding: 10px 8px; 
+}
+
+/* PANTALLAS GRANDES (Tablets y PC): Aumentamos el margen para que se vea elegante */
+@media (min-width: 768px) {
+  .main-content {
+    padding: 30px 50px; /* Más aire a los lados */
+    max-width: 1200px;  /* Que no se estire infinito en pantallas ultra anchas */
+    margin: 0 auto;     /* Centrado automático */
+  }
+}
