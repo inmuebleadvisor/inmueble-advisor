@@ -1,16 +1,69 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-// 1. Importamos nuestro Hook personalizado del Contexto
 import { useUser } from '../context/UserContext';
+
+// Importamos datos para calcular coincidencias reales
+import modelosRaw from '../data/modelos.json';
+import desarrollosRaw from '../data/desarrollos.json';
+
+// ==========================================
+// HELPERS (Lógica traída para el filtrado)
+// ==========================================
+const esFechaFutura = (fechaStr) => {
+  if (!fechaStr) return false;
+  try {
+    const partes = fechaStr.split('/'); // DD/MM/YYYY
+    if (partes.length !== 3) return false;
+    const fechaEntrega = new Date(partes[2], partes[1] - 1, partes[0]);
+    const hoy = new Date();
+    return fechaEntrega > hoy;
+  } catch (e) { return false; }
+};
+
+const procesarDatosMaestros = (modelos, desarrollos) => {
+  const desarrolloMap = new Map();
+  desarrollos.forEach(d => {
+    const idDev = String(d.id_desarrollo || d.id).trim(); 
+    if (idDev) desarrolloMap.set(idDev, d);
+  });
+
+  return modelos.map((modelo) => {
+    const idDev = String(modelo.id_desarrollo || modelo.desarrollo_id).trim();
+    const desarrolloInfo = desarrolloMap.get(idDev);
+
+    let precioFinal = 0;
+    const precioRaw = modelo.precio?.actual || modelo.precio;
+    if (precioRaw) {
+      precioFinal = Number(String(precioRaw).replace(/[^0-9.]/g, ""));
+    }
+
+    // Detección de Preventa
+    const statusRaw = desarrolloInfo?.status || '';
+    const statusLower = String(statusRaw).toLowerCase();
+    const fechaEntrega = desarrolloInfo?.info_comercial?.fecha_entrega || '';
+    
+    const esPrevTexto = statusLower.includes('preventa') || 
+                        statusLower.includes('pre-venta') ||
+                        statusLower.includes('construcci') || 
+                        statusLower.includes('obra') ||
+                        statusLower.includes('avance');
+    const esPrevFecha = esFechaFutura(fechaEntrega);
+    const esPreventa = esPrevTexto || esPrevFecha;
+
+    return {
+      ...modelo,
+      precioNumerico: precioFinal,
+      recamaras: Number(modelo.caracteristicas?.recamaras || modelo.recamaras || 0),
+      esPreventa: esPreventa
+    };
+  });
+};
 
 /**
  * COMPONENTE PERFIL
- * Ahora conectado al UserContext para guardar datos globalmente.
  */
 export default function Perfil() {
   const navigate = useNavigate();
-  
-  // 2. Usamos el contexto para obtener las funciones 'login' y 'trackBehavior'
   const { login, trackBehavior } = useUser();
 
   // ==========================================
@@ -35,40 +88,82 @@ export default function Perfil() {
   const [notaDinamica, setNotaDinamica] = useState('');
   const [esAlerta, setEsAlerta] = useState(false);
 
+  // Helper de formato moneda
+  const formatoMoneda = (val) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
+
   // ==========================================
-  // LÓGICA FINANCIERA (Igual que antes)
+  // 1. LÓGICA FINANCIERA (Ajustada)
   // ==========================================
   useEffect(() => {
     const PORCENTAJE_GASTOS_NOTARIALES = 0.06;
-    const PORCENTAJE_ENGANCHE_MINIMO = 0.10;
+    const PORCENTAJE_ENGANCHE = 0.10; // Siempre 10% según requerimiento
     const FACTOR_MENSUALIDAD_POR_MILLON = 11000;
 
+    // Capacidad basada en crédito
     const maxCreditoBanco = (mensualidad / FACTOR_MENSUALIDAD_POR_MILLON) * 1000000;
-    const limitePorEfectivo = capitalInicial / (PORCENTAJE_GASTOS_NOTARIALES + PORCENTAJE_ENGANCHE_MINIMO);
+    
+    // Capacidad basada solo en efectivo (Efectivo debe cubrir el 16% del valor total)
+    const limitePorEfectivo = capitalInicial / (PORCENTAJE_GASTOS_NOTARIALES + PORCENTAJE_ENGANCHE);
+    
+    // Capacidad total (Crédito + Efectivo disponible para enganche/gastos)
+    // PrecioCasa = Credito + Enganche
+    // CapitalInicial >= Enganche + GastosNotariales
+    // CapitalInicial >= (0.10 * Precio) + (0.06 * Precio)
+    // Si el crédito limita: Precio = Credito / 0.90 (asumiendo 90% financiamiento máx)
+    // Pero usaremos la lógica conservadora: El presupuesto es el menor entre lo que permite el efectivo y lo que permite la deuda.
+    
+    // Formula simplificada de "Poder de Compra":
+    // Opción A (Limitada por efectivo): Capital / 0.16
+    // Opción B (Limitada por mensualidad): (Capital + Credito) / 1.06 (Aprox, asumiendo que Capital paga enganche y gastos)
+    
+    // Mantendremos la lógica original de comparación, ajustando el enganche fijo al 10%
     const limitePorCapacidadTotal = (capitalInicial + maxCreditoBanco) / (1 + PORCENTAJE_GASTOS_NOTARIALES);
 
     const capacidadReal = Math.min(limitePorEfectivo, limitePorCapacidadTotal);
     setPresupuestoMaximo(capacidadReal);
 
     if (capacidadReal > 0) {
-      const gastosNotarialesReales = capacidadReal * PORCENTAJE_GASTOS_NOTARIALES;
-      const engancheResidual = capitalInicial - gastosNotarialesReales;
-      const porcentajeEngancheReal = (engancheResidual / capacidadReal) * 100;
+      // Cálculo del remanente
+      const costoTotalInicial = capacidadReal * (PORCENTAJE_ENGANCHE + PORCENTAJE_GASTOS_NOTARIALES);
+      const remanente = Math.max(0, capitalInicial - costoTotalInicial);
 
-      if (limitePorEfectivo < (limitePorCapacidadTotal - 100)) {
-        setNotaDinamica("💡 Tu mensualidad da para más, pero falta un poco de ahorro inicial.");
-        setEsAlerta(true);
+      // Validación de alerta (si el efectivo limita mucho la capacidad de crédito)
+      if (limitePorEfectivo < (limitePorCapacidadTotal - 50000)) {
+        setNotaDinamica(`Incluye gastos notariales (6%) y enganche (10%). Te sobran ${formatoMoneda(remanente)} de tu efectivo inicial.`);
+        setEsAlerta(true); // Usamos alerta para resaltar que el efectivo es el "cuello de botella"
       } else {
-        setNotaDinamica(`✅ Incluye gastos notariales (6%) y enganche (${porcentajeEngancheReal.toFixed(1)}%)`);
+        setNotaDinamica(`Incluye gastos notariales (6%) y enganche (10%). Te sobran ${formatoMoneda(remanente)} de tu efectivo inicial.`);
         setEsAlerta(false);
       }
     }
   }, [capitalInicial, mensualidad]);
 
   // ==========================================
-  // NAVEGACIÓN Y ACCIONES DEL CONTEXTO
+  // 2. CONTEO DE OPCIONES (Nuevo)
   // ==========================================
+  const opcionesEncontradas = useMemo(() => {
+    if (presupuestoMaximo === 0) return 0;
 
+    const dataProcesada = procesarDatosMaestros(modelosRaw, desarrollosRaw);
+    
+    return dataProcesada.filter(item => {
+      // Filtro Precio
+      if (item.precioNumerico > presupuestoMaximo) return false;
+      
+      // Filtro Recámaras
+      if (recamaras && item.recamaras < recamaras) return false;
+      
+      // Filtro Entrega (Si entregaInmediata es true, descarta preventas. Si es false, acepta todo)
+      if (entregaInmediata === true && item.esPreventa === true) return false;
+      
+      return true;
+    }).length;
+
+  }, [presupuestoMaximo, recamaras, entregaInmediata]);
+
+  // ==========================================
+  // NAVEGACIÓN
+  // ==========================================
   const isStepValid = () => {
     switch(step) {
       case 1: return nombre.trim().length > 0;
@@ -81,8 +176,7 @@ export default function Perfil() {
 
   const nextStep = () => {
     if (isStepValid() && step < totalSteps) {
-      // TRACKING: Registramos que el usuario completó un paso
-      trackBehavior('step_completed', { step_number: step, step_name: getStepName(step) });
+      trackBehavior('step_completed', { step_number: step });
       setStep(step + 1);
     }
   };
@@ -91,13 +185,6 @@ export default function Perfil() {
     if (step > 1) setStep(step - 1);
   };
 
-  // Helper para saber el nombre del paso (solo para analytics)
-  const getStepName = (num) => {
-    const names = ['Nombre', 'Necesidades', 'Finanzas', 'Resultado'];
-    return names[num - 1] || 'Desconocido';
-  };
-
-  // --- ACCIÓN FINAL ACTUALIZADA ---
   const handleFinalizar = () => {
     const userProfile = {
       nombre,
@@ -108,21 +195,15 @@ export default function Perfil() {
       entregaInmediata
     };
     
-    // 3. ¡AQUÍ ESTÁ EL CAMBIO PRINCIPAL!
-    // En lugar de localStorage.setItem(...), usamos la función del contexto.
     login(userProfile);
     
-    // También enviamos un evento de tracking final
     trackBehavior('onboarding_completed', { 
       presupuesto: presupuestoMaximo,
-      urgencia: entregaInmediata ? 'alta' : 'baja'
+      opciones_vistas: opcionesEncontradas
     });
 
-    // Redirigimos
     navigate('/catalogo');
   };
-
-  const formatoMoneda = (val) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
 
   // ==========================================
   // RENDERIZADO
@@ -155,9 +236,12 @@ export default function Perfil() {
           <div style={{...styles.progressBarFill, width: `${(step / totalSteps) * 100}%`}}></div>
         </div>
         
-        <div style={styles.logoContainer}>
-          <img src="https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png" alt="Logo" style={styles.logoIcon} />
-        </div>
+        {/* LOGO: Solo en el paso 1 */}
+        {step === 1 && (
+          <div style={styles.logoContainer}>
+            <img src="https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png" alt="Logo" style={styles.logoIcon} />
+          </div>
+        )}
 
         <div className="step-content" key={step}> 
           
@@ -181,10 +265,10 @@ export default function Perfil() {
           {/* PASO 2: NECESIDADES */}
           {step === 2 && (
             <>
-              <h1 style={styles.title}>Dime qué buscas 🏠</h1>
+              <h1 style={styles.title}>Dime qué buscas</h1>
               <p style={styles.subtitle}>Para filtrar las mejores opciones para ti, {nombre}.</p>
               
-              <label style={styles.label}>🛏️ Recámaras mínimas:</label>
+              <label style={styles.label}>Recámaras mínimas:</label>
               <div style={styles.optionsContainer}>
                 {[1, 2, 3, 4].map((num) => (
                   <button
@@ -202,7 +286,7 @@ export default function Perfil() {
                 ))}
               </div>
 
-              <label style={{...styles.label, marginTop: '20px'}}>⏰ Tiempo de entrega:</label>
+              <label style={{...styles.label, marginTop: '20px'}}>Tiempo de entrega:</label>
               <div style={styles.deliveryContainer}>
                 <button
                   onClick={() => setEntregaInmediata(true)}
@@ -213,7 +297,7 @@ export default function Perfil() {
                     borderColor: entregaInmediata === true ? 'var(--primary-color)' : '#eee',
                   }}
                 >
-                  🏃 Me urge (Inmediata)
+                  Entrega inmediata
                 </button>
                 <button
                   onClick={() => setEntregaInmediata(false)}
@@ -224,7 +308,7 @@ export default function Perfil() {
                     borderColor: entregaInmediata === false ? 'var(--primary-color)' : '#eee',
                   }}
                 >
-                   🗓️ Puedo esperar
+                   Pre-venta
                 </button>
               </div>
             </>
@@ -233,12 +317,12 @@ export default function Perfil() {
           {/* PASO 3: CALCULADORA */}
           {step === 3 && (
             <>
-              <h1 style={styles.title}>Hablemos de números 📊</h1>
+              <h1 style={styles.title}>Hablemos de números</h1>
               <p style={styles.subtitle}>Sin compromiso. Ajusta los valores para ver tu capacidad real.</p>
               
               <div style={styles.calculatorBox}>
                 <div style={styles.calcInputGroup}>
-                  <label style={styles.labelSmall}>💰 Ahorros disponibles (Enganche + Gastos):</label>
+                  <label style={styles.labelSmall}>Ahorros disponibles (Enganche + Gastos):</label>
                   <div style={styles.sliderValue}>{formatoMoneda(capitalInicial)}</div>
                   <input 
                     type="range" 
@@ -249,7 +333,7 @@ export default function Perfil() {
                 </div>
 
                 <div style={styles.calcInputGroup}>
-                  <label style={styles.labelSmall}>📅 Mensualidad cómoda:</label>
+                  <label style={styles.labelSmall}>Mensualidad cómoda:</label>
                   <div style={styles.sliderValue}>{formatoMoneda(mensualidad)}</div>
                   <input 
                     type="range" 
@@ -265,7 +349,7 @@ export default function Perfil() {
           {/* PASO 4: RESULTADO */}
           {step === 4 && (
             <>
-              <h1 style={styles.title}>¡Listo, {nombre}! 🚀</h1>
+              <h1 style={styles.title}>¡Listo, {nombre}!</h1>
               <p style={styles.subtitle}>Basado en tus finanzas, este es el valor máximo de propiedad que te recomendamos:</p>
               
               <div style={styles.finalResultBox}>
@@ -273,15 +357,18 @@ export default function Perfil() {
                 <div style={styles.finalAmount}>{formatoMoneda(presupuestoMaximo)}</div>
                 <div style={{
                   ...styles.resultNote,
-                  color: esAlerta ? '#ffeb3b' : 'white',
-                  fontWeight: esAlerta ? 'bold' : 'normal'
+                  // Si es alerta usamos un amarillo suave, si no blanco
+                  color: esAlerta ? '#fff9c4' : 'white', 
+                  fontWeight: '500'
                 }}>
                   {notaDinamica}
                 </div>
               </div>
               
               <p style={{fontSize: '0.9rem', color: '#666', marginTop: '20px'}}>
-                Hemos encontrado las mejores opciones para ti en nuestro catálogo.
+                {opcionesEncontradas > 0 
+                  ? "Hemos analizado el mercado para ti." 
+                  : "Ajusta tus filtros para encontrar más opciones."}
               </p>
             </>
           )}
@@ -312,7 +399,7 @@ export default function Perfil() {
               onClick={handleFinalizar}
               style={{...styles.primaryButton, backgroundColor: '#28a745'}}
             >
-              ¡Ver Catálogo! 🔍
+              Encontramos {opcionesEncontradas} opciones
             </button>
           )}
         </div>
@@ -322,7 +409,7 @@ export default function Perfil() {
   );
 }
 
-// ESTILOS (Mantenemos los mismos estilos visuales)
+// ESTILOS
 const styles = {
   container: {
     display: 'flex', justifyContent: 'center', alignItems: 'center',
@@ -369,7 +456,7 @@ const styles = {
     boxShadow: '0 10px 25px rgba(0,57,106,0.25)', animation: 'pulse 2s infinite'
   },
   finalAmount: { fontSize: '2.5rem', fontWeight: 'bold', margin: '10px 0' },
-  resultNote: { fontSize: '0.9rem', lineHeight: '1.4', padding: '0 10px' },
+  resultNote: { fontSize: '0.95rem', lineHeight: '1.5', padding: '0 10px' },
   navContainer: { display: 'flex', gap: '15px', marginTop: '30px' },
   primaryButton: {
     flex: 2, backgroundColor: 'var(--primary-color)', color: 'white', border: 'none',
