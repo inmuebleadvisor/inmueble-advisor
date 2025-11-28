@@ -9,35 +9,37 @@ import Layout from './components/Layout';
 import Perfil from './screens/Perfil';
 import Catalogo from './screens/Catalogo';
 import DetalleModelo from './screens/DetalleModelo';
-import DetalleDesarrollo from './screens/DetalleDesarrollo'; // ✅ Nueva pantalla
-import Mapa from './screens/Mapa'; // ✅ Nueva pantalla
+import DetalleDesarrollo from './screens/DetalleDesarrollo';
+import Mapa from './screens/Mapa';
+import LandingAsesores from './screens/LandingAsesores'; // ✅ 1. Importamos la nueva pantalla
 
 function App() {
   return (
     <UserProvider>
       <BrowserRouter>
         <Routes>
-          {/* El Layout envuelve a todas las rutas internas.
-            Todas las rutas dentro de este bloque se renderizarán 
-            en el espacio del <Outlet /> del Layout.
+          {/* 
+            El Layout envuelve a todas las rutas internas.
+            Mantiene el Header y Footer visibles en todas las pantallas.
           */}
           <Route path="/" element={<Layout />}>
             
-            {/* Ruta por defecto (Index): Actualmente carga el Perfil */}
+            {/* Ruta por defecto (Index): Carga el Perfil/Bienvenida */}
             <Route index element={<Perfil />} />
             
             {/* Rutas de Navegación Principal */}
             <Route path="catalogo" element={<Catalogo />} />
             <Route path="mapa" element={<Mapa />} />
 
+            {/* ✅ 2. Nueva Ruta para el Portal de Asesores */}
+            {/* Acceso mediante: /soy-asesor */}
+            <Route path="soy-asesor" element={<LandingAsesores />} />
+
             {/* Rutas de Detalle (Dinámicas) */}
-            {/* :id captura el valor de la URL (ej: /modelo/aguila-1) */}
             <Route path="modelo/:id" element={<DetalleModelo />} />
-            
-            {/* ✅ Nueva ruta para el Desarrollo (ej: /desarrollo/2846) */}
             <Route path="desarrollo/:id" element={<DetalleDesarrollo />} />
 
-            {/* Ruta 404: Redirecciona al inicio si no encuentra la página */}
+            {/* Ruta 404: Redirecciona al inicio si la URL no existe */}
             <Route path="*" element={<Navigate to="/" replace />} />
 
           </Route>
@@ -46,4 +48,5 @@ function App() {
     </UserProvider>
   );
 }
+
 export default App;

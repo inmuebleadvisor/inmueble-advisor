@@ -55,3 +55,18 @@ button { cursor: pointer; }
     margin: 0 auto;     /* Centrado automático */
   }
 }
+
+/* Clase utilitaria para secciones flexibles que cambian a columna en móvil */
+.flex-responsive {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  flex-direction: row;
+}
+
+@media (max-width: 768px) {
+  .flex-responsive {
+    flex-direction: column;
+    text-align: center;
+  }
+}
