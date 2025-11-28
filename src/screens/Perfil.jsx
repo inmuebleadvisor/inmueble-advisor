@@ -2,65 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 
-// Importamos datos para calcular coincidencias reales
-import modelosRaw from '../data/modelos.json';
-import desarrollosRaw from '../data/desarrollos.json';
-
-// ==========================================
-// HELPERS (Lógica traída para el filtrado)
-// ==========================================
-const esFechaFutura = (fechaStr) => {
-  if (!fechaStr) return false;
-  try {
-    const partes = fechaStr.split('/'); // DD/MM/YYYY
-    if (partes.length !== 3) return false;
-    const fechaEntrega = new Date(partes[2], partes[1] - 1, partes[0]);
-    const hoy = new Date();
-    return fechaEntrega > hoy;
-  } catch (e) { return false; }
-};
-
-const procesarDatosMaestros = (modelos, desarrollos) => {
-  const desarrolloMap = new Map();
-  desarrollos.forEach(d => {
-    const idDev = String(d.id_desarrollo || d.id).trim(); 
-    if (idDev) desarrolloMap.set(idDev, d);
-  });
-
-  return modelos.map((modelo) => {
-    const idDev = String(modelo.id_desarrollo || modelo.desarrollo_id).trim();
-    const desarrolloInfo = desarrolloMap.get(idDev);
-
-    let precioFinal = 0;
-    const precioRaw = modelo.precio?.actual || modelo.precio;
-    if (precioRaw) {
-      precioFinal = Number(String(precioRaw).replace(/[^0-9.]/g, ""));
-    }
-
-    // Detección de Preventa
-    const statusRaw = desarrolloInfo?.status || '';
-    const statusLower = String(statusRaw).toLowerCase();
-    const fechaEntrega = desarrolloInfo?.info_comercial?.fecha_entrega || '';
-    
-    const esPrevTexto = statusLower.includes('preventa') || 
-                        statusLower.includes('pre-venta') ||
-                        statusLower.includes('construcci') || 
-                        statusLower.includes('obra') ||
-                        statusLower.includes('avance');
-    const esPrevFecha = esFechaFutura(fechaEntrega);
-    const esPreventa = esPrevTexto || esPrevFecha;
-
-    return {
-      ...modelo,
-      precioNumerico: precioFinal,
-      recamaras: Number(modelo.caracteristicas?.recamaras || modelo.recamaras || 0),
-      esPreventa: esPreventa
-    };
-  });
-};
+// ✅ CAMBIO: Importamos el servicio centralizado en lugar de los JSONs crudos
+import { obtenerDatosUnificados } from '../services/dataService';
 
 /**
- * COMPONENTE PERFIL
+ *    COMPONENTE PERFIL
+ *    Encargado del "Onboarding" y perfilamiento financiero del usuario.
  */
 export default function Perfil() {
   const navigate = useNavigate();
@@ -78,8 +25,8 @@ export default function Perfil() {
   const [nombre, setNombre] = useState('');
   const [capitalInicial, setCapitalInicial] = useState(250000);
   const [mensualidad, setMensualidad] = useState(15000);
-  const [recamaras, setRecamaras] = useState(null); 
-  const [entregaInmediata, setEntregaInmediata] = useState(null);
+  const [recamaras, setRecamaras] = useState(null); // null = sin preferencia
+  const [entregaInmediata, setEntregaInmediata] = useState(null); // null = sin preferencia, true = inmediata, false = preventa
 
   // ==========================================
   // ESTADOS DE CÁLCULO
@@ -95,31 +42,21 @@ export default function Perfil() {
   // 1. LÓGICA FINANCIERA (Ajustada)
   // ==========================================
   useEffect(() => {
-    const PORCENTAJE_GASTOS_NOTARIALES = 0.06;
+    const PORCENTAJE_GASTOS_NOTARIALES = 0.06; 
     const PORCENTAJE_ENGANCHE = 0.10; // Siempre 10% según requerimiento
     const FACTOR_MENSUALIDAD_POR_MILLON = 11000;
 
     // Capacidad basada en crédito
     const maxCreditoBanco = (mensualidad / FACTOR_MENSUALIDAD_POR_MILLON) * 1000000;
-    
+
     // Capacidad basada solo en efectivo (Efectivo debe cubrir el 16% del valor total)
     const limitePorEfectivo = capitalInicial / (PORCENTAJE_GASTOS_NOTARIALES + PORCENTAJE_ENGANCHE);
-    
-    // Capacidad total (Crédito + Efectivo disponible para enganche/gastos)
-    // PrecioCasa = Credito + Enganche
-    // CapitalInicial >= Enganche + GastosNotariales
-    // CapitalInicial >= (0.10 * Precio) + (0.06 * Precio)
-    // Si el crédito limita: Precio = Credito / 0.90 (asumiendo 90% financiamiento máx)
-    // Pero usaremos la lógica conservadora: El presupuesto es el menor entre lo que permite el efectivo y lo que permite la deuda.
-    
-    // Formula simplificada de "Poder de Compra":
-    // Opción A (Limitada por efectivo): Capital / 0.16
-    // Opción B (Limitada por mensualidad): (Capital + Credito) / 1.06 (Aprox, asumiendo que Capital paga enganche y gastos)
-    
-    // Mantendremos la lógica original de comparación, ajustando el enganche fijo al 10%
+
+    // Mantendremos la lógica original de comparación
     const limitePorCapacidadTotal = (capitalInicial + maxCreditoBanco) / (1 + PORCENTAJE_GASTOS_NOTARIALES);
 
     const capacidadReal = Math.min(limitePorEfectivo, limitePorCapacidadTotal);
+
     setPresupuestoMaximo(capacidadReal);
 
     if (capacidadReal > 0) {
@@ -139,27 +76,35 @@ export default function Perfil() {
   }, [capitalInicial, mensualidad]);
 
   // ==========================================
-  // 2. CONTEO DE OPCIONES (Nuevo)
+  // 2. CONTEO DE OPCIONES (Refactorizado con dataService)
   // ==========================================
+  
+  // Cargamos los datos limpios una sola vez
+  const dataMaestra = useMemo(() => obtenerDatosUnificados(), []);
+
   const opcionesEncontradas = useMemo(() => {
     if (presupuestoMaximo === 0) return 0;
 
-    const dataProcesada = procesarDatosMaestros(modelosRaw, desarrollosRaw);
-    
-    return dataProcesada.filter(item => {
+    // Filtramos usando la data unificada que ya tiene precios limpios y flags booleanos
+    return dataMaestra.filter(item => {
       // Filtro Precio
       if (item.precioNumerico > presupuestoMaximo) return false;
       
-      // Filtro Recámaras
+      // Filtro Recámaras (item.recamaras ya es número gracias al servicio)
       if (recamaras && item.recamaras < recamaras) return false;
-      
-      // Filtro Entrega (Si entregaInmediata es true, descarta preventas. Si es false, acepta todo)
+
+      // Filtro Entrega 
+      // Si entregaInmediata es true, NO queremos preventas
       if (entregaInmediata === true && item.esPreventa === true) return false;
       
+      // Si entregaInmediata es false (Usuario quiere preventa explícitamente), NO queremos entrega inmediata
+      // (Opcional: Depende de la regla de negocio. Usualmente "Preventa" incluye todo, pero si es estricto:)
+      if (entregaInmediata === false && item.esPreventa === false) return false;
+
       return true;
     }).length;
 
-  }, [presupuestoMaximo, recamaras, entregaInmediata]);
+  }, [presupuestoMaximo, recamaras, entregaInmediata, dataMaestra]);
 
   // ==========================================
   // NAVEGACIÓN
@@ -192,11 +137,14 @@ export default function Perfil() {
       mensualidadMaxima: mensualidad,
       presupuestoCalculado: presupuestoMaximo,
       recamaras,
-      entregaInmediata
+      // Mapeamos el booleano a string para que el Catálogo lo entienda en su filtro 'status'
+      // Si entregaInmediata (true) -> 'inmediata'
+      // Si Pre-venta (false) -> 'preventa'
+      status: entregaInmediata ? 'inmediata' : 'preventa' 
     };
-    
+
     login(userProfile);
-    
+
     trackBehavior('onboarding_completed', { 
       presupuesto: presupuestoMaximo,
       opciones_vistas: opcionesEncontradas
@@ -235,7 +183,7 @@ export default function Perfil() {
         <div style={styles.progressBarContainer}>
           <div style={{...styles.progressBarFill, width: `${(step / totalSteps) * 100}%`}}></div>
         </div>
-        
+
         {/* LOGO: Solo en el paso 1 */}
         {step === 1 && (
           <div style={styles.logoContainer}>
@@ -243,16 +191,16 @@ export default function Perfil() {
           </div>
         )}
 
-        <div className="step-content" key={step}> 
+        <div className="step-content" key={step}>
           
           {/* PASO 1: NOMBRE */}
           {step === 1 && (
             <>
               <h1 style={styles.title}>¡Hola! 👋</h1>
               <p style={styles.subtitle}>Soy tu asesor virtual. Antes de empezar, ¿cómo te gusta que te llamen?</p>
-              <input
-                type="text"
-                placeholder="Escribe tu nombre aquí..."
+              <input 
+                type="text" 
+                placeholder="Escribe tu nombre aquí..." 
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
                 style={styles.input}
@@ -267,12 +215,12 @@ export default function Perfil() {
             <>
               <h1 style={styles.title}>Dime qué buscas</h1>
               <p style={styles.subtitle}>Para filtrar las mejores opciones para ti, {nombre}.</p>
-              
+
               <label style={styles.label}>Recámaras mínimas:</label>
               <div style={styles.optionsContainer}>
                 {[1, 2, 3, 4].map((num) => (
-                  <button
-                    key={num}
+                  <button 
+                    key={num} 
                     onClick={() => setRecamaras(num)}
                     style={{
                       ...styles.circleBtn,
@@ -288,7 +236,7 @@ export default function Perfil() {
 
               <label style={{...styles.label, marginTop: '20px'}}>Tiempo de entrega:</label>
               <div style={styles.deliveryContainer}>
-                <button
+                <button 
                   onClick={() => setEntregaInmediata(true)}
                   style={{
                     ...styles.deliveryBtn,
@@ -299,7 +247,7 @@ export default function Perfil() {
                 >
                   Entrega inmediata
                 </button>
-                <button
+                <button 
                   onClick={() => setEntregaInmediata(false)}
                   style={{
                     ...styles.deliveryBtn,
@@ -308,7 +256,7 @@ export default function Perfil() {
                     borderColor: entregaInmediata === false ? 'var(--primary-color)' : '#eee',
                   }}
                 >
-                   Pre-venta
+                  Pre-venta
                 </button>
               </div>
             </>
@@ -326,21 +274,21 @@ export default function Perfil() {
                   <div style={styles.sliderValue}>{formatoMoneda(capitalInicial)}</div>
                   <input 
                     type="range" 
-                    min="50000" max="3000000" step="10000" 
-                    value={capitalInicial} 
-                    onChange={(e) => setCapitalInicial(Number(e.target.value))} 
+                    min="50000" max="3000000" step="10000"
+                    value={capitalInicial}
+                    onChange={(e) => setCapitalInicial(Number(e.target.value))}
                   />
                 </div>
 
                 <div style={styles.calcInputGroup}>
-                  <label style={styles.labelSmall}>Mensualidad cómoda:</label>
-                  <div style={styles.sliderValue}>{formatoMoneda(mensualidad)}</div>
-                  <input 
-                    type="range" 
-                    min="5000" max="150000" step="1000" 
-                    value={mensualidad} 
-                    onChange={(e) => setMensualidad(Number(e.target.value))} 
-                  />
+                   <label style={styles.labelSmall}>Mensualidad cómoda:</label>
+                   <div style={styles.sliderValue}>{formatoMoneda(mensualidad)}</div>
+                   <input 
+                     type="range" 
+                     min="5000" max="150000" step="1000"
+                     value={mensualidad}
+                     onChange={(e) => setMensualidad(Number(e.target.value))}
+                   />
                 </div>
               </div>
             </>
@@ -358,21 +306,20 @@ export default function Perfil() {
                 <div style={{
                   ...styles.resultNote,
                   // Si es alerta usamos un amarillo suave, si no blanco
-                  color: esAlerta ? '#fff9c4' : 'white', 
+                  color: esAlerta ? '#fff9c4' : 'white',
                   fontWeight: '500'
                 }}>
                   {notaDinamica}
                 </div>
               </div>
-              
+
               <p style={{fontSize: '0.9rem', color: '#666', marginTop: '20px'}}>
                 {opcionesEncontradas > 0 
-                  ? "Hemos analizado el mercado para ti." 
-                  : "Ajusta tus filtros para encontrar más opciones."}
+                  ? `Hemos analizado el mercado y encontramos ${opcionesEncontradas} opciones para ti.`
+                  : "Con estos parámetros, el mercado está limitado. Ajusta tus filtros para encontrar más opciones."}
               </p>
             </>
           )}
-
         </div>
 
         <div style={styles.navContainer}>
@@ -387,7 +334,7 @@ export default function Perfil() {
               onClick={nextStep} 
               disabled={!isStepValid()}
               style={{
-                ...styles.primaryButton,
+                ...styles.primaryButton, 
                 opacity: isStepValid() ? 1 : 0.5,
                 width: step === 1 ? '100%' : 'auto'
               }}
@@ -396,14 +343,13 @@ export default function Perfil() {
             </button>
           ) : (
             <button 
-              onClick={handleFinalizar}
+              onClick={handleFinalizar} 
               style={{...styles.primaryButton, backgroundColor: '#28a745'}}
             >
-              Encontramos {opcionesEncontradas} opciones
+              Ver Propiedades
             </button>
           )}
         </div>
-
       </div>
     </div>
   );
@@ -412,13 +358,13 @@ export default function Perfil() {
 // ESTILOS
 const styles = {
   container: {
-    display: 'flex', justifyContent: 'center', alignItems: 'center',
+    display: 'flex', justifyContent: 'center', alignItems: 'center', 
     minHeight: '85vh', width: '100%', padding: '20px', boxSizing: 'border-box'
   },
   card: {
     backgroundColor: 'white', padding: '40px 30px', borderRadius: '25px',
     boxShadow: '0 10px 40px rgba(0,0,0,0.1)', maxWidth: '500px', width: '100%',
-    textAlign: 'center', position: 'relative', overflow: 'hidden',
+    textAlign: 'center', position: 'relative', overflow: 'hidden', 
     minHeight: '500px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
   },
   progressBarContainer: {
@@ -431,39 +377,45 @@ const styles = {
   logoIcon: { width: '50px', height: 'auto' },
   title: { color: 'var(--primary-color)', marginBottom: '10px', fontSize: '1.8rem', fontWeight: '800' },
   subtitle: { color: '#666', marginBottom: '30px', fontSize: '1rem', lineHeight: '1.5' },
+  
   input: {
     width: '100%', padding: '15px', borderRadius: '15px', border: '2px solid #eee',
     fontSize: '1.2rem', textAlign: 'center', outline: 'none', marginBottom: '20px'
   },
+  
   label: { display: 'block', fontWeight: 'bold', color: '#333', marginBottom: '10px', textAlign: 'left' },
   optionsContainer: { display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '10px' },
-  circleBtn: {
-    width: '55px', height: '55px', borderRadius: '50%', border: 'none', fontSize: '1.2rem',
-    fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.3s ease', display: 'flex',
+  circleBtn: { 
+    width: '55px', height: '55px', borderRadius: '50%', border: 'none', fontSize: '1.2rem', 
+    fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.3s ease', display: 'flex', 
     alignItems: 'center', justifyContent: 'center'
   },
+  
   deliveryContainer: { display: 'flex', gap: '10px' },
-  deliveryBtn: {
+  deliveryBtn: { 
     flex: 1, padding: '15px 5px', borderRadius: '15px', border: '2px solid', cursor: 'pointer',
     fontSize: '0.9rem', fontWeight: 'bold', transition: 'all 0.3s ease'
   },
+
   calculatorBox: { backgroundColor: '#f9fcff', borderRadius: '20px', padding: '20px', border: '1px solid #eef' },
   calcInputGroup: { marginBottom: '25px', textAlign: 'left' },
   labelSmall: { fontSize: '0.9rem', color: '#555', fontWeight: '600', display: 'block', marginBottom: '5px' },
   sliderValue: { fontSize: '1.4rem', fontWeight: 'bold', color: 'var(--primary-color)', marginBottom: '5px' },
+
   finalResultBox: {
     backgroundColor: 'var(--primary-color)', color: 'white', padding: '30px', borderRadius: '20px',
     boxShadow: '0 10px 25px rgba(0,57,106,0.25)', animation: 'pulse 2s infinite'
   },
   finalAmount: { fontSize: '2.5rem', fontWeight: 'bold', margin: '10px 0' },
   resultNote: { fontSize: '0.95rem', lineHeight: '1.5', padding: '0 10px' },
+
   navContainer: { display: 'flex', gap: '15px', marginTop: '30px' },
-  primaryButton: {
+  primaryButton: { 
     flex: 2, backgroundColor: 'var(--primary-color)', color: 'white', border: 'none',
     padding: '18px', fontSize: '1.1rem', borderRadius: '50px', cursor: 'pointer',
     fontWeight: 'bold', transition: 'all 0.2s', boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
   },
-  secondaryButton: {
+  secondaryButton: { 
     flex: 1, backgroundColor: 'transparent', color: '#888', border: '2px solid #eee',
     padding: '18px', fontSize: '1rem', borderRadius: '50px', cursor: 'pointer',
     fontWeight: 'bold', transition: 'all 0.2s'

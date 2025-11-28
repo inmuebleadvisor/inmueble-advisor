@@ -1,79 +1,77 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
+import { obtenerInformacionDesarrollo } from '../services/dataService';
+import ImageLoader from '../components/ImageLoader';
 
-// Importación de datos
-import desarrollosRaw from '../data/desarrollos.json';
-import modelosRaw from '../data/modelos.json';
-
-// Imágenes por defecto
 const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
 
-/**
- * 🎨 Iconos SVG
- */
+// --- ICONOS ACTUALIZADOS ---
 const Icons = {
   Back: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>,
   MapPin: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>,
   Check: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>,
-  Home: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+  Play: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>,
+  Download: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+};
+
+// Helper para validar si es imagen (por extensión simple)
+const esImagen = (url) => {
+  if (!url) return false;
+  return /\.(jpg|jpeg|png|webp|gif)$/i.test(url) || url.includes('image');
 };
 
 export default function DetalleDesarrollo() {
-  const { id } = useParams(); // Recibimos el ID del desarrollo (ej: "2846")
+  const { id } = useParams();
   const { trackBehavior } = useUser();
   const navigate = useNavigate();
+  const scrollRef = useRef(null);
 
-  // --- 1. LÓGICA DE DATOS (useMemo) ---
-  const data = useMemo(() => {
-    // A. Encontrar el Desarrollo Padre
-    // Normalizamos a string y quitamos espacios para evitar errores de comparación
-    const desarrolloEncontrado = desarrollosRaw.find(d => 
-      String(d.id_desarrollo || d.id).trim() === String(id).trim()
-    );
+  const [activeIndex, setActiveIndex] = useState(0);
 
-    if (!desarrolloEncontrado) return { desarrollo: null, modelos: [] };
+  // 1. LÓGICA DE DATOS
+  const data = useMemo(() => obtenerInformacionDesarrollo(id), [id]);
+  const desarrollo = data;
+  const modelos = data?.modelos || [];
 
-    // B. Filtrar los Modelos Hijos
-    // Buscamos en modelos.json todos los que coincidan con el id del desarrollo
-    const modelosFiltrados = modelosRaw.map((modelo, index) => {
-      // Normalizamos IDs
-      const idDevModelo = String(modelo.id_desarrollo || modelo.desarrollo_id).trim();
-      const idDevPadre = String(desarrolloEncontrado.id_desarrollo || desarrolloEncontrado.id).trim();
+  // 2. CONSTRUCCIÓN DE GALERÍA (SOLO IMÁGENES)
+  const galeriaImagenes = useMemo(() => {
+    if (!desarrollo) return [];
+    
+    let imgs = [];
 
-      if (idDevModelo !== idDevPadre) return null;
+    // A. Portada (Siempre va primero)
+    if (desarrollo.multimedia?.portada && esImagen(desarrollo.multimedia.portada)) {
+      imgs.push(desarrollo.multimedia.portada);
+    }
 
-      // C. IMPORTANTE: Reconstruir el ID compuesto para el Link
-      // Esto es vital para que el click lleve al DetalleModelo correcto
-      const nombreSlug = (modelo.nombre_modelo || modelo.nombre || 'modelo').toLowerCase().replace(/\s+/g, '-');
-      const uniqueId = `${idDevModelo}-${nombreSlug}-${index}`;
+    // B. Galería (Filtramos solo imágenes)
+    if (Array.isArray(desarrollo.multimedia?.galeria)) {
+      const fotosLimpias = desarrollo.multimedia.galeria.filter(url => esImagen(url));
+      imgs.push(...fotosLimpias);
+    }
 
-      return {
-        ...modelo,
-        _linkId: uniqueId, // ID especial para el router
-        precioNumerico: Number(String(modelo.precio?.actual || modelo.precio).replace(/[^0-9.]/g, "")),
-        imagen: modelo.multimedia?.galeria?.[0] || modelo.multimedia?.planta_baja || FALLBACK_IMG
-      };
-    }).filter(item => item !== null); // Eliminamos los nulos
+    // C. Fallback
+    if (imgs.length === 0) imgs.push(FALLBACK_IMG);
+    
+    return [...new Set(imgs)];
+  }, [desarrollo]);
 
-    return { desarrollo: desarrolloEncontrado, modelos: modelosFiltrados };
-  }, [id]);
-
-  const { desarrollo, modelos } = data;
-
-  // --- 2. EFECTOS (Analytics y Scroll) ---
+  // 3. EFECTOS
   useEffect(() => {
     if (desarrollo) {
-      trackBehavior('view_development', { 
-        id: id,
-        name: desarrollo.nombre 
-      });
+      trackBehavior('view_development', { id: id, name: desarrollo.nombre });
       window.scrollTo(0, 0);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, desarrollo]);
 
-  // Manejo de error 404
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      const index = Math.round(scrollRef.current.scrollLeft / scrollRef.current.offsetWidth);
+      setActiveIndex(index);
+    }
+  };
+
   if (!desarrollo) {
     return (
       <div style={styles.errorContainer}>
@@ -83,34 +81,50 @@ export default function DetalleDesarrollo() {
     );
   }
 
-  // Helper de moneda
   const formatoMoneda = (val) => {
+    if (!val || val === 0) return 'Pendiente';
     return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
   };
 
-  // Construir dirección legible
   const direccionCompleta = `${desarrollo.ubicacion?.calle || ''}, ${desarrollo.ubicacion?.colonia || ''}, ${desarrollo.ubicacion?.ciudad || ''}`;
 
   return (
-    <div className="main-content" style={styles.pageContainer}>
+    <div className="main-content animate-fade-in" style={styles.pageContainer}>
       
-      {/* HEADER: Portada del Desarrollo */}
-      <header style={styles.headerImageContainer}>
-        <img 
-          src={desarrollo.multimedia?.portada || FALLBACK_IMG} 
-          alt={desarrollo.nombre} 
-          style={styles.headerImage}
-          onError={(e) => e.target.src = FALLBACK_IMG} 
-        />
+      {/* HEADER: Carrusel Deslizable */}
+      <header style={styles.carouselWrapper}>
+        <div 
+          ref={scrollRef}
+          style={styles.carouselContainer} 
+          className="hide-scrollbar"
+          onScroll={handleScroll}
+        >
+          {galeriaImagenes.map((img, idx) => (
+            <div key={idx} style={styles.carouselSlide}>
+              <ImageLoader 
+                src={img} 
+                alt={`Desarrollo ${idx}`} 
+                style={styles.headerImage} 
+              />
+            </div>
+          ))}
+        </div>
+
         <button onClick={() => navigate(-1)} style={styles.floatingBackButton} aria-label="Volver">
           <Icons.Back />
         </button>
         
-        {/* Badge de Status sobre la imagen */}
         <div style={styles.statusBadgeOverlay}>
           {desarrollo.status || 'En Venta'}
         </div>
-        
+
+        {/* Indicador solo si hay más de 1 foto */}
+        {galeriaImagenes.length > 1 && (
+          <div style={styles.imageCounter}>
+            {activeIndex + 1} / {galeriaImagenes.length}
+          </div>
+        )}
+
         <div style={styles.headerGradient}></div>
       </header>
 
@@ -126,6 +140,22 @@ export default function DetalleDesarrollo() {
           <p style={styles.addressText}>{direccionCompleta}</p>
         </div>
 
+        {/* ✅ NUEVA SECCIÓN: BOTONES MULTIMEDIA (Video / Brochure) */}
+        {(desarrollo.multimedia?.video || desarrollo.multimedia?.brochure) && (
+          <div style={styles.mediaButtonsContainer}>
+            {desarrollo.multimedia?.video && (
+              <a href={desarrollo.multimedia.video} target="_blank" rel="noopener noreferrer" style={styles.mediaButton}>
+                <Icons.Play /> Ver Video
+              </a>
+            )}
+            {desarrollo.multimedia?.brochure && (
+              <a href={desarrollo.multimedia.brochure} target="_blank" rel="noopener noreferrer" style={{...styles.mediaButton, backgroundColor: '#f3f4f6', color: '#1f2937', border: '1px solid #e5e7eb'}}>
+                <Icons.Download /> Brochure
+              </a>
+            )}
+          </div>
+        )}
+
         <hr style={styles.divider} />
 
         {/* DESCRIPCIÓN */}
@@ -136,7 +166,7 @@ export default function DetalleDesarrollo() {
           </p>
         </section>
 
-        {/* AMENIDADES (Chips) */}
+        {/* AMENIDADES */}
         {desarrollo.amenidades && desarrollo.amenidades.length > 0 && (
           <section style={styles.section}>
             <h3 style={styles.sectionTitle}>Amenidades</h3>
@@ -153,54 +183,62 @@ export default function DetalleDesarrollo() {
 
         {/* LISTA DE MODELOS DISPONIBLES */}
         <section style={styles.modelsSection}>
-          <div style={styles.sectionHeaderRow}>
-            <h3 style={styles.sectionTitle}>Modelos Disponibles</h3>
-            <span style={styles.modelCountBadge}>{modelos.length}</span>
-          </div>
-          
-          <div style={styles.modelsGrid}>
-            {modelos.map((modelo) => (
-              <Link 
-                key={modelo._linkId} 
-                to={`/modelo/${modelo._linkId}`} 
-                style={styles.modelCard}
-                onClick={() => trackBehavior('select_model_from_dev', { model_name: modelo.nombre_modelo })}
-              >
-                <div style={styles.modelImgContainer}>
-                  <img src={modelo.imagen} alt={modelo.nombre_modelo} style={styles.modelImg} loading="lazy" />
-                  <span style={styles.modelTag}>Ver Detalles</span>
-                </div>
-                <div style={styles.modelInfo}>
-                  <h4 style={styles.modelName}>{modelo.nombre_modelo}</h4>
-                  <div style={styles.modelSpecs}>
-                    <span>🏠 {modelo.caracteristicas?.recamaras} Rec.</span>
-                    <span>🚿 {modelo.caracteristicas?.banos} Baños</span>
-                  </div>
-                  <div style={styles.modelPrice}>
-                    {formatoMoneda(modelo.precioNumerico)}
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+           <div style={styles.sectionHeaderRow}>
+             <h3 style={styles.sectionTitle}>Modelos Disponibles</h3>
+             <span style={styles.modelCountBadge}>{modelos.length}</span>
+           </div>
 
-          {modelos.length === 0 && (
-            <p style={{color: '#6b7280', fontStyle: 'italic'}}>No hay modelos disponibles por el momento.</p>
-          )}
+           <div style={styles.modelsGrid}>
+             {modelos.map((modelo) => (
+               <Link 
+                 key={modelo.id}
+                 to={`/modelo/${modelo.id}`}
+                 style={styles.modelCard}
+                 onClick={() => trackBehavior('select_model_from_dev', { model_name: modelo.nombre_modelo })}
+               >
+                 <div style={styles.modelImgContainer}>
+                    <ImageLoader 
+                      src={modelo.imagen} 
+                      alt={modelo.nombre_modelo} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
+                    <span style={styles.modelTag}>Ver Detalles</span>
+                 </div>
+                 
+                 <div style={styles.modelInfo}>
+                   <h4 style={styles.modelName}>{modelo.nombre_modelo}</h4>
+                   <div style={styles.modelSpecs}>
+                      <span>🛏 {modelo.recamaras} Rec.</span>
+                      <span>🚿 {modelo.banos} Baños</span>
+                   </div>
+                   <div style={{
+                     ...styles.modelPrice,
+                     color: modelo.precioNumerico > 0 ? 'var(--primary-color)' : '#6b7280',
+                     fontSize: modelo.precioNumerico > 0 ? '1.2rem' : '1rem'
+                   }}>
+                     {formatoMoneda(modelo.precioNumerico)}
+                   </div>
+                 </div>
+               </Link>
+             ))}
+           </div>
+
+           {modelos.length === 0 && (
+             <p style={{color: '#6b7280', fontStyle: 'italic'}}>No hay modelos disponibles por el momento.</p>
+           )}
         </section>
 
-        {/* BOTÓN UBICACIÓN EXTERNA */}
+        {/* BOTÓN UBICACIÓN */}
         <div style={styles.locationActionSection}>
-          <h3 style={styles.sectionTitle}>Ubicación</h3>
-          {/* Este botón abre Google Maps con las coordenadas */}
-          <a 
-            href={`https://www.google.com/maps/search/?api=1&query=${desarrollo.ubicacion?.latitud},${desarrollo.ubicacion?.longitud}`}
-            target="_blank" 
-            rel="noopener noreferrer"
-            style={styles.mapButtonExternal}
-          >
-            <Icons.MapPin /> Abrir en Google Maps
-          </a>
+           <h3 style={styles.sectionTitle}>Ubicación</h3>
+           <a 
+             href={`https://www.google.com/maps/search/?api=1&query=${desarrollo.ubicacion?.latitud},${desarrollo.ubicacion?.longitud}`}
+             target="_blank"
+             rel="noopener noreferrer"
+             style={styles.mapButtonExternal}
+           >
+             <Icons.MapPin /> Abrir en Google Maps
+           </a>
         </div>
 
       </main>
@@ -212,51 +250,59 @@ export default function DetalleDesarrollo() {
 const styles = {
   pageContainer: { backgroundColor: 'white', minHeight: '100vh', paddingBottom: '40px', fontFamily: "'Segoe UI', sans-serif" },
   
-  // Header
-  headerImageContainer: { position: 'relative', width: '100%', height: '280px', backgroundColor: '#e5e7eb' },
+  // Header Carrusel
+  carouselWrapper: { position: 'relative', width: '100%', height: '280px', backgroundColor: '#e5e7eb' },
+  carouselContainer: { 
+    display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', 
+    width: '100%', height: '100%', scrollBehavior: 'smooth' 
+  },
+  carouselSlide: { minWidth: '100%', height: '100%', scrollSnapAlign: 'center', position: 'relative' },
   headerImage: { width: '100%', height: '100%', objectFit: 'cover' },
-  headerGradient: { position: 'absolute', bottom: 0, left: 0, width: '100%', height: '100px', background: 'linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0))' },
-  floatingBackButton: { position: 'absolute', top: '20px', left: '20px', backgroundColor: 'rgba(255, 255, 255, 0.9)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', zIndex: 10, color: '#333' },
   
+  floatingBackButton: { position: 'absolute', top: '20px', left: '20px', backgroundColor: 'rgba(255, 255, 255, 0.9)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', zIndex: 10, color: '#333' },
   statusBadgeOverlay: { position: 'absolute', bottom: '20px', right: '20px', backgroundColor: 'var(--primary-color)', color: 'white', padding: '6px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '700', zIndex: 5, boxShadow: '0 2px 6px rgba(0,0,0,0.2)' },
-
+  imageCounter: { position: 'absolute', bottom: '20px', left: '20px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold', zIndex: 10 },
+  headerGradient: { position: 'absolute', bottom: 0, left: 0, width: '100%', height: '100px', background: 'linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0))', pointerEvents: 'none' },
+  
   contentBody: { padding: '0 20px', position: 'relative', zIndex: 2, marginTop: '-30px' },
   
-  // Título e Info
-  titleSection: { marginBottom: '20px', textAlign: 'left' },
+  titleSection: { marginBottom: '15px' },
   devTitle: { fontSize: '2.2rem', fontWeight: '800', color: '#111827', margin: '0 0 8px 0', lineHeight: '1' },
   locationRow: { display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--primary-color)', fontWeight: '600', fontSize: '1rem', marginBottom: '5px' },
   addressText: { color: '#6b7280', fontSize: '0.9rem', margin: 0 },
+  
+  // ✅ ESTILOS BOTONES MULTIMEDIA
+  mediaButtonsContainer: { display: 'flex', gap: '10px', marginBottom: '20px' },
+  mediaButton: { 
+    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+    backgroundColor: '#eff6ff', color: 'var(--secondary-color)', 
+    border: '1px solid #bfdbfe', borderRadius: '10px', padding: '12px',
+    textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem',
+    transition: 'background 0.2s' 
+  },
 
   divider: { border: 'none', borderTop: '1px solid #f3f4f6', margin: '25px 0' },
-  
   section: { marginBottom: '30px' },
   sectionTitle: { fontSize: '1.3rem', fontWeight: '800', marginBottom: '15px', color: '#1f2937' },
   descriptionText: { color: '#4b5563', lineHeight: '1.6', fontSize: '0.95rem' },
-
-  // Amenidades
+  
   amenitiesContainer: { display: 'flex', flexWrap: 'wrap', gap: '10px' },
   amenityChip: { display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#f0fdf4', color: '#166534', padding: '8px 12px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: '600', border: '1px solid #dcfce7' },
   checkIcon: { display: 'flex', alignItems: 'center' },
 
-  // Sección Modelos
   modelsSection: { backgroundColor: '#f9fafb', margin: '0 -20px', padding: '30px 20px', borderTop: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb' },
   sectionHeaderRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px' },
   modelCountBadge: { backgroundColor: '#e5e7eb', color: '#374151', padding: '2px 8px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold' },
-  
   modelsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' },
   
-  // Tarjeta de Modelo (Mini)
   modelCard: { display: 'flex', flexDirection: 'column', backgroundColor: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', textDecoration: 'none', transition: 'transform 0.2s', border: '1px solid #f3f4f6' },
-  modelImgContainer: { height: '160px', position: 'relative', backgroundColor: '#eee' },
-  modelImg: { width: '100%', height: '100%', objectFit: 'cover' },
-  modelTag: { position: 'absolute', bottom: '8px', right: '8px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', fontSize: '0.7rem', padding: '4px 8px', borderRadius: '4px', fontWeight: '600' },
+  modelImgContainer: { height: '160px', width: '100%', position: 'relative', backgroundColor: '#eee' },
+  modelTag: { position: 'absolute', bottom: '8px', right: '8px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', fontSize: '0.7rem', padding: '4px 8px', borderRadius: '4px', fontWeight: '600', zIndex: 10 },
   modelInfo: { padding: '15px' },
   modelName: { margin: '0 0 5px 0', color: '#111', fontSize: '1.1rem', fontWeight: '700' },
   modelSpecs: { display: 'flex', gap: '10px', fontSize: '0.85rem', color: '#6b7280', marginBottom: '10px' },
-  modelPrice: { fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary-color)' },
+  modelPrice: { fontSize: '1.2rem', fontWeight: '800' },
 
-  // Botón Mapa Externo
   locationActionSection: { marginTop: '30px' },
   mapButtonExternal: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: '100%', padding: '15px', backgroundColor: 'white', border: '2px solid #e5e7eb', borderRadius: '12px', color: '#374151', fontWeight: '700', textDecoration: 'none', fontSize: '1rem', transition: 'background 0.2s' },
   
