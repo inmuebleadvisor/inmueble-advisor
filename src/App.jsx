@@ -23,7 +23,7 @@ function App() {
             Mantiene el Header y Footer visibles en todas las pantallas.
           */}
           <Route path="/" element={<Layout />}>
-            
+          
             {/* Ruta por defecto (Index): Carga el Perfil/Bienvenida */}
             <Route index element={<Perfil />} />
             

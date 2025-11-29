@@ -1,106 +1,130 @@
+// src/context/UserContext.jsx
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+// 1. Importamos los servicios reales de Firebase que configuramos
+import { auth, googleProvider, db } from '../firebase/config';
+import { 
+  signInWithPopup, 
+  signOut, 
+  onAuthStateChanged 
+} from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
-// Definimos claves constantes para evitar errores de dedo "Typos"
-const USER_STORAGE_KEY = 'inmueble_user_data';
+// Clave para guardar analytics localmente si no hay red (opcional)
 const ANALYTICS_STORAGE_KEY = 'inmueble_analytics_data';
 
-// 1. Crear el Contexto
 const UserContext = createContext();
 
-// 2. Crear el Provider
 export const UserProvider = ({ children }) => {
   
-  // --- ESTADOS (DATA) ---
-  
-  // Estado del Usuario: Inicialización perezosa (Lazy Initializer)
-  const [user, setUser] = useState(() => {
-    try {
-      const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-      return storedUser ? JSON.parse(storedUser) : null;
-    } catch (error) {
-      console.error("Error leyendo usuario del storage", error);
-      return null;
-    }
-  });
-
-  // Estado del Historial de Comportamiento (Analytics)
+  // --- ESTADOS ---
+  const [user, setUser] = useState(null); // Usuario autenticado (Objeto Firebase + Datos nuestros)
+  const [loading, setLoading] = useState(true); // "Cargando..." mientras verificamos sesión
   const [analytics, setAnalytics] = useState(() => {
     try {
-      const storedAnalytics = localStorage.getItem(ANALYTICS_STORAGE_KEY);
-      return storedAnalytics ? JSON.parse(storedAnalytics) : [];
-    } catch (error) {
-      return [];
-    }
+      const stored = localStorage.getItem(ANALYTICS_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch { return []; }
   });
 
-  // Efecto para sincronizar cambios de analytics con LocalStorage automáticamente
+  // --- ANALYTICS (Mantenemos tu lógica existente) ---
   useEffect(() => {
     localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(analytics));
   }, [analytics]);
 
-  // --- FUNCIONES (LÓGICA) ---
-  
-  /**
-   * 🛡️ useCallback: MEMORIZACIÓN DE FUNCIONES
-   * Envolvemos trackBehavior en useCallback. 
-   * Esto asegura que la función sea EXACTAMENTE la misma referencia en memoria 
-   * entre renderizados. Esto evita que los useEffect en otros componentes 
-   * se disparen infinitamente.
-   */
   const trackBehavior = useCallback((action, detail = {}) => {
     const newEvent = {
       action,
       detail,
       timestamp: new Date().toISOString(),
-      path: window.location.pathname // Rastrear dónde ocurrió
+      path: window.location.pathname,
+      userId: user?.uid || 'anonimo' // Ahora ligamos el evento al ID real
     };
-
-    // Usamos el callback del setter (prev => ...) para no depender de 'analytics' en las dependencias
     setAnalytics(prev => [...prev, newEvent]);
-    
-    // Log para desarrollo
-    console.log('📊 Analytics Tracked:', newEvent);
-  }, []); // [] significa: "Esta función nunca cambia, créala una sola vez al inicio".
+    console.log('📊 Analytics:', newEvent);
+  }, [user]);
 
-  const login = useCallback((userData) => {
-    setUser(userData);
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
-    // Podemos llamar a trackBehavior aquí porque es estable gracias al useCallback anterior
-    trackBehavior('login', { method: 'form_submit' }); 
-  }, [trackBehavior]); // Dependencia: Solo se recrea si trackBehavior cambia (que no pasará).
+  // --- AUTENTICACIÓN (NUEVA LÓGICA) ---
 
-  const logout = useCallback(() => {
-    setUser(null);
-    setAnalytics([]); 
-    localStorage.removeItem(USER_STORAGE_KEY);
-    localStorage.removeItem(ANALYTICS_STORAGE_KEY);
-    window.location.href = '/'; 
+  // A. Iniciar Sesión con Google
+  const loginWithGoogle = useCallback(async (roleSelection = 'cliente') => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const firebaseUser = result.user;
+      
+      // Aquí (en el Paso 3) verificaremos si ya existe en Firestore para traer su Rol.
+      // Por ahora, devolvemos el usuario básico para que el flujo no se rompa.
+      return firebaseUser;
+    } catch (error) {
+      console.error("Error en login Google:", error);
+      throw error;
+    }
   }, []);
 
-  // --- VALUE (OBJETO A COMPARTIR) ---
+  // B. Cerrar Sesión
+  const logout = useCallback(async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      trackBehavior('logout');
+      // Redirigir al inicio o limpiar estados se maneja en la vista, o aquí si usas router.
+      window.location.href = '/'; 
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
+  }, [trackBehavior]);
 
-  /**
-   * 🧠 useMemo: MEMORIZACIÓN DE VALORES
-   * Si no usamos useMemo, este objeto se crea de nuevo cada milisegundo que algo cambia,
-   * obligando a TODA la app a renderizarse de nuevo.
-   * Con useMemo, solo cambia si 'user' o 'analytics' cambian.
-   */
+  // C. Escuchador de Cambios de Sesión (El "Vigilante")
+  // Este efecto se ejecuta solo una vez al cargar la app y se queda "oyendo" a Firebase.
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setLoading(true);
+      
+      if (currentUser) {
+        // 1. El usuario hizo login en Firebase
+        // En el PASO 3, aquí leeremos su documento de la BD 'users' para saber si es Asesor.
+        // Por ahora, asumimos que es un usuario autenticado básico.
+        
+        const userData = {
+          uid: currentUser.uid,
+          email: currentUser.email,
+          nombre: currentUser.displayName,
+          foto: currentUser.photoURL,
+          // Placeholder para cuando conectemos la BD en el siguiente paso:
+          role: 'cliente', 
+          presupuesto: 0 
+        };
+        
+        setUser(userData);
+      } else {
+        // 2. No hay usuario (Logout o primera visita)
+        setUser(null);
+      }
+      
+      setLoading(false); // Terminó de cargar la verificación
+    });
+
+    return () => unsubscribe(); // Limpieza al desmontar
+  }, []);
+
+  // --- VALUE ---
   const value = useMemo(() => ({
     user,
-    analytics,
-    login,
+    loading,      // Exportamos loading para mostrar un spinner si es necesario
+    loginWithGoogle, // Reemplaza al antiguo 'login'
     logout,
     trackBehavior
-  }), [user, analytics, login, logout, trackBehavior]);
+  }), [user, loading, loginWithGoogle, logout, trackBehavior]);
 
-  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
+  return (
+    <UserContext.Provider value={value}>
+      {/* Mientras verifica la sesión, no renderizamos la app para evitar "parpadeos" */}
+      {!loading && children}
+    </UserContext.Provider>
+  );
 };
 
-// 3. Hook personalizado para consumir el contexto fácilmente
 export const useUser = () => {
   const context = useContext(UserContext);
-  if (!context) {
-    throw new Error('useUser debe ser usado dentro de un UserProvider');
-  }
+  if (!context) throw new Error('useUser debe ser usado dentro de un UserProvider');
   return context;
 };

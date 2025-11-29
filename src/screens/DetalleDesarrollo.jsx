@@ -1,12 +1,13 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+// src/screens/DetalleDesarrollo.jsx
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { obtenerInformacionDesarrollo } from '../services/dataService';
+import { obtenerInformacionDesarrollo } from '../services/dataService'; // ✅ Servicio asíncrono
 import ImageLoader from '../components/ImageLoader';
 
 const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
 
-// --- ICONOS ACTUALIZADOS ---
+// --- ICONOS ---
 const Icons = {
   Back: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>,
   MapPin: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>,
@@ -15,7 +16,7 @@ const Icons = {
   Download: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
 };
 
-// Helper para validar si es imagen (por extensión simple)
+// Helper para validar si es imagen
 const esImagen = (url) => {
   if (!url) return false;
   return /\.(jpg|jpeg|png|webp|gif)$/i.test(url) || url.includes('image');
@@ -27,25 +28,45 @@ export default function DetalleDesarrollo() {
   const navigate = useNavigate();
   const scrollRef = useRef(null);
 
+  // --- ESTADOS (Async) ---
+  const [desarrollo, setDesarrollo] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // 1. LÓGICA DE DATOS
-  const data = useMemo(() => obtenerInformacionDesarrollo(id), [id]);
-  const desarrollo = data;
-  const modelos = data?.modelos || [];
+  // 1. CARGA DE DATOS ASÍNCRONA
+  useEffect(() => {
+    const cargarDesarrollo = async () => {
+      setLoading(true);
+      try {
+        const data = await obtenerInformacionDesarrollo(id);
+        setDesarrollo(data);
+        
+        if (data) {
+          trackBehavior('view_development', { id: id, name: data.nombre });
+        }
+      } catch (error) {
+        console.error("Error cargando desarrollo:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // 2. CONSTRUCCIÓN DE GALERÍA (SOLO IMÁGENES)
+    cargarDesarrollo();
+    window.scrollTo(0, 0);
+  }, [id]); // trackBehavior estable
+
+  // 2. CONSTRUCCIÓN DE GALERÍA (Memoizado sobre el estado 'desarrollo')
   const galeriaImagenes = useMemo(() => {
     if (!desarrollo) return [];
     
     let imgs = [];
 
-    // A. Portada (Siempre va primero)
+    // A. Portada
     if (desarrollo.multimedia?.portada && esImagen(desarrollo.multimedia.portada)) {
       imgs.push(desarrollo.multimedia.portada);
     }
 
-    // B. Galería (Filtramos solo imágenes)
+    // B. Galería
     if (Array.isArray(desarrollo.multimedia?.galeria)) {
       const fotosLimpias = desarrollo.multimedia.galeria.filter(url => esImagen(url));
       imgs.push(...fotosLimpias);
@@ -57,14 +78,6 @@ export default function DetalleDesarrollo() {
     return [...new Set(imgs)];
   }, [desarrollo]);
 
-  // 3. EFECTOS
-  useEffect(() => {
-    if (desarrollo) {
-      trackBehavior('view_development', { id: id, name: desarrollo.nombre });
-      window.scrollTo(0, 0);
-    }
-  }, [id, desarrollo]);
-
   const handleScroll = () => {
     if (scrollRef.current) {
       const index = Math.round(scrollRef.current.scrollLeft / scrollRef.current.offsetWidth);
@@ -72,6 +85,21 @@ export default function DetalleDesarrollo() {
     }
   };
 
+  const formatoMoneda = (val) => {
+    if (!val || val === 0) return 'Pendiente';
+    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
+  };
+
+  // --- RENDERIZADO DE CARGA ---
+  if (loading) {
+    return (
+      <div className="main-content" style={{ ...styles.pageContainer, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: '#6b7280' }}>Cargando desarrollo...</p>
+      </div>
+    );
+  }
+
+  // --- RENDERIZADO DE ERROR ---
   if (!desarrollo) {
     return (
       <div style={styles.errorContainer}>
@@ -81,17 +109,13 @@ export default function DetalleDesarrollo() {
     );
   }
 
-  const formatoMoneda = (val) => {
-    if (!val || val === 0) return 'Pendiente';
-    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
-  };
-
+  const modelos = desarrollo.modelos || [];
   const direccionCompleta = `${desarrollo.ubicacion?.calle || ''}, ${desarrollo.ubicacion?.colonia || ''}, ${desarrollo.ubicacion?.ciudad || ''}`;
 
   return (
     <div className="main-content animate-fade-in" style={styles.pageContainer}>
       
-      {/* HEADER: Carrusel Deslizable */}
+      {/* HEADER: Carrusel */}
       <header style={styles.carouselWrapper}>
         <div 
           ref={scrollRef}
@@ -118,7 +142,6 @@ export default function DetalleDesarrollo() {
           {desarrollo.status || 'En Venta'}
         </div>
 
-        {/* Indicador solo si hay más de 1 foto */}
         {galeriaImagenes.length > 1 && (
           <div style={styles.imageCounter}>
             {activeIndex + 1} / {galeriaImagenes.length}
@@ -140,7 +163,7 @@ export default function DetalleDesarrollo() {
           <p style={styles.addressText}>{direccionCompleta}</p>
         </div>
 
-        {/* ✅ NUEVA SECCIÓN: BOTONES MULTIMEDIA (Video / Brochure) */}
+        {/* BOTONES MULTIMEDIA */}
         {(desarrollo.multimedia?.video || desarrollo.multimedia?.brochure) && (
           <div style={styles.mediaButtonsContainer}>
             {desarrollo.multimedia?.video && (
@@ -246,55 +269,35 @@ export default function DetalleDesarrollo() {
   );
 }
 
-// --- ESTILOS CSS-IN-JS ---
+// --- ESTILOS ---
 const styles = {
   pageContainer: { backgroundColor: 'white', minHeight: '100vh', paddingBottom: '40px', fontFamily: "'Segoe UI', sans-serif" },
-  
-  // Header Carrusel
   carouselWrapper: { position: 'relative', width: '100%', height: '280px', backgroundColor: '#e5e7eb' },
-  carouselContainer: { 
-    display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', 
-    width: '100%', height: '100%', scrollBehavior: 'smooth' 
-  },
+  carouselContainer: { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', width: '100%', height: '100%', scrollBehavior: 'smooth' },
   carouselSlide: { minWidth: '100%', height: '100%', scrollSnapAlign: 'center', position: 'relative' },
   headerImage: { width: '100%', height: '100%', objectFit: 'cover' },
-  
   floatingBackButton: { position: 'absolute', top: '20px', left: '20px', backgroundColor: 'rgba(255, 255, 255, 0.9)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', zIndex: 10, color: '#333' },
   statusBadgeOverlay: { position: 'absolute', bottom: '20px', right: '20px', backgroundColor: 'var(--primary-color)', color: 'white', padding: '6px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '700', zIndex: 5, boxShadow: '0 2px 6px rgba(0,0,0,0.2)' },
   imageCounter: { position: 'absolute', bottom: '20px', left: '20px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold', zIndex: 10 },
   headerGradient: { position: 'absolute', bottom: 0, left: 0, width: '100%', height: '100px', background: 'linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0))', pointerEvents: 'none' },
-  
   contentBody: { padding: '0 20px', position: 'relative', zIndex: 2, marginTop: '-30px' },
-  
   titleSection: { marginBottom: '15px' },
   devTitle: { fontSize: '2.2rem', fontWeight: '800', color: '#111827', margin: '0 0 8px 0', lineHeight: '1' },
   locationRow: { display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--primary-color)', fontWeight: '600', fontSize: '1rem', marginBottom: '5px' },
   addressText: { color: '#6b7280', fontSize: '0.9rem', margin: 0 },
-  
-  // ✅ ESTILOS BOTONES MULTIMEDIA
   mediaButtonsContainer: { display: 'flex', gap: '10px', marginBottom: '20px' },
-  mediaButton: { 
-    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-    backgroundColor: '#eff6ff', color: 'var(--secondary-color)', 
-    border: '1px solid #bfdbfe', borderRadius: '10px', padding: '12px',
-    textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem',
-    transition: 'background 0.2s' 
-  },
-
+  mediaButton: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#eff6ff', color: 'var(--secondary-color)', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '12px', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem', transition: 'background 0.2s' },
   divider: { border: 'none', borderTop: '1px solid #f3f4f6', margin: '25px 0' },
   section: { marginBottom: '30px' },
   sectionTitle: { fontSize: '1.3rem', fontWeight: '800', marginBottom: '15px', color: '#1f2937' },
   descriptionText: { color: '#4b5563', lineHeight: '1.6', fontSize: '0.95rem' },
-  
   amenitiesContainer: { display: 'flex', flexWrap: 'wrap', gap: '10px' },
   amenityChip: { display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#f0fdf4', color: '#166534', padding: '8px 12px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: '600', border: '1px solid #dcfce7' },
   checkIcon: { display: 'flex', alignItems: 'center' },
-
   modelsSection: { backgroundColor: '#f9fafb', margin: '0 -20px', padding: '30px 20px', borderTop: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb' },
   sectionHeaderRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px' },
   modelCountBadge: { backgroundColor: '#e5e7eb', color: '#374151', padding: '2px 8px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold' },
   modelsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' },
-  
   modelCard: { display: 'flex', flexDirection: 'column', backgroundColor: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', textDecoration: 'none', transition: 'transform 0.2s', border: '1px solid #f3f4f6' },
   modelImgContainer: { height: '160px', width: '100%', position: 'relative', backgroundColor: '#eee' },
   modelTag: { position: 'absolute', bottom: '8px', right: '8px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', fontSize: '0.7rem', padding: '4px 8px', borderRadius: '4px', fontWeight: '600', zIndex: 10 },
@@ -302,10 +305,8 @@ const styles = {
   modelName: { margin: '0 0 5px 0', color: '#111', fontSize: '1.1rem', fontWeight: '700' },
   modelSpecs: { display: 'flex', gap: '10px', fontSize: '0.85rem', color: '#6b7280', marginBottom: '10px' },
   modelPrice: { fontSize: '1.2rem', fontWeight: '800' },
-
   locationActionSection: { marginTop: '30px' },
   mapButtonExternal: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: '100%', padding: '15px', backgroundColor: 'white', border: '2px solid #e5e7eb', borderRadius: '12px', color: '#374151', fontWeight: '700', textDecoration: 'none', fontSize: '1rem', transition: 'background 0.2s' },
-  
   errorContainer: { padding: '40px', textAlign: 'center', color: '#374151' },
   backButtonSimple: { marginTop: '20px', padding: '10px 20px', backgroundColor: '#111', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }
 };
