@@ -1,8 +1,9 @@
+// src/screens/Catalogo.jsx
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { obtenerDatosUnificados, obtenerTopAmenidades } from '../services/dataService';
-import ImageLoader from '../components/ImageLoader'; // ✅ Componente de UX
+import ImageLoader from '../components/ImageLoader';
 
 // --- ICONOS ---
 const Icons = {
@@ -27,12 +28,38 @@ const calcularEscrituracion = (precio) => formatoMoneda(precio * 0.06);
 
 export default function Catalogo() {
   const { user, trackBehavior } = useUser();
+  
+  // --- ESTADOS DE DATOS (NUEVO: Manejo de carga asíncrona) ---
+  const [dataMaestra, setDataMaestra] = useState([]);
+  const [topAmenidades, setTopAmenidades] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // --- ESTADOS DE UI ---
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // 1. Carga de Datos desde Firebase
+  useEffect(() => {
+    const cargarDatos = async () => {
+      setLoading(true);
+      try {
+        // Pedimos los datos en paralelo para ganar velocidad
+        const [modelos, amenidades] = await Promise.all([
+          obtenerDatosUnificados(),
+          obtenerTopAmenidades()
+        ]);
+        
+        setDataMaestra(modelos);
+        setTopAmenidades(amenidades);
+      } catch (error) {
+        console.error("Error cargando catálogo:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // 1. Carga de Datos (Desde el Servicio Centralizado)
-  const dataMaestra = useMemo(() => obtenerDatosUnificados(), []);
-  const topAmenidades = useMemo(() => obtenerTopAmenidades(), []);
+    cargarDatos();
+  }, []);
 
   // 2. Estado de Filtros
   const [filtros, setFiltros] = useState({
@@ -43,14 +70,14 @@ export default function Catalogo() {
     tipo: 'all'
   });
 
-  // Sincronizar con Perfil de Usuario
+  // Sincronizar con Perfil de Usuario (cuando carga el user o los datos)
   useEffect(() => {
     if (user?.presupuestoCalculado) {
       setFiltros(prev => ({
         ...prev,
         precioMax: Number(user.presupuestoCalculado),
         habitaciones: user.recamaras || 0,
-        status: user.status || 'all' // Si el perfil guardó preferencia de status
+        status: user.status || 'all' 
       }));
     }
   }, [user]);
@@ -67,8 +94,10 @@ export default function Catalogo() {
     );
   }, [filtros, searchTerm, user]);
 
-  // 3. Motor de Filtrado
+  // 3. Motor de Filtrado (Se ejecuta sobre la dataMaestra cargada)
   const modelosFiltrados = useMemo(() => {
+    if (loading) return []; // Si está cargando, no filtramos nada aún
+
     const term = normalizar(searchTerm);
     return dataMaestra.filter(item => {
       // Filtros numéricos
@@ -86,12 +115,14 @@ export default function Catalogo() {
         if (filtros.tipo === 'departamento' && !tipoItem.includes('departamento') && !tipoItem.includes('loft')) return false;
       }
 
-      // Filtro Amenidad
-      if (filtros.amenidad && !item.amenidadesDesarrollo.some(a => normalizar(a).includes(normalizar(filtros.amenidad)))) return false;
+      // Filtro Amenidad (Ahora busca en las amenidades denormalizadas del desarrollo)
+      if (filtros.amenidad && Array.isArray(item.amenidadesDesarrollo)) {
+        if (!item.amenidadesDesarrollo.some(a => normalizar(a).includes(normalizar(filtros.amenidad)))) return false;
+      }
 
       // Buscador Universal
       if (term) {
-        const amenidadesTexto = item.amenidadesDesarrollo.join(' ');
+        const amenidadesTexto = Array.isArray(item.amenidadesDesarrollo) ? item.amenidadesDesarrollo.join(' ') : '';
         const searchTarget = `
           ${normalizar(item.nombre)} ${normalizar(item.nombreDesarrollo)}
           ${normalizar(item.constructora)} ${normalizar(item.tipoVivienda)}
@@ -102,7 +133,7 @@ export default function Catalogo() {
       }
       return true;
     });
-  }, [dataMaestra, filtros, searchTerm]);
+  }, [dataMaestra, filtros, searchTerm, loading]);
 
   const handleFilterChange = (key, val) => setFiltros(prev => ({ ...prev, [key]: val }));
   
@@ -117,17 +148,33 @@ export default function Catalogo() {
     return () => { document.body.style.overflow = 'unset'; }
   }, [isFilterOpen]);
 
+  // --- RENDERIZADO DE CARGA ---
+  if (loading) {
+    return (
+      <div className="main-content" style={{ ...styles.pageContainer, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center', color: '#6b7280' }}>
+          <div className="spinner" style={{ marginBottom: '15px' }}></div>
+          <p>Cargando propiedades...</p>
+          {/* Estilo inline para el spinner simple */}
+          <style>{`
+            .spinner {
+              width: 40px; height: 40px; margin: 0 auto;
+              border: 4px solid #e5e7eb; border-top: 4px solid var(--primary-color);
+              border-radius: 50%; animation: spin 1s linear infinite;
+            }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          `}</style>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="main-content" style={styles.pageContainer}>
       
-      {/* Estilos locales para animación y scrollbar */}
       <style>{`
-        @keyframes fadeInPage {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeInPage { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeInPage 0.5s ease-out forwards; }
-        
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
@@ -210,7 +257,7 @@ export default function Catalogo() {
                  </div>
               </div>
               <div style={styles.filterSection}>
-                <label style={styles.filterLabel}>Amenidades</label>
+                <label style={styles.filterLabel}>Amenidades Populares</label>
                 <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px'}}>
                   <button onClick={() => handleFilterChange('amenidad', '')} style={{...styles.amenityChip, backgroundColor: filtros.amenidad === '' ? '#e0f2fe' : '#f3f4f6', color: filtros.amenidad === '' ? '#0284c7' : '#4b5563', border: filtros.amenidad === '' ? '1px solid #7dd3fc' : '1px solid transparent'}}>Todas</button>
                   {topAmenidades.map((am, idx) => (
@@ -232,7 +279,7 @@ export default function Catalogo() {
         {modelosFiltrados.map((item) => (
           <article key={item.id} style={styles.card}>
             
-            {/* ✅ CARRUSEL DE IMÁGENES */}
+            {/* CARRUSEL DE IMÁGENES */}
             <div style={styles.carouselContainer} className="hide-scrollbar">
                {(item.imagenes || [item.imagen]).map((imgSrc, idx) => (
                  <div key={idx} style={styles.carouselSlide}>
@@ -241,14 +288,12 @@ export default function Catalogo() {
                       alt={`${item.nombre} - vista ${idx}`} 
                       style={styles.image} 
                     />
-                    {/* Indicador de más fotos */}
                     {idx === 0 && item.imagenes?.length > 1 && (
                        <div style={styles.swipeHint}>+{item.imagenes.length - 1}</div>
                     )}
                  </div>
                ))}
 
-               {/* Overlays */}
                <span style={{
                  ...styles.statusTag,
                  backgroundColor: item.esPreventa ? '#f59e0b' : '#10b981'
@@ -356,7 +401,6 @@ const styles = {
   gridContainer: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '25px', padding: '25px 20px' },
   card: { backgroundColor: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', position: 'relative' },
   
-  // ✅ ESTILOS CARRUSEL
   carouselContainer: { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', width: '100%', height: '220px', position: 'relative', backgroundColor: '#e5e7eb' },
   carouselSlide: { minWidth: '100%', height: '100%', scrollSnapAlign: 'center', position: 'relative' },
   image: { width: '100%', height: '100%', objectFit: 'cover' },
@@ -376,7 +420,6 @@ const styles = {
   priceLabel: { fontSize: '0.7rem', fontWeight: '800', color: '#1e293b', letterSpacing: '1px', textTransform: 'uppercase' },
   priceValue: { fontWeight: '800', margin: '4px 0' },
   priceNote: { fontSize: '0.8rem', color: '#64748b', marginTop: '4px' },
-  aiButton: { backgroundColor: '#f3e8ff', color: '#9333ea', border: 'none', borderRadius: '8px', padding: '10px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'background 0.2s' },
   detailsButton: { backgroundColor: '#0f172a', color: 'white', textAlign: 'center', padding: '12px', borderRadius: '8px', textDecoration: 'none', fontWeight: '600', fontSize: '0.95rem', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' },
   emptyState: { gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px', color: '#6b7280' },
   retryBtn: { marginTop: '15px', padding: '10px 20px', backgroundColor: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: '25px', fontWeight: 'bold', cursor: 'pointer' }

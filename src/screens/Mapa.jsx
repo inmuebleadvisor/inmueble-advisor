@@ -1,20 +1,17 @@
+// src/screens/Mapa.jsx
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'; // Importamos useMap
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import { useUser } from '../context/UserContext';
-
-// Datos (Base de datos local)
-import modelosRaw from '../data/modelos.json';
-import desarrollosRaw from '../data/desarrollos.json';
+// ✅ CORRECCIÓN: Importamos del servicio, no de los JSONs borrados
+import { obtenerDatosUnificados, obtenerTopAmenidades } from '../services/dataService';
 
 const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
 
-/**
- * 🎨 ICONO PERSONALIZADO DEL MAPA
- */
+// --- HELPERS ---
 const createCustomIcon = (textoPrecio) => {
   return L.divIcon({
     className: 'custom-marker',
@@ -54,95 +51,59 @@ const createCustomIcon = (textoPrecio) => {
   });
 };
 
+const ControlZoom = ({ marcadores }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (marcadores.length > 0) {
+      const bounds = L.latLngBounds();
+      let validos = 0;
+      marcadores.forEach(m => {
+        if (m.ubicacion?.latitud && m.ubicacion?.longitud) {
+          bounds.extend([m.ubicacion.latitud, m.ubicacion.longitud]);
+          validos++;
+        }
+      });
+      if (validos > 0) map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [marcadores, map]);
+  return null;
+};
+
 const Icons = {
   Filter: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>,
   Close: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
 };
 
-/**
- * 🗺️ COMPONENTE CONTROLADOR DE ZOOM (NUEVO)
- * Este componente invisible "vigila" los marcadores. Cuando cambian (por filtros),
- * calcula el recuadro que los abarca a todos y le dice al mapa: "Ajusta tu vista aquí".
- */
-const ControlZoom = ({ marcadores }) => {
-  const map = useMap(); // Hook para acceder a la instancia del mapa
-
-  useEffect(() => {
-    if (marcadores.length > 0) {
-      // 1. Creamos un grupo de coordenadas vacías
-      const bounds = L.latLngBounds();
-      
-      // 2. Agregamos la posición de cada marcador visible
-      marcadores.forEach(m => {
-        bounds.extend([m.info.ubicacion.latitud, m.info.ubicacion.longitud]);
-      });
-
-      // 3. Ordenamos al mapa ajustarse a esos límites
-      // padding: [50, 50] deja un margen de 50px alrededor para que los pines no toquen el borde
-      map.fitBounds(bounds, { padding: [50, 50] });
-    }
-  }, [marcadores, map]); // Se ejecuta cada vez que cambia la lista de marcadores
-
-  return null; // No renderiza nada visual
-};
-
 export default function Mapa() {
   const { user, trackBehavior } = useUser();
+  
+  // --- ESTADOS (Async) ---
+  const [dataMaestra, setDataMaestra] = useState([]);
+  const [topAmenidades, setTopAmenidades] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // --- 1. AMENIDADES POPULARES ---
-  const topAmenidades = useMemo(() => {
-    const conteo = {};
-    desarrollosRaw.forEach(d => {
-      if (Array.isArray(d.amenidades)) {
-        d.amenidades.forEach(am => { 
-          const key = am.trim(); 
-          conteo[key] = (conteo[key] || 0) + 1; 
-        });
+  // 1. CARGA DE DATOS
+  useEffect(() => {
+    const cargarDatos = async () => {
+      setLoading(true);
+      try {
+        const [modelos, amenidades] = await Promise.all([
+          obtenerDatosUnificados(),
+          obtenerTopAmenidades()
+        ]);
+        setDataMaestra(modelos);
+        setTopAmenidades(amenidades);
+      } catch (error) {
+        console.error("Error cargando mapa:", error);
+      } finally {
+        setLoading(false);
       }
-    });
-    return Object.keys(conteo).sort((a, b) => conteo[b] - conteo[a]).slice(0, 5);
+    };
+    cargarDatos();
   }, []);
 
-  // --- 2. PROCESAMIENTO DE DATOS ---
-  const datosProcesados = useMemo(() => {
-    const mapaDesarrollos = {};
-
-    desarrollosRaw.forEach(d => {
-      const id = String(d.id_desarrollo || d.id).trim();
-      if (d.ubicacion?.latitud && d.ubicacion?.longitud) {
-        mapaDesarrollos[id] = {
-          info: d,
-          modelos: [],
-        };
-      }
-    });
-
-    modelosRaw.forEach(m => {
-      const idDev = String(m.id_desarrollo || m.desarrollo_id).trim();
-      
-      if (mapaDesarrollos[idDev]) {
-        const precioLimpio = String(m.precio?.actual || m.precio).replace(/[^0-9.]/g, "");
-        const precio = Number(precioLimpio);
-        
-        if (!precio || precio === 0 || isNaN(precio)) return;
-
-        const statusLower = String(mapaDesarrollos[idDev].info.status || '').toLowerCase();
-        const esPreventa = statusLower.includes('preventa') || statusLower.includes('obra');
-
-        mapaDesarrollos[idDev].modelos.push({
-          ...m,
-          precioNumerico: precio,
-          recamaras: Number(m.caracteristicas?.recamaras || m.recamaras || 0),
-          esPreventa
-        });
-      }
-    });
-
-    return Object.values(mapaDesarrollos);
-  }, []);
-
-  // --- 3. FILTROS ---
+  // 2. FILTROS
   const [filtros, setFiltros] = useState({
     precioMax: user?.presupuestoCalculado ? Number(user.presupuestoCalculado) : 5000000,
     habitaciones: user?.recamaras || 0,
@@ -150,54 +111,75 @@ export default function Mapa() {
     amenidad: ''
   });
 
-  // --- 4. LÓGICA DE FILTRADO ---
-  const { marcadoresVisibles, totalPropiedades } = useMemo(() => {
-    let totalCasasEncontradas = 0;
+  // 3. LÓGICA DE AGRUPACIÓN (De Modelos -> Desarrollos)
+  const marcadoresVisibles = useMemo(() => {
+    if (loading) return [];
 
-    const visibles = datosProcesados.filter(item => {
-      const modelosValidos = item.modelos.filter(mod => {
-        if (mod.precioNumerico > filtros.precioMax) return false;
-        if (filtros.habitaciones > 0 && mod.recamaras < filtros.habitaciones) return false;
-        if (filtros.status === 'inmediata' && mod.esPreventa === true) return false;
-        if (filtros.status === 'preventa' && mod.esPreventa === false) return false;
-        return true;
-      });
+    const grupos = {};
 
-      if (filtros.amenidad) {
-        const tieneAmenidad = item.info.amenidades?.some(a => a.trim() === filtros.amenidad);
-        if (!tieneAmenidad) return false;
+    // A. Filtrar y Agrupar
+    dataMaestra.forEach(modelo => {
+      // Filtros básicos
+      if (modelo.precioNumerico > filtros.precioMax) return;
+      if (filtros.habitaciones > 0 && modelo.recamaras < filtros.habitaciones) return;
+      if (filtros.status === 'inmediata' && modelo.esPreventa === true) return;
+      if (filtros.status === 'preventa' && modelo.esPreventa === false) return;
+      
+      // Filtro Amenidad
+      if (filtros.amenidad && Array.isArray(modelo.amenidadesDesarrollo)) {
+        if (!modelo.amenidadesDesarrollo.some(a => a.toLowerCase().includes(filtros.amenidad.toLowerCase()))) return;
       }
 
-      if (modelosValidos.length > 0) {
-        totalCasasEncontradas += modelosValidos.length;
-
-        const precios = modelosValidos.map(m => m.precioNumerico);
-        const min = Math.min(...precios);
-        const max = Math.max(...precios);
-
-        const formatCompact = (val) => {
-          if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`;
-          if (val >= 1000) return `$${(val / 1000).toFixed(0)}k`;
-          return `$${val}`;
+      // Agrupación por ID de Desarrollo
+      const idDev = String(modelo.id_desarrollo || 'sin-id').trim();
+      
+      if (!grupos[idDev]) {
+        // Inicializamos el grupo con la info "denormalizada" que guardamos en el modelo
+        grupos[idDev] = {
+          id: idDev,
+          nombre: modelo.nombreDesarrollo,
+          zona: modelo.zona,
+          ubicacion: modelo.ubicacion,
+          portada: modelo.imagen, // Usamos la imagen del primer modelo como portada del pin
+          precios: []
         };
-
-        if (min === max) {
-          item.etiquetaPrecio = formatCompact(min);
-        } else {
-          item.etiquetaPrecio = `${formatCompact(min)} - ${formatCompact(max)}`;
-        }
-        
-        return true;
       }
-      return false;
+      
+      grupos[idDev].precios.push(modelo.precioNumerico);
     });
 
-    return { marcadoresVisibles: visibles, totalPropiedades: totalCasasEncontradas };
-  }, [datosProcesados, filtros]);
+    // B. Calcular etiquetas de precio
+    return Object.values(grupos).map(grupo => {
+      const min = Math.min(...grupo.precios);
+      const max = Math.max(...grupo.precios);
+
+      const formatCompact = (val) => {
+        if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`;
+        if (val >= 1000) return `$${(val / 1000).toFixed(0)}k`;
+        return `$${val}`;
+      };
+
+      let etiqueta = formatCompact(min);
+      if (min !== max) {
+        etiqueta = `${formatCompact(min)} - ${formatCompact(max)}`;
+      }
+
+      return { ...grupo, etiquetaPrecio: etiqueta };
+    });
+
+  }, [dataMaestra, filtros, loading]);
 
   const formatoMoneda = (val) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
   const handleFilterChange = (key, val) => setFiltros(prev => ({ ...prev, [key]: val }));
   const centroMapa = [21.88, -102.29]; 
+
+  if (loading) {
+    return (
+      <div className="main-content" style={{ ...styles.pageContainer, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: '#6b7280' }}>Cargando mapa...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="main-content" style={styles.pageContainer}>
@@ -221,7 +203,6 @@ export default function Mapa() {
                {filtros.status === 'preventa' ? 'Pre-Venta' : 'Entrega Inmediata'}
              </span>
           )}
-          {filtros.amenidad && <span style={styles.chip}>{filtros.amenidad}</span>}
         </div>
       </div>
 
@@ -237,41 +218,40 @@ export default function Mapa() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
-          {/* --- AQUÍ INSERTAMOS EL CONTROLADOR DE ZOOM --- */}
           <ControlZoom marcadores={marcadoresVisibles} />
 
           {marcadoresVisibles.map((dev) => (
-            <Marker 
-              key={dev.info.id_desarrollo || dev.info.id}
-              position={[dev.info.ubicacion.latitud, dev.info.ubicacion.longitud]}
-              icon={createCustomIcon(dev.etiquetaPrecio)}
-              eventHandlers={{
-                click: () => trackBehavior('map_marker_click', { dev_name: dev.info.nombre }),
-              }}
-            >
-              <Popup className="custom-popup">
-                <div style={styles.popupContent}>
-                  <img 
-                    src={dev.info.multimedia?.portada || FALLBACK_IMG} 
-                    alt={dev.info.nombre}
-                    style={styles.popupImage}
-                    onError={(e) => e.target.src = FALLBACK_IMG}
-                  />
-                  <h4 style={styles.popupTitle}>{dev.info.nombre}</h4>
-                  <p style={styles.popupPrice}>
-                     {dev.etiquetaPrecio.includes('-') ? 'Rango: ' : 'Desde '} 
-                     {dev.etiquetaPrecio}
-                  </p>
-                  <p style={styles.popupLocation}>{dev.info.zona || 'Ubicación por confirmar'}</p>
-                  <Link 
-                    to={`/desarrollo/${String(dev.info.id_desarrollo || dev.info.id).trim()}`}
-                    style={styles.popupButton}
-                  >
-                    Ver Desarrollo
-                  </Link>
-                </div>
-              </Popup>
-            </Marker>
+            // Validamos que tenga coordenadas antes de pintar
+            (dev.ubicacion?.latitud && dev.ubicacion?.longitud) && (
+              <Marker 
+                key={dev.id}
+                position={[dev.ubicacion.latitud, dev.ubicacion.longitud]}
+                icon={createCustomIcon(dev.etiquetaPrecio)}
+                eventHandlers={{
+                  click: () => trackBehavior('map_marker_click', { dev_name: dev.nombre }),
+                }}
+              >
+                <Popup className="custom-popup">
+                  <div style={styles.popupContent}>
+                    <img 
+                      src={dev.portada || FALLBACK_IMG} 
+                      alt={dev.nombre}
+                      style={styles.popupImage}
+                      onError={(e) => e.target.src = FALLBACK_IMG}
+                    />
+                    <h4 style={styles.popupTitle}>{dev.nombre}</h4>
+                    <p style={styles.popupPrice}>{dev.etiquetaPrecio}</p>
+                    <p style={styles.popupLocation}>{dev.zona || 'Aguascalientes'}</p>
+                    <Link 
+                      to={`/desarrollo/${dev.id}`}
+                      style={styles.popupButton}
+                    >
+                      Ver Desarrollo
+                    </Link>
+                  </div>
+                </Popup>
+              </Marker>
+            )
           ))}
         </MapContainer>
       </div>
@@ -317,11 +297,11 @@ export default function Mapa() {
               </div>
 
               <div style={styles.filterSection}>
-                <label style={styles.filterLabel}>Etapa del Desarrollo</label>
+                <label style={styles.filterLabel}>Etapa</label>
                 <div style={styles.pillGroup}>
                   {[
-                    { val: 'all', label: 'Cualquiera' },
-                    { val: 'inmediata', label: 'Entrega Inmediata' },
+                    { val: 'all', label: 'Cualq.' },
+                    { val: 'inmediata', label: 'Inmediata' },
                     { val: 'preventa', label: 'Pre-Venta' }
                   ].map((opt) => (
                     <button
@@ -342,7 +322,7 @@ export default function Mapa() {
               </div>
 
               <div style={styles.filterSection}>
-                <label style={styles.filterLabel}>Amenidades Populares</label>
+                <label style={styles.filterLabel}>Amenidades</label>
                 <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px'}}>
                   <button onClick={() => handleFilterChange('amenidad', '')}
                       style={{...styles.amenityChip, 
@@ -368,7 +348,7 @@ export default function Mapa() {
             <div style={styles.modalFooter}>
               <button style={styles.clearBtn} onClick={() => setFiltros({precioMax: 5000000, habitaciones: 0, status: 'all', amenidad: ''})}>Limpiar</button>
               <button style={styles.applyBtn} onClick={() => setIsFilterOpen(false)}>
-                Ver {totalPropiedades} propiedades
+                Ver {marcadoresVisibles.length} desarrollos
               </button>
             </div>
           </div>

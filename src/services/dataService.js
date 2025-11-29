@@ -1,132 +1,101 @@
-import modelosRaw from '../data/modelos.json';
-import desarrollosRaw from '../data/desarrollos.json';
+// src/services/dataService.js
+import { db } from '../firebase/config';
+import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firestore';
+
+// --- CACHÉ EN MEMORIA ---
+// Guardamos los datos aquí para no volver a pedirlos a Firebase si el usuario navega entre pantallas.
+// Esto ahorra dinero y hace la app instantánea.
+let cacheModelos = null;
+let cacheDesarrollos = null;
+
+// --- CONSTANTES ---
+const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
 
 // --- HELPERS INTERNOS ---
 
-const normalizar = (texto) => {
-  if (!texto) return '';
-  return String(texto).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+// Reconstruimos la lógica de imágenes para asegurar que siempre haya fotos válidas
+const procesarImagenes = (data) => {
+  let listaImagenes = [];
+
+  // 1. Galería del Modelo
+  if (Array.isArray(data.multimedia?.galeria) && data.multimedia.galeria.length > 0) {
+    listaImagenes.push(...data.multimedia.galeria);
+  }
+
+  // 2. Plantas
+  if (data.multimedia?.planta_baja) listaImagenes.push(data.multimedia.planta_baja);
+  if (data.multimedia?.planta_alta) listaImagenes.push(data.multimedia.planta_alta);
+
+  // 3. Fallback: Si no hay fotos, intentar usar portada del desarrollo (si se migró denormalizada)
+  if (listaImagenes.length === 0 && data.portadaDesarrollo) {
+    listaImagenes.push(data.portadaDesarrollo);
+  }
+
+  // 4. Limpieza
+  listaImagenes = listaImagenes.filter(url => url && typeof url === 'string' && url.length > 5);
+
+  // 5. Fallback Final
+  if (listaImagenes.length === 0) listaImagenes.push(FALLBACK_IMG);
+
+  return {
+    imagen: listaImagenes[0], // Miniatura principal
+    imagenes: listaImagenes   // Carrusel completo
+  };
 };
 
-const esFechaFutura = (fechaStr) => {
-  if (!fechaStr) return false;
+// --- FUNCIONES PÚBLICAS (AHORA ASÍNCRONAS) ---
+
+/**
+ * Obtiene todos los modelos (casas) de la base de datos.
+ * Usa caché para optimizar.
+ */
+export const obtenerDatosUnificados = async () => {
+  // 1. Si ya tenemos datos en memoria, los devolvemos al instante.
+  if (cacheModelos) return cacheModelos;
+
   try {
-    const partes = fechaStr.split('/');
-    if (partes.length !== 3) return false;
-    const fechaEntrega = new Date(partes[2], partes[1] - 1, partes[0]);
-    const hoy = new Date();
-    return fechaEntrega > hoy;
-  } catch (e) { return false; }
+    // 2. Si no, consultamos Firestore
+    const querySnapshot = await getDocs(collection(db, "modelos"));
+    
+    // 3. Procesamos los resultados
+    const modelos = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      const imgs = procesarImagenes(data);
+
+      return {
+        ...data,
+        id: doc.id, // Usamos el ID del documento
+        ...imgs     // Sobrescribimos las imágenes procesadas
+      };
+    });
+
+    // 4. Guardamos en caché y retornamos
+    cacheModelos = modelos;
+    return modelos;
+  } catch (error) {
+    console.error("Error obteniendo modelos de Firebase:", error);
+    return [];
+  }
 };
 
-const generarIdModelo = (idDesarrollo, nombreModelo, index) => {
-  const nombreSlug = (nombreModelo || 'modelo').toLowerCase().replace(/\s+/g, '-');
-  return `${idDesarrollo}-${nombreSlug}-${index}`;
-};
-
-const limpiarPrecio = (valor) => {
-  if (!valor) return 0;
-  return Number(String(valor).replace(/[^0-9.]/g, ""));
-};
-
-const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
-
-// --- LÓGICA PRINCIPAL ---
-
-export const obtenerDatosUnificados = () => {
-  // 1. Indexar Desarrollos
-  const desarrolloMap = new Map();
-  desarrollosRaw.forEach(d => {
-    const idDev = String(d.id_desarrollo).trim();
-    if (idDev) desarrolloMap.set(idDev, d);
-  });
-
-  // 2. Procesar Modelos
-  return modelosRaw.map((modelo, index) => {
-    const idDev = String(modelo.id_desarrollo).trim();
-    const desarrolloInfo = desarrolloMap.get(idDev);
-
-    // --- A. LÓGICA DE PRECIO ---
-    let precioFinal = 0;
-    if (modelo.precio?.actual && modelo.precio.actual !== "") {
-      precioFinal = limpiarPrecio(modelo.precio.actual);
-    } else if (modelo.precio?.inicial && modelo.precio.inicial !== "") {
-      precioFinal = limpiarPrecio(modelo.precio.inicial);
+/**
+ * Calcula las amenidades más comunes basándose en los desarrollos.
+ */
+export const obtenerTopAmenidades = async () => {
+  // Verificamos caché de desarrollos
+  if (!cacheDesarrollos) {
+    try {
+      const querySnapshot = await getDocs(collection(db, "desarrollos"));
+      cacheDesarrollos = querySnapshot.docs.map(doc => doc.data());
+    } catch (error) {
+      console.error("Error obteniendo desarrollos:", error);
+      return [];
     }
+  }
 
-    // --- B. LÓGICA DE TIPO VIVIENDA ---
-    const tipoViviendaRaw = modelo.tipo_vivienda || 'Casa';
-
-    // --- C. LÓGICA DE STATUS ---
-    const statusDesarrollo = desarrolloInfo?.status || ''; 
-    const fechaEntrega = desarrolloInfo?.info_comercial?.fecha_entrega || ''; 
-    const statusLower = normalizar(statusDesarrollo);
-    const esPrevTexto = statusLower.includes('preventa') || 
-                        statusLower.includes('pre-venta') || 
-                        statusLower.includes('obra') || 
-                        statusLower.includes('construccion');
-    const esPreventa = esPrevTexto || esFechaFutura(fechaEntrega);
-
-    // --- D. LÓGICA AVANZADA DE IMÁGENES ---
-    let listaImagenes = [];
-
-    // 1. Prioridad: Galería del Modelo
-    if (Array.isArray(modelo.multimedia?.galeria) && modelo.multimedia.galeria.length > 0) {
-      listaImagenes.push(...modelo.multimedia.galeria);
-    }
-
-    // 2. Prioridad: Plantas del Modelo
-    if (modelo.multimedia?.planta_baja) {
-      listaImagenes.push(modelo.multimedia.planta_baja);
-    }
-    if (modelo.multimedia?.planta_alta) {
-      listaImagenes.push(modelo.multimedia.planta_alta);
-    }
-
-    // 3. Fallback: Desarrollo
-    if (listaImagenes.length === 0 && desarrolloInfo) {
-      if (desarrolloInfo.multimedia?.portada) {
-        listaImagenes.push(desarrolloInfo.multimedia.portada);
-      }
-      if (Array.isArray(desarrolloInfo.multimedia?.galeria)) {
-        listaImagenes.push(...desarrolloInfo.multimedia.galeria);
-      }
-    }
-
-    listaImagenes = listaImagenes.filter(url => url && url.length > 5);
-
-    if (listaImagenes.length === 0) {
-      listaImagenes.push(FALLBACK_IMG);
-    }
-
-    const imagenPrincipal = listaImagenes[0];
-
-    return {
-      ...modelo,
-      id: generarIdModelo(idDev, modelo.nombre_modelo, index),
-      _key: index,
-      precioNumerico: precioFinal,
-      imagen: imagenPrincipal,
-      imagenes: listaImagenes,
-      esPreventa: esPreventa,
-      tipoVivienda: tipoViviendaRaw,
-      nombreDesarrollo: desarrolloInfo?.nombre || '',
-      constructora: desarrolloInfo?.constructora || '',
-      zona: desarrolloInfo?.zona || '',
-      colonia: desarrolloInfo?.ubicacion?.colonia || '',
-      ciudad: desarrolloInfo?.ubicacion?.ciudad || '',
-      estado: desarrolloInfo?.ubicacion?.estado || '',
-      amenidadesDesarrollo: desarrolloInfo?.amenidades || [],
-      recamaras: Number(modelo.caracteristicas?.recamaras || 0),
-      banos: Number(modelo.caracteristicas?.banos || 0),
-      m2: Number(modelo.dimensiones?.construccion || 0),
-    };
-  });
-};
-
-export const obtenerTopAmenidades = () => {
+  // Lógica de conteo (igual que antes, pero con datos reales)
   const conteo = {};
-  desarrollosRaw.forEach(d => {
+  cacheDesarrollos.forEach(d => {
     if (Array.isArray(d.amenidades)) {
       d.amenidades.forEach(am => {
         const key = am.trim();
@@ -134,29 +103,46 @@ export const obtenerTopAmenidades = () => {
       });
     }
   });
+  
   return Object.keys(conteo).sort((a, b) => conteo[b] - conteo[a]).slice(0, 5);
 };
 
-export const obtenerInformacionDesarrollo = (idDesarrollo) => {
-  const idStr = String(idDesarrollo).trim();
-  const desarrollo = desarrollosRaw.find(d => String(d.id_desarrollo).trim() === idStr);
-  
-  if (!desarrollo) return null;
+/**
+ * Obtiene el detalle de un desarrollo y sus modelos asociados.
+ * Hace una consulta fresca para asegurar datos actualizados en la vista de detalle.
+ */
+export const obtenerInformacionDesarrollo = async (idDesarrollo) => {
+  try {
+    const idStr = String(idDesarrollo).trim();
+    
+    // A. Obtener datos del Desarrollo
+    const docRef = doc(db, "desarrollos", idStr);
+    const docSnap = await getDoc(docRef);
 
-  const todosLosModelos = obtenerDatosUnificados();
-  const modelosDelDesarrollo = todosLosModelos.filter(m => 
-    String(m.id_desarrollo).trim() === idStr
-  );
+    if (!docSnap.exists()) return null;
+    const desarrolloData = docSnap.data();
 
-  return {
-    ...desarrollo,
-    modelos: modelosDelDesarrollo
-  };
-};
+    // B. Obtener sus Modelos (Query filtrado)
+    // Buscamos en la colección 'modelos' donde 'id_desarrollo' coincida
+    const q = query(collection(db, "modelos"), where("id_desarrollo", "==", idStr));
+    const modelosSnap = await getDocs(q);
+    
+    const modelos = modelosSnap.docs.map(doc => {
+      const data = doc.data();
+      return {
+        ...data,
+        id: doc.id,
+        ...procesarImagenes(data)
+      };
+    });
 
-// ✅ HELPER CENTRALIZADO DE MONEDA
-// Lo exportamos para usarlo en Perfil, Catálogo, Detalle, etc.
-export const formatoMoneda = (val) => {
-  if (!val || val === 0) return '$0'; 
-  return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
+    return {
+      ...desarrolloData,
+      modelos: modelos
+    };
+
+  } catch (error) {
+    console.error("Error cargando desarrollo:", error);
+    return null;
+  }
 };

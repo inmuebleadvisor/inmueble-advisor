@@ -1,7 +1,8 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+// src/screens/DetalleModelo.jsx
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { obtenerDatosUnificados } from '../services/dataService';
+import { obtenerDatosUnificados } from '../services/dataService'; // ✅ Importamos el servicio asíncrono
 import ImageLoader from '../components/ImageLoader';
 
 const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
@@ -19,36 +20,49 @@ export default function DetalleModelo() {
   const { id } = useParams();
   const { trackBehavior } = useUser();
   const navigate = useNavigate();
-  const scrollRef = useRef(null); // ✅ Referencia para controlar el scroll del header
+  const scrollRef = useRef(null);
 
+  // --- ESTADOS ---
+  const [modelo, setModelo] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // 1. Obtener Datos
-  const dataUnificada = useMemo(() => obtenerDatosUnificados(), []);
-  const modelo = useMemo(() => dataUnificada.find(m => m.id === id), [dataUnificada, id]);
-  const galeriaImagenes = useMemo(() => modelo?.imagenes || [], [modelo]);
-
-  // Efecto Analytics
+  // 1. Carga de Datos (Efecto Asíncrono)
   useEffect(() => {
-    if (modelo) {
-      trackBehavior('view_item', { item_id: id, item_name: modelo.nombre_modelo });
-      window.scrollTo(0, 0);
-    }
-  }, [id, modelo]);
+    const cargarModelo = async () => {
+      setLoading(true);
+      try {
+        // Obtenemos todos los modelos (usando caché del servicio)
+        const todosLosModelos = await obtenerDatosUnificados();
+        const encontrado = todosLosModelos.find(m => m.id === id);
+        
+        setModelo(encontrado || null);
+        
+        if (encontrado) {
+          trackBehavior('view_item', { item_id: id, item_name: encontrado.nombre_modelo });
+        }
+      } catch (error) {
+        console.error("Error al cargar modelo:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // ✅ Función para scrollear al hacer click en miniatura
+    cargarModelo();
+    window.scrollTo(0, 0);
+  }, [id]); // trackBehavior omitido de dependencias por ser estable
+
+  // Helpers de Galería
+  const galeriaImagenes = modelo?.imagenes || [];
+
   const scrollToImage = (index) => {
     setActiveIndex(index);
     if (scrollRef.current) {
       const width = scrollRef.current.offsetWidth;
-      scrollRef.current.scrollTo({
-        left: width * index,
-        behavior: 'smooth'
-      });
+      scrollRef.current.scrollTo({ left: width * index, behavior: 'smooth' });
     }
   };
 
-  // ✅ Detectar scroll manual para actualizar miniatura activa (Opcional, básico)
   const handleScroll = () => {
     if (scrollRef.current) {
       const index = Math.round(scrollRef.current.scrollLeft / scrollRef.current.offsetWidth);
@@ -56,24 +70,36 @@ export default function DetalleModelo() {
     }
   };
 
-  if (!modelo) {
-    return (
-      <div style={styles.errorContainer}>
-        <h2>Modelo no encontrado</h2>
-        <button onClick={() => navigate(-1)} style={styles.backButtonSimple}>Volver</button>
-      </div>
-    );
-  }
-
   const formatoMoneda = (val) => {
     if (!val) return 'Pendiente';
     return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
   };
 
+  // --- RENDERIZADO DE CARGA ---
+  if (loading) {
+    return (
+      <div className="main-content" style={{ ...styles.pageContainer, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: '#6b7280' }}>Cargando detalles...</p>
+      </div>
+    );
+  }
+
+  // --- RENDERIZADO DE ERROR ---
+  if (!modelo) {
+    return (
+      <div style={styles.errorContainer}>
+        <h2>Modelo no encontrado</h2>
+        <p>Es posible que la propiedad ya no esté disponible.</p>
+        <button onClick={() => navigate(-1)} style={styles.backButtonSimple}>Volver</button>
+      </div>
+    );
+  }
+
+  // --- RENDERIZADO PRINCIPAL ---
   return (
     <div className="main-content animate-fade-in" style={styles.pageContainer}>
       
-      {/* HEADER: Carrusel Deslizable Completo */}
+      {/* HEADER: Carrusel */}
       <header style={styles.carouselWrapper}>
         <div 
           ref={scrollRef}
@@ -92,7 +118,6 @@ export default function DetalleModelo() {
           <Icons.Back />
         </button>
         
-        {/* Indicador de Posición */}
         <div style={styles.imageCounter}>
           {activeIndex + 1} / {galeriaImagenes.length}
         </div>
@@ -110,7 +135,7 @@ export default function DetalleModelo() {
           </div>
         </div>
 
-        {/* 📸 TIRA DE MINIATURAS (Controla el Header) */}
+        {/* Tira de Miniaturas */}
         {galeriaImagenes.length > 1 && (
           <div style={styles.galleryStrip}>
             {galeriaImagenes.map((img, index) => (
@@ -197,36 +222,22 @@ export default function DetalleModelo() {
 // --- ESTILOS ---
 const styles = {
   pageContainer: { backgroundColor: 'white', minHeight: '100vh', paddingBottom: '100px', fontFamily: "'Segoe UI', sans-serif" },
-  
-  // ✅ NUEVOS ESTILOS HEADER CARRUSEL
   carouselWrapper: { position: 'relative', width: '100%', height: '320px', backgroundColor: '#e5e7eb' },
-  carouselContainer: { 
-    display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', 
-    width: '100%', height: '100%', scrollBehavior: 'smooth' 
-  },
+  carouselContainer: { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', width: '100%', height: '100%', scrollBehavior: 'smooth' },
   carouselSlide: { minWidth: '100%', height: '100%', scrollSnapAlign: 'center', position: 'relative' },
   headerImage: { width: '100%', height: '100%', objectFit: 'cover' },
-  
-  imageCounter: { 
-    position: 'absolute', bottom: '20px', right: '20px', 
-    backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 10px', 
-    borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold', zIndex: 10 
-  },
+  imageCounter: { position: 'absolute', bottom: '20px', right: '20px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold', zIndex: 10 },
   headerGradient: { position: 'absolute', bottom: 0, left: 0, width: '100%', height: '80px', background: 'linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0))', pointerEvents: 'none' },
   floatingBackButton: { position: 'absolute', top: '20px', left: '20px', backgroundColor: 'rgba(255, 255, 255, 0.9)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', zIndex: 10, color: '#333' },
-
   contentBody: { padding: '0 20px', position: 'relative', zIndex: 2, marginTop: '-20px' },
   titleSection: { marginBottom: '15px' }, 
   modelTitle: { fontSize: '2rem', fontWeight: '800', color: '#111827', margin: '0 0 5px 0', lineHeight: '1.1' },
   priceContainer: { display: 'flex', flexDirection: 'column' },
   priceLabel: { fontSize: '0.85rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '600' },
   priceValue: { fontSize: '1.8rem', fontWeight: '800', color: 'var(--primary-color)' },
-
-  // Galería Miniaturas
   galleryStrip: { display: 'flex', gap: '10px', overflowX: 'auto', padding: '5px 0 15px 0', scrollbarWidth: 'none', marginBottom: '20px' },
   galleryThumbBtn: { flexShrink: 0, width: '70px', height: '70px', borderRadius: '12px', border: '2px solid', padding: 0, overflow: 'hidden', cursor: 'pointer', transition: 'all 0.2s', backgroundColor: '#eee' },
   galleryThumbImg: { width: '100%', height: '100%', objectFit: 'cover' },
-
   techSpecsGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', marginBottom: '25px' },
   specItem: { display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '10px', backgroundColor: '#f9fafb', borderRadius: '12px' },
   iconBox: { color: '#6b7280', marginBottom: '5px' },
@@ -238,7 +249,6 @@ const styles = {
   descriptionText: { color: '#4b5563', lineHeight: '1.6', fontSize: '0.95rem' },
   amenitiesTagContainer: { marginTop: '15px', display: 'flex', flexWrap: 'wrap', gap: '8px' },
   amenityTag: { backgroundColor: '#eff6ff', color: '#1d4ed8', padding: '5px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: '600' },
-
   developmentCard: { position: 'relative', backgroundColor: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '16px', padding: '15px', marginTop: '10px', transition: 'transform 0.2s' },
   devCardHeader: { display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '10px' },
   devThumbnailWrapper: { width: '60px', height: '60px', borderRadius: '12px', overflow: 'hidden', backgroundColor: 'white', flexShrink: 0, border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-color)' },
@@ -249,7 +259,6 @@ const styles = {
   devLinkContainer: { textAlign: 'right' },
   devLinkText: { fontSize: '0.85rem', fontWeight: '700', color: 'var(--primary-color)' },
   cardLinkOverlay: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 5 },
-
   stickyFooter: { position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: 'white', padding: '15px 20px', borderTop: '1px solid #e5e7eb', boxShadow: '0 -4px 10px rgba(0,0,0,0.05)', zIndex: 100 },
   footerButtonGrid: { display: 'flex', gap: '12px', maxWidth: '800px', margin: '0 auto' },
   btnSecondary: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: 'white', color: '#374151', border: '1px solid #d1d5db', padding: '12px', borderRadius: '10px', textDecoration: 'none', fontWeight: '600', fontSize: '0.95rem' },
