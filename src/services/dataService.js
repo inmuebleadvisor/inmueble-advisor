@@ -67,16 +67,15 @@ export const obtenerDatosUnificados = () => {
                         statusLower.includes('construccion');
     const esPreventa = esPrevTexto || esFechaFutura(fechaEntrega);
 
-    // --- D. LÓGICA AVANZADA DE IMÁGENES (Galería + Portada + Plantas) ---
-    // Objetivo: Construir un array robusto 'imagenes' para el carrusel
+    // --- D. LÓGICA AVANZADA DE IMÁGENES ---
     let listaImagenes = [];
 
-    // 1. Prioridad: Galería del Modelo (Renders)
+    // 1. Prioridad: Galería del Modelo
     if (Array.isArray(modelo.multimedia?.galeria) && modelo.multimedia.galeria.length > 0) {
       listaImagenes.push(...modelo.multimedia.galeria);
     }
 
-    // 2. Prioridad: Plantas del Modelo (Información técnica)
+    // 2. Prioridad: Plantas del Modelo
     if (modelo.multimedia?.planta_baja) {
       listaImagenes.push(modelo.multimedia.planta_baja);
     }
@@ -84,27 +83,22 @@ export const obtenerDatosUnificados = () => {
       listaImagenes.push(modelo.multimedia.planta_alta);
     }
 
-    // 3. Fallback: Si el modelo NO tiene ninguna imagen, usamos las del Desarrollo
+    // 3. Fallback: Desarrollo
     if (listaImagenes.length === 0 && desarrolloInfo) {
-      // Portada del desarrollo
       if (desarrolloInfo.multimedia?.portada) {
         listaImagenes.push(desarrolloInfo.multimedia.portada);
       }
-      // Galería del desarrollo
       if (Array.isArray(desarrolloInfo.multimedia?.galeria)) {
         listaImagenes.push(...desarrolloInfo.multimedia.galeria);
       }
     }
 
-    // 4. Limpieza final: Eliminar strings vacíos o nulos
     listaImagenes = listaImagenes.filter(url => url && url.length > 5);
 
-    // 5. Fallback final: Icono de la marca
     if (listaImagenes.length === 0) {
       listaImagenes.push(FALLBACK_IMG);
     }
 
-    // La imagen principal será la primera de la lista calculada
     const imagenPrincipal = listaImagenes[0];
 
     return {
@@ -112,8 +106,8 @@ export const obtenerDatosUnificados = () => {
       id: generarIdModelo(idDev, modelo.nombre_modelo, index),
       _key: index,
       precioNumerico: precioFinal,
-      imagen: imagenPrincipal, // Para compatibilidad (miniatura principal)
-      imagenes: listaImagenes, // Para el carrusel (lista completa)
+      imagen: imagenPrincipal,
+      imagenes: listaImagenes,
       esPreventa: esPreventa,
       tipoVivienda: tipoViviendaRaw,
       nombreDesarrollo: desarrolloInfo?.nombre || '',
@@ -158,4 +152,11 @@ export const obtenerInformacionDesarrollo = (idDesarrollo) => {
     ...desarrollo,
     modelos: modelosDelDesarrollo
   };
+};
+
+// ✅ HELPER CENTRALIZADO DE MONEDA
+// Lo exportamos para usarlo en Perfil, Catálogo, Detalle, etc.
+export const formatoMoneda = (val) => {
+  if (!val || val === 0) return '$0'; 
+  return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
 };
