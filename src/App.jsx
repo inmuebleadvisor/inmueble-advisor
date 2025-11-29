@@ -1,6 +1,10 @@
+// src/App.jsx
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { UserProvider } from './context/UserContext';
+
+// --- SEGURIDAD ---
+import ProtectedRoute from './components/ProtectedRoute'; // ✅ Importamos el guardia
 
 // --- LAYOUT PRINCIPAL ---
 import Layout from './components/Layout';
@@ -11,35 +15,49 @@ import Catalogo from './screens/Catalogo';
 import DetalleModelo from './screens/DetalleModelo';
 import DetalleDesarrollo from './screens/DetalleDesarrollo';
 import Mapa from './screens/Mapa';
-import LandingAsesores from './screens/LandingAsesores'; // ✅ 1. Importamos la nueva pantalla
+import LandingAsesores from './screens/LandingAsesores';
+import OnboardingAsesor from './screens/OnboardingAsesor'; // ✅ Importamos la nueva pantalla
 
 function App() {
   return (
     <UserProvider>
       <BrowserRouter>
         <Routes>
-          {/* 
-            El Layout envuelve a todas las rutas internas.
-            Mantiene el Header y Footer visibles en todas las pantallas.
-          */}
           <Route path="/" element={<Layout />}>
           
-            {/* Ruta por defecto (Index): Carga el Perfil/Bienvenida */}
+            {/* 1. RUTA PÚBLICA (Home/Perfil) */}
             <Route index element={<Perfil />} />
             
-            {/* Rutas de Navegación Principal */}
-            <Route path="catalogo" element={<Catalogo />} />
-            <Route path="mapa" element={<Mapa />} />
-
-            {/* ✅ 2. Nueva Ruta para el Portal de Asesores */}
-            {/* Acceso mediante: /soy-asesor */}
+            {/* 2. LANDING PARA CAPTACIÓN DE ASESORES (Pública) */}
             <Route path="soy-asesor" element={<LandingAsesores />} />
 
-            {/* Rutas de Detalle (Dinámicas) */}
+            {/* 3. WIZARD DE ONBOARDING (Protegida: Requiere Login, pero NO requiere onboarding previo) */}
+            <Route path="onboarding-asesor" element={
+              <ProtectedRoute requireOnboarding={false}>
+                <OnboardingAsesor />
+              </ProtectedRoute>
+            } />
+
+            {/* 4. RUTAS DEL SISTEMA (Protegidas y con verificación de onboarding) */}
+            {/* Si un ASESOR entra aquí sin terminar sus datos, será redirigido al wizard */}
+            
+            <Route path="catalogo" element={
+              <ProtectedRoute requireOnboarding={true}>
+                <Catalogo />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="mapa" element={
+              <ProtectedRoute requireOnboarding={true}>
+                <Mapa />
+              </ProtectedRoute>
+            } />
+
+            {/* 5. RUTAS DE DETALLE */}
             <Route path="modelo/:id" element={<DetalleModelo />} />
             <Route path="desarrollo/:id" element={<DetalleDesarrollo />} />
 
-            {/* Ruta 404: Redirecciona al inicio si la URL no existe */}
+            {/* 404 */}
             <Route path="*" element={<Navigate to="/" replace />} />
 
           </Route>

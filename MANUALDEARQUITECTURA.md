@@ -19,31 +19,7 @@ Persistencia: LocalStorage (gestionado exclusivamente vía Context).
 Despliegue: Vercel (SPA configuration).
 
 2. Estructura de Archivos (Estricta) 📂
-
-El proyecto debe mantener esta jerarquía para garantizar la navegación y carga de datos:
-
-src/
-├── assets/              # Recursos estáticos
-├── components/
-│    └── Layout.jsx      # Marco principal (Header, Outlet, Footer)
-├── context/
-│    └── UserContext.jsx # Única fuente de verdad para Sesión y Analytics
-├── data/
-│    ├── desarrollos.json # "Tabla" Padre (Ubicación, Amenidades generales)
-│    └── modelos.json     # "Tabla" Hija (Precios, Habitaciones, Fotos interiores)
-├── screens/             # Pantallas (Vistas completas)
-│    ├── Catalogo.jsx    # Listado con filtros
-│    ├── DetalleModelo.jsx
-│    ├── DetalleDesarrollo.jsx
-│    ├── Mapa.jsx        # Mapa interactivo con Leaflet
-│    └── Perfil.jsx
-├── App.jsx              # Router principal (Rutas anidadas)
-├── index.css            # Variables globales y reset
-└── main.jsx             # Punto de entrada
-root/
-└── vercel.json          # Configuración de reescritura para SPA (evitar 404s)
-
-
+  
 3. Sistema de Diseño (Visual) 🎨
 
 Identidad

@@ -1,8 +1,9 @@
+// src/screens/LandingAsesores.jsx
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // ✅ Importamos navegación
 import { useUser } from '../context/UserContext';
 
 // --- ICONOS SVG ---
-// Definimos los iconos aquí para no depender de librerías externas.
 const Icons = {
   Upload: () => <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
   Users: () => <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>,
@@ -13,44 +14,51 @@ const Icons = {
 };
 
 export default function LandingAsesores() {
-  const { trackBehavior } = useUser();
+  const navigate = useNavigate(); // ✅ Hook de navegación
+  const { trackBehavior, loginWithGoogle } = useUser(); 
   const [variant, setVariant] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false); // ✅ Estado de carga
 
   /**
    * 🎲 LÓGICA DE EXPERIMENTACIÓN (A/B TESTING)
-   * Se ejecuta una sola vez al montar el componente.
-   * Decide aleatoriamente qué título mostrar para medir efectividad.
    */
   useEffect(() => {
     const selectedVariant = Math.random() > 0.5 ? 'A' : 'B';
     setVariant(selectedVariant);
-    
-    // Registramos qué variante vio el usuario
     trackBehavior('view_landing_advisor', { variant: selectedVariant });
   }, []);
 
   /**
-   * Manejador del botón de acción (CTA)
-   * @param {string} source - Indica si el clic fue en el 'hero' o en el 'footer'
+   * ✅ LÓGICA DE ACCIÓN ÚNICA (LOGIN -> ONBOARDING)
+   * Esta función se usa tanto para el botón del Hero como para el del Footer.
    */
-  const handleJoinClick = (source) => {
-    trackBehavior('click_join_advisor', { variant: variant, source: source });
-    alert("¡Gracias por tu interés! Pronto habilitaremos el registro.");
+  const handleActionClick = async (source) => {
+    trackBehavior('click_advisor_cta', { variant: variant, source: source });
+    
+    setIsProcessing(true);
+    try {
+      // 1. Iniciamos sesión especificando el rol 'asesor'
+      await loginWithGoogle('asesor');
+      
+      // 2. Redirigimos al Wizard de configuración
+      navigate('/onboarding-asesor');
+    } catch (error) {
+      console.error("Error uniéndose:", error);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  // Evitamos renderizar nada hasta que se decida la variante A o B
   if (!variant) return null;
 
   return (
-    // Usamos 'main-content' (de index.css) para márgenes consistentes y 'animate-fade-in' para suavidad
     <div className="main-content animate-fade-in" style={{ paddingBottom: '50px' }}>
       
-      {/* --- HERO SECTION: Primera impresión --- */}
+      {/* --- HERO SECTION --- */}
       <header style={styles.heroSection}>
         <div style={styles.heroContent}>
           <span style={styles.heroBadge}>Portal de Aliados</span>
           
-          {/* Título dinámico basado en la variante A/B */}
           <h1 style={styles.heroTitle}>
             {variant === 'A' 
               ? "Inmueble Advisor te premia con Leads Calificados si das un buen servicio."
@@ -63,8 +71,12 @@ export default function LandingAsesores() {
             Olvídate de pagar por visibilidad; gánatela con calidad.
           </p>
 
-          <button onClick={() => handleJoinClick('hero')} style={styles.ctaButton}>
-            Quiero unirme ahora
+          <button 
+            onClick={() => handleActionClick('hero')} 
+            disabled={isProcessing} 
+            style={{...styles.ctaButton, opacity: isProcessing ? 0.7 : 1}}
+          >
+            {isProcessing ? 'Conectando...' : 'Quiero unirme ahora'}
           </button>
           
           <p style={styles.disclaimerText}>
@@ -73,12 +85,10 @@ export default function LandingAsesores() {
         </div>
       </header>
 
-      {/* --- CÓMO FUNCIONA: Explicación del proceso --- */}
+      {/* --- CÓMO FUNCIONA --- */}
       <section style={styles.stepsSection}>
         <h2 style={styles.sectionTitle}>¿Cómo trabajamos juntos?</h2>
-        
         <div style={styles.stepsGrid}>
-          {/* Paso 1 */}
           <div style={styles.stepCard}>
             <div style={styles.iconCircle}><Icons.Upload /></div>
             <h3 style={styles.stepTitle}>1. Das de Alta</h3>
@@ -86,8 +96,6 @@ export default function LandingAsesores() {
               Tú cargas o actualizas la información de tus propiedades. Nosotros te damos las herramientas.
             </p>
           </div>
-
-          {/* Paso 2 */}
           <div style={styles.stepCard}>
             <div style={styles.iconCircle}><Icons.Users /></div>
             <h3 style={styles.stepTitle}>2. Agendamos Cita</h3>
@@ -95,8 +103,6 @@ export default function LandingAsesores() {
               Nosotros buscamos personas interesadas, perfilamos su crédito y las citamos para que las atiendas.
             </p>
           </div>
-
-          {/* Paso 3 */}
           <div style={styles.stepCard}>
             <div style={styles.iconCircle}><Icons.Handshake /></div>
             <h3 style={styles.stepTitle}>3. Cierras la Venta</h3>
@@ -107,12 +113,8 @@ export default function LandingAsesores() {
         </div>
       </section>
 
-      {/* --- MODELO DE NEGOCIO (FEE): Claridad financiera --- */}
+      {/* --- MODELO DE NEGOCIO --- */}
       <section style={styles.feeSection}>
-        {/* 
-           ⚠️ IMPORTANTE: Usamos la clase 'flex-responsive' definida en index.css 
-           para que en móvil se ponga en columna y centrado, y en PC en fila.
-        */}
         <div className="flex-responsive"> 
           <div style={styles.feeIconWrapper}>
             <Icons.Percentage />
@@ -130,14 +132,13 @@ export default function LandingAsesores() {
         </div>
       </section>
 
-      {/* --- SCORECARD: Explicación de reglas --- */}
+      {/* --- SCORECARD --- */}
       <section style={styles.scoreSection}>
         <div style={styles.scoreContainer}>
           <h2 style={{...styles.sectionTitle, color: 'white'}}>Gestiona tu Score</h2>
           <p style={{color: '#cbd5e1', marginBottom: '30px'}}>
             Tu visibilidad depende de tu calidad, no de tu presupuesto.
           </p>
-          
           <div style={styles.scoreVisual}>
             <div style={styles.scoreBarContainer}>
               <div style={styles.scoreBarFill}></div>
@@ -153,7 +154,7 @@ export default function LandingAsesores() {
         </div>
       </section>
 
-      {/* --- TESTIMONIOS: Prueba social --- */}
+      {/* --- TESTIMONIOS --- */}
       <section style={styles.testimonialSection}>
         <h2 style={styles.sectionTitle}>Lo que dicen los expertos</h2>
         <div style={styles.testimonialGrid}>
@@ -170,11 +171,15 @@ export default function LandingAsesores() {
         </div>
       </section>
 
-      {/* --- FINAL CTA: Último llamado a la acción --- */}
+      {/* --- FINAL CTA --- */}
       <div style={styles.finalCtaSection}>
         <p style={styles.finalCtaText}>¿Listo para recibir mejores clientes?</p>
-        <button onClick={() => handleJoinClick('footer')} style={styles.ctaButtonSecondary}>
-          Contactar
+        <button 
+          onClick={() => handleActionClick('footer')} // ✅ Ahora ambos botones ejecutan la misma acción
+          disabled={isProcessing}
+          style={{...styles.ctaButtonSecondary, opacity: isProcessing ? 0.7 : 1}}
+        >
+          {isProcessing ? 'Procesando...' : 'Contactar'}
         </button>
       </div>
 
@@ -182,104 +187,43 @@ export default function LandingAsesores() {
   );
 }
 
-// --- ESTILOS CSS-IN-JS ---
+// --- ESTILOS CSS-IN-JS (Sin cambios) ---
 const styles = {
-  // Hero
-  heroSection: {
-    backgroundColor: 'white', padding: '40px 0', textAlign: 'center', marginBottom: '40px'
-  },
+  heroSection: { backgroundColor: 'white', padding: '40px 0', textAlign: 'center', marginBottom: '40px' },
   heroContent: { maxWidth: '800px', margin: '0 auto' },
-  heroBadge: {
-    backgroundColor: '#eff6ff', color: '#3b82f6', padding: '6px 12px', borderRadius: '20px',
-    fontSize: '0.85rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px',
-    display: 'inline-block', marginBottom: '20px'
-  },
-  heroTitle: {
-    fontSize: '2.5rem', color: 'var(--primary-color)', fontWeight: '900', lineHeight: '1.2', marginBottom: '20px'
-  },
+  heroBadge: { backgroundColor: '#eff6ff', color: '#3b82f6', padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', display: 'inline-block', marginBottom: '20px' },
+  heroTitle: { fontSize: '2.5rem', color: 'var(--primary-color)', fontWeight: '900', lineHeight: '1.2', marginBottom: '20px' },
   heroSubtitle: { fontSize: '1.2rem', color: '#64748b', lineHeight: '1.6', marginBottom: '40px' },
-  ctaButton: {
-    backgroundColor: 'var(--primary-color)', color: 'white', border: 'none', padding: '18px 40px',
-    fontSize: '1.1rem', fontWeight: 'bold', borderRadius: '50px', cursor: 'pointer',
-    boxShadow: '0 10px 25px rgba(0,0,0, 0.2)', transition: 'transform 0.2s', marginBottom: '15px'
-  },
+  ctaButton: { backgroundColor: 'var(--primary-color)', color: 'white', border: 'none', padding: '18px 40px', fontSize: '1.1rem', fontWeight: 'bold', borderRadius: '50px', cursor: 'pointer', boxShadow: '0 10px 25px rgba(0,0,0, 0.2)', transition: 'transform 0.2s', marginBottom: '15px' },
   disclaimerText: { fontSize: '0.8rem', color: '#94a3b8' },
-
-  // Steps
   stepsSection: { marginBottom: '50px' },
-  sectionTitle: {
-    textAlign: 'center', fontSize: '2rem', fontWeight: '800', color: 'var(--primary-color)', marginBottom: '40px'
-  },
-  stepsGrid: {
-    display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px'
-  },
-  stepCard: {
-    backgroundColor: 'white', padding: '30px', borderRadius: '20px', textAlign: 'center',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.05)', border: '1px solid #e5e7eb'
-  },
-  iconCircle: {
-    width: '80px', height: '80px', backgroundColor: '#eff6ff', borderRadius: '50%',
-    display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto',
-    color: 'var(--primary-color)'
-  },
+  sectionTitle: { textAlign: 'center', fontSize: '2rem', fontWeight: '800', color: 'var(--primary-color)', marginBottom: '40px' },
+  stepsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' },
+  stepCard: { backgroundColor: 'white', padding: '30px', borderRadius: '20px', textAlign: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', border: '1px solid #e5e7eb' },
+  iconCircle: { width: '80px', height: '80px', backgroundColor: '#eff6ff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto', color: 'var(--primary-color)' },
   stepTitle: { fontSize: '1.3rem', fontWeight: '700', color: 'var(--primary-color)', marginBottom: '10px' },
   stepText: { color: '#64748b', lineHeight: '1.5' },
-
-  // Fee Section
-  feeSection: { 
-    backgroundColor: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '20px', 
-    padding: '40px', marginBottom: '50px', maxWidth: '900px', margin: '0 auto 50px auto' 
-  },
-  feeIconWrapper: { 
-    backgroundColor: '#ffedd5', color: '#c2410c', padding: '20px', borderRadius: '50%', 
-    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 
-  },
-  // ⚠️ Corrección: Eliminado 'textAlign: left' para permitir que el CSS global centre el texto en móvil
-  feeTextWrapper: { flex: 1 }, 
+  feeSection: { backgroundColor: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '20px', padding: '40px', marginBottom: '50px', maxWidth: '900px', margin: '0 auto 50px auto' },
+  feeIconWrapper: { backgroundColor: '#ffedd5', color: '#c2410c', padding: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  feeTextWrapper: { flex: 1 },
   feeTitle: { fontSize: '1.5rem', fontWeight: '800', color: '#9a3412', marginBottom: '10px' },
   feeText: { fontSize: '1.1rem', color: '#431407', lineHeight: '1.6', marginBottom: '10px' },
   feeSubtext: { fontSize: '0.9rem', color: '#9a3412', fontStyle: 'italic' },
-
-  // Scorecard
-  scoreSection: {
-    padding: '50px 20px', backgroundColor: 'var(--primary-color)', color: 'white',
-    borderRadius: '20px', marginBottom: '50px'
-  },
+  scoreSection: { padding: '50px 20px', backgroundColor: 'var(--primary-color)', color: 'white', borderRadius: '20px', marginBottom: '50px' },
   scoreContainer: { maxWidth: '800px', margin: '0 auto', textAlign: 'center' },
-  scoreVisual: {
-    backgroundColor: 'rgba(255,255,255,0.1)', padding: '30px', borderRadius: '20px',
-    border: '1px solid rgba(255,255,255,0.1)'
-  },
-  scoreBarContainer: {
-    height: '20px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '10px',
-    marginBottom: '30px', position: 'relative', overflow: 'hidden'
-  },
+  scoreVisual: { backgroundColor: 'rgba(255,255,255,0.1)', padding: '30px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)' },
+  scoreBarContainer: { height: '20px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '10px', marginBottom: '30px', position: 'relative', overflow: 'hidden' },
   scoreBarFill: { width: '70%', height: '100%', backgroundColor: '#22c55e', borderRadius: '10px' },
-  scoreBadge: {
-    position: 'absolute', top: '-30px', right: '25%', backgroundColor: '#22c55e', color: 'white',
-    padding: '4px 10px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold'
-  },
+  scoreBadge: { position: 'absolute', top: '-30px', right: '25%', backgroundColor: '#22c55e', color: 'white', padding: '4px 10px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold' },
   scoreRules: { textAlign: 'left', display: 'grid', gap: '15px' },
   ruleItem: { fontSize: '1rem', color: '#e2e8f0' },
-
-  // Testimonials
   testimonialSection: { marginBottom: '50px' },
   testimonialGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' },
-  testimonialCard: {
-    backgroundColor: 'white', padding: '30px', borderRadius: '16px',
-    border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.02)'
-  },
+  testimonialCard: { backgroundColor: 'white', padding: '30px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' },
   stars: { display: 'flex', gap: '5px', marginBottom: '15px' },
   quote: { fontSize: '1.1rem', fontStyle: 'italic', color: '#334155', marginBottom: '20px', lineHeight: '1.6' },
   author: { fontWeight: 'bold', color: 'var(--primary-color)' },
-
-  // Final CTA
   finalCtaSection: { textAlign: 'center', marginTop: '40px', padding: '20px' },
   finalCtaText: { fontSize: '1.2rem', fontWeight: 'bold', color: '#1e293b', marginBottom: '15px' },
-  ctaButtonSecondary: {
-    backgroundColor: 'white', color: 'var(--primary-color)',
-    border: '2px solid var(--primary-color)', padding: '15px 50px',
-    fontSize: '1.1rem', fontWeight: 'bold', borderRadius: '50px',
-    cursor: 'pointer', transition: 'all 0.2s'
-  }
+  ctaButtonSecondary: { backgroundColor: 'white', color: 'var(--primary-color)', border: '2px solid var(--primary-color)', padding: '15px 50px', fontSize: '1.1rem', fontWeight: 'bold', borderRadius: '50px', cursor: 'pointer', transition: 'all 0.2s' }
 };
