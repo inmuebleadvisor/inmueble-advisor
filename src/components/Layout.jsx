@@ -1,33 +1,53 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react'; // ✅ Importamos useState y useEffect
 import { Link, Outlet, useLocation } from 'react-router-dom';
 
 // URL del Logotipo Oficial
 const LOGO_URL = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/Logo-InmuebleAdvisor-en-fondo-Azul-e1758163267740.png";
 
+// --- ICONOS PARA EL MENÚ (HAMBURGUESA/CERRAR) ---
+const MenuIcons = {
+  Menu: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>,
+  Close: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+};
+
 export default function Layout() {
-  // Hook para saber en qué URL estamos actualmente (ej: "/mapa")
   const location = useLocation();
+  // ✅ ESTADO para controlar si el menú móvil está abierto
+  const [isMenuOpen, setIsMenuOpen] = useState(false); 
+
+  /**
+   * Cierra el menú cuando la ruta cambia (si el usuario navega a otra pantalla).
+   */
+  useEffect(() => {
+    // Si la ruta cambió y el menú estaba abierto, lo cerramos
+    if (isMenuOpen) {
+      setIsMenuOpen(false);
+    }
+  }, [location.pathname]); // Se dispara cada vez que la ruta cambia
+
+  const toggleMenu = () => {
+    setIsMenuOpen(prev => !prev);
+  };
 
   /**
    * Helper para estilos de navegación (Active State)
-   * Devuelve estilos diferentes si el link coincide con la ruta actual.
    */
   const getLinkStyle = (path) => {
-    // Verificamos si la ruta actual empieza con el path del link
-    // Para el home ('/') la coincidencia debe ser exacta
     const isActive = path === '/' 
       ? location.pathname === '/' 
       : location.pathname.startsWith(path);
 
+    // ✅ NOTA: Añadimos 'display: block' para que ocupe todo el ancho en móvil
     return {
       color: 'white',
       textDecoration: 'none',
-      fontWeight: isActive ? '700' : '400', // Negrita si está activo
-      borderBottom: isActive ? '3px solid #fbbf24' : '3px solid transparent', // Línea amarilla
+      fontWeight: isActive ? '700' : '400',
+      borderBottom: isActive ? '3px solid #fbbf24' : '3px solid transparent',
       paddingBottom: '4px',
-      opacity: isActive ? 1 : 0.85, // Un poco transparente si no está activo
+      opacity: isActive ? 1 : 0.85,
       fontSize: '0.95rem',
-      transition: 'all 0.2s ease'
+      transition: 'all 0.2s ease',
+      display: 'block' 
     };
   };
 
@@ -38,30 +58,32 @@ export default function Layout() {
       <header style={styles.header}>
         <div style={styles.headerContent}>
 
-          {/* LOGOTIPO (Clic para ir al inicio) */}
-          <Link to="/" style={styles.logoContainer}>
+          {/* LOGOTIPO */}
+          <Link to="/" style={styles.logoContainer} onClick={() => setIsMenuOpen(false)}>
             <img src={LOGO_URL} alt="Inmueble Advisor" style={styles.logoImage} />
           </Link>
+          
+          {/* BOTÓN DE MENÚ (Visible solo en móvil por CSS) */}
+          <button onClick={toggleMenu} className="menu-toggle-btn">
+            {isMenuOpen ? <MenuIcons.Close /> : <MenuIcons.Menu />}
+          </button>
 
-          {/* MENÚ DE NAVEGACIÓN */}
-          <nav style={styles.nav}>
-            <Link to="/" style={getLinkStyle('/')}>Perfil</Link>
-            <Link to="/catalogo" style={getLinkStyle('/catalogo')}>Catálogo</Link>
-            <Link to="/mapa" style={getLinkStyle('/mapa')}>Mapa</Link>
-            
-            {/* ✅ NUEVO: Enlace al Portal de Asesores */}
-            <Link to="/soy-asesor" style={getLinkStyle('/soy-asesor')}>Asesores</Link>
+          {/* MENÚ DE NAVEGACIÓN (Clase dinámica para responsividad) */}
+          <nav 
+            className={`nav-menu ${isMenuOpen ? 'is-open' : ''}`}
+            style={styles.nav}
+          >
+            {/* Añadimos onClick para cerrar el menú al hacer clic en un enlace */}
+            <Link to="/" style={getLinkStyle('/')} onClick={() => setIsMenuOpen(false)}>Inicio</Link>
+            <Link to="/catalogo" style={getLinkStyle('/catalogo')} onClick={() => setIsMenuOpen(false)}>Catálogo</Link>
+            <Link to="/mapa" style={getLinkStyle('/mapa')} onClick={() => setIsMenuOpen(false)}>Mapa</Link>
+            <Link to="/soy-asesor" style={getLinkStyle('/soy-asesor')} onClick={() => setIsMenuOpen(false)}>Asesores</Link>
           </nav>
 
         </div>
       </header>
 
       {/* --- 2. CONTENIDO PRINCIPAL --- */}
-      {/* 
-          Outlet es el "hueco" donde se renderizan las pantallas hijas 
-          (Catalogo, Mapa, Detalle, LandingAsesores, etc.) según la ruta.
-          La clase "main-content" viene de index.css y maneja los márgenes responsivos.
-      */}
       <main className="main-content">
         <Outlet />
       </main>
@@ -69,13 +91,10 @@ export default function Layout() {
       {/* --- 3. PIE DE PÁGINA (FOOTER) --- */}
       <footer style={styles.footer}>
         <div style={styles.footerLinks}>
-          {/* Enlaces legales (Placeholders) */}
           <span style={styles.footerLink}>Términos y Condiciones</span>
           <span style={styles.footerSeparator}>|</span>
           <span style={styles.footerLink}>Aviso de Privacidad</span>
           <span style={styles.footerSeparator}>|</span>
-          
-          {/* ✅ NUEVO: Enlace en el Footer también */}
           <Link to="/soy-asesor" style={styles.footerLinkAnchor}>Soy Asesor</Link>
         </div>
 
@@ -93,22 +112,22 @@ const styles = {
   layoutContainer: {
     display: 'flex',
     flexDirection: 'column',
-    minHeight: '100vh', // Asegura que ocupe al menos toda la pantalla
-    backgroundColor: 'var(--bg-color)' // Usa la variable global
+    minHeight: '100vh',
+    backgroundColor: 'var(--bg-color)'
   },
   header: {
-    backgroundColor: 'var(--primary-color)', // Azul corporativo
+    backgroundColor: 'var(--primary-color)',
     color: 'white',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.15)', // Sombra suave para dar profundidad
-    position: 'sticky', // Hace que el menú se quede fijo arriba al scrollear
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    position: 'sticky',
     top: 0,
-    zIndex: 1000, // Siempre por encima de todo
+    zIndex: 1000,
   },
   headerContent: {
-    maxWidth: '1200px', // Ancho máximo para pantallas grandes
+    maxWidth: '1200px',
     margin: '0 auto',
     padding: '0 20px',
-    height: '60px', // Altura fija del header
+    height: '60px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -117,24 +136,24 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     textDecoration: 'none',
+    zIndex: 1010 // Asegura que el logo esté visible sobre el menú overlay
   },
   logoImage: {
-    height: '40px', // Tamaño controlado del logo
+    height: '40px',
     width: 'auto',
     objectFit: 'contain'
   },
   nav: {
-    display: 'flex',
-    gap: '20px', // Espacio entre enlaces
+    // La clase .nav-menu y .is-open manejan la responsividad
   },
   
   // Estilos del Footer
   footer: {
-    backgroundColor: '#1f2937', // Gris muy oscuro (casi negro)
-    color: '#9ca3af', // Gris claro para texto
+    backgroundColor: '#1f2937',
+    color: '#9ca3af',
     padding: '30px 20px',
     textAlign: 'center',
-    marginTop: 'auto', // Empuja el footer al fondo si hay poco contenido
+    marginTop: 'auto',
     borderTop: '1px solid #374151'
   },
   footerLinks: {
@@ -144,13 +163,12 @@ const styles = {
     gap: '10px',
     marginBottom: '15px',
     fontSize: '0.85rem',
-    flexWrap: 'wrap' // Para móviles
+    flexWrap: 'wrap'
   },
   footerLink: {
     cursor: 'pointer',
     transition: 'color 0.2s',
   },
-  // Estilo específico para links de React Router dentro del footer
   footerLinkAnchor: {
     color: '#9ca3af',
     textDecoration: 'none',

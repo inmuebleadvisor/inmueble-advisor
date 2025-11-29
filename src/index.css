@@ -70,3 +70,64 @@ button { cursor: pointer; }
     text-align: center;
   }
 }
+
+/* --- CLASES DE NAVEGACIÓN RESPONSIVA --- */
+
+/* Estilo por defecto del menú: Horizontal en escritorio */
+.nav-menu {
+  display: flex;
+  gap: 20px;
+  /* El estilo de los links se manejará en Layout.jsx, pero la estructura base es flex */
+}
+
+/* El botón de hamburguesa estará oculto en escritorio por defecto */
+.menu-toggle-btn {
+  display: none; 
+  background: none;
+  border: none;
+  color: white;
+  padding: 0;
+  cursor: pointer;
+  z-index: 1010; /* Asegura que esté por encima del menú */
+}
+
+@media (max-width: 768px) {
+  /* Mostrar el botón de hamburguesa en móvil */
+  .menu-toggle-btn {
+    display: block; 
+  }
+  
+  /* Ocultar el menú por defecto en móvil y definir su estilo de Overlay */
+  .nav-menu {
+    flex-direction: column; 
+    position: fixed;
+    top: 60px; /* Empieza debajo del header (60px de alto) */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--primary-color);
+    padding: 30px 20px;
+    z-index: 1000;
+    align-items: center;
+    gap: 30px;
+    opacity: 0.98;
+    transition: transform 0.4s ease-out;
+    /* Por defecto, el menú está fuera de la vista */
+    transform: translateY(-120vh); /* Mover fuera de la pantalla */
+  }
+
+  /* El estado 'is-open' lo trae a la vista */
+  .nav-menu.is-open {
+    transform: translateY(0);
+    display: flex; /* Asegura que sea visible */
+  }
+  
+  /* Estilo de los enlaces en el menú móvil (más grandes) */
+  .nav-menu a {
+    font-size: 1.5rem !important;
+    padding: 15px 0;
+    width: 80%; /* Ancho para facilitar el tap */
+    text-align: center;
+    /* La línea activa (border-bottom) se ve mejor que 100% de ancho aquí */
+  }
+}
