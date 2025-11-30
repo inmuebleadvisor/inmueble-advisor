@@ -2,98 +2,114 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { obtenerInventarioDesarrollos } from '../services/dataService'; // ✅ Servicio optimizado
+import { obtenerInventarioDesarrollos } from '../services/dataService';
 
-// --- ICONOS (SVG Inline para rendimiento) ---
-const Icons = {
-  Check: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>,
-  Search: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
-  Trash: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-};
+// --- ICONOS ---
+const CheckIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>;
 
 export default function OnboardingAsesor() {
   const navigate = useNavigate();
-  // Extraemos la función especial para cambiar de rol solo al final
-  const { convertirEnAsesor } = useUser(); 
+  const { convertirEnAsesor, userProfile } = useUser();
 
-  // --- ESTADOS DE CONTROL ---
-  const [step, setStep] = useState(1); // 1: Teléfono, 2: Inventario
+  // --- ESTADOS ---
+  const [step, setStep] = useState(1);
   const [loadingData, setLoadingData] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   
-  // --- DATOS DEL FORMULARIO ---
+  // Datos del Formulario
   const [telefono, setTelefono] = useState('');
   
-  // Inventario (Base de Datos + Manuales)
-  const [inventarioDB, setInventarioDB] = useState([]); // Lista cruda desde Firebase
+  // Inventario
+  const [inventarioDB, setInventarioDB] = useState([]); // Lista original (BD)
   const [seleccionados, setSeleccionados] = useState([]); // IDs seleccionados
-  const [manuales, setManuales] = useState([]); // {id, nombre, constructora} agregados a mano
-  
-  // --- UX / FILTROS ---
   const [searchTerm, setSearchTerm] = useState('');
-  const [showManualForm, setShowManualForm] = useState(false);
-  const [nuevoManual, setNuevoManual] = useState({ nombre: '', constructora: '' });
 
-  // 1. CARGA DE DATOS (Al montar el componente)
+  // 1. CARGA DE DATOS
   useEffect(() => {
+    // Safety Check: Si ya es asesor, redirigir
+    if (userProfile?.role === 'asesor') {
+        navigate('/account-asesor');
+        return;
+    }
+
     const cargar = async () => {
       setLoadingData(true);
-      // Usamos el servicio centralizado para aprovechar el caché
-      const data = await obtenerInventarioDesarrollos();
-      setInventarioDB(data);
-      setLoadingData(false);
+      try {
+        const data = await obtenerInventarioDesarrollos();
+        setInventarioDB(data);
+      } catch (error) {
+        console.error("Error al cargar inventario:", error);
+      } finally {
+        setLoadingData(false);
+      }
     };
     cargar();
-  }, []);
+  }, [userProfile, navigate]);
 
-  // 2. FILTRADO INTELIGENTE (Memoizado para no alentar la UI)
-  const listaVisible = useMemo(() => {
+  // 2. FILTRADO INTELIGENTE (Buscador)
+  const listaFiltrada = useMemo(() => {
     if (!searchTerm) return inventarioDB;
     const lower = searchTerm.toLowerCase();
-    // Filtramos por nombre del desarrollo o constructora
     return inventarioDB.filter(item => 
       item.nombre.toLowerCase().includes(lower) || 
       item.constructora.toLowerCase().includes(lower)
     );
   }, [inventarioDB, searchTerm]);
 
-  // --- HANDLERS (Manejadores de eventos) ---
+  // --- HANDLERS ---
 
-  // Seleccionar/Deseleccionar item de la BD
-  const toggleSeleccion = (id) => {
-    setSeleccionados(prev => 
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
+  const handleToggle = (id) => {
+    setSeleccionados(prev => {
+      if (prev.includes(id)) return prev.filter(item => item !== id); // Quitar
+      return [...prev, id]; // Agregar
+    });
   };
 
-  // Agregar item manual si no existe en la lista
-  const agregarManual = () => {
-    if (!nuevoManual.nombre) return;
-    // Creamos un ID temporal único
-    setManuales(prev => [...prev, { ...nuevoManual, id: `manual_${Date.now()}` }]);
-    setNuevoManual({ nombre: '', constructora: '' });
-    setShowManualForm(false);
-  };
-
-  // --- VALIDACIÓN Y GUARDADO FINAL ---
   const handleFinalizar = async () => {
-    if (!telefono || telefono.length < 10) return alert("Por favor ingresa un teléfono válido de 10 dígitos.");
-    
+    // Validación: El teléfono es obligatorio para los leads
+    if (!telefono || telefono.length < 10) {
+        alert("Por favor ingresa un teléfono válido de 10 dígitos.");
+        setStep(1); // Regresamos al paso 1 si falló
+        return;
+    }
+
+    // Validación: Inventario vacío (Advertencia)
+    if (seleccionados.length === 0) {
+        if(!window.confirm("No has seleccionado ningún desarrollo. Tu perfil estará vacío hasta que solicites inventario. ¿Continuar?")) return;
+    }
+
     setIsSaving(true);
     try {
-      // Unificamos la data seleccionada para guardarla
-      const inventarioFinal = [
-        ...seleccionados.map(id => ({ tipo: 'db', idDesarrollo: id })),
-        ...manuales.map(m => ({ tipo: 'manual', nombreManual: m.nombre, constructoraManual: m.constructora }))
-      ];
+      // A. CONSTRUCCIÓN DE INVENTARIO CON REGLAS DE NEGOCIO
+      // Aquí aplicamos la regla: Todo lo nuevo nace como 'pendiente'.
+      const inventarioFinal = seleccionados.map(id => ({ 
+        tipo: 'db', 
+        idDesarrollo: id,
+        status: 'pendiente', // 🔒 CANDADO DE SEGURIDAD
+        fechaSolicitud: new Date().toISOString() // Para saber cuándo lo pidió (regla de 30 días)
+      }));
 
-      // 🚀 MOMENTO CRÍTICO: Aquí convertimos al usuario de 'cliente' a 'asesor'
-      await convertirEnAsesor({
+      // B. INICIALIZACIÓN DE MÉTRICAS DEL SCORE
+      // Seteamos los valores iniciales para que el Dashboard no falle.
+      const datosInicialesAsesor = {
         telefono,
-        inventario: inventarioFinal
-      });
+        inventario: inventarioFinal,
+        
+        // Variables del Algoritmo de Calidad
+        scoreGlobal: 80, // Todos empiezan con 80
+        metricas: {
+            tasaCierre: 0,          // 0% inicial
+            promedioResenas: 0,     // 0 estrellas inicial
+            totalLeadsAsignados: 0, // Contador histórico
+            cumplimientoAdmin: 100, // 20% ganado por defecto al inicio
+            ultimaActualizacionInventario: new Date().toISOString()
+        }
+      };
 
-      // ✅ REDIRECCIÓN AL DASHBOARD DEL ASESOR (AccountAsesor)
+      // Llamamos a la función del Contexto que actualiza en Firebase
+      await convertirEnAsesor(datosInicialesAsesor);
+
+      // ¡Éxito! Redirigimos al Dashboard
       navigate('/account-asesor');
 
     } catch (error) {
@@ -105,202 +121,165 @@ export default function OnboardingAsesor() {
   };
 
   return (
-    <div style={styles.container}>
+    <div className="main-content" style={styles.container}>
       <div style={styles.card}>
         
-        {/* HEADER CON BARRA DE PROGRESO */}
-        <div style={styles.header}>
-          <div style={styles.progressRow}>
-            {/* Indicadores visuales de paso */}
-            <div style={{...styles.stepDot, backgroundColor: step >= 1 ? 'var(--primary-color)' : '#e5e7eb'}}>1</div>
-            <div style={styles.connector} />
-            <div style={{...styles.stepDot, backgroundColor: step >= 2 ? 'var(--primary-color)' : '#e5e7eb'}}>2</div>
-          </div>
-          <h2 style={styles.title}>
-            {step === 1 ? 'Tu Contacto' : 'Tu Inventario'}
-          </h2>
-          <p style={styles.subtitle}>
-            {step === 1 ? 'Medio principal para recibir leads' : 'Selecciona los desarrollos que vendes'}
-          </p>
+        {/* HEADER PROGRESO */}
+        <div style={styles.progressBar}>
+            <div style={{...styles.progressFill, width: step === 1 ? '50%' : '100%'}}></div>
         </div>
+
+        <h2 style={styles.title}>
+            {step === 1 ? '📱 Tu Contacto' : '🏢 Tu Inventario'}
+        </h2>
+        <p style={styles.subtitle}>
+            {step === 1 
+                ? 'El medio principal por donde te llegarán los leads.' 
+                : 'Selecciona los desarrollos que estás autorizado a vender.'}
+        </p>
 
         {/* PASO 1: TELÉFONO */}
         {step === 1 && (
-          <div style={styles.body}>
-            <div style={styles.inputWrapper}>
-              <span style={{fontSize:'2rem'}}>📱</span>
-              <input 
-                type="tel" 
-                placeholder="55 1234 5678" 
-                value={telefono}
-                maxLength={10}
-                // Solo permite números
-                onChange={(e) => setTelefono(e.target.value.replace(/\D/g,''))}
-                style={styles.bigInput}
-                autoFocus
-              />
-            </div>
-            <p style={styles.hint}>Ingresa tu número a 10 dígitos.</p>
+          <div style={styles.stepContent}>
+             <div style={styles.inputWrapper}>
+                 <span style={{fontSize:'1.5rem', marginRight:'10px'}}>🇲🇽 +52</span>
+                 <input 
+                   type="tel" 
+                   placeholder="123 456 7890" 
+                   value={telefono}
+                   maxLength={10}
+                   onChange={(e) => setTelefono(e.target.value.replace(/\D/g,''))}
+                   style={styles.inputBig}
+                   autoFocus
+                 />
+             </div>
+             <p style={{color: '#6b7280', fontSize: '0.85rem', marginTop: '15px', textAlign: 'center'}}>
+                Te enviaremos notificaciones de nuevos clientes a este número.
+             </p>
           </div>
         )}
 
         {/* PASO 2: INVENTARIO */}
         {step === 2 && (
-          <div style={styles.bodyNoPadding}>
-            {/* Buscador Fijo Arriba */}
-            <div style={styles.stickySearch}>
-              <div style={styles.searchBox}>
-                <Icons.Search />
+          <div style={{...styles.stepContent, justifyContent: 'flex-start', padding: 0}}>
+             
+             {/* Buscador Fijo */}
+             <div style={styles.searchContainer}>
                 <input 
-                  placeholder="Buscar desarrollo o constructora..." 
+                  placeholder="🔍 Buscar desarrollo o constructora..." 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  style={styles.searchInput}
+                  style={styles.inputSearch}
                 />
-              </div>
-            </div>
+             </div>
 
-            {/* Lista Scrollable */}
-            <div style={styles.listContainer}>
-              {loadingData ? (
-                <p style={{padding:'20px', textAlign:'center', color:'#999'}}>Cargando catálogo...</p>
-              ) : (
-                <>
-                  {/* Items Agregados Manualmente */}
-                  {manuales.map(m => (
-                    <div key={m.id} style={styles.itemRowManual}>
-                      <div>
-                        <div style={styles.itemName}>{m.nombre}</div>
-                        <div style={styles.itemSub}>Manual • {m.constructora}</div>
-                      </div>
-                      <button onClick={() => setManuales(prev => prev.filter(x => x.id !== m.id))} style={styles.trashBtn}>
-                        <Icons.Trash />
-                      </button>
+             {/* Lista Scrollable */}
+             <div style={styles.listContainer}>
+                {loadingData && (
+                    <div style={{textAlign:'center', padding:'40px', color:'#9ca3af'}}>
+                        <p>Cargando catálogo...</p>
                     </div>
-                  ))}
-
-                  {/* Items de la Base de Datos */}
-                  {listaVisible.map(item => {
+                )}
+                
+                {!loadingData && listaFiltrada.map(item => {
                     const isSelected = seleccionados.includes(item.id);
                     return (
-                      <div 
-                        key={item.id} 
-                        onClick={() => toggleSeleccion(item.id)}
-                        style={{
-                          ...styles.itemRow,
-                          backgroundColor: isSelected ? '#eff6ff' : 'white',
-                          borderColor: isSelected ? 'var(--primary-color)' : '#eee'
-                        }}
-                      >
-                        <div style={styles.itemInfo}>
-                          <div style={{...styles.itemName, color: isSelected ? 'var(--primary-color)' : '#333'}}>
-                            {item.nombre}
-                          </div>
-                          <div style={styles.itemSub}>{item.constructora}</div>
+                        <div 
+                           key={item.id} 
+                           onClick={() => handleToggle(item.id)}
+                           style={{
+                               ...styles.itemRow,
+                               backgroundColor: isSelected ? '#eff6ff' : 'white',
+                               borderColor: isSelected ? 'var(--primary-color)' : '#e5e7eb'
+                           }}
+                        >
+                           <div style={{flex: 1}}>
+                               <div style={{fontWeight: '700', color: '#374151'}}>{item.nombre}</div>
+                               <div style={{fontSize: '0.8rem', color: '#9ca3af'}}>{item.constructora} • {item.ubicacion?.ciudad || 'General'}</div>
+                           </div>
+                           {isSelected && (
+                               <div style={{
+                                   color: 'var(--primary-color)', 
+                                   backgroundColor: '#dbeafe', 
+                                   borderRadius: '50%', 
+                                   width: '28px', height: '28px', 
+                                   display: 'flex', alignItems: 'center', justifyContent: 'center'
+                               }}>
+                                   <CheckIcon />
+                               </div>
+                           )}
                         </div>
-                        {isSelected && <div style={styles.checkIcon}><Icons.Check /></div>}
-                      </div>
                     );
-                  })}
-                  
-                  {/* Sección para Agregar Manualmente */}
-                  <div style={styles.manualSection}>
-                    {!showManualForm ? (
-                      <button onClick={() => setShowManualForm(true)} style={styles.addBtn}>
-                        ¿No encuentras tu desarrollo? + Agregar Manualmente
-                      </button>
-                    ) : (
-                      <div style={styles.manualForm}>
-                        <input 
-                          placeholder="Nombre del Desarrollo" 
-                          value={nuevoManual.nombre} 
-                          onChange={e => setNuevoManual({...nuevoManual, nombre: e.target.value})}
-                          style={styles.inputSmall}
-                        />
-                        <input 
-                          placeholder="Constructora" 
-                          value={nuevoManual.constructora} 
-                          onChange={e => setNuevoManual({...nuevoManual, constructora: e.target.value})}
-                          style={styles.inputSmall}
-                        />
-                        <div style={{display:'flex', gap:'10px', marginTop:'10px'}}>
-                          <button onClick={agregarManual} style={styles.btnSmallPrimary}>Agregar</button>
-                          <button onClick={() => setShowManualForm(false)} style={styles.btnSmallSec}>Cancelar</button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
+                })}
+
+                {/* Mensaje vacío */}
+                {!loadingData && listaFiltrada.length === 0 && (
+                    <div style={{padding:'40px', textAlign:'center', color:'#9ca3af'}}>
+                        <p>No encontramos resultados para "{searchTerm}"</p>
+                        <p style={{fontSize:'0.8rem'}}>Intenta con otro nombre.</p>
+                    </div>
+                )}
+             </div>
+             
+             {/* Nota al pie sobre aprobación */}
+             <div style={styles.noticeBar}>
+                ℹ️ Los desarrollos seleccionados quedarán pendientes de validación.
+             </div>
           </div>
         )}
 
-        {/* FOOTER ACTIONS (Botones Siguiente/Atrás) */}
+        {/* FOOTER ACCIONES */}
         <div style={styles.footer}>
-          {step === 2 && (
-            <button onClick={() => setStep(1)} style={styles.btnBack}>Atrás</button>
-          )}
-          
-          <button 
-            onClick={() => {
-              if (step === 1) {
-                if (telefono.length < 10) return alert("Teléfono inválido");
-                setStep(2);
-              } else {
-                handleFinalizar();
-              }
-            }}
-            disabled={isSaving}
-            style={{...styles.btnPrimary, width: step === 1 ? '100%' : 'auto', flex: 1}}
-          >
-            {step === 1 ? 'Siguiente' : (isSaving ? 'Guardando...' : 'Finalizar Registro')}
-          </button>
+            {step === 2 && (
+                <button onClick={() => setStep(1)} style={styles.btnSecondary}>Atrás</button>
+            )}
+            
+            <button 
+                onClick={() => {
+                    if (step === 1) {
+                        if (telefono.length < 10) alert("El teléfono debe tener 10 dígitos");
+                        else setStep(2);
+                    } else {
+                        handleFinalizar();
+                    }
+                }}
+                disabled={isSaving}
+                style={styles.btnPrimary}
+            >
+                {step === 1 ? 'Siguiente 👉' : (isSaving ? 'Guardando Perfil...' : 'Finalizar Registro 🎉')}
+            </button>
         </div>
+
       </div>
     </div>
   );
 }
 
-// --- ESTILOS RESPONSIVOS ---
+// --- ESTILOS MEJORADOS ---
 const styles = {
-  container: { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#f3f4f6', fontFamily: "'Segoe UI', sans-serif" },
-  card: { width: '100%', maxWidth: '480px', height: '90vh', maxHeight: '700px', backgroundColor: 'white', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+  container: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f3f4f6', fontFamily: "'Segoe UI', sans-serif", padding: '20px' },
+  card: { width: '100%', maxWidth: '480px', height: '85vh', maxHeight: '700px', backgroundColor: 'white', borderRadius: '24px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' },
   
-  header: { padding: '30px 30px 10px 30px', textAlign: 'center' },
-  progressRow: { display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' },
-  stepDot: { width: '30px', height: '30px', borderRadius: '50%', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.9rem', transition: 'background 0.3s' },
-  connector: { width: '40px', height: '2px', backgroundColor: '#e5e7eb', margin: '0 10px' },
-  title: { margin: '0 0 5px 0', color: '#111827', fontSize: '1.5rem', fontWeight: '800' },
-  subtitle: { margin: 0, color: '#6b7280', fontSize: '0.95rem' },
+  progressBar: { height: '6px', width: '100%', backgroundColor: '#f3f4f6' },
+  progressFill: { height: '100%', backgroundColor: 'var(--primary-color)', transition: 'width 0.4s ease-in-out' },
   
-  body: { flex: 1, padding: '30px', display: 'flex', flexDirection: 'column', justifyContent: 'center' },
-  bodyNoPadding: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+  title: { textAlign: 'center', margin: '30px 0 5px', color: '#111827', fontSize: '1.5rem', fontWeight: '800' },
+  subtitle: { textAlign: 'center', color: '#6b7280', fontSize: '0.95rem', padding: '0 30px', marginBottom: '25px', lineHeight: '1.4' },
   
-  inputWrapper: { display: 'flex', alignItems: 'center', gap: '15px', backgroundColor: '#f9fafb', padding: '15px', borderRadius: '16px', border: '2px solid #e5e7eb' },
-  bigInput: { border: 'none', background: 'transparent', fontSize: '1.5rem', fontWeight: 'bold', width: '100%', outline: 'none', color: '#333' },
-  hint: { textAlign: 'center', color: '#9ca3af', marginTop: '10px', fontSize: '0.9rem' },
+  stepContent: { flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '20px', overflow: 'hidden' },
   
-  stickySearch: { padding: '15px 20px', borderBottom: '1px solid #f3f4f6', backgroundColor: 'white' },
-  searchBox: { display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#f3f4f6', padding: '10px 15px', borderRadius: '12px' },
-  searchInput: { border: 'none', background: 'transparent', width: '100%', outline: 'none', fontSize: '1rem' },
+  inputWrapper: { display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '2px solid #e5e7eb', paddingBottom: '5px', width: '80%', margin: '0 auto' },
+  inputBig: { fontSize: '1.8rem', textAlign: 'left', border: 'none', width: '100%', outline: 'none', fontWeight: 'bold', color: '#374151', letterSpacing: '1px' },
   
-  listContainer: { flex: 1, overflowY: 'auto', padding: '15px' },
-  itemRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 15px', borderRadius: '12px', border: '1px solid', marginBottom: '8px', cursor: 'pointer', transition: 'all 0.1s' },
-  itemRowManual: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 15px', borderRadius: '12px', border: '1px solid #fed7aa', backgroundColor: '#fff7ed', marginBottom: '8px' },
-  itemName: { fontWeight: '700', fontSize: '0.95rem' },
-  itemSub: { fontSize: '0.8rem', color: '#6b7280' },
-  checkIcon: { color: 'var(--primary-color)' },
-  trashBtn: { background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' },
+  searchContainer: { padding: '15px 20px', borderBottom: '1px solid #f3f4f6', backgroundColor: 'white', zIndex: 10 },
+  inputSearch: { width: '100%', padding: '12px 15px', borderRadius: '12px', border: '1px solid #d1d5db', fontSize: '1rem', outline: 'none', backgroundColor: '#f9fafb', transition: 'all 0.2s' },
   
-  manualSection: { marginTop: '20px', padding: '10px', borderTop: '1px solid #f3f4f6' },
-  addBtn: { width: '100%', padding: '12px', color: 'var(--primary-color)', background: '#eff6ff', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' },
-  manualForm: { backgroundColor: '#f9fafb', padding: '15px', borderRadius: '12px' },
-  inputSmall: { width: '100%', padding: '8px', marginBottom: '8px', borderRadius: '8px', border: '1px solid #ddd' },
-  btnSmallPrimary: { backgroundColor: 'var(--primary-color)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' },
-  btnSmallSec: { background: 'none', border: 'none', color: '#666', cursor: 'pointer' },
+  listContainer: { flex: 1, overflowY: 'auto', padding: '15px 20px' },
+  itemRow: { padding: '12px 15px', border: '1px solid', borderRadius: '12px', marginBottom: '10px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'transform 0.1s' },
   
-  footer: { padding: '20px', borderTop: '1px solid #f3f4f6', display: 'flex', gap: '15px' },
-  btnBack: { padding: '15px 25px', borderRadius: '12px', border: 'none', backgroundColor: '#f3f4f6', color: '#374151', fontWeight: 'bold', cursor: 'pointer' },
-  btnPrimary: { padding: '15px', borderRadius: '12px', border: 'none', backgroundColor: 'var(--primary-color)', color: 'white', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem' }
+  noticeBar: { backgroundColor: '#fffbeb', color: '#b45309', fontSize: '0.75rem', padding: '8px', textAlign: 'center', borderTop: '1px solid #fcd34d' },
+
+  footer: { padding: '20px', borderTop: '1px solid #f3f4f6', display: 'flex', gap: '15px', backgroundColor: 'white' },
+  btnPrimary: { flex: 1, padding: '16px', backgroundColor: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' },
+  btnSecondary: { padding: '16px 24px', backgroundColor: 'white', color: '#374151', border: '1px solid #d1d5db', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }
 };

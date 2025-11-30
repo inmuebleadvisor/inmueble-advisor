@@ -1,122 +1,123 @@
 // src/screens/LandingAsesores.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 
-// --- ICONOS (SVG en línea para rendimiento) ---
-const Icons = {
-  // ... (Mismos iconos que tenías, para ahorrar espacio no los repito aquí) ...
-  Check: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-};
-
 export default function LandingAsesores() {
   const navigate = useNavigate();
-  const { trackBehavior, loginWithGoogle, userProfile } = useUser(); 
-  
-  // ✅ CORRECCIÓN 1: Inicialización síncrona para evitar parpadeo (Flicker)
-  const [variant] = useState(() => Math.random() > 0.5 ? 'A' : 'B');
+  // Extraemos lo necesario del contexto. 'userProfile' es vital para saber si ya tiene rol.
+  const { trackBehavior, loginWithGoogle, userProfile, user } = useUser(); 
   
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // ✅ CORRECCIÓN 2: Lógica de redirección inteligente
-  const handleActionClick = async (source) => {
-    trackBehavior('click_advisor_cta', { variant, source });
-    
-    // Si ya es asesor, lo mandamos directo a su dashboard/perfil
-    if (userProfile?.role === 'asesor') {
-      navigate('/perfil');
-      return;
+  // --- DIDÁCTICO: Lógica de Redirección Automática ---
+  // Si el usuario ya está logueado y YA ES asesor, no debería ver esta pantalla de venta.
+  // Lo redirigimos automáticamente a su panel.
+  useEffect(() => {
+    if (user && userProfile?.role === 'asesor') {
+      navigate('/account-asesor');
     }
+  }, [user, userProfile, navigate]);
 
+  const handleComenzar = async () => {
     setIsProcessing(true);
+    trackBehavior('click_advisor_cta', { source: 'landing_hero' });
+
     try {
-      // Intentamos login (o verificamos sesión actual)
-      // Nota: loginWithGoogle ahora NO cambia el rol, solo loguea.
-      await loginWithGoogle();
+      // 1. Si NO hay usuario, forzamos el login.
+      // Si YA hay usuario (ej. un cliente que quiere volverse asesor), esta función retorna el usuario actual sin pedir login de nuevo.
+      if (!user) {
+        await loginWithGoogle(); // Esto crea el usuario como 'cliente' por defecto (seguridad).
+      }
       
-      // Una vez logueado (sea nuevo o cliente existente), vamos al wizard
+      // 2. Una vez que tenemos sesión, lo enviamos al Wizard para que complete su perfil.
       navigate('/onboarding-asesor');
       
     } catch (error) {
-      console.error("Error en flujo de entrada:", error);
+      console.error("Error en el flujo de entrada:", error);
+      alert("Hubo un error al conectar. Por favor intenta de nuevo.");
     } finally {
       setIsProcessing(false);
     }
   };
 
   return (
-    <div className="main-content animate-fade-in" style={{ paddingBottom: '50px' }}>
+    <div className="main-content animate-fade-in" style={styles.container}>
       
       {/* HEADER HERO */}
       <header style={styles.heroSection}>
         <div style={styles.heroContent}>
-          <span style={styles.heroBadge}>Portal de Aliados</span>
+          <span style={styles.badge}>Portal de Aliados</span>
           
-          <h1 style={styles.heroTitle}>
-            {variant === 'A' 
-              ? "Gana comisiones por tu servicio, no por tu publicidad."
-              : "Inmueble Advisor premia tu calidad con Leads reales."
-            }
+          <h1 style={styles.title}>
+            Tu red inmobiliaria,<br />
+            <span style={{color: 'var(--primary-color)'}}>basada en resultados.</span>
           </h1>
 
-          <p style={styles.heroSubtitle}>
-            Únete a la primera red inmobiliaria basada en meritocracia. 
-            Si tienes buenas propiedades y buen trato, los clientes son tuyos.
+          <p style={styles.subtitle}>
+            Olvídate de pagar por publicidad sin garantía. En Inmueble Advisor, 
+            te conectamos con clientes pre-calificados listos para comprar.
           </p>
 
           <button 
-            onClick={() => handleActionClick('hero')} 
+            onClick={handleComenzar} 
             disabled={isProcessing} 
-            style={{...styles.ctaButton, opacity: isProcessing ? 0.7 : 1}}
+            style={{
+              ...styles.ctaButton, 
+              opacity: isProcessing ? 0.7 : 1,
+              cursor: isProcessing ? 'wait' : 'pointer'
+            }}
           >
-            {isProcessing ? 'Conectando...' : 'Comenzar Registro Gratuito'}
+            {isProcessing ? 'Conectando tu cuenta...' : 'Comenzar Registro Gratuito'}
           </button>
           
-          <p style={styles.disclaimerText}>*Sin tarjetas de crédito. Registro en 2 minutos.</p>
+          <p style={styles.microCopy}>*Sin tarjetas de crédito. Registro en 2 minutos.</p>
         </div>
       </header>
 
-      {/* BENEFICIOS (Diseño mejorado) */}
-      <section style={styles.benefitsGrid}>
-          <div style={styles.benefitCard}>
-             <h3>🚀 Leads Calificados</h3>
-             <p>Olvídate de "sólo estoy viendo". Te enviamos clientes con crédito perfilado.</p>
-          </div>
-          <div style={styles.benefitCard}>
-             <h3>🤝 Cero Riesgo</h3>
-             <p>No cobramos mensualidad. Solo ganamos una comisión si tú cierras la venta.</p>
-          </div>
-          <div style={styles.benefitCard}>
-             <h3>⭐ Tu Reputación Cuenta</h3>
-             <p>Tu posición en el buscador depende de tus reseñas, no de cuánto pagues.</p>
-          </div>
+      {/* SECCIÓN DE BENEFICIOS (Grid Responsive) */}
+      <section style={styles.benefitsSection}>
+        <BenefitCard 
+          emoji="🚀" 
+          title="Leads Calificados" 
+          desc="Olvídate de 'sólo estoy viendo'. Recibe clientes con perfil financiero validado." 
+        />
+        <BenefitCard 
+          emoji="🤝" 
+          title="Cero Riesgo" 
+          desc="No cobramos mensualidad. Solo ganamos una comisión si tú cierras la venta." 
+        />
+        <BenefitCard 
+          emoji="⭐" 
+          title="Meritocracia" 
+          desc="Tu posición en el buscador depende de tus reseñas y velocidad, no de cuánto pagues." 
+        />
       </section>
 
-      {/* CTA FINAL */}
-      <div style={styles.finalCtaSection}>
-        <h3>¿Listo para modernizar tu forma de vender?</h3>
-        <button 
-          onClick={() => handleActionClick('footer')} 
-          disabled={isProcessing}
-          style={styles.ctaButtonSecondary}
-        >
-          Crear Cuenta de Asesor
-        </button>
-      </div>
     </div>
   );
 }
 
+// --- DIDÁCTICO: Componente Pequeño Interno ---
+// Extraer partes repetitivas (como las tarjetas) hace el código principal más limpio.
+const BenefitCard = ({ emoji, title, desc }) => (
+  <div style={styles.card}>
+    <div style={{fontSize: '2.5rem', marginBottom: '15px'}}>{emoji}</div>
+    <h3 style={{margin: '0 0 10px 0', color: '#111'}}>{title}</h3>
+    <p style={{margin: 0, color: '#666', fontSize: '0.95rem', lineHeight: '1.5'}}>{desc}</p>
+  </div>
+);
+
+// Estilos extraídos al final para limpieza visual
 const styles = {
+  container: { paddingBottom: '50px' },
   heroSection: { textAlign: 'center', padding: '60px 20px 40px', backgroundColor: 'white' },
   heroContent: { maxWidth: '800px', margin: '0 auto' },
-  heroBadge: { backgroundColor: '#eff6ff', color: 'var(--primary-color)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', display: 'inline-block', marginBottom: '20px' },
-  heroTitle: { fontSize: '2.5rem', color: '#111827', fontWeight: '900', lineHeight: '1.2', marginBottom: '20px' },
-  heroSubtitle: { fontSize: '1.2rem', color: '#4b5563', lineHeight: '1.6', marginBottom: '40px' },
-  ctaButton: { backgroundColor: 'var(--primary-color)', color: 'white', border: 'none', padding: '18px 32px', fontSize: '1.1rem', fontWeight: 'bold', borderRadius: '50px', cursor: 'pointer', boxShadow: '0 8px 20px rgba(0,57,106,0.3)', transition: 'transform 0.2s' },
-  disclaimerText: { marginTop: '15px', fontSize: '0.85rem', color: '#9ca3af' },
-  benefitsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px', padding: '40px 20px', maxWidth: '1000px', margin: '0 auto' },
-  benefitCard: { backgroundColor: 'white', padding: '30px', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', border: '1px solid #f3f4f6', textAlign: 'center' },
-  finalCtaSection: { textAlign: 'center', padding: '60px 20px', backgroundColor: '#f9fafb', marginTop: '40px' },
-  ctaButtonSecondary: { backgroundColor: 'transparent', color: 'var(--primary-color)', border: '2px solid var(--primary-color)', padding: '15px 40px', fontSize: '1rem', fontWeight: 'bold', borderRadius: '50px', cursor: 'pointer', marginTop: '20px' }
+  badge: { backgroundColor: '#eff6ff', color: 'var(--primary-color)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', display: 'inline-block', marginBottom: '20px' },
+  title: { fontSize: '2.5rem', color: '#111827', fontWeight: '900', lineHeight: '1.2', marginBottom: '20px' },
+  subtitle: { fontSize: '1.2rem', color: '#4b5563', lineHeight: '1.6', marginBottom: '40px' },
+  ctaButton: { backgroundColor: 'var(--primary-color)', color: 'white', border: 'none', padding: '18px 32px', fontSize: '1.1rem', fontWeight: 'bold', borderRadius: '50px', boxShadow: '0 8px 20px rgba(0,57,106,0.3)', transition: 'transform 0.2s' },
+  microCopy: { marginTop: '15px', fontSize: '0.85rem', color: '#9ca3af' },
+  benefitsSection: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px', padding: '40px 20px', maxWidth: '1000px', margin: '0 auto' },
+  card: { backgroundColor: 'white', padding: '30px', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', border: '1px solid #f3f4f6', textAlign: 'center' }
 };

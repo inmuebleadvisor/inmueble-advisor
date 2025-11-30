@@ -1,254 +1,306 @@
-// src/screens/AccountAsesor.jsx
-import React, { useState, useEffect } from 'react';
+// src/screens/AccountAsessor.jsx
+import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '../context/UserContext';
-import { obtenerInventarioDesarrollos } from '../services/dataService';
-import { db } from '../firebase/config';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { 
+  hidratarInventarioAsesor, 
+  obtenerLeadsAsignados, 
+  calcularEstadisticasAsesor,
+  actualizarScoreAsesor 
+} from '../services/dataService'; 
+import { generarLeadAutomatico } from '../services/leadAssignmentService';
+import LeadCard from '../components/LeadCard'; 
+import LeadActionModal from '../components/LeadActionModal'; 
+
+// Gráficos
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 
 // --- ICONOS ---
 const Icons = {
-  Trophy: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 21h8m-4-9v9m-2.062-5.36L15 15.586l4.939-4.939a2.939 2.939 0 0 0-4.158-4.158L10 10.586l-2.781-2.781a2.939 2.939 0 0 0-4.158 4.158L8 16.94z"/></svg>,
-  Edit: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
-  Clock: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-  CheckCircle: () => <svg width="20" height="20" fill="none" stroke="#10b981" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+  Crown: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>,
+  Lock: () => <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+  Users: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>,
+  Wallet: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"></path><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"></path><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"></path></svg>,
+  Test: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg>,
+  History: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
+  ChevronDown: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>,
+  ChevronUp: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 15l-6-6-6 6"/></svg>
 };
 
 export default function AccountAsesor() {
   const { user, userProfile } = useUser();
   
-  // Estados
+  // Estados de Datos
   const [inventario, setInventario] = useState([]);
+  const [leads, setLeads] = useState([]); 
+  const [stats, setStats] = useState(null); 
   const [loading, setLoading] = useState(true);
-  const [editingItem, setEditingItem] = useState(null); // Item siendo editado
   
-  // Formulario de edición
-  const [formData, setFormData] = useState({ precio: '', disponibilidad: 'inmediata', notas: '' });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // 1. CARGA DE DATOS (Hidratar el inventario del usuario con nombres reales)
+  // Estados UI
+  const [leadToEdit, setLeadToEdit] = useState(null); 
+  const [simulando, setSimulando] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  
+  // Hook simple para detectar escritorio (Corrige el error de @media)
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth > 1024);
   useEffect(() => {
-    const cargarDatos = async () => {
-      if (userProfile?.inventario) {
-        const catalogoGlobal = await obtenerInventarioDesarrollos();
-        
-        // Cruzamos los IDs del usuario con el catálogo global para obtener nombres
-        const miInventario = userProfile.inventario.map(item => {
-          if (item.tipo === 'db') {
-            const dataReal = catalogoGlobal.find(d => d.id === item.idDesarrollo);
-            return { ...item, ...dataReal };
-          }
-          return { ...item, nombre: item.nombreManual, constructora: item.constructoraManual };
-        });
-        
-        setInventario(miInventario);
+    const handleResize = () => setIsDesktop(window.innerWidth > 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // --- CARGA DE DATOS ---
+  const refreshDashboard = useCallback(async () => {
+    if (!user?.uid) return;
+    try {
+      const misLeads = await obtenerLeadsAsignados(user.uid);
+      setLeads(misLeads);
+      
+      const metricasCalculadas = calcularEstadisticasAsesor(misLeads);
+      setStats(metricasCalculadas);
+
+      if (userProfile) {
+        await actualizarScoreAsesor(user.uid, metricasCalculadas, userProfile);
       }
+
+      if (userProfile?.inventario) {
+         const dataInv = await hidratarInventarioAsesor(userProfile.inventario);
+         setInventario(dataInv);
+      }
+    } catch (err) {
+      console.error("Error dashboard:", err);
+    }
+  }, [user, userProfile]);
+
+  useEffect(() => {
+    const init = async () => {
+      await refreshDashboard();
       setLoading(false);
     };
-    cargarDatos();
-  }, [userProfile]);
+    init();
+  }, [refreshDashboard]);
 
-  // 2. MANEJO DE ACTUALIZACIONES (SOLICITUD AL ADMIN)
-  const handleUpdateClick = (item) => {
-    setEditingItem(item);
-    setFormData({ precio: '', disponibilidad: 'inmediata', notas: '' });
-  };
+  // --- HANDLERS ---
+  const handleSimularLead = async () => {
+    const desarrolloActivo = inventario.find(i => i.status === 'activo');
+    if (!desarrolloActivo) return alert("❌ Error: No tienes inventario ACTIVO.");
 
-  const enviarSolicitud = async () => {
-    setIsSubmitting(true);
+    setSimulando(true);
     try {
-      // EN LUGAR DE ACTUALIZAR, CREAMOS UNA SOLICITUD EN 'requests'
-      await addDoc(collection(db, "solicitudes_cambios"), {
-        asesorUid: user.uid,
-        asesorNombre: userProfile.nombre,
-        desarrolloId: editingItem.id || editingItem.nombreManual, // ID o Nombre si es manual
-        nombreDesarrollo: editingItem.nombre,
-        cambiosSolicitados: formData,
-        status: 'pendiente', // 🔒 EL ADMIN DEBE APROBAR ESTO
-        fecha: serverTimestamp()
-      });
+        const fakeId = Math.floor(Math.random() * 9000) + 1000;
+        const datosCliente = {
+            nombre: `Prospecto #${fakeId}`,
+            email: `cliente${fakeId}@mail.com`,
+            telefono: `55${fakeId}0000`
+        };
+        const resultado = await generarLeadAutomatico(
+            datosCliente, desarrolloActivo.idDesarrollo, desarrolloActivo.nombre, "Modelo Prototipo"
+        );
 
-      alert("Solicitud enviada al administrador. Tus cambios se reflejarán una vez aprobados.");
-      setEditingItem(null); // Cerrar modal
+        if (resultado.success && resultado.asesor.uid === user.uid) {
+            setTimeout(() => {
+                alert(`🔔 ¡Nuevo Lead!\n${datosCliente.nombre}`);
+                refreshDashboard();
+            }, 500);
+        } else {
+            alert("Lead generado pero asignado a otro asesor (por reglas de score).");
+        }
     } catch (error) {
-      console.error("Error enviando solicitud:", error);
-      alert("Error al enviar solicitud.");
+        console.error(error);
     } finally {
-      setIsSubmitting(false);
+        setSimulando(false);
     }
   };
 
-  if (loading) return <div style={{padding:'40px', textAlign:'center'}}>Cargando tu perfil...</div>;
+  // --- FILTROS ---
+  const activeLeads = leads.filter(l => !['vendido', 'perdido', 'escriturado'].includes(l.status));
+  const historyLeads = leads.filter(l => ['vendido', 'perdido', 'escriturado'].includes(l.status));
+
+  // Datos
+  const score = userProfile?.scoreGlobal || 80;
+  const nivel = score >= 90 ? 'Elite' : (score >= 80 ? 'Pro' : 'Rookie');
+  const chartData = stats ? [
+    { name: 'Activos', value: stats.activos, color: '#3b82f6' },
+    { name: 'Cerrados', value: stats.ganados, color: '#10b981' },
+    { name: 'Perdidos', value: stats.totalLeads - (stats.activos + stats.ganados), color: '#e5e7eb' },
+  ] : [];
+
+  const formatoDinero = (val) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
+
+  if (loading) return <div style={styles.loaderContainer}>Cargando...</div>;
 
   return (
-    <div className="main-content" style={styles.container}>
+    <div className="main-content animate-fade-in" style={styles.container}>
       
-      {/* HEADER DASHBOARD */}
-      <header style={styles.header}>
-        <div style={styles.welcomeRow}>
-          <div style={styles.avatar}>{userProfile?.nombre?.charAt(0)}</div>
-          <div>
-            <h1 style={styles.title}>Hola, {userProfile?.nombre}</h1>
-            <p style={styles.subtitle}>Panel de Asesor Certificado</p>
-          </div>
-        </div>
-
-        {/* SCORE CARD */}
-        <div style={styles.scoreCard}>
-          <div style={styles.scoreHeader}>
-            <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
-              <Icons.Trophy />
-              <span style={{fontWeight:'bold', fontSize:'1.1rem'}}>Tu Score de Calidad</span>
+      {/* 1. HERO CARD */}
+      <header style={styles.heroCard}>
+        <div style={styles.heroContent}>
+          <div style={styles.userInfo}>
+            <div style={styles.avatarBig}>{userProfile?.nombre?.charAt(0)}</div>
+            <div>
+              <h1 style={styles.userName}>{userProfile?.nombre}</h1>
+              <div style={styles.userRoleBadge}><Icons.Crown /> Asesor {nivel}</div>
             </div>
-            <span style={styles.scoreValue}>98/100</span>
           </div>
-          <div style={styles.progressBarBg}>
-            <div style={{...styles.progressBarFill, width: '98%'}}></div>
-          </div>
-          <div style={styles.scoreMetrics}>
-            <div style={styles.metric}>
-              <span style={styles.metricLabel}>Leads Asignados</span>
-              <span style={styles.metricVal}>12</span>
+          
+          <div style={styles.scoreBlock}>
+            <div style={styles.scoreCircle}>
+              <span style={styles.scoreNumber}>{score}</span>
+              <span style={styles.scoreLabel}>SCORE</span>
             </div>
-            <div style={styles.metric}>
-              <span style={styles.metricLabel}>Tasa de Respuesta</span>
-              <span style={styles.metricVal}>4 min</span>
-            </div>
-            <div style={styles.metric}>
-              <span style={styles.metricLabel}>Reseñas</span>
-              <span style={styles.metricVal}>4.9 ★</span>
+            <div style={styles.scoreMeta}>
+              <span>Tasa Cierre: <strong>{stats?.tasaCierre || 0}%</strong></span>
+              <span>Reseñas: <strong>{userProfile?.metricas?.promedioResenas || 0}★</strong></span>
             </div>
           </div>
         </div>
+        <div style={styles.heroDecoration}></div>
       </header>
 
-      {/* INVENTARIO ACTIVO */}
-      <section style={styles.section}>
-        <h2 style={styles.sectionTitle}>Tu Inventario Asignado</h2>
-        <p style={styles.sectionDesc}>Estos son los desarrollos donde estás autorizado para recibir leads.</p>
+      {/* 2. GRID PRINCIPAL (Adaptable por Estado) */}
+      <div style={{
+        ...styles.dashboardLayout,
+        gridTemplateColumns: isDesktop ? '2fr 1fr' : '1fr' // ✅ Solución limpia para responsividad
+      }}>
+        
+        {/* LEADS ACTIVOS */}
+        <main style={styles.mainColumn}>
+          <div style={styles.sectionHeader}>
+            <h2 style={styles.sectionTitle}>
+              <Icons.Users /> Por Atender <span style={styles.countBadge}>{activeLeads.length}</span>
+            </h2>
+            <button onClick={handleSimularLead} disabled={simulando} style={styles.btnTest}>
+               {simulando ? '...' : <Icons.Test />}
+            </button>
+          </div>
 
-        <div style={styles.inventoryGrid}>
-          {inventario.map((item, idx) => (
-            <div key={idx} style={styles.card}>
-              <div style={styles.cardHeader}>
-                <span style={styles.badge}>{item.tipo === 'db' ? 'Verificado' : 'Manual'}</span>
-                {item.tipo === 'db' && <span style={styles.statusDot}>● Activo</span>}
-              </div>
-              
-              <h3 style={styles.cardTitle}>{item.nombre}</h3>
-              <p style={styles.cardSubtitle}>{item.constructora}</p>
-              <p style={styles.cardLoc}>{item.ciudad}</p>
-
-              <div style={styles.cardActions}>
-                <button 
-                  onClick={() => handleUpdateClick(item)}
-                  style={styles.btnUpdate}
-                >
-                  <Icons.Edit /> Solicitar Actualización
-                </button>
-              </div>
+          {activeLeads.length === 0 ? (
+            <div style={styles.emptyState}>
+              <p>Estás al día. Sin leads pendientes.</p>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* MODAL DE EDICIÓN */}
-      {editingItem && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modal}>
-            <h3>Actualizar: {editingItem.nombre}</h3>
-            <p style={{fontSize:'0.9rem', color:'#666', marginBottom:'20px'}}>
-              Los cambios deben ser validados por administración para asegurar la calidad de los datos.
-            </p>
-
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Nuevo Precio (Desde)</label>
-              <input 
-                type="number" 
-                style={styles.input} 
-                placeholder="Ej. 2500000"
-                value={formData.precio}
-                onChange={e => setFormData({...formData, precio: e.target.value})}
-              />
+          ) : (
+            <div style={styles.leadsStack}>
+              {activeLeads.map(lead => (
+                <LeadCard key={lead.id} lead={lead} onAction={setLeadToEdit} />
+              ))}
             </div>
+          )}
 
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Disponibilidad</label>
-              <select 
-                style={styles.input}
-                value={formData.disponibilidad}
-                onChange={e => setFormData({...formData, disponibilidad: e.target.value})}
-              >
-                <option value="inmediata">Entrega Inmediata</option>
-                <option value="preventa">Pre-Venta</option>
-                <option value="agotado">Agotado</option>
-              </select>
-            </div>
-
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Notas para el Admin</label>
-              <textarea 
-                style={{...styles.input, height:'80px'}} 
-                placeholder="Explica qué cambió (Ej. Nueva torre abierta...)"
-                value={formData.notas}
-                onChange={e => setFormData({...formData, notas: e.target.value})}
-              />
-            </div>
-
-            <div style={styles.modalActions}>
-              <button onClick={() => setEditingItem(null)} style={styles.btnCancel}>Cancelar</button>
-              <button onClick={enviarSolicitud} disabled={isSubmitting} style={styles.btnSubmit}>
-                {isSubmitting ? 'Enviando...' : 'Enviar Solicitud'}
+          {/* HISTORIAL */}
+          {historyLeads.length > 0 && (
+            <div style={styles.historySection}>
+              <button onClick={() => setShowHistory(!showHistory)} style={styles.historyToggleBtn}>
+                <div style={{display:'flex', gap:'10px'}}><Icons.History /> Historial ({historyLeads.length})</div>
+                {showHistory ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
               </button>
+              {showHistory && (
+                <div style={styles.leadsStack}>
+                  {historyLeads.map(lead => (
+                    <div key={lead.id} style={{opacity: 0.7}}>
+                      <LeadCard lead={lead} onAction={setLeadToEdit} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </main>
+
+        {/* BARRA LATERAL */}
+        <aside style={styles.sideColumn}>
+          <div style={styles.statCard}>
+            <div style={styles.statHeader}>
+              <span style={styles.statLabel}>Ventas Acumuladas</span>
+              <Icons.Wallet />
+            </div>
+            <div style={styles.statValue}>{stats ? formatoDinero(stats.totalVendido) : '$0'}</div>
+            <div style={{height: '100px', width: '100%'}}>
+               <ResponsiveContainer>
+                 <PieChart>
+                   <Pie data={chartData} innerRadius={30} outerRadius={45} dataKey="value">
+                     {chartData.map((entry, index) => <Cell key={index} fill={entry.color} />)}
+                   </Pie>
+                   <RechartsTooltip />
+                 </PieChart>
+               </ResponsiveContainer>
             </div>
           </div>
-        </div>
-      )}
 
+          <div style={styles.inventoryWidget}>
+            <h3 style={styles.widgetTitle}>Mi Inventario</h3>
+            <div style={styles.inventoryList}>
+              {inventario.map((item, idx) => (
+                <div key={idx} style={styles.invItem}>
+                  <div style={{...styles.statusDot, backgroundColor: item.status === 'activo' ? '#10b981' : '#f59e0b'}} />
+                  <div style={{flex: 1}}>
+                    <div style={styles.invName}>{item.nombre}</div>
+                    <div style={styles.invStatus}>{item.status === 'activo' ? 'Activo' : 'Pendiente'}</div>
+                  </div>
+                  {item.status === 'pendiente' && <Icons.Lock />}
+                </div>
+              ))}
+            </div>
+          </div>
+        </aside>
+
+      </div>
+
+      {leadToEdit && (
+        <LeadActionModal lead={leadToEdit} onClose={() => setLeadToEdit(null)} onSuccess={refreshDashboard} />
+      )}
     </div>
   );
 }
 
-// ESTILOS
+// --- ESTILOS ---
 const styles = {
-  container: { paddingBottom: '80px', fontFamily: "'Segoe UI', sans-serif" },
-  header: { backgroundColor: 'white', padding: '30px 20px', borderBottom: '1px solid #e5e7eb', marginBottom: '30px' },
-  welcomeRow: { display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px' },
-  avatar: { width: '50px', height: '50px', backgroundColor: 'var(--primary-color)', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 'bold' },
-  title: { margin: 0, fontSize: '1.5rem', color: '#111' },
-  subtitle: { margin: 0, color: '#6b7280', fontSize: '0.9rem' },
+  container: { paddingBottom: '80px', fontFamily: "'Segoe UI', sans-serif", backgroundColor: '#f8fafc', minHeight: '100vh' },
+  loaderContainer: { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh', color: '#64748b' },
   
-  scoreCard: { backgroundColor: '#1e293b', borderRadius: '16px', padding: '20px', color: 'white', boxShadow: '0 10px 25px rgba(30, 41, 59, 0.2)' },
-  scoreHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' },
-  scoreValue: { fontSize: '1.5rem', fontWeight: '800', color: '#4ade80' },
-  progressBarBg: { height: '8px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '4px', marginBottom: '20px' },
-  progressBarFill: { height: '100%', backgroundColor: '#4ade80', borderRadius: '4px' },
-  scoreMetrics: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', textAlign: 'center' },
-  metricLabel: { display: 'block', fontSize: '0.75rem', opacity: 0.8, marginBottom: '4px' },
-  metricVal: { fontSize: '1.1rem', fontWeight: 'bold' },
+  heroCard: { 
+    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', 
+    margin: '20px', borderRadius: '24px', padding: '25px', color: 'white', 
+    position: 'relative', overflow: 'hidden', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)'
+  },
+  heroContent: { position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' },
+  heroDecoration: { position: 'absolute', top: '-50%', right: '-10%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(0,0,0,0) 70%)', borderRadius: '50%', zIndex: 1 },
+  
+  userInfo: { display: 'flex', alignItems: 'center', gap: '15px' },
+  avatarBig: { width: '60px', height: '60px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem', fontWeight: 'bold', border: '2px solid rgba(255,255,255,0.2)' },
+  userName: { margin: 0, fontSize: '1.5rem', fontWeight: '700', lineHeight: 1.2 },
+  userRoleBadge: { display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'rgba(255,255,255,0.15)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', marginTop: '5px' },
 
-  section: { padding: '0 20px' },
-  sectionTitle: { fontSize: '1.3rem', fontWeight: '800', color: '#111', marginBottom: '5px' },
-  sectionDesc: { color: '#666', fontSize: '0.9rem', marginBottom: '20px' },
-  
-  inventoryGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' },
-  card: { backgroundColor: 'white', borderRadius: '12px', padding: '20px', border: '1px solid #e5e7eb', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' },
-  cardHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '10px' },
-  badge: { fontSize: '0.7rem', backgroundColor: '#f3f4f6', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold', color: '#4b5563' },
-  statusDot: { fontSize: '0.75rem', color: '#10b981', fontWeight: '600' },
-  cardTitle: { margin: '0 0 5px 0', fontSize: '1.1rem', fontWeight: 'bold', color: '#111' },
-  cardSubtitle: { margin: 0, color: '#6b7280', fontSize: '0.9rem' },
-  cardLoc: { margin: '5px 0 15px 0', color: '#9ca3af', fontSize: '0.85rem' },
-  
-  cardActions: { borderTop: '1px solid #f3f4f6', paddingTop: '15px' },
-  btnUpdate: { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', backgroundColor: '#eff6ff', color: 'var(--primary-color)', border: '1px solid #bfdbfe', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', transition: 'all 0.2s' },
+  scoreBlock: { display: 'flex', alignItems: 'center', gap: '15px', backgroundColor: 'rgba(0,0,0,0.2)', padding: '10px 15px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' },
+  scoreCircle: { width: '50px', height: '50px', borderRadius: '50%', border: '3px solid #10b981', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', lineHeight: 1 },
+  scoreNumber: { fontSize: '1.2rem', fontWeight: '800', color: '#10b981' },
+  scoreLabel: { fontSize: '0.45rem', textTransform: 'uppercase' },
+  scoreMeta: { display: 'flex', flexDirection: 'column', fontSize: '0.75rem', opacity: 0.9 },
 
-  // Modal
-  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, backdropFilter: 'blur(3px)' },
-  modal: { backgroundColor: 'white', padding: '30px', borderRadius: '16px', width: '90%', maxWidth: '400px', boxShadow: '0 20px 50px rgba(0,0,0,0.2)' },
-  formGroup: { marginBottom: '15px' },
-  label: { display: 'block', marginBottom: '5px', fontWeight: '600', fontSize: '0.9rem', color: '#374151' },
-  input: { width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '1rem' },
-  modalActions: { display: 'flex', gap: '10px', marginTop: '20px' },
-  btnCancel: { flex: 1, padding: '12px', border: 'none', backgroundColor: '#f3f4f6', color: '#4b5563', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' },
-  btnSubmit: { flex: 2, padding: '12px', border: 'none', backgroundColor: 'var(--primary-color)', color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }
+  dashboardLayout: { display: 'grid', gap: '25px', padding: '0 20px', maxWidth: '1200px', margin: '0 auto' },
+  mainColumn: { display: 'flex', flexDirection: 'column', gap: '20px' },
+  sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  sectionTitle: { fontSize: '1.3rem', fontWeight: '800', color: '#1e293b', margin: 0, display: 'flex', gap: '10px' },
+  countBadge: { backgroundColor: '#e2e8f0', fontSize: '0.8rem', padding: '2px 8px', borderRadius: '12px' },
+  btnTest: { background: 'none', border: 'none', cursor: 'pointer', color: '#cbd5e1' },
+  
+  emptyState: { textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '20px', border: '1px dashed #cbd5e1' },
+  leadsStack: { display: 'flex', flexDirection: 'column', gap: '15px' },
+
+  historySection: { marginTop: '30px', borderTop: '1px solid #e2e8f0', paddingTop: '20px' },
+  historyToggleBtn: { width: '100%', display: 'flex', justifyContent: 'space-between', padding: '15px', backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' },
+
+  sideColumn: { display: 'flex', flexDirection: 'column', gap: '25px' },
+  statCard: { backgroundColor: 'white', padding: '20px', borderRadius: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' },
+  statHeader: { display: 'flex', justifyContent: 'space-between', color: '#64748b', marginBottom: '10px' },
+  statLabel: { fontSize: '0.85rem', fontWeight: '600', textTransform: 'uppercase' },
+  statValue: { fontSize: '1.8rem', fontWeight: '800', color: '#0f172a', marginBottom: '10px' },
+  chartLegend: { display: 'flex', gap: '10px', marginTop: '10px', justifyContent: 'center' },
+
+  inventoryWidget: { backgroundColor: 'white', padding: '20px', borderRadius: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' },
+  widgetTitle: { fontSize: '1rem', fontWeight: '700', color: '#334155', margin: '0 0 15px 0' },
+  inventoryList: { display: 'flex', flexDirection: 'column', gap: '10px' },
+  invItem: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', borderRadius: '12px', backgroundColor: '#f8fafc', border: '1px solid #f1f5f9' },
+  statusDot: { width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0 },
+  invName: { fontSize: '0.85rem', fontWeight: '600', color: '#334155' },
+  invStatus: { fontSize: '0.7rem', color: '#94a3b8' },
+  lockIcon: { color: '#f59e0b' }
 };
