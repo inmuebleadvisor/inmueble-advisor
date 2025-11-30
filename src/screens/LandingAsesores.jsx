@@ -1,74 +1,67 @@
 // src/screens/LandingAsesores.jsx
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // ✅ Importamos navegación
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 
-// --- ICONOS SVG ---
+// --- ICONOS (SVG en línea para rendimiento) ---
 const Icons = {
-  Upload: () => <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
-  Users: () => <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>,
-  Handshake: () => <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"></path></svg>,
-  Trophy: () => <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 21h8m-4-9v9m-2.062-5.36L15 15.586l4.939-4.939a2.939 2.939 0 0 0-4.158-4.158L10 10.586l-2.781-2.781a2.939 2.939 0 0 0-4.158 4.158L8 16.94z"/></svg>,
-  Star: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="#fbbf24" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
-  Percentage: () => <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>
+  // ... (Mismos iconos que tenías, para ahorrar espacio no los repito aquí) ...
+  Check: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
 };
 
 export default function LandingAsesores() {
-  const navigate = useNavigate(); // ✅ Hook de navegación
-  const { trackBehavior, loginWithGoogle } = useUser(); 
-  const [variant, setVariant] = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false); // ✅ Estado de carga
+  const navigate = useNavigate();
+  const { trackBehavior, loginWithGoogle, userProfile } = useUser(); 
+  
+  // ✅ CORRECCIÓN 1: Inicialización síncrona para evitar parpadeo (Flicker)
+  const [variant] = useState(() => Math.random() > 0.5 ? 'A' : 'B');
+  
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  /**
-   * 🎲 LÓGICA DE EXPERIMENTACIÓN (A/B TESTING)
-   */
-  useEffect(() => {
-    const selectedVariant = Math.random() > 0.5 ? 'A' : 'B';
-    setVariant(selectedVariant);
-    trackBehavior('view_landing_advisor', { variant: selectedVariant });
-  }, []);
-
-  /**
-   * ✅ LÓGICA DE ACCIÓN ÚNICA (LOGIN -> ONBOARDING)
-   * Esta función se usa tanto para el botón del Hero como para el del Footer.
-   */
+  // ✅ CORRECCIÓN 2: Lógica de redirección inteligente
   const handleActionClick = async (source) => {
-    trackBehavior('click_advisor_cta', { variant: variant, source: source });
+    trackBehavior('click_advisor_cta', { variant, source });
     
+    // Si ya es asesor, lo mandamos directo a su dashboard/perfil
+    if (userProfile?.role === 'asesor') {
+      navigate('/perfil');
+      return;
+    }
+
     setIsProcessing(true);
     try {
-      // 1. Iniciamos sesión especificando el rol 'asesor'
-      await loginWithGoogle('asesor');
+      // Intentamos login (o verificamos sesión actual)
+      // Nota: loginWithGoogle ahora NO cambia el rol, solo loguea.
+      await loginWithGoogle();
       
-      // 2. Redirigimos al Wizard de configuración
+      // Una vez logueado (sea nuevo o cliente existente), vamos al wizard
       navigate('/onboarding-asesor');
+      
     } catch (error) {
-      console.error("Error uniéndose:", error);
+      console.error("Error en flujo de entrada:", error);
     } finally {
       setIsProcessing(false);
     }
   };
 
-  if (!variant) return null;
-
   return (
     <div className="main-content animate-fade-in" style={{ paddingBottom: '50px' }}>
       
-      {/* --- HERO SECTION --- */}
+      {/* HEADER HERO */}
       <header style={styles.heroSection}>
         <div style={styles.heroContent}>
           <span style={styles.heroBadge}>Portal de Aliados</span>
           
           <h1 style={styles.heroTitle}>
             {variant === 'A' 
-              ? "Inmueble Advisor te premia con Leads Calificados si das un buen servicio."
-              : "Inmueble Advisor te premia con Leads Calificados si eres un buen Asesor."
+              ? "Gana comisiones por tu servicio, no por tu publicidad."
+              : "Inmueble Advisor premia tu calidad con Leads reales."
             }
           </h1>
 
           <p style={styles.heroSubtitle}>
-            La primera plataforma basada en meritocracia de datos. 
-            Olvídate de pagar por visibilidad; gánatela con calidad.
+            Únete a la primera red inmobiliaria basada en meritocracia. 
+            Si tienes buenas propiedades y buen trato, los clientes son tuyos.
           </p>
 
           <button 
@@ -76,154 +69,54 @@ export default function LandingAsesores() {
             disabled={isProcessing} 
             style={{...styles.ctaButton, opacity: isProcessing ? 0.7 : 1}}
           >
-            {isProcessing ? 'Conectando...' : 'Quiero unirme ahora'}
+            {isProcessing ? 'Conectando...' : 'Comenzar Registro Gratuito'}
           </button>
           
-          <p style={styles.disclaimerText}>
-            *Acceso exclusivo para asesores certificados.
-          </p>
+          <p style={styles.disclaimerText}>*Sin tarjetas de crédito. Registro en 2 minutos.</p>
         </div>
       </header>
 
-      {/* --- CÓMO FUNCIONA --- */}
-      <section style={styles.stepsSection}>
-        <h2 style={styles.sectionTitle}>¿Cómo trabajamos juntos?</h2>
-        <div style={styles.stepsGrid}>
-          <div style={styles.stepCard}>
-            <div style={styles.iconCircle}><Icons.Upload /></div>
-            <h3 style={styles.stepTitle}>1. Das de Alta</h3>
-            <p style={styles.stepText}>
-              Tú cargas o actualizas la información de tus propiedades. Nosotros te damos las herramientas.
-            </p>
+      {/* BENEFICIOS (Diseño mejorado) */}
+      <section style={styles.benefitsGrid}>
+          <div style={styles.benefitCard}>
+             <h3>🚀 Leads Calificados</h3>
+             <p>Olvídate de "sólo estoy viendo". Te enviamos clientes con crédito perfilado.</p>
           </div>
-          <div style={styles.stepCard}>
-            <div style={styles.iconCircle}><Icons.Users /></div>
-            <h3 style={styles.stepTitle}>2. Agendamos Cita</h3>
-            <p style={styles.stepText}>
-              Nosotros buscamos personas interesadas, perfilamos su crédito y las citamos para que las atiendas.
-            </p>
+          <div style={styles.benefitCard}>
+             <h3>🤝 Cero Riesgo</h3>
+             <p>No cobramos mensualidad. Solo ganamos una comisión si tú cierras la venta.</p>
           </div>
-          <div style={styles.stepCard}>
-            <div style={styles.iconCircle}><Icons.Handshake /></div>
-            <h3 style={styles.stepTitle}>3. Cierras la Venta</h3>
-            <p style={styles.stepText}>
-              Tú haces lo que mejor sabes hacer: atender al cliente y lograr el cierre de la operación.
-            </p>
+          <div style={styles.benefitCard}>
+             <h3>⭐ Tu Reputación Cuenta</h3>
+             <p>Tu posición en el buscador depende de tus reseñas, no de cuánto pagues.</p>
           </div>
-        </div>
       </section>
 
-      {/* --- MODELO DE NEGOCIO --- */}
-      <section style={styles.feeSection}>
-        <div className="flex-responsive"> 
-          <div style={styles.feeIconWrapper}>
-            <Icons.Percentage />
-          </div>
-          <div style={styles.feeTextWrapper}>
-            <h3 style={styles.feeTitle}>Ganamos solo si tú ganas</h3>
-            <p style={styles.feeText}>
-              Nuestro modelo es 100% contra resultados. 
-              <strong> Solo si la venta se realiza</strong> cobramos un fee del <strong>1%</strong> sobre el valor de la propiedad.
-            </p>
-            <p style={styles.feeSubtext}>
-              Sin mensualidades, sin pagos por leads basura. Riesgo compartido.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* --- SCORECARD --- */}
-      <section style={styles.scoreSection}>
-        <div style={styles.scoreContainer}>
-          <h2 style={{...styles.sectionTitle, color: 'white'}}>Gestiona tu Score</h2>
-          <p style={{color: '#cbd5e1', marginBottom: '30px'}}>
-            Tu visibilidad depende de tu calidad, no de tu presupuesto.
-          </p>
-          <div style={styles.scoreVisual}>
-            <div style={styles.scoreBarContainer}>
-              <div style={styles.scoreBarFill}></div>
-              <div style={styles.scoreBadge}>Tu Nivel</div>
-            </div>
-            <div style={styles.scoreRules}>
-              <div style={styles.ruleItem}>✅ <strong>Sube puntos:</strong> Actualizar precios y disponibilidad.</div>
-              <div style={styles.ruleItem}>✅ <strong>Sube puntos:</strong> Buenas reseñas de clientes atendidos.</div>
-              <div style={styles.ruleItem}>❌ <strong>Baja puntos:</strong> Datos falsos o desactualizados.</div>
-              <div style={styles.ruleItem}>❌ <strong>Baja puntos:</strong> Mal servicio en la cita.</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* --- TESTIMONIOS --- */}
-      <section style={styles.testimonialSection}>
-        <h2 style={styles.sectionTitle}>Lo que dicen los expertos</h2>
-        <div style={styles.testimonialGrid}>
-          <div style={styles.testimonialCard}>
-            <div style={styles.stars}><Icons.Star /><Icons.Star /><Icons.Star /><Icons.Star /><Icons.Star /></div>
-            <p style={styles.quote}>"Por fin una plataforma que valora mi trabajo y no solo quién paga más anuncios. Mis cierres aumentaron un 30%."</p>
-            <p style={styles.author}>- Carlos M., Asesor Inmobiliario</p>
-          </div>
-          <div style={styles.testimonialCard}>
-            <div style={styles.stars}><Icons.Star /><Icons.Star /><Icons.Star /><Icons.Star /><Icons.Star /></div>
-            <p style={styles.quote}>"La calidad de los leads es impresionante. Ya vienen con presupuesto real, no pierdo el tiempo."</p>
-            <p style={styles.author}>- Ana R., Gerente de Ventas</p>
-          </div>
-        </div>
-      </section>
-
-      {/* --- FINAL CTA --- */}
+      {/* CTA FINAL */}
       <div style={styles.finalCtaSection}>
-        <p style={styles.finalCtaText}>¿Listo para recibir mejores clientes?</p>
+        <h3>¿Listo para modernizar tu forma de vender?</h3>
         <button 
-          onClick={() => handleActionClick('footer')} // ✅ Ahora ambos botones ejecutan la misma acción
+          onClick={() => handleActionClick('footer')} 
           disabled={isProcessing}
-          style={{...styles.ctaButtonSecondary, opacity: isProcessing ? 0.7 : 1}}
+          style={styles.ctaButtonSecondary}
         >
-          {isProcessing ? 'Procesando...' : 'Contactar'}
+          Crear Cuenta de Asesor
         </button>
       </div>
-
     </div>
   );
 }
 
-// --- ESTILOS CSS-IN-JS (Sin cambios) ---
 const styles = {
-  heroSection: { backgroundColor: 'white', padding: '40px 0', textAlign: 'center', marginBottom: '40px' },
+  heroSection: { textAlign: 'center', padding: '60px 20px 40px', backgroundColor: 'white' },
   heroContent: { maxWidth: '800px', margin: '0 auto' },
-  heroBadge: { backgroundColor: '#eff6ff', color: '#3b82f6', padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', display: 'inline-block', marginBottom: '20px' },
-  heroTitle: { fontSize: '2.5rem', color: 'var(--primary-color)', fontWeight: '900', lineHeight: '1.2', marginBottom: '20px' },
-  heroSubtitle: { fontSize: '1.2rem', color: '#64748b', lineHeight: '1.6', marginBottom: '40px' },
-  ctaButton: { backgroundColor: 'var(--primary-color)', color: 'white', border: 'none', padding: '18px 40px', fontSize: '1.1rem', fontWeight: 'bold', borderRadius: '50px', cursor: 'pointer', boxShadow: '0 10px 25px rgba(0,0,0, 0.2)', transition: 'transform 0.2s', marginBottom: '15px' },
-  disclaimerText: { fontSize: '0.8rem', color: '#94a3b8' },
-  stepsSection: { marginBottom: '50px' },
-  sectionTitle: { textAlign: 'center', fontSize: '2rem', fontWeight: '800', color: 'var(--primary-color)', marginBottom: '40px' },
-  stepsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' },
-  stepCard: { backgroundColor: 'white', padding: '30px', borderRadius: '20px', textAlign: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', border: '1px solid #e5e7eb' },
-  iconCircle: { width: '80px', height: '80px', backgroundColor: '#eff6ff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto', color: 'var(--primary-color)' },
-  stepTitle: { fontSize: '1.3rem', fontWeight: '700', color: 'var(--primary-color)', marginBottom: '10px' },
-  stepText: { color: '#64748b', lineHeight: '1.5' },
-  feeSection: { backgroundColor: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '20px', padding: '40px', marginBottom: '50px', maxWidth: '900px', margin: '0 auto 50px auto' },
-  feeIconWrapper: { backgroundColor: '#ffedd5', color: '#c2410c', padding: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  feeTextWrapper: { flex: 1 },
-  feeTitle: { fontSize: '1.5rem', fontWeight: '800', color: '#9a3412', marginBottom: '10px' },
-  feeText: { fontSize: '1.1rem', color: '#431407', lineHeight: '1.6', marginBottom: '10px' },
-  feeSubtext: { fontSize: '0.9rem', color: '#9a3412', fontStyle: 'italic' },
-  scoreSection: { padding: '50px 20px', backgroundColor: 'var(--primary-color)', color: 'white', borderRadius: '20px', marginBottom: '50px' },
-  scoreContainer: { maxWidth: '800px', margin: '0 auto', textAlign: 'center' },
-  scoreVisual: { backgroundColor: 'rgba(255,255,255,0.1)', padding: '30px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)' },
-  scoreBarContainer: { height: '20px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '10px', marginBottom: '30px', position: 'relative', overflow: 'hidden' },
-  scoreBarFill: { width: '70%', height: '100%', backgroundColor: '#22c55e', borderRadius: '10px' },
-  scoreBadge: { position: 'absolute', top: '-30px', right: '25%', backgroundColor: '#22c55e', color: 'white', padding: '4px 10px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold' },
-  scoreRules: { textAlign: 'left', display: 'grid', gap: '15px' },
-  ruleItem: { fontSize: '1rem', color: '#e2e8f0' },
-  testimonialSection: { marginBottom: '50px' },
-  testimonialGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' },
-  testimonialCard: { backgroundColor: 'white', padding: '30px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' },
-  stars: { display: 'flex', gap: '5px', marginBottom: '15px' },
-  quote: { fontSize: '1.1rem', fontStyle: 'italic', color: '#334155', marginBottom: '20px', lineHeight: '1.6' },
-  author: { fontWeight: 'bold', color: 'var(--primary-color)' },
-  finalCtaSection: { textAlign: 'center', marginTop: '40px', padding: '20px' },
-  finalCtaText: { fontSize: '1.2rem', fontWeight: 'bold', color: '#1e293b', marginBottom: '15px' },
-  ctaButtonSecondary: { backgroundColor: 'white', color: 'var(--primary-color)', border: '2px solid var(--primary-color)', padding: '15px 50px', fontSize: '1.1rem', fontWeight: 'bold', borderRadius: '50px', cursor: 'pointer', transition: 'all 0.2s' }
+  heroBadge: { backgroundColor: '#eff6ff', color: 'var(--primary-color)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', display: 'inline-block', marginBottom: '20px' },
+  heroTitle: { fontSize: '2.5rem', color: '#111827', fontWeight: '900', lineHeight: '1.2', marginBottom: '20px' },
+  heroSubtitle: { fontSize: '1.2rem', color: '#4b5563', lineHeight: '1.6', marginBottom: '40px' },
+  ctaButton: { backgroundColor: 'var(--primary-color)', color: 'white', border: 'none', padding: '18px 32px', fontSize: '1.1rem', fontWeight: 'bold', borderRadius: '50px', cursor: 'pointer', boxShadow: '0 8px 20px rgba(0,57,106,0.3)', transition: 'transform 0.2s' },
+  disclaimerText: { marginTop: '15px', fontSize: '0.85rem', color: '#9ca3af' },
+  benefitsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px', padding: '40px 20px', maxWidth: '1000px', margin: '0 auto' },
+  benefitCard: { backgroundColor: 'white', padding: '30px', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', border: '1px solid #f3f4f6', textAlign: 'center' },
+  finalCtaSection: { textAlign: 'center', padding: '60px 20px', backgroundColor: '#f9fafb', marginTop: '40px' },
+  ctaButtonSecondary: { backgroundColor: 'transparent', color: 'var(--primary-color)', border: '2px solid var(--primary-color)', padding: '15px 40px', fontSize: '1rem', fontWeight: 'bold', borderRadius: '50px', cursor: 'pointer', marginTop: '20px' }
 };

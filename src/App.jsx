@@ -1,10 +1,10 @@
 // src/App.jsx
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { UserProvider } from './context/UserContext';
 
 // --- SEGURIDAD ---
-import ProtectedRoute from './components/ProtectedRoute'; // ✅ Importamos el guardia
+import ProtectedRoute from './components/ProtectedRoute';
 
 // --- LAYOUT PRINCIPAL ---
 import Layout from './components/Layout';
@@ -16,7 +16,8 @@ import DetalleModelo from './screens/DetalleModelo';
 import DetalleDesarrollo from './screens/DetalleDesarrollo';
 import Mapa from './screens/Mapa';
 import LandingAsesores from './screens/LandingAsesores';
-import OnboardingAsesor from './screens/OnboardingAsesor'; // ✅ Importamos la nueva pantalla
+import OnboardingAsesor from './screens/OnboardingAsesor';
+import AccountAsesor from './screens/AccountAsessor'; // ✅ NUEVA PANTALLA IMPORTADA
 
 function App() {
   return (
@@ -25,21 +26,29 @@ function App() {
         <Routes>
           <Route path="/" element={<Layout />}>
           
-            {/* 1. RUTA PÚBLICA (Home/Perfil) */}
+            {/* 1. RUTA PÚBLICA (Home/Perfil de Cliente) */}
             <Route index element={<Perfil />} />
             
             {/* 2. LANDING PARA CAPTACIÓN DE ASESORES (Pública) */}
             <Route path="soy-asesor" element={<LandingAsesores />} />
 
-            {/* 3. WIZARD DE ONBOARDING (Protegida: Requiere Login, pero NO requiere onboarding previo) */}
+            {/* 3. WIZARD DE ONBOARDING (Protegida: Requiere Login, pero NO onboarding previo) */}
+            {/* Si un usuario entra aquí, sigue siendo 'cliente' hasta que termina el formulario */}
             <Route path="onboarding-asesor" element={
               <ProtectedRoute requireOnboarding={false}>
                 <OnboardingAsesor />
               </ProtectedRoute>
             } />
 
-            {/* 4. RUTAS DEL SISTEMA (Protegidas y con verificación de onboarding) */}
-            {/* Si un ASESOR entra aquí sin terminar sus datos, será redirigido al wizard */}
+            {/* 4. DASHBOARD EXCLUSIVO DE ASESORES (Protegida + Onboarding Completo) */}
+            {/* Aquí vive el Scorecard, Inventario y Solicitudes */}
+            <Route path="account-asesor" element={
+              <ProtectedRoute requireOnboarding={true}>
+                <AccountAsesor />
+              </ProtectedRoute>
+            } />
+
+            {/* 5. RUTAS DEL SISTEMA (Protegidas) */}
             
             <Route path="catalogo" element={
               <ProtectedRoute requireOnboarding={true}>
@@ -53,11 +62,11 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* 5. RUTAS DE DETALLE */}
+            {/* 6. RUTAS DE DETALLE */}
             <Route path="modelo/:id" element={<DetalleModelo />} />
             <Route path="desarrollo/:id" element={<DetalleDesarrollo />} />
 
-            {/* 404 */}
+            {/* 404 - Redirección por defecto */}
             <Route path="*" element={<Navigate to="/" replace />} />
 
           </Route>
