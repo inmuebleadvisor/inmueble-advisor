@@ -218,3 +218,37 @@ exports.actualizarMetricasAsesor = onDocumentUpdated("leads/{leadId}", async (ev
     console.error("Error calculando score:", error);
   }
 });
+
+
+
+
+
+
+// ... (Tus funciones anteriores de asignarLead y actualizarMetricasAsesor siguen aquí) ...
+
+const { onRequest } = require("firebase-functions/v2/https");
+const { ejecutarMigracion } = require("./migrator");
+
+/**
+ * ENDPOINT DE MIGRACIÓN (USO ÚNICO)
+ * Ejecutar visitando la URL en el navegador.
+ * Protegido por una clave simple en query param.
+ */
+exports.migrarBaseDeDatos = onRequest(async (req, res) => {
+  // 🔒 Candado de seguridad simple
+  const secretKey = req.query.key;
+  if (secretKey !== "MIGRACION_2025_SECURE") {
+    return res.status(403).send("⛔ Acceso Denegado. Clave incorrecta.");
+  }
+
+  try {
+    const resultado = await ejecutarMigracion();
+    res.json({ 
+        mensaje: "✅ Migración ejecutada correctamente", 
+        detalles: resultado 
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});

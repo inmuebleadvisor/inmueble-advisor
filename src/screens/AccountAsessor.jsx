@@ -1,15 +1,12 @@
 // src/screens/AccountAsessor.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '../context/UserContext';
-
-// ✅ IMPORTACIONES MODULARES
-import { hidratarInventarioAsesor } from '../services/catalog.service';
+// ✅ Importaciones modulares y STATUS para consistencia
+import { hidratarInventarioAsesor } from '../services/catalog.service'; 
 import { obtenerLeadsAsignados } from '../services/crm.service';
-// Solamente importamos calcularEstadisticasAsesor. El score ya lo calcula el backend.
 import { calcularEstadisticasAsesor } from '../services/analytics.service'; 
-
-// Este servicio ahora es "tonto", solo envía datos.
 import { generarLeadAutomatico } from '../services/leadAssignmentService';
+import { STATUS } from '../config/constants';
 
 import LeadCard from '../components/LeadCard'; 
 import LeadActionModal from '../components/LeadActionModal'; 
@@ -17,7 +14,7 @@ import LeadActionModal from '../components/LeadActionModal';
 // Gráficos
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 
-// --- ICONOS ---
+// --- ICONOS (Sin cambios) ---
 const Icons = {
   Crown: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>,
   Lock: () => <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
@@ -43,7 +40,6 @@ export default function AccountAsesor() {
   const [simulando, setSimulando] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   
-  // Hook simple para detectar escritorio
   const [isDesktop, setIsDesktop] = useState(window.innerWidth > 1024);
   useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth > 1024);
@@ -55,20 +51,15 @@ export default function AccountAsesor() {
   const refreshDashboard = useCallback(async () => {
     if (!user?.uid) return;
     try {
-      // 1. Obtener Leads (Servicio CRM)
       const misLeads = await obtenerLeadsAsignados(user.uid);
       setLeads(misLeads);
       
-      // 2. Calcular Estadísticas (Servicio Analytics)
-      // Se calculan las estadísticas básicas como Tasa de Cierre y Ventas, 
-      // pero el score final se lee del perfil de usuario.
       const metricasCalculadas = calcularEstadisticasAsesor(misLeads);
       setStats(metricasCalculadas);
 
       // 🛑 NOTA: La actualización del Score (actualizarScoreAsesor) 
       // ya NO se ejecuta aquí. Lo hace la Cloud Function por seguridad.
       
-      // 3. Hidratar Inventario (Servicio Catálogo)
       if (userProfile?.inventario) {
          const dataInv = await hidratarInventarioAsesor(userProfile.inventario);
          setInventario(dataInv);
@@ -88,8 +79,9 @@ export default function AccountAsesor() {
 
   // --- HANDLERS ---
   const handleSimularLead = async () => {
-    const desarrolloActivo = inventario.find(i => i.status === 'activo');
-    if (!desarrolloActivo) return alert("❌ Error: No tienes inventario ACTIVO para recibir leads.");
+    // ✅ CORRECCIÓN 1: Inventario ahora usa el booleano 'activo'
+    const desarrolloActivo = inventario.find(i => i.activo === true);
+    if (!desarrolloActivo) return alert("❌ Error: No tienes inventario ACTIVO.");
 
     setSimulando(true);
     try {
@@ -100,7 +92,6 @@ export default function AccountAsesor() {
             telefono: `55${fakeId}0000`
         };
         
-        // Enviamos la solicitud "ciega" al backend
         const resultado = await generarLeadAutomatico(
             datosCliente, 
             desarrolloActivo.idDesarrollo, 
@@ -109,10 +100,7 @@ export default function AccountAsesor() {
         );
 
         if (resultado.success) {
-            // ✅ LÓGICA ASÍNCRONA: Ya no verificamos el asesor.
             alert(`🔔 Solicitud enviada para:\n${datosCliente.nombre}\n\nEl sistema de asignación está procesando la solicitud. Revisa tu lista en unos segundos.`);
-            
-            // Recargamos para ver si ya cayó 
             setTimeout(() => refreshDashboard(), 2000); 
         } else {
             alert(`Error al generar lead: ${resultado.error}`);
@@ -126,12 +114,15 @@ export default function AccountAsesor() {
   };
 
   // --- FILTROS ---
-  const activeLeads = leads.filter(l => !['vendido', 'perdido', 'escriturado'].includes(l.status));
-  const historyLeads = leads.filter(l => ['vendido', 'perdido', 'escriturado'].includes(l.status));
+  // ✅ CORRECCIÓN 2: Filtrar usando las constantes de status (código interno BD)
+  const leadsFinalizados = [STATUS.LEAD_WON, STATUS.LEAD_LOST, STATUS.LEAD_CLOSED];
+  const activeLeads = leads.filter(l => !leadsFinalizados.includes(l.status));
+  const historyLeads = leads.filter(l => leadsFinalizados.includes(l.status));
 
-  // Datos de UI (Leemos score del userProfile, ya actualizado por el backend)
+  // Datos
   const score = userProfile?.scoreGlobal || 80;
   const nivel = score >= 90 ? 'Elite' : (score >= 80 ? 'Pro' : 'Rookie');
+  
   const chartData = stats ? [
     { name: 'Activos', value: stats.activos, color: '#3b82f6' },
     { name: 'Cerrados', value: stats.ganados, color: '#10b981' },
@@ -170,7 +161,7 @@ export default function AccountAsesor() {
         <div style={styles.heroDecoration}></div>
       </header>
 
-      {/* 2. GRID PRINCIPAL */}
+      {/* 2. GRID PRINCIPAL (Adaptable por Estado) */}
       <div style={{
         ...styles.dashboardLayout,
         gridTemplateColumns: isDesktop ? '2fr 1fr' : '1fr'
@@ -244,12 +235,13 @@ export default function AccountAsesor() {
             <div style={styles.inventoryList}>
               {inventario.map((item, idx) => (
                 <div key={idx} style={styles.invItem}>
-                  <div style={{...styles.statusDot, backgroundColor: item.status === 'activo' ? '#10b981' : '#f59e0b'}} />
+                  {/* ✅ CORRECCIÓN 3: Inventario utiliza el booleano 'activo' */}
+                  <div style={{...styles.statusDot, backgroundColor: item.activo ? '#10b981' : '#f59e0b'}} />
                   <div style={{flex: 1}}>
                     <div style={styles.invName}>{item.nombre}</div>
-                    <div style={styles.invStatus}>{item.status === 'activo' ? 'Activo' : 'Pendiente'}</div>
+                    <div style={styles.invStatus}>{item.activo ? 'Activo' : 'Pendiente'}</div>
                   </div>
-                  {item.status === 'pendiente' && <Icons.Lock />}
+                  {!item.activo && <Icons.Lock />}
                 </div>
               ))}
             </div>
@@ -265,7 +257,7 @@ export default function AccountAsesor() {
   );
 }
 
-// --- ESTILOS ---
+// --- ESTILOS (Sin cambios) ---
 const styles = {
   container: { paddingBottom: '80px', fontFamily: "'Segoe UI', sans-serif", backgroundColor: '#f8fafc', minHeight: '100vh' },
   loaderContainer: { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh', color: '#64748b' },

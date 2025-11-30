@@ -1,17 +1,13 @@
 // src/services/catalog.service.js
 import { db } from '../firebase/config';
 import { 
-  collection, 
-  getDocs, 
-  doc, 
-  getDoc, 
-  query, 
-  where 
+  collection, getDocs, doc, getDoc, query, where 
 } from 'firebase/firestore';
 
 /**
  * ==========================================
- * SERVICIO DE CATÁLOGO (PÚBLICO)
+ * SERVICIO DE CATÁLOGO (OPTIMIZADO)
+ * Lectura directa de datos limpios (Numbers y Enums)
  * ==========================================
  */
 
@@ -20,79 +16,65 @@ const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cro
 let cacheModelos = null;
 let cacheDesarrollos = null;
 
-// --- HELPERS DE NORMALIZACIÓN ---
-
+// --- HELPERS ---
 const procesarImagenes = (data) => {
   let listaImagenes = [];
-  
-  // 1. Galería (Array)
-  if (Array.isArray(data.multimedia?.galeria)) {
-    listaImagenes.push(...data.multimedia.galeria);
-  }
-  
-  // 2. Plantas (Strings individuales)
+  if (Array.isArray(data.multimedia?.galeria)) listaImagenes.push(...data.multimedia.galeria);
   if (data.multimedia?.planta_baja) listaImagenes.push(data.multimedia.planta_baja);
-  if (data.multimedia?.planta_alta) listaImagenes.push(data.multimedia.planta_alta);
-  
-  // 3. Portadas (Desarrollo o Modelo)
   if (data.portadaDesarrollo) listaImagenes.push(data.portadaDesarrollo);
   if (data.imagen) listaImagenes.push(data.imagen); 
-
-  // Limpieza de URLs vacías
-  listaImagenes = listaImagenes.filter(url => url && typeof url === 'string' && url.length > 5);
   
+  listaImagenes = listaImagenes.filter(url => url && typeof url === 'string' && url.length > 5);
   if (listaImagenes.length === 0) listaImagenes.push(FALLBACK_IMG);
 
   return { imagen: listaImagenes[0], imagenes: listaImagenes };
 };
 
 /**
- * MAPPER PRINCIPAL (DTO)
- * Transforma el JSON crudo de Firestore al formato plano que necesita React.
- * Basado en la estructura real:
- * - recamaras/banos -> data.caracteristicas
- * - m2 -> data.dimensiones.construccion
+ * MAPPER (DTO) - VERSIÓN LIMPIA
+ * Ya no parseamos strings. Leemos los números directos de la migración.
  */
 const mapModelo = (docSnapshot) => {
   const data = docSnapshot.data();
   const imgs = procesarImagenes(data);
 
   return {
-    ...data, // Conservamos todo por si acaso
+    ...data, // Conservamos data cruda por seguridad
     id: docSnapshot.id,
     
     // 1. Identificación
-    nombre_modelo: data.nombre_modelo || 'Modelo',
+    nombre_modelo: data.nombreModelo || data.nombre_modelo || 'Modelo',
     nombreDesarrollo: data.nombreDesarrollo || '',
     constructora: data.constructora || '',
     
-    // 2. Características (Extracción profunda y conversión a Número)
-    // El JSON muestra: "caracteristicas": { "recamaras": "2", "banos": "1" }
-    recamaras: Number(data.caracteristicas?.recamaras || 0),
-    banos: Number(data.caracteristicas?.banos || 0),
-    niveles: Number(data.caracteristicas?.niveles || 0),
-    cajones: Number(data.caracteristicas?.cajones || 0),
-
-    // 3. Dimensiones
-    // El JSON muestra: "dimensiones": { "construccion": "56" }
-    m2: Number(data.dimensiones?.construccion || 0),
-    terreno: Number(data.dimensiones?.terreno || 0),
+    // 2. Características (LECTURA DIRECTA OPTIMIZADA)
+    // Usamos el operador ?? para aceptar 0 como valor válido
+    recamaras: data.recamaras ?? 0,
+    banos: data.banos ?? 0,
+    niveles: data.niveles ?? 0,
+    cajones: data.cajones ?? 0,
+    m2: data.m2 ?? 0,
+    terreno: data.terreno ?? 0,
     
-    // 4. Precios
-    precioNumerico: Number(data.precioNumerico || 0),
+    // 3. Precios
+    precioNumerico: data.precioNumerico ?? 0,
     
-    // 5. Imágenes
+    // 4. Imágenes
     ...imgs,
     
-    // 6. Ubicación y Extras
+    // 5. Ubicación y Extras
     amenidadesDesarrollo: Array.isArray(data.amenidadesDesarrollo) ? data.amenidadesDesarrollo : [],
-    tipoVivienda: data.tipo_vivienda || 'Propiedad', // Nota: JSON tiene 'tipo_vivienda' snake_case
+    tipoVivienda: data.tipoVivienda || 'Propiedad',
     esPreventa: data.esPreventa === true,
     
-    // Aplanamos ubicación para facilitar uso (opcional)
+    // Aplanamos ubicación
     zona: data.ubicacion?.zona || '',
     ciudad: data.ubicacion?.ciudad || '',
-    colonia: data.ubicacion?.colonia || ''
+    colonia: data.ubicacion?.colonia || '',
+    
+    // Coordenadas (Ya son números)
+    latitud: data.ubicacion?.latitud || 0,
+    longitud: data.ubicacion?.longitud || 0
   };
 };
 
@@ -102,7 +84,7 @@ export const obtenerDatosUnificados = async () => {
   if (cacheModelos) return cacheModelos;
   try {
     const snap = await getDocs(collection(db, "modelos"));
-    const modelos = snap.docs.map(mapModelo); // Usamos el mapper corregido
+    const modelos = snap.docs.map(mapModelo);
     cacheModelos = modelos;
     return modelos;
   } catch (error) {
@@ -115,6 +97,8 @@ export const obtenerInventarioDesarrollos = async () => {
   if (cacheDesarrollos) return cacheDesarrollos;
   try {
     const snap = await getDocs(collection(db, "desarrollos"));
+    // Mapeamos status a español para visualización rápida si es necesario, 
+    // pero idealmente usaremos las constantes.
     cacheDesarrollos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     return cacheDesarrollos;
   } catch (error) {
@@ -124,21 +108,15 @@ export const obtenerInventarioDesarrollos = async () => {
 };
 
 export const obtenerTopAmenidades = async () => {
-  // Nota: Las amenidades vienen en los modelos como 'amenidadesDesarrollo', 
-  // o podemos sacarlas de la colección 'desarrollos'.
-  // Para ser consistentes con la vista actual, usamos la colección de desarrollos.
   const desarrollos = await obtenerInventarioDesarrollos();
   const conteo = {};
-  
   desarrollos.forEach(d => {
-    // El JSON de Desarrollo muestra 'amenidades' como array directo
     if (Array.isArray(d.amenidades)) {
       d.amenidades.forEach(am => {
         if(am) conteo[am.trim()] = (conteo[am.trim()] || 0) + 1;
       });
     }
   });
-  
   return Object.keys(conteo).sort((a, b) => conteo[b] - conteo[a]).slice(0, 5);
 };
 
@@ -150,7 +128,7 @@ export const obtenerInformacionDesarrollo = async (id) => {
 
     const q = query(collection(db, "modelos"), where("id_desarrollo", "==", id));
     const modelosSnap = await getDocs(q);
-    const modelos = modelosSnap.docs.map(mapModelo); // Reutilizamos el mapper
+    const modelos = modelosSnap.docs.map(mapModelo); 
 
     return { ...docSnap.data(), id: docSnap.id, modelos };
   } catch (error) {

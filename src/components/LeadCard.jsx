@@ -1,17 +1,22 @@
 // src/components/LeadCard.jsx
 import React from 'react';
+// ✅ Importamos las constantes para usar los códigos universales
+import { STATUS } from '../config/constants'; 
 
-// --- DICCIONARIO DE ESTADOS ---
-// Define cómo se ve cada etapa del embudo. Centralizamos esto aquí para consistencia visual.
+// --- DICCIONARIO DE ESTADOS (Usando las nuevas claves) ---
+// Mapeamos los códigos de STATUS de la BD a la representación visual.
 const ESTADOS = {
-  nuevo: { label: '🆕 Nuevo', color: '#3b82f6', bg: '#eff6ff' },
-  contactado: { label: '📞 Contactado', color: '#8b5cf6', bg: '#f5f3ff' },
-  visita_agendada: { label: '📅 Visita Agendada', color: '#f59e0b', bg: '#fffbeb' },
-  visita_confirmada: { label: '✅ Visita Confirmada', color: '#059669', bg: '#ecfdf5' },
-  visito: { label: '👀 Ya Visitó', color: '#0d9488', bg: '#f0fdfa' },
-  apartado: { label: '📝 Apartado', color: '#db2777', bg: '#fdf2f8' },
-  vendido: { label: '💰 Vendido', color: '#16a34a', bg: '#dcfce7', border: '#16a34a' },
-  perdido: { label: '❌ Perdido', color: '#dc2626', bg: '#fef2f2' }
+  [STATUS.LEAD_NEW]: { label: '🆕 Nuevo', color: '#3b82f6', bg: '#eff6ff' },
+  [STATUS.LEAD_CONTACTED]: { label: '📞 Contactado', color: '#8b5cf6', bg: '#f5f3ff' },
+  [STATUS.LEAD_VISIT_SCHEDULED]: { label: '📅 Visita Agendada', color: '#f59e0b', bg: '#fffbeb' },
+  [STATUS.LEAD_VISIT_CONFIRMED]: { label: '✅ Visita Confirmada', color: '#059669', bg: '#ecfdf5' },
+  [STATUS.LEAD_VISITED]: { label: '👀 Ya Visitó', color: '#0d9488', bg: '#f0fdfa' },
+  [STATUS.LEAD_RESERVED]: { label: '📝 Apartado', color: '#db2777', bg: '#fdf2f8' },
+  [STATUS.LEAD_WON]: { label: '💰 Vendido', color: '#16a34a', bg: '#dcfce7', border: '#16a34a' },
+  [STATUS.LEAD_LOST]: { label: '❌ Perdido', color: '#dc2626', bg: '#fef2f2' },
+  [STATUS.LEAD_CLOSED]: { label: '📜 Escriturado', color: '#1e293b', bg: '#e5e7eb' },
+  [STATUS.LEAD_PENDING_ADMIN]: { label: '⏳ Pendiente Admin', color: '#9ca3af', bg: '#f3f4f6' },
+  [STATUS.LEAD_PENDING_ASSIGNMENT]: { label: '🤖 Asignando...', color: '#6366f1', bg: '#e0e7ff' }
 };
 
 // --- ICONOS ---
@@ -24,12 +29,20 @@ const Icons = {
 
 export default function LeadCard({ lead, onAction }) {
   // Configuración visual según el estado actual
-  const configEstado = ESTADOS[lead.status] || ESTADOS['nuevo'];
+  const configEstado = ESTADOS[lead.status] || ESTADOS[STATUS.LEAD_NEW];
   
-  // Formato de fecha amigable (Ej: "Hace 2 horas")
-  const getTiempoTranscurrido = (fechaISO) => {
-    if (!fechaISO) return 'Reciente';
-    const diff = new Date() - new Date(fechaISO);
+  // Formato de fecha amigable (Ahora trabaja con Firestore Timestamp o ISO string)
+  const getTiempoTranscurrido = (fecha) => {
+    if (!fecha) return 'Reciente';
+    
+    let targetDate;
+    if (fecha.toDate) { // Si es un Timestamp de Firestore
+      targetDate = fecha.toDate();
+    } else { // Si es una cadena ISO (ej. el historial)
+      targetDate = new Date(fecha);
+    }
+
+    const diff = new Date() - targetDate;
     const horas = Math.floor(diff / (1000 * 60 * 60));
     if (horas < 24) return `Hace ${horas}h`;
     return `Hace ${Math.floor(horas / 24)}d`;
@@ -98,7 +111,7 @@ export default function LeadCard({ lead, onAction }) {
   );
 }
 
-// --- ESTILOS CSS-IN-JS ---
+// --- ESTILOS (Sin cambios) ---
 const styles = {
   card: {
     backgroundColor: 'white',
