@@ -1,135 +1,95 @@
-📘 Inmueble Advisor: Manual de Arquitectura y Diseño (Blueprint)
+📘 Manual de Arquitectura para Inmueble Advisor.
 
-Este documento define las reglas estrictas de desarrollo, diseño visual, flujo de datos y arquitectura para la Web App Progresiva (PWA) "Inmueble Advisor".
+Este manual establece las reglas y directrices esenciales para el diseño de sistemas de gran escala, priorizando la modularidad, la escalabilidad y la colaboración eficiente con herramientas de Agent Coding.
 
-1. Stack Tecnológico 🛠️
+I. Modelo de Estructura Principal: Modularidad y Desacoplamiento
+El diseño fundamental del sistema debe rechazar el modelo monolítico en favor de componentes pequeños e independientes.
 
-Core: React (Vite).
+1. Principio: Arquitectura de Microservicios (o Servicios Bien Definidos)
+Descripción: La aplicación debe dividirse en servicios funcionales independientes que puedan desarrollarse, implementarse y escalarse de forma aislada.
 
-Routing: React Router DOM (v6+).
+Implementación:
 
-Estilos: CSS-in-JS (Objetos de estilo) + Variables CSS Globales.
+Ámbito de Servicio: Cada servicio debe adherirse estrictamente al Principio de Responsabilidad Única (SRP). Un servicio debe resolver una única capacidad de negocio (ej. AuthService, PaymentService, InventoryService).
 
-Mapas: React-Leaflet + OpenStreetMap.
+Despliegue: Cada servicio debe ser autocontenido y desplegable por separado (usando Docker).
 
-Estado: Context API (UserContext).
+Límites de Contexto (DDD): Los límites de los servicios deben coincidir con los Contextos Delimitados del negocio para evitar dependencias innecesarias.
 
-Persistencia: LocalStorage (gestionado exclusivamente vía Context).
+2. Contratos de Comunicación (APIs)
+Regla: La comunicación entre servicios debe realizarse a través de interfaces (APIs) bien definidas y versionadas.
 
-Despliegue: Vercel (SPA configuration).
+Tipos de Comunicación:
 
-2. Estructura de Archivos (Estricta) 📂
-  
-3. Sistema de Diseño (Visual) 🎨
+Sincrónico (Consultas/Comandos): Utilizar REST o, preferiblemente, gRPC para la alta eficiencia y la generación automática de stubs (esquemas de datos).
 
-Identidad
+Asincrónico (Eventos/Notificaciones): Utilizar una Cola de Mensajes (Kafka, RabbitMQ, SQS) para la comunicación de eventos y tareas de fondo. Esto garantiza que los servicios no se bloqueen entre sí.
 
-Color Primario: var(--primary-color) -> #00396a (Azul corporativo).
+Documentación: Todas las APIs deben ser documentadas formalmente (utilizando OpenAPI/Swagger para REST o archivos .proto para gRPC). Esto es crucial para la IA (Gemini) para entender cómo interactuar con el servicio.
 
-Fondo General: var(--bg-color) -> #f4f6f9 (Gris muy claro).
+II. Capa de Datos y Persistencia
+Para una aplicación sofisticada, la dependencia de una única base de datos es una limitación inaceptable.
 
-Tipografía: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif.
+3. Persistencia Políglota (Polyglot Persistence)
+Regla: Cada servicio es dueño de sus propios datos y tiene la libertad de elegir el tipo de base de datos que mejor se adapte a sus requisitos.
 
-Reglas de Estilo (CSS-in-JS)
+Ejemplos de Uso:
 
-No usar archivos .css separados por componente.
+SQL (PostgreSQL, MySQL): Para datos transaccionales críticos que requieren ACID (Atomicidad, Consistencia, Aislamiento, Durabilidad).
 
-Definir un objeto const styles = { ... } al final del archivo JSX.
+NoSQL (MongoDB, Cassandra): Para datos con esquemas flexibles, alto volumen de escritura o baja latencia.
 
-Usar className="main-content" (definida en index.css) para el contenedor principal de cada pantalla, lo que garantiza márgenes responsivos automáticos.
+Key-Value (Redis, Memcached): Para caching rápido, almacenamiento de sesiones y colas de trabajo.
 
-Iconografía
+Aislamiento: Un servicio nunca debe acceder directamente a la base de datos de otro servicio. Debe interactuar únicamente a través de su API.
 
-No instalar librerías pesadas (como FontAwesome).
+III. Directrices para la Colaboración con Agentes de Codificación
+Estas reglas están diseñadas para maximizar la eficiencia, la calidad y la comprensión de un agente de codificación como Gemini.
 
-Usar SVGs en línea (inline) dentro de un objeto const Icons = { ... } en el mismo archivo del componente.
+4. Estructura y Nomenclatura Consistente
+Regla: Se debe aplicar una estructura de carpetas y nomenclatura de archivos idéntica en todos los microservicios.
 
-Header y Navegación
+Estructura Típica Recomendada:
 
-El Header debe mostrar el logo oficial optimizado para fondo azul.
+/src: Código fuente.
 
-El menú activo debe tener: fontWeight: '700' y borderBottom: '3px solid #fbbf24' (Amarillo/Dorado).
+/src/models: Definiciones de datos (entidades).
 
-4. Arquitectura de Datos y Relaciones 🧠
+/src/repositories: Lógica de acceso a la base de datos.
 
-Simulamos una base de datos relacional usando dos JSONs.
+/src/services: Lógica de negocio principal (la orquestación de la aplicación).
 
-Entidades
+/src/controllers (o handlers): Lógica de entrada/salida de la API.
 
-Desarrollo (Padre): Contiene la geolocalización (lat, lng), nombre del fraccionamiento, zona y amenidades generales (parques, seguridad).
+/tests: Pruebas unitarias y de integración.
 
-ID: id_desarrollo (string).
+Ventaja con Gemini: Al pedirle a Gemini que "agregue la lógica de validación", sabrá automáticamente que debe modificar o crear código en el directorio /src/services.
 
-Modelo (Hijo): Contiene el precio específico, número de recámaras, m² de construcción y fotos de la casa.
+5. Pruebas Automatizadas como Especificación
+Regla: El código debe tener una alta cobertura de pruebas (Unitarias, de Integración y, si es necesario, End-to-End).
 
-Foreign Key: id_desarrollo (debe coincidir con el Padre).
+Propósito Didáctico: Las pruebas no solo validan el código, sino que también actúan como una especificación ejecutable.
 
-Generación de Slugs (IDs de URL)
+Si le pides a Gemini que refactorice una función, el suite de pruebas le indica a la IA (y al desarrollador) exactamente lo que se espera que haga la función.
 
-Para crear URLs amigables y únicas en el Router, usamos esta fórmula al procesar los datos:
-const uniqueId = ${idDesarrollo}-${nombreModeloSlug}-${index}
-Ejemplo: 2846-aguila-0
+Todo el código generado o modificado por el agente de codificación debe pasar todas las pruebas existentes antes de su integración.
 
-Regla de Filtrado en Mapa vs. Catálogo
+6. Configuración de Entorno Declarativa (I.A.C.)
+Regla: Se debe utilizar Infraestructura como Código (IaC), como Docker, para definir cómo se empaqueta cada servicio y Kubernetes (o Terraform/CloudFormation) para definir cómo se implementa y escala en la nube.
 
-Catálogo: Muestra Casas (Modelos) individuales.
+Facilita a Gemini: Permite al agente de codificación generar configuraciones de deployment (como archivos deployment.yaml o docker-compose.yml) con contexto y precisión, sin tener que asumir detalles del entorno.
 
-Mapa: Muestra Puntos (Desarrollos).
+IV. Gestión de la Complejidad y Calidad
+Estas reglas aseguran que el código sea mantenible a largo plazo, independientemente de quién o qué lo escriba.
 
-Lógica: Un desarrollo aparece en el mapa SI Y SOLO SI al menos uno de sus modelos cumple con los filtros activos (precio, recámaras).
+7. Principio DRY y Bibliotecas Compartidas
+Regla: Las funciones transversales (ej. manejo de errores, logging, utilidades de fecha, validación de JWT) deben abstraerse en bibliotecas internas compartidas.
 
-Etiqueta: El pin del mapa debe mostrar el rango de precios: "$1.2M - $1.5M".
+Mecanismo: Estas bibliotecas deben publicarse y consumirse como dependencias en cada microservicio, evitando la copia de código que dificulta la refactorización a gran escala.
 
-5. Reglas de Oro de Programación (Golden Rules) ⚠️
+8. Arquitectura de Decisión Registrada (ADR)
+Regla: Toda decisión arquitectónica significativa debe documentarse formalmente.
 
-1. Estado y Contexto (UserContext)
+Formato Recomendado: Architecture Decision Record (ADR). Un ADR explica el contexto, la decisión tomada, las alternativas consideradas y las consecuencias.
 
-Prohibido: Leer localStorage directamente dentro de los componentes (screens).
-
-Correcto: Usar el hook const { user, trackBehavior } = useUser();.
-
-Razón: Mantener la reactividad y centralizar la lógica de sesión.
-
-2. Analytics (TrackBehavior)
-
-Cada interacción importante debe registrarse:
-
-trackBehavior('view_item', { ... })
-
-trackBehavior('filter_change', { ... })
-
-Importante: Usar useEffect con dependencias estrictas [id] para evitar bucles infinitos al registrar visitas.
-
-3. Manejo de Errores e Imágenes
-
-Siempre usar un Fallback Image (imagen por defecto) si la URL de la foto falla.
-
-Validar precios: Si el precio es 0, null o NaN, el ítem no debe mostrarse o debe manejarse para no romper cálculos matemáticos (como el Math.min del mapa).
-
-4. Rutas (React Router)
-
-Usar rutas relativas dentro de App.jsx.
-
-Siempre incluir la configuración de "rewrites" en vercel.json para producción:
-
-{ "rewrites": [{ "source": "/(.*)", "destination": "/" }] }
-
-
-6. Snippets Comunes 📋
-
-Formato de Moneda (MXN)
-
-const formatoMoneda = (val) => {
-  return new Intl.NumberFormat('es-MX', { 
-    style: 'currency', 
-    currency: 'MXN', 
-    maximumFractionDigits: 0 
-  }).format(val);
-};
-
-
-Importación de Imágenes (Leaflet)
-
-Para mapas, siempre incluir al inicio:
-
-import 'leaflet/dist/leaflet.css';
+Propósito: Proporciona un registro histórico y contextual que es vital para la incorporación de nuevos miembros (humanos o IA) y para justificar el diseño del sistema.
