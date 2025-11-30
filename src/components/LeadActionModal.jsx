@@ -1,6 +1,6 @@
 // src/components/LeadActionModal.jsx
 import React, { useState } from 'react';
-import { actualizarEstadoLead } from '../services/dataService';
+import { actualizarEstadoLead } from '../services/crm.service';
 
 // Opciones del Embudo (Orden lógico)
 const OPCIONES_ESTADO = [

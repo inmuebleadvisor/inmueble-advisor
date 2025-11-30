@@ -7,7 +7,7 @@ import 'leaflet/dist/leaflet.css';
 
 import { useUser } from '../context/UserContext';
 // ✅ CORRECCIÓN: Importamos del servicio, no de los JSONs borrados
-import { obtenerDatosUnificados, obtenerTopAmenidades } from '../services/dataService';
+import { obtenerDatosUnificados, obtenerTopAmenidades } from '../services/catalog.service';
 
 const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
 

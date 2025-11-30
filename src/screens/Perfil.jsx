@@ -2,53 +2,39 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { obtenerDatosUnificados } from '../services/dataService'; 
+
+// ✅ 1. Importación del Servicio Modular
+import { obtenerDatosUnificados } from '../services/catalog.service';
+
+// ✅ 2. Importación de Constantes Centralizadas
+import { FINANZAS, IMAGES } from '../config/constants';
 
 // Importamos herramientas de la Base de Datos
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
-/**
- * COMPONENTE PERFIL & BIENVENIDA (Versión Simplificada)
- * Flujo: Rol -> Necesidades -> Calculadora -> Resultado (Login al final)
- */
 export default function Perfil() {
   const navigate = useNavigate();
   const { loginWithGoogle, trackBehavior } = useUser();
 
-  // ==========================================
-  // ESTADOS DE CONTROL E INTERFAZ
-  // ==========================================
-  // Paso 0: Rol
-  // Paso 1: Necesidades (Antes era 2)
-  // Paso 2: Calculadora (Antes era 3)
-  // Paso 3: Resultado (Antes era 4)
   const [step, setStep] = useState(0); 
-  const totalSteps = 3; // Reducimos el total de pasos
+  const totalSteps = 3; 
   const [isSaving, setIsSaving] = useState(false);
 
-  // ==========================================
-  // ESTADOS DE DATOS
-  // ==========================================
-  // Eliminamos 'nombre' porque lo tomaremos de Google
   const [capitalInicial, setCapitalInicial] = useState(250000);
   const [mensualidad, setMensualidad] = useState(15000);
   const [recamaras, setRecamaras] = useState(null); 
   const [entregaInmediata, setEntregaInmediata] = useState(null);
 
-  // Estado para guardar los datos que vienen de la nube
   const [dataMaestra, setDataMaestra] = useState([]);
 
-  // ==========================================
-  // ESTADOS DE CÁLCULO
-  // ==========================================
   const [presupuestoMaximo, setPresupuestoMaximo] = useState(0);
   const [notaDinamica, setNotaDinamica] = useState('');
   const [esAlerta, setEsAlerta] = useState(false);
 
   const formatoMoneda = (val) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
 
-  // 1. CARGA DE DATOS (Asíncrono)
+  // 1. CARGA DE DATOS (Servicio Catalog)
   useEffect(() => {
     const cargarDatosParaConteo = async () => {
       try {
@@ -61,28 +47,42 @@ export default function Perfil() {
     cargarDatosParaConteo();
   }, []);
 
-  // 2. LÓGICA FINANCIERA
+  // 2. LÓGICA FINANCIERA (Usando Constantes)
   useEffect(() => {
-    const PORCENTAJE_GASTOS_NOTARIALES = 0.06; 
-    const PORCENTAJE_ENGANCHE = 0.10; 
-    const FACTOR_MENSUALIDAD_POR_MILLON = 11000;
+    // Extraemos valores de la configuración global
+    const { 
+      PORCENTAJE_GASTOS_NOTARIALES, 
+      PORCENTAJE_ENGANCHE_MINIMO, 
+      FACTOR_MENSUALIDAD_POR_MILLON 
+    } = FINANZAS;
 
+    // Cálculo de capacidad
     const maxCreditoBanco = (mensualidad / FACTOR_MENSUALIDAD_POR_MILLON) * 1000000;
-    const limitePorEfectivo = capitalInicial / (PORCENTAJE_GASTOS_NOTARIALES + PORCENTAJE_ENGANCHE);
+    
+    // Escenario A: El capital limita (solo alcanza para enganche + escrituras)
+    const limitePorEfectivo = capitalInicial / (PORCENTAJE_GASTOS_NOTARIALES + PORCENTAJE_ENGANCHE_MINIMO);
+    
+    // Escenario B: La mensualidad limita (capacidad de pago + lo que ponga de enganche)
+    // Nota: Simplificación aritmética. Asumimos que el usuario pone TODO su capital menos gastos.
     const limitePorCapacidadTotal = (capitalInicial + maxCreditoBanco) / (1 + PORCENTAJE_GASTOS_NOTARIALES);
 
     const capacidadReal = Math.min(limitePorEfectivo, limitePorCapacidadTotal);
     setPresupuestoMaximo(capacidadReal);
 
     if (capacidadReal > 0) {
-      const costoTotalInicial = capacidadReal * (PORCENTAJE_ENGANCHE + PORCENTAJE_GASTOS_NOTARIALES);
+      const costoTotalInicial = capacidadReal * (PORCENTAJE_ENGANCHE_MINIMO + PORCENTAJE_GASTOS_NOTARIALES);
       const remanente = Math.max(0, capitalInicial - costoTotalInicial);
+      
+      const pctEnganche = (PORCENTAJE_ENGANCHE_MINIMO * 100).toFixed(0);
+      const pctNotaria = (PORCENTAJE_GASTOS_NOTARIALES * 100).toFixed(0);
+
+      const mensajeBase = `Incluye gastos notariales (${pctNotaria}%) y enganche (${pctEnganche}%). Te sobran ${formatoMoneda(remanente)} de tu efectivo.`;
 
       if (limitePorEfectivo < (limitePorCapacidadTotal - 50000)) {
-        setNotaDinamica(`Incluye gastos notariales (6%) y enganche (10%). Te sobran ${formatoMoneda(remanente)} de tu efectivo inicial.`);
+        setNotaDinamica(mensajeBase + " (Tu efectivo limita tu compra, podrías pagar más mensualidad si tuvieras más ahorro).");
         setEsAlerta(true);
       } else {
-        setNotaDinamica(`Incluye gastos notariales (6%) y enganche (10%). Te sobran ${formatoMoneda(remanente)} de tu efectivo inicial.`);
+        setNotaDinamica(mensajeBase);
         setEsAlerta(false);
       }
     }
@@ -110,7 +110,7 @@ export default function Perfil() {
     if (role === 'asesor') {
       navigate('/soy-asesor'); 
     } else {
-      setStep(1); // Ahora salta directo al paso de necesidades
+      setStep(1); 
     }
   };
 
@@ -137,15 +137,13 @@ export default function Perfil() {
   const handleFinalizar = async () => {
     setIsSaving(true);
     try {
-      // 1. Disparar Login de Google
       const firebaseUser = await loginWithGoogle('cliente'); 
       
       if (firebaseUser) {
-        // 2. Preparar el objeto de datos del usuario
         const userProfile = {
           uid: firebaseUser.uid,
           email: firebaseUser.email,
-          nombre: firebaseUser.displayName, // ✅ Usamos el nombre directo de Google
+          nombre: firebaseUser.displayName,
           foto: firebaseUser.photoURL,
           role: 'cliente', 
           
@@ -161,10 +159,8 @@ export default function Perfil() {
           registroCompleto: true
         };
 
-        // 3. Escribir en Firestore
         await setDoc(doc(db, "users", firebaseUser.uid), userProfile, { merge: true });
 
-        // 4. Analytics y Navegación
         trackBehavior('onboarding_completed', { 
           presupuesto: presupuestoMaximo,
           opciones_vistas: opcionesEncontradas
@@ -180,9 +176,6 @@ export default function Perfil() {
     }
   };
 
-  // ==========================================
-  // RENDERIZADO
-  // ==========================================
   return (
     <div style={styles.container}>
       <style>{`
@@ -194,34 +187,31 @@ export default function Perfil() {
       `}</style>
 
       <div style={styles.card}>
-        
         {step > 0 && (
           <div style={styles.progressBarContainer}>
             <div style={{...styles.progressBarFill, width: `${(step / totalSteps) * 100}%`}}></div>
           </div>
         )}
 
-        {step <= 1 && ( // Mostrar logo en Paso 0 y 1
+        {step <= 1 && ( 
           <div style={styles.logoContainer}>
-            <img src="https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png" alt="Logo" style={styles.logoIcon} />
+            {/* Usamos la constante de imagen */}
+            <img src={IMAGES.LOGO_URL} alt="Logo" style={styles.logoIcon} />
           </div>
         )}
 
         <div className="step-content" key={step}>
           
-          {/* PASO 0: SELECCIÓN DE ROL */}
           {step === 0 && (
             <>
               <h1 style={styles.title}>Bienvenido</h1>
               <p style={styles.subtitle}>Selecciona tu perfil para comenzar:</p>
-              
               <div style={styles.roleGrid}>
                 <button onClick={() => handleRoleSelection('comprador')} style={styles.roleCard}>
                   <div style={styles.roleIcon}>🏠</div>
                   <h3 style={styles.roleTitle}>Busco mi Hogar</h3>
                   <p style={styles.roleDesc}>Quiero ver opciones a mi alcance.</p>
                 </button>
-
                 <button onClick={() => handleRoleSelection('asesor')} style={{...styles.roleCard, border: '2px solid #e2e8f0'}}>
                   <div style={styles.roleIcon}>💼</div>
                   <h3 style={styles.roleTitle}>Soy Asesor</h3>
@@ -231,7 +221,6 @@ export default function Perfil() {
             </>
           )}
 
-          {/* PASO 1 (Antes 2): NECESIDADES */}
           {step === 1 && (
             <>
               <h1 style={styles.title}>Dime qué buscas</h1>
@@ -250,7 +239,6 @@ export default function Perfil() {
             </>
           )}
 
-          {/* PASO 2 (Antes 3): CALCULADORA */}
           {step === 2 && (
             <>
               <h1 style={styles.title}>Hablemos de números</h1>
@@ -270,7 +258,6 @@ export default function Perfil() {
             </>
           )}
 
-          {/* PASO 3 (Antes 4): RESULTADO */}
           {step === 3 && (
             <>
               <h1 style={styles.title}>¡Listo!</h1>
@@ -291,7 +278,6 @@ export default function Perfil() {
           )}
         </div>
 
-        {/* NAVEGACIÓN */}
         {step > 0 && (
           <div style={styles.navContainer}>
             <button onClick={prevStep} style={styles.secondaryButton}>Atrás</button>
@@ -313,8 +299,8 @@ export default function Perfil() {
   );
 }
 
-// ESTILOS (Mismos de antes)
 const styles = {
+  // ... (Mismos estilos que tenías, no es necesario cambiarlos por ahora)
   container: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '85vh', width: '100%', padding: '20px', boxSizing: 'border-box' },
   card: { backgroundColor: 'white', padding: '40px 30px', borderRadius: '25px', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', maxWidth: '500px', width: '100%', textAlign: 'center', position: 'relative', overflow: 'hidden', minHeight: '500px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' },
   progressBarContainer: { position: 'absolute', top: 0, left: 0, width: '100%', height: '6px', backgroundColor: '#f0f0f0' },

@@ -2,8 +2,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { obtenerDatosUnificados, obtenerTopAmenidades } from '../services/dataService';
 import ImageLoader from '../components/ImageLoader';
+
+// ✅ 1. Importación del Servicio Modular
+import { obtenerDatosUnificados, obtenerTopAmenidades } from '../services/catalog.service';
+
+// ✅ 2. Importación de Constantes Centralizadas
+import { FINANZAS, UI_OPCIONES } from '../config/constants';
 
 // --- ICONOS ---
 const Icons = {
@@ -24,12 +29,13 @@ const formatoMoneda = (val) => {
   return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
 };
 
-const calcularEscrituracion = (precio) => formatoMoneda(precio * 0.06);
+// ✅ Refactorizado para usar la constante de gastos notariales
+const calcularEscrituracion = (precio) => formatoMoneda(precio * FINANZAS.PORCENTAJE_GASTOS_NOTARIALES);
 
 export default function Catalogo() {
   const { user, trackBehavior } = useUser();
   
-  // --- ESTADOS DE DATOS (NUEVO: Manejo de carga asíncrona) ---
+  // --- ESTADOS DE DATOS ---
   const [dataMaestra, setDataMaestra] = useState([]);
   const [topAmenidades, setTopAmenidades] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,12 +44,11 @@ export default function Catalogo() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
-  // 1. Carga de Datos desde Firebase
+  // 1. Carga de Datos desde el Servicio Modular
   useEffect(() => {
     const cargarDatos = async () => {
       setLoading(true);
       try {
-        // Pedimos los datos en paralelo para ganar velocidad
         const [modelos, amenidades] = await Promise.all([
           obtenerDatosUnificados(),
           obtenerTopAmenidades()
@@ -61,16 +66,16 @@ export default function Catalogo() {
     cargarDatos();
   }, []);
 
-  // 2. Estado de Filtros
+  // 2. Estado de Filtros (Inicializado con constantes)
   const [filtros, setFiltros] = useState({
-    precioMax: 100000000, 
+    precioMax: FINANZAS.PRECIO_MAXIMO_DEFAULT, // ✅ Uso de constante
     habitaciones: 0,
     status: 'all',
     amenidad: '',
     tipo: 'all'
   });
 
-  // Sincronizar con Perfil de Usuario (cuando carga el user o los datos)
+  // Sincronizar con Perfil de Usuario
   useEffect(() => {
     if (user?.presupuestoCalculado) {
       setFiltros(prev => ({
@@ -86,7 +91,7 @@ export default function Catalogo() {
   const hayFiltrosActivos = useMemo(() => {
     return (
       searchTerm !== '' ||
-      (filtros.precioMax < 100000000 && filtros.precioMax !== Number(user?.presupuestoCalculado)) ||
+      (filtros.precioMax < FINANZAS.PRECIO_MAXIMO_DEFAULT && filtros.precioMax !== Number(user?.presupuestoCalculado)) ||
       filtros.habitaciones > 0 ||
       filtros.status !== 'all' ||
       filtros.amenidad !== '' ||
@@ -94,37 +99,37 @@ export default function Catalogo() {
     );
   }, [filtros, searchTerm, user]);
 
-  // 3. Motor de Filtrado (Se ejecuta sobre la dataMaestra cargada)
+  // 3. Motor de Filtrado
   const modelosFiltrados = useMemo(() => {
-    if (loading) return []; // Si está cargando, no filtramos nada aún
+    if (loading) return [];
 
     const term = normalizar(searchTerm);
     return dataMaestra.filter(item => {
       // Filtros numéricos
       if (item.precioNumerico > filtros.precioMax) return false;
-      if (filtros.habitaciones > 0 && item.recamaras < filtros.habitaciones) return false;
+      if (filtros.habitaciones > 0 && (item.recamaras || 0) < filtros.habitaciones) return false;
       
-      // Filtros de Status (Preventa vs Inmediata)
+      // Filtros de Status
       if (filtros.status === 'inmediata' && item.esPreventa === true) return false;
       if (filtros.status === 'preventa' && item.esPreventa === false) return false;
 
-      // Filtro de Tipo (Casa vs Depa)
+      // Filtro de Tipo
       if (filtros.tipo !== 'all') {
         const tipoItem = normalizar(item.tipoVivienda);
         if (filtros.tipo === 'casa' && !tipoItem.includes('casa')) return false;
         if (filtros.tipo === 'departamento' && !tipoItem.includes('departamento') && !tipoItem.includes('loft')) return false;
       }
 
-      // Filtro Amenidad (Ahora busca en las amenidades denormalizadas del desarrollo)
+      // Filtro Amenidad
       if (filtros.amenidad && Array.isArray(item.amenidadesDesarrollo)) {
         if (!item.amenidadesDesarrollo.some(a => normalizar(a).includes(normalizar(filtros.amenidad)))) return false;
       }
 
-      // Buscador Universal
+      // Buscador Universal (Corregido para incluir nombre_modelo)
       if (term) {
         const amenidadesTexto = Array.isArray(item.amenidadesDesarrollo) ? item.amenidadesDesarrollo.join(' ') : '';
         const searchTarget = `
-          ${normalizar(item.nombre)} ${normalizar(item.nombreDesarrollo)}
+          ${normalizar(item.nombre)} ${normalizar(item.nombre_modelo)} ${normalizar(item.nombreDesarrollo)}
           ${normalizar(item.constructora)} ${normalizar(item.tipoVivienda)}
           ${normalizar(item.colonia)} ${normalizar(item.ciudad)}
           ${normalizar(item.zona)} ${normalizar(amenidadesTexto)}
@@ -139,10 +144,9 @@ export default function Catalogo() {
   
   const limpiarTodo = () => {
     setSearchTerm('');
-    setFiltros({ precioMax: 100000000, habitaciones: 0, status: 'all', amenidad: '', tipo: 'all' });
+    setFiltros({ precioMax: FINANZAS.PRECIO_MAXIMO_DEFAULT, habitaciones: 0, status: 'all', amenidad: '', tipo: 'all' });
   };
 
-  // Bloquear scroll del body cuando el modal está abierto
   useEffect(() => {
     document.body.style.overflow = isFilterOpen ? 'hidden' : 'unset';
     return () => { document.body.style.overflow = 'unset'; }
@@ -155,7 +159,6 @@ export default function Catalogo() {
         <div style={{ textAlign: 'center', color: '#6b7280' }}>
           <div className="spinner" style={{ marginBottom: '15px' }}></div>
           <p>Cargando propiedades...</p>
-          {/* Estilo inline para el spinner simple */}
           <style>{`
             .spinner {
               width: 40px; height: 40px; margin: 0 auto;
@@ -210,7 +213,7 @@ export default function Catalogo() {
           </button>
         )}
         <div style={styles.activeChipsContainer}>
-          {filtros.precioMax < 100000000 && <span style={styles.chip}>Max {formatoMoneda(filtros.precioMax)}</span>}
+          {filtros.precioMax < FINANZAS.PRECIO_MAXIMO_DEFAULT && <span style={styles.chip}>Max {formatoMoneda(filtros.precioMax)}</span>}
           {filtros.habitaciones > 0 && <span style={styles.chip}>{filtros.habitaciones}+ Rec.</span>}
           {filtros.tipo !== 'all' && (
             <span style={{...styles.chip, backgroundColor: '#e0e7ff', color: '#3730a3', borderColor: '#c7d2fe'}}>
@@ -238,7 +241,15 @@ export default function Catalogo() {
               <div style={styles.filterSection}>
                 <label style={styles.filterLabel}>Presupuesto Máximo</label>
                 <div style={styles.priceDisplay}>{formatoMoneda(filtros.precioMax)}</div>
-                <input type="range" min="500000" max="10000000" step="100000" value={filtros.precioMax} onChange={(e) => handleFilterChange('precioMax', Number(e.target.value))} style={styles.slider} />
+                <input 
+                  type="range" 
+                  min="500000" 
+                  max={UI_OPCIONES.FILTRO_PRECIO_MAX} 
+                  step={UI_OPCIONES.FILTRO_PRECIO_STEP} 
+                  value={filtros.precioMax} 
+                  onChange={(e) => handleFilterChange('precioMax', Number(e.target.value))} 
+                  style={styles.slider} 
+                />
               </div>
               <div style={styles.filterSection}>
                 <label style={styles.filterLabel}>Recámaras</label>
@@ -285,7 +296,8 @@ export default function Catalogo() {
                  <div key={idx} style={styles.carouselSlide}>
                     <ImageLoader 
                       src={imgSrc} 
-                      alt={`${item.nombre} - vista ${idx}`} 
+                      // ✅ Corrección: Uso de nombre_modelo con fallback
+                      alt={`${item.nombre_modelo || item.nombre} - vista ${idx}`} 
                       style={styles.image} 
                     />
                     {idx === 0 && item.imagenes?.length > 1 && (
@@ -304,7 +316,8 @@ export default function Catalogo() {
                <div style={styles.imageOverlay}>
                  <h3 style={styles.overlayDevName}>{item.nombreDesarrollo}</h3>
                  <p style={styles.overlayModelName}>
-                    {item.constructora ? `${item.constructora} • ` : ''} {item.nombre}
+                    {/* ✅ Corrección: Uso de nombre_modelo */}
+                    {item.constructora ? `${item.constructora} • ` : ''} {item.nombre_modelo || item.nombre}
                  </p>
                </div>
             </div>
@@ -316,11 +329,12 @@ export default function Catalogo() {
                </div>
 
                <div style={styles.featuresRow}>
-                 <span style={styles.featureItem}>🛏 {item.recamaras} Rec.</span>
+                 {/* ✅ Corrección: Fallbacks para evitar vacíos */}
+                 <span style={styles.featureItem}>🛏 {item.recamaras || 0} Rec.</span>
                  <span style={styles.separator}>|</span>
-                 <span style={styles.featureItem}>🚿 {item.banos} Baños</span>
+                 <span style={styles.featureItem}>🚿 {item.banos || 0} Baños</span>
                  <span style={styles.separator}>|</span>
-                 <span style={styles.featureItem}>📐 {item.m2} m²</span>
+                 <span style={styles.featureItem}>📐 {item.m2 || 0} m²</span>
                </div>
 
                <div style={styles.priceBox}>

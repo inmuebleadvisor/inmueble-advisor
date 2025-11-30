@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { obtenerInformacionDesarrollo } from '../services/dataService'; // ✅ Servicio asíncrono
+import { obtenerInformacionDesarrollo } from '../services/catalog.service'; // ✅ Servicio asíncrono
 import ImageLoader from '../components/ImageLoader';
 
 const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
