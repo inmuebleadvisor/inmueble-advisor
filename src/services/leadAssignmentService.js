@@ -4,7 +4,7 @@ import {
   collection, 
   addDoc, 
   serverTimestamp 
-} from 'firebase/firestore';
+} from 'firebase/firestore'; // ✅ serverTimestamp ya está importado
 
 // Importamos las constantes para consistencia.
 import { STATUS } from '../config/constants';
@@ -40,15 +40,16 @@ export const generarLeadAutomatico = async (datosCliente, idDesarrollo, nombreDe
       status: STATUS.LEAD_PENDING_ASSIGNMENT, 
       origen: 'web_automatico',
       
-      // ✅ CORRECCIÓN CRÍTICA: Usamos la función nativa de Firestore para las fechas.
+      // ✅ CRÍTICO: Uso de función nativa de Firestore para las fechas principales.
       fechaCreacion: serverTimestamp(),
       fechaUltimaInteraccion: serverTimestamp(),
       
       historial: [
         {
           accion: 'creacion_solicitud',
-          // ✅ CORRECCIÓN: En lugar de ISOString, usamos un formato nativo para mantener la consistencia
-          fecha: new Date().toISOString(), 
+          // 🔥 FIX: Reemplazamos new Date().toISOString() por serverTimestamp()
+          // Esto alinea el formato de la fecha del historial con el esquema de la BD.
+          fecha: serverTimestamp(), 
           detalle: 'Cliente solicitó informes (Esperando asignación)'
         }
       ]

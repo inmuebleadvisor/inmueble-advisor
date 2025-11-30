@@ -1,7 +1,10 @@
 /**
- * BACKEND: INMUEBLE ADVISOR
- * =========================
- * Lógica segura de negocio (Serverless).
+ * BACKEND: INMUEBLE ADVISOR - CLOUD FUNCTIONS
+ * ===========================================
+ * Este archivo contiene toda la lógica crítica del negocio (Serverless),
+ * incluyendo la asignación automática de leads y el cálculo de la meritocracia (score).
+ * * Principio: Todo cambio en la BD que afecte métricas debe ser manejado aquí
+ * para garantizar seguridad e inmutabilidad de la regla de negocio.
  */
 const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/firestore");
 const { initializeApp } = require("firebase-admin/app");
@@ -59,7 +62,7 @@ exports.asignarLead = onDocumentCreated("leads/{leadId}", async (event) => {
     if (candidatos.length === 0) {
       console.warn("⚠️ No hay asesores disponibles. Lead queda pendiente de Admin.");
       await snapshot.ref.update({
-        // El estado 'PENDING_ADMIN' se usa por seguridad.
+        // 🔥 FIX COMPLETO: Usamos 'PENDING_ADMIN' (código universal) en lugar del string localizado.
         status: 'PENDING_ADMIN', 
         motivoAsignacion: 'Sin cobertura de asesores',
         historial: FieldValue.arrayUnion({
@@ -123,7 +126,7 @@ exports.asignarLead = onDocumentCreated("leads/{leadId}", async (event) => {
     await snapshot.ref.update({
       asesorUid: asesorGanador.uid,
       asesorNombre: asesorGanador.nombre,
-      // 🔥 FIX CRÍTICO: Usamos 'NEW' (constante universal) en lugar de 'nuevo'
+      // 🔥 FIX PREVIO: Usamos 'NEW' (constante universal) para el lead recién asignado.
       status: 'NEW', 
       motivoAsignacion: motivoAsignacion,
       fechaAsignacion: new Date().toISOString(),
@@ -140,6 +143,10 @@ exports.asignarLead = onDocumentCreated("leads/{leadId}", async (event) => {
   }
 });
 
+/**
+ * TRIGGER: Actualización de Métricas de Asesor (Meritocracia)
+ * Se dispara cuando el status de un lead es modificado (ej. de 'NEW' a 'WON' o 'LOST').
+ */
 exports.actualizarMetricasAsesor = onDocumentUpdated("leads/{leadId}", async (event) => {
   const antes = event.data.before.data();
   const despues = event.data.after.data();
@@ -171,7 +178,7 @@ exports.actualizarMetricasAsesor = onDocumentUpdated("leads/{leadId}", async (ev
     leadsSnap.forEach(doc => {
       const l = doc.data();
       totalLeads++;
-      // 🔥 FIX CRÍTICO: Usamos 'WON' y 'LOST' (constantes universales)
+      // 🔥 FIX PREVIO: Usamos 'WON' y 'LOST' (constantes universales)
       if (l.status === 'WON') ganados++;
       if (l.status === 'LOST') perdidos++;
     });
@@ -219,8 +226,6 @@ exports.actualizarMetricasAsesor = onDocumentUpdated("leads/{leadId}", async (ev
     console.error("Error calculando score:", error);
   }
 });
-
-// ... (Tus funciones anteriores de asignarLead y actualizarMetricasAsesor siguen aquí) ...
 
 const { onRequest } = require("firebase-functions/v2/https");
 const { ejecutarMigracion } = require("./migrator");
