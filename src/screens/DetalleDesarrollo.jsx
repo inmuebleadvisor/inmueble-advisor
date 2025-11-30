@@ -2,7 +2,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { obtenerInformacionDesarrollo } from '../services/catalog.service'; // ✅ Servicio asíncrono
+// ✅ IMPORTACIÓN CLAVE: Mantenemos el servicio porque requiere una query específica a Firestore (modelos por desarrollo)
+import { obtenerInformacionDesarrollo } from '../services/catalog.service'; 
+// ✅ Nuevo: Importamos el contexto para la bandera de carga global
+import { useCatalog } from '../context/CatalogContext'; 
 import ImageLoader from '../components/ImageLoader';
 
 const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
@@ -25,6 +28,7 @@ const esImagen = (url) => {
 export default function DetalleDesarrollo() {
   const { id } = useParams();
   const { trackBehavior } = useUser();
+  const { loadingCatalog } = useCatalog(); // ✅ Usamos la bandera de carga global
   const navigate = useNavigate();
   const scrollRef = useRef(null);
 
@@ -35,6 +39,10 @@ export default function DetalleDesarrollo() {
 
   // 1. CARGA DE DATOS ASÍNCRONA
   useEffect(() => {
+    // PORQUÉ: Sincronizamos la carga. Si el catálogo global aún está cargando,
+    // esperamos para evitar inconsistencias en la navegación o IDs no disponibles.
+    if (loadingCatalog) return; 
+
     const cargarDesarrollo = async () => {
       setLoading(true);
       try {
@@ -53,7 +61,7 @@ export default function DetalleDesarrollo() {
 
     cargarDesarrollo();
     window.scrollTo(0, 0);
-  }, [id]); // trackBehavior estable
+  }, [id, loadingCatalog]); // Dependencias actualizadas
 
   // 2. CONSTRUCCIÓN DE GALERÍA (Memoizado sobre el estado 'desarrollo')
   const galeriaImagenes = useMemo(() => {
@@ -91,7 +99,8 @@ export default function DetalleDesarrollo() {
   };
 
   // --- RENDERIZADO DE CARGA ---
-  if (loading) {
+  // PORQUÉ: El spinner se muestra si estamos cargando el catálogo global O la info específica.
+  if (loadingCatalog || loading) { 
     return (
       <div className="main-content" style={{ ...styles.pageContainer, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: '#6b7280' }}>Cargando desarrollo...</p>
@@ -111,6 +120,9 @@ export default function DetalleDesarrollo() {
 
   const modelos = desarrollo.modelos || [];
   const direccionCompleta = `${desarrollo.ubicacion?.calle || ''}, ${desarrollo.ubicacion?.colonia || ''}, ${desarrollo.ubicacion?.ciudad || ''}`;
+  
+  // ✅ URL Corregida (de la Fase 2)
+  const mapsUrl = `https://maps.google.com/maps?q=${desarrollo.ubicacion?.latitud},${desarrollo.ubicacion?.longitud}&z=15`;
 
   return (
     <div className="main-content animate-fade-in" style={styles.pageContainer}>
@@ -255,7 +267,7 @@ export default function DetalleDesarrollo() {
         <div style={styles.locationActionSection}>
            <h3 style={styles.sectionTitle}>Ubicación</h3>
            <a 
-             href={`https://www.google.com/maps/search/?api=1&query=${desarrollo.ubicacion?.latitud},${desarrollo.ubicacion?.longitud}`}
+             href={mapsUrl}
              target="_blank"
              rel="noopener noreferrer"
              style={styles.mapButtonExternal}

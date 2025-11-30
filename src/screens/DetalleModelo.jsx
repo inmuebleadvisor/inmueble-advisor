@@ -2,7 +2,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { obtenerDatosUnificados } from '../services/catalog.service'; // ✅ Importamos el servicio asíncrono
+// ✅ MODIFICACIÓN: Importamos el nuevo hook de contexto
+import { useCatalog } from '../context/CatalogContext'; 
+// Eliminamos: import { obtenerDatosUnificados } from '../services/catalog.service'; 
 import ImageLoader from '../components/ImageLoader';
 
 const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
@@ -19,6 +21,8 @@ const Icons = {
 export default function DetalleModelo() {
   const { id } = useParams();
   const { trackBehavior } = useUser();
+  // ✅ CONSUMIMOS EL CONTEXTO
+  const { loadingCatalog, getModeloById } = useCatalog();
   const navigate = useNavigate();
   const scrollRef = useRef(null);
 
@@ -27,30 +31,25 @@ export default function DetalleModelo() {
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // 1. Carga de Datos (Efecto Asíncrono)
+  // 1. Carga de Datos (Efecto SÍNCRONO que consulta el contexto)
   useEffect(() => {
-    const cargarModelo = async () => {
-      setLoading(true);
-      try {
-        // Obtenemos todos los modelos (usando caché del servicio)
-        const todosLosModelos = await obtenerDatosUnificados();
-        const encontrado = todosLosModelos.find(m => m.id === id);
+    // PORQUÉ: Ahora que la data está en el contexto, la búsqueda es casi instantánea, 
+    // eliminando la necesidad de llamadas asíncronas lentas.
+    if (!loadingCatalog) {
+        const encontrado = getModeloById(id);
         
         setModelo(encontrado || null);
-        
+        setLoading(false);
+
         if (encontrado) {
           trackBehavior('view_item', { item_id: id, item_name: encontrado.nombre_modelo });
         }
-      } catch (error) {
-        console.error("Error al cargar modelo:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    cargarModelo();
+    }
+    
+    // El scroll se mantiene al cargar la página
     window.scrollTo(0, 0);
-  }, [id]); // trackBehavior omitido de dependencias por ser estable
+
+  }, [id, loadingCatalog, getModeloById]); // El efecto se dispara cuando el catálogo termina de cargar.
 
   // Helpers de Galería
   const galeriaImagenes = modelo?.imagenes || [];
@@ -76,7 +75,8 @@ export default function DetalleModelo() {
   };
 
   // --- RENDERIZADO DE CARGA ---
-  if (loading) {
+  // El loading ahora depende de si el catálogo global terminó de cargar
+  if (loadingCatalog || loading) {
     return (
       <div className="main-content" style={{ ...styles.pageContainer, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: '#6b7280' }}>Cargando detalles...</p>
@@ -180,10 +180,11 @@ export default function DetalleModelo() {
           <p style={styles.descriptionText}>
             {modelo.descripcion || "Una excelente opción para tu familia."}
           </p>
-          {modelo.extras?.amenidades_modelo && (
+          {/* Usamos el campo amenidades (corregido en la fase 2) */}
+          {Array.isArray(modelo.amenidades) && modelo.amenidades.length > 0 && (
             <div style={styles.amenitiesTagContainer}>
-              {modelo.extras.amenidades_modelo.split(',').map((am, i) => (
-                <span key={i} style={styles.amenityTag}>✨ {am.trim()}</span>
+              {modelo.amenidades.map((am, i) => (
+                <span key={i} style={styles.amenityTag}>✨ {am.trim()}</span> 
               ))}
             </div>
           )}

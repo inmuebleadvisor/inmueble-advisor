@@ -6,8 +6,9 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import { useUser } from '../context/UserContext';
-// ✅ CORRECCIÓN: Importamos del servicio, no de los JSONs borrados
-import { obtenerDatosUnificados, obtenerTopAmenidades } from '../services/catalog.service';
+// ✅ MODIFICACIÓN: Importamos el nuevo hook de contexto
+import { useCatalog } from '../context/CatalogContext'; 
+// Eliminamos: import { obtenerDatosUnificados, obtenerTopAmenidades } from '../services/catalog.service';
 
 const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
 
@@ -54,11 +55,14 @@ const createCustomIcon = (textoPrecio) => {
 const ControlZoom = ({ marcadores }) => {
   const map = useMap();
   useEffect(() => {
+    // PORQUÉ: Esta lógica es crucial para que el mapa se centre
+    // automáticamente en los desarrollos filtrados y visibles.
     if (marcadores.length > 0) {
       const bounds = L.latLngBounds();
       let validos = 0;
       marcadores.forEach(m => {
         if (m.ubicacion?.latitud && m.ubicacion?.longitud) {
+          // Leaflet requiere un array de [latitud, longitud]
           bounds.extend([m.ubicacion.latitud, m.ubicacion.longitud]);
           validos++;
         }
@@ -76,32 +80,13 @@ const Icons = {
 
 export default function Mapa() {
   const { user, trackBehavior } = useUser();
+  // ✅ OBTENEMOS DATOS Y ESTADO DE CARGA DEL CONTEXTO
+  const { modelos: dataMaestra, amenidades: topAmenidades, loadingCatalog: loading } = useCatalog();
   
-  // --- ESTADOS (Async) ---
-  const [dataMaestra, setDataMaestra] = useState([]);
-  const [topAmenidades, setTopAmenidades] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // --- ESTADOS DE UI ---
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // 1. CARGA DE DATOS
-  useEffect(() => {
-    const cargarDatos = async () => {
-      setLoading(true);
-      try {
-        const [modelos, amenidades] = await Promise.all([
-          obtenerDatosUnificados(),
-          obtenerTopAmenidades()
-        ]);
-        setDataMaestra(modelos);
-        setTopAmenidades(amenidades);
-      } catch (error) {
-        console.error("Error cargando mapa:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    cargarDatos();
-  }, []);
+  // 1. CARGA DE DATOS (ELIMINADA de useEffect)
 
   // 2. FILTROS
   const [filtros, setFiltros] = useState({
@@ -113,6 +98,7 @@ export default function Mapa() {
 
   // 3. LÓGICA DE AGRUPACIÓN (De Modelos -> Desarrollos)
   const marcadoresVisibles = useMemo(() => {
+    // PORQUÉ: Si el catálogo no está cargado, retornamos un array vacío.
     if (loading) return [];
 
     const grupos = {};
@@ -126,6 +112,7 @@ export default function Mapa() {
       if (filtros.status === 'preventa' && modelo.esPreventa === false) return;
       
       // Filtro Amenidad
+      // ✅ CORRECCIÓN: Usamos el campo correcto `amenidadesDesarrollo`
       if (filtros.amenidad && Array.isArray(modelo.amenidadesDesarrollo)) {
         if (!modelo.amenidadesDesarrollo.some(a => a.toLowerCase().includes(filtros.amenidad.toLowerCase()))) return;
       }
@@ -167,7 +154,7 @@ export default function Mapa() {
       return { ...grupo, etiquetaPrecio: etiqueta };
     });
 
-  }, [dataMaestra, filtros, loading]);
+  }, [dataMaestra, filtros, loading]); // dataMaestra y loading ahora vienen del contexto
 
   const formatoMoneda = (val) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
   const handleFilterChange = (key, val) => setFiltros(prev => ({ ...prev, [key]: val }));
@@ -331,6 +318,7 @@ export default function Mapa() {
                         border: filtros.amenidad === '' ? '1px solid #7dd3fc' : '1px solid transparent'}}>
                     Todas
                   </button>
+                  {/* Amenidades ahora vienen del contexto */}
                   {topAmenidades.map((am, idx) => (
                     <button key={idx} onClick={() => handleFilterChange('amenidad', filtros.amenidad === am ? '' : am)}
                       style={{...styles.amenityChip, 
@@ -387,7 +375,7 @@ const styles = {
   pillGroup: { display: 'flex', gap: '10px', flexWrap: 'wrap' },
   pill: { flex: 1, minWidth: '80px', padding: '12px', borderRadius: '12px', border: '1px solid', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer', textAlign: 'center' },
   amenityChip: { padding: '8px 14px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' },
-  modalFooter: { padding: '20px', borderTop: '1px solid #f3f4f6', display: 'flex', gap: '15px' },
+  modalFooter: { padding: '20px', borderTop: '1px solid #f3f4f6', display: 'flex', gap: '15px', alignItems: 'center' },
   clearBtn: { background: 'none', border: 'none', textDecoration: 'underline', color: '#6b7280', fontWeight: '600', cursor: 'pointer' },
   applyBtn: { flex: 1, backgroundColor: 'var(--primary-color)', color: 'white', padding: '12px', borderRadius: '12px', border: 'none', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer' },
 };

@@ -2,15 +2,20 @@
 import React, { useState } from 'react';
 import { actualizarEstadoLead } from '../services/crm.service';
 
-// Opciones del Embudo (Orden lógico)
+// ✅ IMPORTANTE: Importamos las constantes de STATUS para asegurar consistencia
+import { STATUS } from '../config/constants';
+
+// Opciones del Embudo (Usando las constantes de STATUS)
+// PORQUÉ: Esto garantiza que los valores enviados a la BD (val) coincidan 
+// exactamente con el diccionario central (STATUS).
 const OPCIONES_ESTADO = [
-  { val: 'contactado', label: '📞 Contactado' },
-  { val: 'visita_agendada', label: '📅 Visita Agendada' },
-  { val: 'visita_confirmada', label: '✅ Visita Confirmada' },
-  { val: 'visito', label: '👀 Ya Visitó' },
-  { val: 'apartado', label: '📝 Apartado' },
-  { val: 'vendido', label: '💰 Vendido (Cierre)' },
-  { val: 'perdido', label: '❌ Perdido / Descartado' }
+  { val: STATUS.LEAD_CONTACTED, label: '📞 Contactado' },
+  { val: STATUS.LEAD_VISIT_SCHEDULED, label: '📅 Visita Agendada' },
+  { val: STATUS.LEAD_VISIT_CONFIRMED, label: '✅ Visita Confirmada' },
+  { val: STATUS.LEAD_VISITED, label: '👀 Ya Visitó' },
+  { val: STATUS.LEAD_RESERVED, label: '📝 Apartado' },
+  { val: STATUS.LEAD_WON, label: '💰 Vendido (Cierre)' },
+  { val: STATUS.LEAD_LOST, label: '❌ Perdido / Descartado' }
 ];
 
 export default function LeadActionModal({ lead, onClose, onSuccess }) {
@@ -29,12 +34,12 @@ export default function LeadActionModal({ lead, onClose, onSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // 1. Validaciones de Negocio
-    if (nuevoEstado === 'vendido') {
+    // 1. Validaciones de Negocio (Usamos las constantes para comparar)
+    if (nuevoEstado === STATUS.LEAD_WON) {
       if (!montoVenta || montoVenta <= 0) return alert("Para marcar como vendido, el monto real es obligatorio.");
       if (!modeloVendido) return alert("Debes especificar qué modelo se vendió.");
     }
-    if (nuevoEstado === 'perdido' && !motivoPerdida) {
+    if (nuevoEstado === STATUS.LEAD_LOST && !motivoPerdida) {
       return alert("Por favor indica el motivo de pérdida para mejorar la calidad de leads.");
     }
 
@@ -42,13 +47,13 @@ export default function LeadActionModal({ lead, onClose, onSuccess }) {
     try {
       // 2. Preparar Datos Extra
       const datosExtra = {
-        monto: nuevoEstado === 'vendido' ? Number(montoVenta) : null,
-        modelo: nuevoEstado === 'vendido' ? modeloVendido : null,
-        motivo: nuevoEstado === 'perdido' ? motivoPerdida : null,
-        notas: notas // Bitácora (Fase 3)
+        monto: nuevoEstado === STATUS.LEAD_WON ? Number(montoVenta) : null,
+        modelo: nuevoEstado === STATUS.LEAD_WON ? modeloVendido : null,
+        motivo: nuevoEstado === STATUS.LEAD_LOST ? motivoPerdida : null,
+        notas: notas
       };
 
-      // 3. Llamar al Servicio (Firebase)
+      // 3. Llamar al Servicio (Firestore)
       await actualizarEstadoLead(lead.id, nuevoEstado, datosExtra);
       
       // 4. Feedback y Cierre
@@ -73,9 +78,9 @@ export default function LeadActionModal({ lead, onClose, onSuccess }) {
         </div>
 
         <div style={styles.leadSummary}>
-          <strong>Cliente:</strong> {lead.clienteDatos?.nombre}<br/>
+          <strong>Cliente:</strong> {lead.clienteDatos?.nombre || 'N/A'}<br/>
           <span style={{fontSize:'0.85rem', color:'#666'}}>
-            Interés: {lead.nombreDesarrollo}
+            Interés: {lead.nombreDesarrollo || 'N/A'}
           </span>
         </div>
 
@@ -89,6 +94,7 @@ export default function LeadActionModal({ lead, onClose, onSuccess }) {
               onChange={(e) => setNuevoEstado(e.target.value)}
               style={styles.select}
             >
+              {/* Opción deshabilitada para forzar la selección de un cambio */}
               <option value={lead.status} disabled>-- Estado Actual --</option>
               {OPCIONES_ESTADO.map(opt => (
                 <option key={opt.val} value={opt.val}>{opt.label}</option>
@@ -96,8 +102,8 @@ export default function LeadActionModal({ lead, onClose, onSuccess }) {
             </select>
           </div>
 
-          {/* CAMPOS CONDICIONALES: VENTA */}
-          {nuevoEstado === 'vendido' && (
+          {/* CAMPOS CONDICIONALES: VENTA (Usamos la constante) */}
+          {nuevoEstado === STATUS.LEAD_WON && (
             <div style={styles.conditionalBoxGreen}>
               <h4 style={styles.condTitle}>🎉 ¡Felicidades por el cierre!</h4>
               <p style={styles.condText}>Estos datos son necesarios para calcular tus comisiones y score.</p>
@@ -128,8 +134,8 @@ export default function LeadActionModal({ lead, onClose, onSuccess }) {
             </div>
           )}
 
-          {/* CAMPOS CONDICIONALES: PÉRDIDA */}
-          {nuevoEstado === 'perdido' && (
+          {/* CAMPOS CONDICIONALES: PÉRDIDA (Usamos la constante) */}
+          {nuevoEstado === STATUS.LEAD_LOST && (
             <div style={styles.conditionalBoxRed}>
               <h4 style={styles.condTitleRed}>Cierre de Expediente</h4>
               <div style={styles.group}>

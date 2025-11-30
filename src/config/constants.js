@@ -22,7 +22,7 @@ export const UI_OPCIONES = {
 };
 
 // ==========================================
-// ✅ CÓDIGOS DE ESTADO (Contrato con la BD)
+// ✅ CÓDIGOS DE ESTADO (Contrato con la BD) - USAR ESTAS CONSTANTES
 // ==========================================
 export const STATUS = {
     // Desarrollo

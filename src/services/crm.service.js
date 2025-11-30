@@ -11,6 +11,9 @@ import {
   getDocs 
 } from 'firebase/firestore';
 
+// ✅ IMPORTANTE: Importamos las constantes para la estandarización
+import { STATUS } from '../config/constants';
+
 /**
  * ==========================================
  * SERVICIO CRM (LEADS)
@@ -23,11 +26,14 @@ import {
  * @param {string} asesorUid - ID del asesor logueado
  */
 export const obtenerLeadsAsignados = async (asesorUid) => {
+  // PORQUÉ: Siempre es buena práctica usar try/catch en operaciones asíncronas
+  // de BD para manejar fallos de conexión o permisos.
   try {
     const q = query(
       collection(db, "leads"), 
       where("asesorUid", "==", asesorUid),
-      orderBy("fechaUltimaInteraccion", "desc")
+      // Mantenemos el ordenamiento para el dashboard.
+      orderBy("fechaUltimaInteraccion", "desc") 
     );
     const snap = await getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -39,36 +45,36 @@ export const obtenerLeadsAsignados = async (asesorUid) => {
 
 /**
  * Actualiza el estado de un lead en el embudo (ej. de 'nuevo' a 'contactado').
- * Maneja lógica condicional para cierres (ventas) o pérdidas.
- * * @param {string} leadId - ID del documento lead
- * @param {string} nuevoEstado - Nuevo status
+ * @param {string} leadId - ID del documento lead
+ * @param {string} nuevoEstado - Nuevo status (Debe ser un valor de STATUS.LEAD_...)
  * @param {Object} datosExtra - Datos opcionales (monto venta, motivo perdida, notas)
  */
 export const actualizarEstadoLead = async (leadId, nuevoEstado, datosExtra = {}) => {
+  // PORQUÉ: Estandarizamos para que todos los estados pasen por aquí.
   try {
     const leadRef = doc(db, "leads", leadId);
     const updateData = {
       status: nuevoEstado,
-      fechaUltimaInteraccion: serverTimestamp()
+      // Usamos el timestamp del servidor para la hora de la interacción.
+      fechaUltimaInteraccion: serverTimestamp() 
     };
 
-    // Si es una venta cerrada, guardamos los datos financieros
-    if (nuevoEstado === 'vendido') {
+    // Si es una venta cerrada (Usamos la constante)
+    if (nuevoEstado === STATUS.LEAD_WON) {
       updateData.cierre = {
         montoFinal: datosExtra.monto,
         modeloFinal: datosExtra.modelo,
-        fechaCierre: new Date().toISOString()
+        fechaCierre: serverTimestamp() // También usamos server timestamp aquí
       };
     }
     
-    // Si se pierde el lead, guardamos la razón para analítica futura
-    if (nuevoEstado === 'perdido') {
+    // Si se pierde el lead (Usamos la constante)
+    if (nuevoEstado === STATUS.LEAD_LOST) {
       updateData.motivoPerdida = datosExtra.motivo;
     }
 
-    // Aquí podríamos agregar lógica para guardar 'notas' en una subcolección de bitácora
-    // si fuera necesario en el futuro.
-
+    // Nota: Aquí se podría agregar al historial (opcional, Fase 3)
+    
     await updateDoc(leadRef, updateData);
     return true;
   } catch (error) {

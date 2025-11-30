@@ -1,11 +1,11 @@
 // src/services/analytics.service.js
-import { db } from '../firebase/config';
-import { doc, updateDoc } from 'firebase/firestore';
+// Ya no necesitamos importar Firestore ni updateDoc, ya que el cálculo 
+// y guardado del score se hace en Cloud Functions (backend) por seguridad.
 
 /**
  * ==========================================
  * SERVICIO DE ANALÍTICAS & SCORE
- * Responsabilidad: Cálculos matemáticos y gamificación.
+ * Responsabilidad: Cálculos matemáticos (solo front-end/puros).
  * ==========================================
  */
 
@@ -20,24 +20,28 @@ export const calcularEstadisticasAsesor = (leads) => {
   let perdidos = 0;
   let activos = 0;
   
+  // PORQUÉ: El embudo se mapea con los strings antiguos porque es una función 
+  // que lee leads ya guardados, cuya estructura de STATUS está en transición.
   const embudo = { nuevos: 0, contactados: 0, visitas: 0, cierres: 0 };
 
   leads.forEach(lead => {
     const s = lead.status;
-    if (s === 'vendido') {
+    // La Cloud Function ya cambió los leads nuevos a las constantes, 
+    // pero mantenemos la lógica de status temporal aquí por si hay leads antiguos.
+    if (s === 'WON' || s === 'vendido') {
       ganados++;
       totalVendido += (lead.cierre?.montoFinal || 0);
-    } else if (s === 'perdido') {
+    } else if (s === 'LOST' || s === 'perdido') {
       perdidos++;
     } else {
       activos++;
     }
 
     // Conteo por etapas para gráficas
-    if (s === 'nuevo') embudo.nuevos++;
-    else if (s === 'contactado') embudo.contactados++;
-    else if (['visita_agendada', 'visita_confirmada', 'visito'].includes(s)) embudo.visitas++;
-    else if (['apartado', 'vendido', 'escriturado'].includes(s)) embudo.cierres++;
+    if (s === 'NEW' || s === 'nuevo') embudo.nuevos++;
+    else if (s === 'CONTACTED' || s === 'contactado') embudo.contactados++;
+    else if (['VISIT_SCHEDULED', 'VISIT_CONFIRMED', 'VISITED', 'visita_agendada', 'visita_confirmada', 'visito'].includes(s)) embudo.visitas++;
+    else if (['RESERVED', 'WON', 'CLOSED', 'apartado', 'vendido', 'escriturado'].includes(s)) embudo.cierres++;
   });
 
   const leadsFinalizados = ganados + perdidos;
@@ -57,52 +61,8 @@ export const calcularEstadisticasAsesor = (leads) => {
 };
 
 /**
- * 🔥 ALGORITMO DEL SCORE CARD 🔥
- * Calcula y GUARDA el score en el perfil del usuario.
- * * TODO: Mover esta función a Cloud Functions en Fase 2 por seguridad.
+ * Función actualizarScoreAsesor ELIMINADA.
+ * PORQUÉ: Esta lógica fue migrada a la Cloud Function 'functions/index.js' 
+ * para garantizar seguridad y que solo el backend pueda modificar el Score 
+ * Global (meritocracia). Mantenerla en el frontend es redundante y riesgoso.
  */
-export const actualizarScoreAsesor = async (uid, metricasActuales, perfilUsuario) => {
-  try {
-    // 1. OBTENER VARIABLES
-    
-    // A. Reseñas (30%): Base 5 estrellas.
-    const promedioResenas = perfilUsuario.metricas?.promedioResenas || 0; 
-    const ptsResenas = (promedioResenas / 5) * 30;
-
-    // B. Actualización (20%): Regla de 30 días.
-    const ultimaActualizacion = perfilUsuario.metricas?.ultimaActualizacionInventario;
-    let ptsActualizacion = 0;
-    if (ultimaActualizacion) {
-      const dias = (new Date() - new Date(ultimaActualizacion)) / (1000 * 60 * 60 * 24);
-      if (dias <= 30) ptsActualizacion = 20; // Cumple la regla
-    }
-
-    // C. Cierres (30%): Regla de mercado. 
-    // Asumimos que 10% de cierre es EXCELENTE (Meta máxima).
-    const tasaReal = metricasActuales.tasaCierre || 0;
-    const factorCierre = Math.min(tasaReal, 10) / 10; // Tope en 10%
-    const ptsCierre = factorCierre * 30;
-
-    // D. Admin (20%): Manual
-    const cumplimientoAdmin = perfilUsuario.metricas?.cumplimientoAdmin || 80; // Default 80/100
-    const ptsAdmin = (cumplimientoAdmin / 100) * 20;
-
-    // 2. SUMA FINAL
-    const scoreFinal = Math.round(ptsResenas + ptsActualizacion + ptsCierre + ptsAdmin);
-
-    // 3. GUARDAR EN BD
-    const userRef = doc(db, "users", uid);
-    await updateDoc(userRef, {
-      scoreGlobal: scoreFinal,
-      "metricas.tasaCierre": tasaReal,
-      "metricas.totalLeadsAsignados": metricasActuales.totalLeads
-    });
-
-    console.log(`✅ Score Actualizado: ${scoreFinal}`);
-    return scoreFinal;
-
-  } catch (error) {
-    console.error("Error actualizando score:", error);
-    return null;
-  }
-};

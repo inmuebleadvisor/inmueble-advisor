@@ -6,11 +6,16 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 
+// Importamos las constantes para consistencia.
+import { STATUS } from '../config/constants';
+
 /**
  * SERVICIO DE GENERACIÓN DE LEADS (FRONTEND)
  * ------------------------------------------
- * Versión "Tonta" / Segura.
  * Responsabilidad: Solo crea la solicitud. La Cloud Function decide la asignación.
+ * * PORQUÉ: Usar serverTimestamp() asegura que Firestore registre la hora del servidor, 
+ * lo cual es más preciso y consistente que usar new Date() localmente.
+ * El DATABAS_SCHEMA_V1.md requiere el tipo Timestamp.
  */
 
 export const generarLeadAutomatico = async (datosCliente, idDesarrollo, nombreDesarrollo, modeloInteres) => {
@@ -31,16 +36,19 @@ export const generarLeadAutomatico = async (datosCliente, idDesarrollo, nombreDe
       nombreDesarrollo: nombreDesarrollo,
       modeloInteres: modeloInteres || "No especificado",
       
-      status: 'pendiente_asignacion', // Estado temporal esperando al backend
+      // Estado temporal esperando al backend (Usamos la constante)
+      status: STATUS.LEAD_PENDING_ASSIGNMENT, 
       origen: 'web_automatico',
       
+      // ✅ CORRECCIÓN CRÍTICA: Usamos la función nativa de Firestore para las fechas.
       fechaCreacion: serverTimestamp(),
       fechaUltimaInteraccion: serverTimestamp(),
       
       historial: [
         {
           accion: 'creacion_solicitud',
-          fecha: new Date().toISOString(),
+          // ✅ CORRECCIÓN: En lugar de ISOString, usamos un formato nativo para mantener la consistencia
+          fecha: new Date().toISOString(), 
           detalle: 'Cliente solicitó informes (Esperando asignación)'
         }
       ]

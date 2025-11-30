@@ -1,15 +1,19 @@
 // src/screens/AccountAsessor.jsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useUser } from '../context/UserContext';
 // ✅ Importaciones modulares y STATUS para consistencia
 import { hidratarInventarioAsesor } from '../services/catalog.service'; 
-import { obtenerLeadsAsignados } from '../services/crm.service';
+import { obtenerLeadsAsignados } from '../services/crm.service'; // Mantenemos para carga inicial/manual si es necesario
 import { calcularEstadisticasAsesor } from '../services/analytics.service'; 
 import { generarLeadAutomatico } from '../services/leadAssignmentService';
 import { STATUS } from '../config/constants';
 
 import LeadCard from '../components/LeadCard'; 
 import LeadActionModal from '../components/LeadActionModal'; 
+
+// Importación de Firestore necesaria para onSnapshot
+import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore'; 
+import { db } from '../firebase/config';
 
 // Gráficos
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
@@ -47,35 +51,65 @@ export default function AccountAsesor() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // --- CARGA DE DATOS ---
-  const refreshDashboard = useCallback(async () => {
-    if (!user?.uid) return;
-    try {
-      const misLeads = await obtenerLeadsAsignados(user.uid);
-      setLeads(misLeads);
-      
-      const metricasCalculadas = calcularEstadisticasAsesor(misLeads);
-      setStats(metricasCalculadas);
 
-      // 🛑 NOTA: La actualización del Score (actualizarScoreAsesor) 
-      // ya NO se ejecuta aquí. Lo hace la Cloud Function por seguridad.
-      
-      if (userProfile?.inventario) {
-         const dataInv = await hidratarInventarioAsesor(userProfile.inventario);
-         setInventario(dataInv);
-      }
-    } catch (err) {
-      console.error("Error dashboard:", err);
-    }
-  }, [user, userProfile]);
+  // --- 1. FUNCIÓN DE CÁLCULO DE MÉTRICAS (Depende de Leads) ---
+  const calcularMetricas = useCallback((leadsData) => {
+    // PORQUÉ: Recalcular las métricas (Score) cada vez que la lista de leads cambia
+    // es crucial para mantener la información del dashboard actualizada.
+    const metricasCalculadas = calcularEstadisticasAsesor(leadsData);
+    setStats(metricasCalculadas);
+  }, []);
 
+  // --- 2. LISTENERS EN TIEMPO REAL (onSnapshot) ---
   useEffect(() => {
-    const init = async () => {
-      await refreshDashboard();
+    // PORQUÉ: Verificamos si el usuario es un asesor y su UID está disponible
+    if (!user?.uid || userProfile?.role !== 'asesor') {
+      setLoading(false);
+      return;
+    }
+
+    // A. ESCUCHA DE LEADS (Live Data)
+    // Ya no usamos obtenerLeadsAsignados (que es getDocs). Usamos onSnapshot.
+    const q = query(
+      collection(db, "leads"), 
+      where("asesorUid", "==", user.uid),
+      orderBy("fechaUltimaInteraccion", "desc") // Ordenamos por interacción más reciente
+    );
+
+    // PORQUÉ: onSnapshot crea una conexión activa. Cada vez que un lead 
+    // cambie (ej. el backend lo asigna o el asesor lo gestiona), se actualiza 
+    // el estado local, eliminando la necesidad de recarga manual/setTimeout.
+    const unsubscribeLeads = onSnapshot(q, (snapshot) => {
+      const leadsData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      setLeads(leadsData);
+      calcularMetricas(leadsData); // Recalculamos métricas con los nuevos leads
+    }, (error) => {
+      console.error("Error en la escucha de leads:", error);
+    });
+
+    // B. CARGA ÚNICA DE INVENTARIO
+    const cargarInventario = async () => {
+      if (userProfile?.inventario) {
+         try {
+           const dataInv = await hidratarInventarioAsesor(userProfile.inventario);
+           setInventario(dataInv);
+         } catch (err) {
+           console.error("Error cargando inventario:", err);
+         }
+      }
       setLoading(false);
     };
-    init();
-  }, [refreshDashboard]);
+
+    cargarInventario();
+
+    // Cleanup function: Se ejecuta cuando el componente se desmonta o las dependencias cambian
+    // Esto es CRÍTICO para prevenir fugas de memoria en la conexión de Firestore.
+    return () => {
+      unsubscribeLeads(); 
+    };
+
+  }, [user?.uid, userProfile, calcularMetricas]); // Dependencias para re-ejecutar el efecto
+
 
   // --- HANDLERS ---
   const handleSimularLead = async () => {
@@ -100,8 +134,10 @@ export default function AccountAsesor() {
         );
 
         if (resultado.success) {
-            alert(`🔔 Solicitud enviada para:\n${datosCliente.nombre}\n\nEl sistema de asignación está procesando la solicitud. Revisa tu lista en unos segundos.`);
-            setTimeout(() => refreshDashboard(), 2000); 
+            alert(`🔔 Solicitud enviada para:\n${datosCliente.nombre}\n\nEl sistema de asignación está procesando la solicitud.`);
+            // PORQUÉ: Ya no necesitamos un setTimeout. El onSnapshot (Task 2.4)
+            // se encargará de actualizar la lista automáticamente cuando el backend
+            // complete la asignación.
         } else {
             alert(`Error al generar lead: ${resultado.error}`);
         }
@@ -112,12 +148,18 @@ export default function AccountAsesor() {
         setSimulando(false);
     }
   };
+  
+  const handleModalSuccess = () => {
+    // PORQUÉ: Cuando el modal se cierra, onSnapshot actualizará la lista 
+    // y recalculará las métricas automáticamente. No necesitamos ninguna acción.
+    setLeadToEdit(null);
+  };
 
-  // --- FILTROS ---
-  // ✅ CORRECCIÓN 2: Filtrar usando las constantes de status (código interno BD)
+  // --- FILTROS Y DATOS CALCULADOS ---
+  // ✅ Usamos useMemo para evitar recálculos innecesarios en cada render.
   const leadsFinalizados = [STATUS.LEAD_WON, STATUS.LEAD_LOST, STATUS.LEAD_CLOSED];
-  const activeLeads = leads.filter(l => !leadsFinalizados.includes(l.status));
-  const historyLeads = leads.filter(l => leadsFinalizados.includes(l.status));
+  const activeLeads = useMemo(() => leads.filter(l => !leadsFinalizados.includes(l.status)), [leads]);
+  const historyLeads = useMemo(() => leads.filter(l => leadsFinalizados.includes(l.status)), [leads]);
 
   // Datos
   const score = userProfile?.scoreGlobal || 80;
@@ -251,7 +293,8 @@ export default function AccountAsesor() {
       </div>
 
       {leadToEdit && (
-        <LeadActionModal lead={leadToEdit} onClose={() => setLeadToEdit(null)} onSuccess={refreshDashboard} />
+        // Usamos la nueva función handleModalSuccess que ya no requiere recarga manual
+        <LeadActionModal lead={leadToEdit} onClose={() => setLeadToEdit(null)} onSuccess={handleModalSuccess} />
       )}
     </div>
   );

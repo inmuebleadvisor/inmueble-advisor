@@ -4,8 +4,9 @@ import { Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import ImageLoader from '../components/ImageLoader';
 
-// ✅ 1. Importación del Servicio Modular
-import { obtenerDatosUnificados, obtenerTopAmenidades } from '../services/catalog.service';
+// ✅ MODIFICACIÓN: Importamos el nuevo hook de contexto
+import { useCatalog } from '../context/CatalogContext'; 
+// Eliminamos: import { obtenerDatosUnificados, obtenerTopAmenidades } from '../services/catalog.service';
 
 // ✅ 2. Importación de Constantes Centralizadas
 import { FINANZAS, UI_OPCIONES } from '../config/constants';
@@ -34,41 +35,19 @@ const calcularEscrituracion = (precio) => formatoMoneda(precio * FINANZAS.PORCEN
 
 export default function Catalogo() {
   const { user, trackBehavior } = useUser();
+  // ✅ OBTENEMOS DATOS Y ESTADO DE CARGA DEL CONTEXTO
+  const { modelos: dataMaestra, amenidades: topAmenidades, loadingCatalog: loading } = useCatalog();
   
-  // --- ESTADOS DE DATOS ---
-  const [dataMaestra, setDataMaestra] = useState([]);
-  const [topAmenidades, setTopAmenidades] = useState([]);
-  const [loading, setLoading] = useState(true);
-
   // --- ESTADOS DE UI ---
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
-  // 1. Carga de Datos desde el Servicio Modular
-  useEffect(() => {
-    const cargarDatos = async () => {
-      setLoading(true);
-      try {
-        const [modelos, amenidades] = await Promise.all([
-          obtenerDatosUnificados(),
-          obtenerTopAmenidades()
-        ]);
-        
-        setDataMaestra(modelos);
-        setTopAmenidades(amenidades);
-      } catch (error) {
-        console.error("Error cargando catálogo:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    cargarDatos();
-  }, []);
-
+  // 1. Carga de Datos (ELIMINADA de useEffect, ahora es un useContext)
+  // PORQUÉ: Ya no necesitamos cargar datos aquí; el contexto lo hizo al inicio.
+  
   // 2. Estado de Filtros (Inicializado con constantes)
   const [filtros, setFiltros] = useState({
-    precioMax: FINANZAS.PRECIO_MAXIMO_DEFAULT, // ✅ Uso de constante
+    precioMax: UI_OPCIONES.FILTRO_PRECIO_MAX, 
     habitaciones: 0,
     status: 'all',
     amenidad: '',
@@ -77,10 +56,13 @@ export default function Catalogo() {
 
   // Sincronizar con Perfil de Usuario
   useEffect(() => {
+    // PORQUÉ: Si el usuario ya completó el perfil financiero, sus filtros iniciales 
+    // deben basarse en ese perfil, sobreescribiendo el valor por defecto.
     if (user?.presupuestoCalculado) {
       setFiltros(prev => ({
         ...prev,
-        precioMax: Number(user.presupuestoCalculado),
+        // Usamos Math.min para no exceder el máximo del slider de la UI
+        precioMax: Math.min(Number(user.presupuestoCalculado), UI_OPCIONES.FILTRO_PRECIO_MAX), 
         habitaciones: user.recamaras || 0,
         status: user.status || 'all' 
       }));
@@ -89,9 +71,19 @@ export default function Catalogo() {
 
   // Detector de Filtros Activos
   const hayFiltrosActivos = useMemo(() => {
+    // PORQUÉ: Comparamos el precio actual con el MÁXIMO DEFINIDO PARA EL SLIDER (UI_OPCIONES).
+    const isPriceFiltered = filtros.precioMax < UI_OPCIONES.FILTRO_PRECIO_MAX;
+    
+    // Si el usuario tiene un presupuesto menor al máximo, consideramos que el filtro de precio está activo, 
+    // A MENOS que sea exactamente su presupuesto calculado que se cargó por defecto.
+    const isCustomPriceFilter = isPriceFiltered && (
+        !user?.presupuestoCalculado || 
+        filtros.precioMax !== Math.min(Number(user.presupuestoCalculado), UI_OPCIONES.FILTRO_PRECIO_MAX)
+    );
+
     return (
       searchTerm !== '' ||
-      (filtros.precioMax < FINANZAS.PRECIO_MAXIMO_DEFAULT && filtros.precioMax !== Number(user?.presupuestoCalculado)) ||
+      isCustomPriceFilter ||
       filtros.habitaciones > 0 ||
       filtros.status !== 'all' ||
       filtros.amenidad !== '' ||
@@ -101,6 +93,7 @@ export default function Catalogo() {
 
   // 3. Motor de Filtrado
   const modelosFiltrados = useMemo(() => {
+    // PORQUÉ: Si el catálogo aún no ha terminado de cargar, no filtramos nada.
     if (loading) return [];
 
     const term = normalizar(searchTerm);
@@ -109,7 +102,7 @@ export default function Catalogo() {
       if (item.precioNumerico > filtros.precioMax) return false;
       if (filtros.habitaciones > 0 && (item.recamaras || 0) < filtros.habitaciones) return false;
       
-      // Filtros de Status
+      // Filtros de Status (Entrega)
       if (filtros.status === 'inmediata' && item.esPreventa === true) return false;
       if (filtros.status === 'preventa' && item.esPreventa === false) return false;
 
@@ -121,6 +114,7 @@ export default function Catalogo() {
       }
 
       // Filtro Amenidad
+      // Ahora usamos el campo correcto amenidadesDesarrollo
       if (filtros.amenidad && Array.isArray(item.amenidadesDesarrollo)) {
         if (!item.amenidadesDesarrollo.some(a => normalizar(a).includes(normalizar(filtros.amenidad)))) return false;
       }
@@ -138,13 +132,14 @@ export default function Catalogo() {
       }
       return true;
     });
-  }, [dataMaestra, filtros, searchTerm, loading]);
+  }, [dataMaestra, filtros, searchTerm, loading, user]);
 
   const handleFilterChange = (key, val) => setFiltros(prev => ({ ...prev, [key]: val }));
   
   const limpiarTodo = () => {
     setSearchTerm('');
-    setFiltros({ precioMax: FINANZAS.PRECIO_MAXIMO_DEFAULT, habitaciones: 0, status: 'all', amenidad: '', tipo: 'all' });
+    // Al limpiar, volvemos al máximo de la UI/Filtro.
+    setFiltros({ precioMax: UI_OPCIONES.FILTRO_PRECIO_MAX, habitaciones: 0, status: 'all', amenidad: '', tipo: 'all' });
   };
 
   useEffect(() => {
@@ -173,7 +168,7 @@ export default function Catalogo() {
   }
 
   return (
-    <div className="main-content" style={styles.pageContainer}>
+    <div className="main-content animate-fade-in" style={styles.pageContainer}>
       
       <style>{`
         @keyframes fadeInPage { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -213,7 +208,11 @@ export default function Catalogo() {
           </button>
         )}
         <div style={styles.activeChipsContainer}>
-          {filtros.precioMax < FINANZAS.PRECIO_MAXIMO_DEFAULT && <span style={styles.chip}>Max {formatoMoneda(filtros.precioMax)}</span>}
+          {/* Mostramos el chip de precio solo si es diferente al máximo de la UI o al valor de perfil inicial */}
+          {(filtros.precioMax < UI_OPCIONES.FILTRO_PRECIO_MAX || 
+            (user?.presupuestoCalculado && filtros.precioMax !== Math.min(Number(user.presupuestoCalculado), UI_OPCIONES.FILTRO_PRECIO_MAX))
+          ) && <span style={styles.chip}>Max {formatoMoneda(filtros.precioMax)}</span>}
+          
           {filtros.habitaciones > 0 && <span style={styles.chip}>{filtros.habitaciones}+ Rec.</span>}
           {filtros.tipo !== 'all' && (
             <span style={{...styles.chip, backgroundColor: '#e0e7ff', color: '#3730a3', borderColor: '#c7d2fe'}}>

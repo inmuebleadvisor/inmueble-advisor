@@ -3,8 +3,9 @@ import React from 'react';
 // ✅ Importamos las constantes para usar los códigos universales
 import { STATUS } from '../config/constants'; 
 
-// --- DICCIONARIO DE ESTADOS (Usando las nuevas claves) ---
-// Mapeamos los códigos de STATUS de la BD a la representación visual.
+// --- DICCIONARIO DE ESTADOS (Usando las claves de STATUS) ---
+// PORQUÉ: La Card debe saber qué color usar en base al código de status de la BD. 
+// Usar las constantes aquí asegura que el mapping BD -> UI siempre funcione.
 const ESTADOS = {
   [STATUS.LEAD_NEW]: { label: '🆕 Nuevo', color: '#3b82f6', bg: '#eff6ff' },
   [STATUS.LEAD_CONTACTED]: { label: '📞 Contactado', color: '#8b5cf6', bg: '#f5f3ff' },
@@ -28,11 +29,15 @@ const Icons = {
 };
 
 export default function LeadCard({ lead, onAction }) {
-  // Configuración visual según el estado actual
+  // Configuración visual según el estado actual. Usamos la clave del lead como índice.
+  // PORQUÉ: Si el status del lead no coincide con ninguna clave de ESTADOS, 
+  // se usa un fallback seguro (STATUS.LEAD_NEW).
   const configEstado = ESTADOS[lead.status] || ESTADOS[STATUS.LEAD_NEW];
   
-  // Formato de fecha amigable (Ahora trabaja con Firestore Timestamp o ISO string)
+  // Formato de fecha amigable
   const getTiempoTranscurrido = (fecha) => {
+    // PORQUÉ: Verificamos si es un Timestamp de Firestore (objeto con .toDate) 
+    // o una cadena (ej. el historial antiguo).
     if (!fecha) return 'Reciente';
     
     let targetDate;
