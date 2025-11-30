@@ -2,6 +2,8 @@
 // Ya no necesitamos importar Firestore ni updateDoc, ya que el cálculo 
 // y guardado del score se hace en Cloud Functions (backend) por seguridad.
 
+import { STATUS } from '../config/constants'; // 🔥 FIX: Importación de constantes
+
 /**
  * ==========================================
  * SERVICIO DE ANALÍTICAS & SCORE
@@ -26,22 +28,25 @@ export const calcularEstadisticasAsesor = (leads) => {
 
   leads.forEach(lead => {
     const s = lead.status;
+    
     // La Cloud Function ya cambió los leads nuevos a las constantes, 
     // pero mantenemos la lógica de status temporal aquí por si hay leads antiguos.
-    if (s === 'WON' || s === 'vendido') {
+    // 🔥 FIX: Priorizamos la constante (ej. STATUS.LEAD_WON es 'WON')
+    if (s === STATUS.LEAD_WON || s === 'vendido') {
       ganados++;
       totalVendido += (lead.cierre?.montoFinal || 0);
-    } else if (s === 'LOST' || s === 'perdido') {
+    } else if (s === STATUS.LEAD_LOST || s === 'perdido') {
       perdidos++;
     } else {
       activos++;
     }
 
     // Conteo por etapas para gráficas
-    if (s === 'NEW' || s === 'nuevo') embudo.nuevos++;
-    else if (s === 'CONTACTED' || s === 'contactado') embudo.contactados++;
-    else if (['VISIT_SCHEDULED', 'VISIT_CONFIRMED', 'VISITED', 'visita_agendada', 'visita_confirmada', 'visito'].includes(s)) embudo.visitas++;
-    else if (['RESERVED', 'WON', 'CLOSED', 'apartado', 'vendido', 'escriturado'].includes(s)) embudo.cierres++;
+    // 🔥 FIX: Uso de constantes universales para el mapeo del embudo
+    if (s === STATUS.LEAD_NEW || s === 'nuevo') embudo.nuevos++;
+    else if (s === STATUS.LEAD_CONTACTED || s === 'contactado') embudo.contactados++;
+    else if ([STATUS.LEAD_VISIT_SCHEDULED, STATUS.LEAD_VISIT_CONFIRMED, STATUS.LEAD_VISITED, 'visita_agendada', 'visita_confirmada', 'visito'].includes(s)) embudo.visitas++;
+    else if ([STATUS.LEAD_RESERVED, STATUS.LEAD_WON, STATUS.LEAD_CLOSED, 'apartado', 'vendido', 'escriturado'].includes(s)) embudo.cierres++;
   });
 
   const leadsFinalizados = ganados + perdidos;

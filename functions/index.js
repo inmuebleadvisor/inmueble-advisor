@@ -4,8 +4,6 @@
  * Lógica segura de negocio (Serverless).
  */
 const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/firestore");
-/*const { onDocumentCreated } = require("firebase-functions/v2/firestore");
-*/
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
@@ -61,7 +59,8 @@ exports.asignarLead = onDocumentCreated("leads/{leadId}", async (event) => {
     if (candidatos.length === 0) {
       console.warn("⚠️ No hay asesores disponibles. Lead queda pendiente de Admin.");
       await snapshot.ref.update({
-        status: 'pendiente_admin',
+        // El estado 'PENDING_ADMIN' se usa por seguridad.
+        status: 'PENDING_ADMIN', 
         motivoAsignacion: 'Sin cobertura de asesores',
         historial: FieldValue.arrayUnion({
           accion: 'error_asignacion',
@@ -124,7 +123,8 @@ exports.asignarLead = onDocumentCreated("leads/{leadId}", async (event) => {
     await snapshot.ref.update({
       asesorUid: asesorGanador.uid,
       asesorNombre: asesorGanador.nombre,
-      status: 'nuevo', // Pasa de 'creado' a 'nuevo' (listo para trabajar)
+      // 🔥 FIX CRÍTICO: Usamos 'NEW' (constante universal) en lugar de 'nuevo'
+      status: 'NEW', 
       motivoAsignacion: motivoAsignacion,
       fechaAsignacion: new Date().toISOString(),
       // Agregamos el evento al historial del lead
@@ -139,6 +139,7 @@ exports.asignarLead = onDocumentCreated("leads/{leadId}", async (event) => {
     console.error("Error crítico en asignación:", error);
   }
 });
+
 exports.actualizarMetricasAsesor = onDocumentUpdated("leads/{leadId}", async (event) => {
   const antes = event.data.before.data();
   const despues = event.data.after.data();
@@ -153,7 +154,6 @@ exports.actualizarMetricasAsesor = onDocumentUpdated("leads/{leadId}", async (ev
 
   try {
     // 1. Obtener todas las variables necesarias
-    // Leemos el perfil del asesor para obtener métricas "fijas" (Reseñas, Admin)
     const asesorRef = db.collection("users").doc(asesorUid);
     const asesorSnap = await asesorRef.get();
     
@@ -171,8 +171,9 @@ exports.actualizarMetricasAsesor = onDocumentUpdated("leads/{leadId}", async (ev
     leadsSnap.forEach(doc => {
       const l = doc.data();
       totalLeads++;
-      if (l.status === 'vendido') ganados++;
-      if (l.status === 'perdido') perdidos++;
+      // 🔥 FIX CRÍTICO: Usamos 'WON' y 'LOST' (constantes universales)
+      if (l.status === 'WON') ganados++;
+      if (l.status === 'LOST') perdidos++;
     });
 
     const finalizados = ganados + perdidos;
@@ -219,11 +220,6 @@ exports.actualizarMetricasAsesor = onDocumentUpdated("leads/{leadId}", async (ev
   }
 });
 
-
-
-
-
-
 // ... (Tus funciones anteriores de asignarLead y actualizarMetricasAsesor siguen aquí) ...
 
 const { onRequest } = require("firebase-functions/v2/https");
@@ -236,8 +232,7 @@ const { ejecutarMigracion } = require("./migrator");
  */
 exports.migrarBaseDeDatos = onRequest(async (req, res) => {
   // 🔒 Candado de seguridad simple
-  const secretKey = req.query.key;
-  if (secretKey !== "MIGRACION_2025_SECURE") {
+  if (req.query.key !== "MIGRACION_2025_SECURE") {
     return res.status(403).send("⛔ Acceso Denegado. Clave incorrecta.");
   }
 
