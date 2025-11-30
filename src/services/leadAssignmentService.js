@@ -4,55 +4,47 @@ import {
   collection, 
   addDoc, 
   serverTimestamp 
-} from 'firebase/firestore'; // ✅ serverTimestamp ya está importado
+} from 'firebase/firestore'; 
 
-// Importamos las constantes para consistencia.
 import { STATUS } from '../config/constants';
 
 /**
- * SERVICIO DE GENERACIÓN DE LEADS (FRONTEND)
- * ------------------------------------------
- * Responsabilidad: Solo crea la solicitud. La Cloud Function decide la asignación.
- * * PORQUÉ: Usar serverTimestamp() asegura que Firestore registre la hora del servidor, 
- * lo cual es más preciso y consistente que usar new Date() localmente.
- * El DATABAS_SCHEMA_V1.md requiere el tipo Timestamp.
+ * SERVICIO DE GENERACIÓN DE LEADS (FRONTEND - OPTIMIZADO)
+ * -------------------------------------------------------
+ * Responsabilidad: Solo crea la solicitud mínima.
+ * * ✅ CAMBIO FASE 2.1: 
+ * Se eliminó el array 'historial' de este objeto.
+ * Ahora la Cloud Function 'asignarLead' es la única responsable de crear
+ * la primera entrada del historial para garantizar consistencia de Timestamps.
  */
 
 export const generarLeadAutomatico = async (datosCliente, idDesarrollo, nombreDesarrollo, modeloInteres) => {
   try {
     console.log(`📤 Enviando solicitud para: ${nombreDesarrollo}`);
 
-    // 1. Preparamos el objeto "limpio" sin asignar asesor
     const nuevoLead = {
-      // OJO: No enviamos asesorUid. Eso lo pone el servidor.
-      
+      // Datos del Cliente
       clienteDatos: {
         nombre: datosCliente.nombre,
         email: datosCliente.email,
         telefono: datosCliente.telefono,
       },
       
-      desarrolloId: String(idDesarrollo), // Aseguramos string para consistencia
+      // Datos de Interés
+      desarrolloId: String(idDesarrollo),
       nombreDesarrollo: nombreDesarrollo,
       modeloInteres: modeloInteres || "No especificado",
       
-      // Estado temporal esperando al backend (Usamos la constante)
+      // Estado Inicial
       status: STATUS.LEAD_PENDING_ASSIGNMENT, 
       origen: 'web_automatico',
       
-      // ✅ CRÍTICO: Uso de función nativa de Firestore para las fechas principales.
+      // Fechas de Auditoría (Solo nivel raíz)
       fechaCreacion: serverTimestamp(),
-      fechaUltimaInteraccion: serverTimestamp(),
+      fechaUltimaInteraccion: serverTimestamp()
       
-      historial: [
-        {
-          accion: 'creacion_solicitud',
-          // 🔥 FIX: Reemplazamos new Date().toISOString() por serverTimestamp()
-          // Esto alinea el formato de la fecha del historial con el esquema de la BD.
-          fecha: serverTimestamp(), 
-          detalle: 'Cliente solicitó informes (Esperando asignación)'
-        }
-      ]
+      // 🗑️ ELIMINADO: historial: [...] 
+      // (Delegado al Backend para evitar errores de escritura y duplicidad)
     };
 
     // 2. Guardamos en Firestore
@@ -60,7 +52,6 @@ export const generarLeadAutomatico = async (datosCliente, idDesarrollo, nombreDe
     
     console.log(`✅ Solicitud enviada con ID: ${docRef.id}`);
     
-    // Retornamos éxito pero SIN datos del asesor (porque aún no se asigna)
     return { success: true, leadId: docRef.id };
 
   } catch (error) {

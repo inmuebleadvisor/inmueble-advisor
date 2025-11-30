@@ -2,9 +2,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-// ✅ IMPORTACIÓN CLAVE: Mantenemos el servicio porque requiere una query específica a Firestore (modelos por desarrollo)
 import { obtenerInformacionDesarrollo } from '../services/catalog.service'; 
-// ✅ Nuevo: Importamos el contexto para la bandera de carga global
 import { useCatalog } from '../context/CatalogContext'; 
 import ImageLoader from '../components/ImageLoader';
 
@@ -28,7 +26,7 @@ const esImagen = (url) => {
 export default function DetalleDesarrollo() {
   const { id } = useParams();
   const { trackBehavior } = useUser();
-  const { loadingCatalog } = useCatalog(); // ✅ Usamos la bandera de carga global
+  const { loadingCatalog } = useCatalog(); 
   const navigate = useNavigate();
   const scrollRef = useRef(null);
 
@@ -39,8 +37,6 @@ export default function DetalleDesarrollo() {
 
   // 1. CARGA DE DATOS ASÍNCRONA
   useEffect(() => {
-    // PORQUÉ: Sincronizamos la carga. Si el catálogo global aún está cargando,
-    // esperamos para evitar inconsistencias en la navegación o IDs no disponibles.
     if (loadingCatalog) return; 
 
     const cargarDesarrollo = async () => {
@@ -61,26 +57,20 @@ export default function DetalleDesarrollo() {
 
     cargarDesarrollo();
     window.scrollTo(0, 0);
-  }, [id, loadingCatalog]); // Dependencias actualizadas
+  }, [id, loadingCatalog]); 
 
-  // 2. CONSTRUCCIÓN DE GALERÍA (Memoizado sobre el estado 'desarrollo')
+  // 2. CONSTRUCCIÓN DE GALERÍA
   const galeriaImagenes = useMemo(() => {
     if (!desarrollo) return [];
     
     let imgs = [];
-
-    // A. Portada
     if (desarrollo.multimedia?.portada && esImagen(desarrollo.multimedia.portada)) {
       imgs.push(desarrollo.multimedia.portada);
     }
-
-    // B. Galería
     if (Array.isArray(desarrollo.multimedia?.galeria)) {
       const fotosLimpias = desarrollo.multimedia.galeria.filter(url => esImagen(url));
       imgs.push(...fotosLimpias);
     }
-
-    // C. Fallback
     if (imgs.length === 0) imgs.push(FALLBACK_IMG);
     
     return [...new Set(imgs)];
@@ -98,8 +88,6 @@ export default function DetalleDesarrollo() {
     return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
   };
 
-  // --- RENDERIZADO DE CARGA ---
-  // PORQUÉ: El spinner se muestra si estamos cargando el catálogo global O la info específica.
   if (loadingCatalog || loading) { 
     return (
       <div className="main-content" style={{ ...styles.pageContainer, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -108,7 +96,6 @@ export default function DetalleDesarrollo() {
     );
   }
 
-  // --- RENDERIZADO DE ERROR ---
   if (!desarrollo) {
     return (
       <div style={styles.errorContainer}>
@@ -121,8 +108,8 @@ export default function DetalleDesarrollo() {
   const modelos = desarrollo.modelos || [];
   const direccionCompleta = `${desarrollo.ubicacion?.calle || ''}, ${desarrollo.ubicacion?.colonia || ''}, ${desarrollo.ubicacion?.ciudad || ''}`;
   
-  // ✅ URL Corregida (de la Fase 2)
-  const mapsUrl = `https://maps.google.com/maps?q=${desarrollo.ubicacion?.latitud},${desarrollo.ubicacion?.longitud}&z=15`;
+  // ✅ CORRECCIÓN FASE 3.1: URL válida de Google Maps con interpolación correcta
+  const mapsUrl = `https://www.google.com/maps?q=${desarrollo.ubicacion?.latitud},${desarrollo.ubicacion?.longitud}&z=15`;
 
   return (
     <div className="main-content animate-fade-in" style={styles.pageContainer}>
@@ -263,7 +250,7 @@ export default function DetalleDesarrollo() {
            )}
         </section>
 
-        {/* BOTÓN UBICACIÓN */}
+        {/* BOTÓN UBICACIÓN CORREGIDO */}
         <div style={styles.locationActionSection}>
            <h3 style={styles.sectionTitle}>Ubicación</h3>
            <a 
