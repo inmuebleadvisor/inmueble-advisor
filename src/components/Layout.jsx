@@ -1,4 +1,5 @@
 // src/components/Layout.jsx
+// ÚLTIMA MODIFICACION: 01/12/2025
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useUser } from '../context/UserContext'; // ✅ Importamos contexto
@@ -13,7 +14,7 @@ const MenuIcons = {
 };
 
 export default function Layout() {
-  const { userProfile } = useUser(); // ✅ Obtenemos el perfil para saber el rol
+  const { userProfile, user } = useUser(); // ✅ Obtenemos el perfil y el estado de login
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false); 
 
@@ -42,6 +43,9 @@ export default function Layout() {
       display: 'block' 
     };
   };
+  
+  // Define si el usuario es un asesor
+  const isAsesor = userProfile?.role === 'asesor';
 
   return (
     <div style={styles.layoutContainer}>
@@ -65,18 +69,38 @@ export default function Layout() {
             className={`nav-menu ${isMenuOpen ? 'is-open' : ''}`}
             style={styles.nav}
           >
-            <Link to="/" style={getLinkStyle('/')}>Inicio</Link>
+            {/* Tareas de Cliente (Visibles para todos los logueados) */}
+            <Link 
+              to="/" 
+              style={getLinkStyle('/')}
+            >
+              {isAsesor ? 'Mi Perfil' : 'Inicio'}
+            </Link>
+            
             <Link to="/catalogo" style={getLinkStyle('/catalogo')}>Catálogo</Link>
             <Link to="/mapa" style={getLinkStyle('/mapa')}>Mapa</Link>
             
-            {/* LÓGICA DE ROLES PARA EL ENLACE FINAL */}
-            {userProfile?.role === 'asesor' ? (
+            {/* TAREA 2.1: LÓGICA DE NAVEGACIÓN DUAL */}
+            {isAsesor ? (
                // Si es ASESOR -> Ve su Dashboard
-               <Link to="/account-asesor" style={getLinkStyle('/account-asesor')}>Mi Cuenta 💼</Link>
+               <Link 
+                 to="/account-asesor" 
+                 style={getLinkStyle('/account-asesor')}
+               >
+                 Panel Asesor
+               </Link>
             ) : (
-               // Si es CLIENTE o PÚBLICO -> Ve invitación a unirse
-               <Link to="/soy-asesor" style={getLinkStyle('/soy-asesor')}>Soy Asesor</Link>
+               // Si es CLIENTE o PÚBLICO (No Asesor) -> Ve invitación
+               <Link 
+                 to={user ? '/onboarding-asesor' : '/soy-asesor'} // Si está logueado va al onboarding, si no al landing
+                 style={getLinkStyle(user ? '/onboarding-asesor' : '/soy-asesor')}
+               >
+                 Soy Asesor
+               </Link>
             )}
+            
+            {/* NOTA: El Asesor ahora tiene acceso directo a / y puede rellenar su perfil financiero. */}
+            
           </nav>
 
         </div>
@@ -95,8 +119,8 @@ export default function Layout() {
           <span style={styles.footerLink}>Aviso de Privacidad</span>
           <span style={styles.footerSeparator}>|</span>
           
-          {/* Enlace en footer también inteligente */}
-          {userProfile?.role === 'asesor' ? (
+          {/* Enlace de Asesor en footer dual */}
+          {isAsesor ? (
             <Link to="/account-asesor" style={styles.footerLinkAnchor}>Panel Asesor</Link>
           ) : (
             <Link to="/soy-asesor" style={styles.footerLinkAnchor}>Quiero ser Asesor</Link>

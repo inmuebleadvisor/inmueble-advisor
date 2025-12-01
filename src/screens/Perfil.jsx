@@ -2,7 +2,8 @@
 // ÚLTIMA MODIFICACION: 01/12/2025
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../context/UserContext';
+// Importamos userProfile, loadingUser Y el objeto 'user' del contexto de Firebase Auth
+import { useUser } from '../context/UserContext'; 
 
 // ✅ 1. Importación del Servicio Modular
 import { obtenerDatosUnificados } from '../services/catalog.service';
@@ -16,7 +17,8 @@ import { db } from '../firebase/config';
 
 export default function Perfil() {
   const navigate = useNavigate();
-  const { loginWithGoogle, trackBehavior } = useUser();
+  // 🛠️ TAREA: Importamos 'user' para verificar el estado de autenticación.
+  const { loginWithGoogle, trackBehavior, userProfile, loadingUser, user } = useUser(); 
 
   const [step, setStep] = useState(0); 
   const totalSteps = 3; 
@@ -33,9 +35,20 @@ export default function Perfil() {
   const [notaDinamica, setNotaDinamica] = useState('');
   const [esAlerta, setEsAlerta] = useState(false);
 
+  // Función auxiliar para dar formato de moneda
   const formatoMoneda = (val) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
 
-  // 1. CARGA DE DATOS (Servicio Catalog)
+  // LÓGICA DE FLUJO ASESOR (Saltar Step 0)
+  useEffect(() => {
+    if (loadingUser) return; 
+
+    // Si el usuario tiene el rol de asesor y está en la pantalla de inicio, saltamos al Step 1.
+    if (userProfile?.role === 'asesor' && step === 0) {
+      setStep(1); 
+    }
+  }, [userProfile, loadingUser, step]);
+
+  // CARGA DE DATOS
   useEffect(() => {
     const cargarDatosParaConteo = async () => {
       try {
@@ -48,23 +61,18 @@ export default function Perfil() {
     cargarDatosParaConteo();
   }, []);
 
-  // 2. LÓGICA FINANCIERA (Usando Constantes)
+  // LÓGICA FINANCIERA (Cálculo de capacidad)
   useEffect(() => {
-    // Extraemos valores de la configuración global
     const { 
       PORCENTAJE_GASTOS_NOTARIALES, 
       PORCENTAJE_ENGANCHE_MINIMO, 
       FACTOR_MENSUALIDAD_POR_MILLON 
     } = FINANZAS;
 
-    // Cálculo de capacidad
     const maxCreditoBanco = (mensualidad / FACTOR_MENSUALIDAD_POR_MILLON) * 1000000;
     
-    // Escenario A: El capital limita (solo alcanza para enganche + escrituras)
     const limitePorEfectivo = capitalInicial / (PORCENTAJE_GASTOS_NOTARIALES + PORCENTAJE_ENGANCHE_MINIMO);
     
-    // Escenario B: La mensualidad limita (capacidad de pago + lo que ponga de enganche)
-    // Nota: Simplificación aritmética. Asumimos que el usuario pone TODO su capital menos gastos.
     const limitePorCapacidadTotal = (capitalInicial + maxCreditoBanco) / (1 + PORCENTAJE_GASTOS_NOTARIALES);
 
     const capacidadReal = Math.min(limitePorEfectivo, limitePorCapacidadTotal);
@@ -89,7 +97,7 @@ export default function Perfil() {
     }
   }, [capitalInicial, mensualidad]);
 
-  // 3. CONTEO DE OPCIONES
+  // CONTEO DE OPCIONES
   const opcionesEncontradas = useMemo(() => {
     if (presupuestoMaximo === 0 || dataMaestra.length === 0) return 0;
     
@@ -138,18 +146,26 @@ export default function Perfil() {
   const handleFinalizar = async () => {
     setIsSaving(true);
     try {
-      const firebaseUser = await loginWithGoogle('cliente'); 
+      
+      // 🛠️ TAREA DE MEJORA: Evitar login redundante si ya está logueado
+      // Si 'user' existe, usamos ese objeto para guardar (Guardado invisible/silencioso).
+      // Si no, ejecutamos loginWithGoogle para forzar la autenticación.
+      const firebaseUser = user || (await loginWithGoogle('cliente')); 
       
       if (firebaseUser) {
-        // Prepara el Status de Entrega para guardar
-        const statusGuardado = entregaInmediata === true ? 'inmediata' : (entregaInmediata === false ? 'preventa' : 'all');
         
-        const userProfile = {
+        // LÓGICA DE ROL HÍBRIDO: Preservar 'asesor' si ya lo es.
+        const rolAguardar = userProfile?.role === 'asesor' ? 'asesor' : 'cliente';
+        
+        // Preparamos los datos del perfil
+        const userProfileData = {
+          // Usamos los datos del usuario autenticado (sea el existente o el recién logueado)
           uid: firebaseUser.uid,
           email: firebaseUser.email,
           nombre: firebaseUser.displayName,
           foto: firebaseUser.photoURL,
-          role: 'cliente', 
+          
+          role: rolAguardar, 
           
           perfilFinanciero: {
             capitalInicial,
@@ -163,25 +179,18 @@ export default function Perfil() {
           registroCompleto: true
         };
 
-        await setDoc(doc(db, "users", firebaseUser.uid), userProfile, { merge: true });
+        // Guardamos/fusionamos (merge: true) los datos
+        await setDoc(doc(db, "users", firebaseUser.uid), userProfileData, { merge: true });
 
         trackBehavior('onboarding_completed', { 
           presupuesto: presupuestoMaximo,
           opciones_vistas: opcionesEncontradas
         });
         
-        // ✅ CORRECCIÓN APLICADA: CONSTRUCCIÓN DE URL CON FILTROS
-        
-        // 1. Convertimos el booleano 'entregaInmediata' a la cadena de filtro 'inmediata' o 'preventa'
+        // Navegamos al catálogo con los filtros
         const statusParam = entregaInmediata === true ? 'inmediata' : (entregaInmediata === false ? 'preventa' : 'all');
-        
-        // 2. Construimos la URL. Redondeamos el presupuesto para evitar números decimales en la URL.
         const urlConFiltros = `/catalogo?maxPrice=${Math.round(presupuestoMaximo)}&rooms=${recamaras}&status=${statusParam}`;
-
-        // 3. Navegamos al catálogo con los parámetros aplicados
         navigate(urlConFiltros);
-        
-        // ✅ FIN DE CORRECCIÓN
       }
     } catch (error) {
       console.error("Error guardando perfil:", error);
@@ -194,8 +203,10 @@ export default function Perfil() {
   return (
     <div style={styles.container}>
       <style>{`
+          /* Comentarios Didácticos: Estilos y animaciones */
           @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
           .step-content { animation: slideIn 0.4s ease-out forwards; width: 100%; }
+          /* Estilos para el slider de rango */
           input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
           input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: var(--primary-color); cursor: pointer; margin-top: -10px; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
           input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #e0e0e0; border-radius: 3px; }
@@ -208,9 +219,9 @@ export default function Perfil() {
           </div>
         )}
 
-        {step <= 1 && ( 
+        {/* Solo se muestra la selección de rol si step === 0 */}
+        {step === 0 && ( 
           <div style={styles.logoContainer}>
-            {/* Usamos la constante de imagen */}
             <img src={IMAGES.LOGO_URL} alt="Logo" style={styles.logoIcon} />
           </div>
         )}
@@ -317,7 +328,6 @@ export default function Perfil() {
 }
 
 const styles = {
-  // ... (Mismos estilos que tenías, no es necesario cambiarlos por ahora)
   container: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '85vh', width: '100%', padding: '20px', boxSizing: 'border-box' },
   card: { backgroundColor: 'white', padding: '40px 30px', borderRadius: '25px', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', maxWidth: '500px', width: '100%', textAlign: 'center', position: 'relative', overflow: 'hidden', minHeight: '500px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' },
   progressBarContainer: { position: 'absolute', top: 0, left: 0, width: '100%', height: '6px', backgroundColor: '#f0f0f0' },
@@ -334,7 +344,7 @@ const styles = {
   input: { width: '100%', padding: '15px', borderRadius: '15px', border: '2px solid #eee', fontSize: '1.2rem', textAlign: 'center', outline: 'none', marginBottom: '20px' },
   label: { display: 'block', fontWeight: 'bold', color: '#333', marginBottom: '10px', textAlign: 'left' },
   optionsContainer: { display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '10px' },
-  circleBtn: { width: '55px', height: '55px', borderRadius: '50%', border: 'none', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.3s ease', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  circleBtn: { width: '55px', height: '55px', borderRadius: '50%', border: 'none', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.3s ease' },
   deliveryContainer: { display: 'flex', gap: '10px' },
   deliveryBtn: { flex: 1, padding: '15px 5px', borderRadius: '15px', border: '2px solid', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold', transition: 'all 0.3s ease' },
   calculatorBox: { backgroundColor: '#f9fcff', borderRadius: '20px', padding: '20px', border: '1px solid #eef' },
