@@ -1,4 +1,5 @@
 // src/screens/Perfil.jsx
+// ÚLTIMA MODIFICACION: 01/12/2025
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
@@ -140,6 +141,9 @@ export default function Perfil() {
       const firebaseUser = await loginWithGoogle('cliente'); 
       
       if (firebaseUser) {
+        // Prepara el Status de Entrega para guardar
+        const statusGuardado = entregaInmediata === true ? 'inmediata' : (entregaInmediata === false ? 'preventa' : 'all');
+        
         const userProfile = {
           uid: firebaseUser.uid,
           email: firebaseUser.email,
@@ -166,7 +170,18 @@ export default function Perfil() {
           opciones_vistas: opcionesEncontradas
         });
         
-        navigate('/catalogo');
+        // ✅ CORRECCIÓN APLICADA: CONSTRUCCIÓN DE URL CON FILTROS
+        
+        // 1. Convertimos el booleano 'entregaInmediata' a la cadena de filtro 'inmediata' o 'preventa'
+        const statusParam = entregaInmediata === true ? 'inmediata' : (entregaInmediata === false ? 'preventa' : 'all');
+        
+        // 2. Construimos la URL. Redondeamos el presupuesto para evitar números decimales en la URL.
+        const urlConFiltros = `/catalogo?maxPrice=${Math.round(presupuestoMaximo)}&rooms=${recamaras}&status=${statusParam}`;
+
+        // 3. Navegamos al catálogo con los parámetros aplicados
+        navigate(urlConFiltros);
+        
+        // ✅ FIN DE CORRECCIÓN
       }
     } catch (error) {
       console.error("Error guardando perfil:", error);
@@ -281,17 +296,19 @@ export default function Perfil() {
         {step > 0 && (
           <div style={styles.navContainer}>
             <button onClick={prevStep} style={styles.secondaryButton}>Atrás</button>
-            {step < totalSteps ? (
-              <button onClick={nextStep} disabled={!isStepValid()} style={{...styles.primaryButton, opacity: isStepValid() ? 1 : 0.5}}>{step === 1 ? 'Comenzar' : 'Siguiente 👉'}</button>
-            ) : (
-              <button 
-                onClick={handleFinalizar} 
-                disabled={isSaving}
-                style={{...styles.primaryButton, backgroundColor: '#28a745', opacity: isSaving ? 0.7 : 1}}
-              >
-                {isSaving ? 'Guardando...' : 'Ver Propiedades'}
-              </button>
-            )}
+            <button 
+                onClick={step < totalSteps ? nextStep : handleFinalizar} 
+                disabled={!isStepValid() || isSaving}
+                style={{
+                    ...styles.primaryButton, 
+                    opacity: (!isStepValid() || isSaving) ? 0.5 : 1,
+                    backgroundColor: step === totalSteps ? '#28a745' : 'var(--primary-color)'
+                }}
+            >
+                {step === totalSteps 
+                    ? (isSaving ? 'Guardando...' : 'Ver Propiedades')
+                    : (step === 1 ? 'Comenzar' : 'Siguiente 👉')}
+            </button>
           </div>
         )}
       </div>

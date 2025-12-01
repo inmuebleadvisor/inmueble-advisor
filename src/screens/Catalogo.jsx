@@ -1,17 +1,18 @@
 // src/screens/Catalogo.jsx
+// ÚLTIMA MODIFICACION: 01/12/2025
 import React, { useState, useMemo, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+// Importamos useLocation y Link de react-router-dom para leer parámetros de URL y navegar.
+import { Link, useLocation } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import ImageLoader from '../components/ImageLoader';
 
-// ✅ MODIFICACIÓN: Importamos el nuevo hook de contexto
+// Importamos el hook de contexto para acceder a los datos centralizados.
 import { useCatalog } from '../context/CatalogContext'; 
-// Eliminamos: import { obtenerDatosUnificados, obtenerTopAmenidades } from '../services/catalog.service';
 
-// ✅ 2. Importación de Constantes Centralizadas
+// Importación de constantes centralizadas.
 import { FINANZAS, UI_OPCIONES } from '../config/constants';
 
-// --- ICONOS ---
+// --- ICONOS (No es necesario comentar los iconos, ya están definidos) ---
 const Icons = {
   Filter: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>,
   Close: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
@@ -30,57 +31,91 @@ const formatoMoneda = (val) => {
   return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
 };
 
-// ✅ Refactorizado para usar la constante de gastos notariales
+// Función para calcular los gastos notariales (utiliza la constante global)
 const calcularEscrituracion = (precio) => formatoMoneda(precio * FINANZAS.PORCENTAJE_GASTOS_NOTARIALES);
 
 export default function Catalogo() {
-  const { user, trackBehavior } = useUser();
-  // ✅ OBTENEMOS DATOS Y ESTADO DE CARGA DEL CONTEXTO
+  const { userProfile, trackBehavior } = useUser();
+  // Accedemos a los datos centralizados del catálogo y al estado de carga.
   const { modelos: dataMaestra, amenidades: topAmenidades, loadingCatalog: loading } = useCatalog();
+  // Hook de React Router para leer los parámetros de la URL.
+  const location = useLocation(); 
   
   // --- ESTADOS DE UI ---
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
-  // 1. Carga de Datos (ELIMINADA de useEffect, ahora es un useContext)
-  // PORQUÉ: Ya no necesitamos cargar datos aquí; el contexto lo hizo al inicio.
-  
-  // 2. Estado de Filtros (Inicializado con constantes)
-  const [filtros, setFiltros] = useState({
-    precioMax: UI_OPCIONES.FILTRO_PRECIO_MAX, 
-    habitaciones: 0,
-    status: 'all',
-    amenidad: '',
-    tipo: 'all'
-  });
+  // 1. Lógica de Inicialización de Filtros (Usa useMemo para calcular valores iniciales)
+  const getInitialFilters = useMemo(() => {
+    // Obtenemos los parámetros de la URL y los datos del perfil si existen.
+    const params = new URLSearchParams(location.search);
+    const profile = userProfile?.perfilFinanciero;
+    
+    // Definición de valores base
+    const defaultMaxPrice = UI_OPCIONES.FILTRO_PRECIO_MAX;
+    const defaultRooms = 0;
+    const defaultStatus = 'all';
 
-  // Sincronizar con Perfil de Usuario
-  useEffect(() => {
-    // PORQUÉ: Si el usuario ya completó el perfil financiero, sus filtros iniciales 
-    // deben basarse en ese perfil, sobreescribiendo el valor por defecto.
-    if (user?.presupuestoCalculado) {
-      setFiltros(prev => ({
-        ...prev,
-        // Usamos Math.min para no exceder el máximo del slider de la UI
-        precioMax: Math.min(Number(user.presupuestoCalculado), UI_OPCIONES.FILTRO_PRECIO_MAX), 
-        habitaciones: user.recamaras || 0,
-        status: user.status || 'all' 
-      }));
+    // Función auxiliar para convertir a número de forma segura
+    const safeNum = (val, max = Infinity) => {
+        const num = Number(val);
+        if (isNaN(num) || num < 0) return defaultRooms;
+        // Limitamos el valor al máximo permitido por el slider de la UI
+        return Math.min(num, max);
     }
-  }, [user]);
+    
+    // A. Presupuesto Máximo: Prioriza URL > Perfil Guardado > Default
+    const urlMaxPrice = params.get('maxPrice');
+    const profileMaxPrice = profile?.presupuestoCalculado;
+    const initialMaxPrice = urlMaxPrice
+        ? safeNum(urlMaxPrice, defaultMaxPrice)
+        : (profileMaxPrice ? safeNum(profileMaxPrice, defaultMaxPrice) : defaultMaxPrice);
 
-  // Detector de Filtros Activos
+    // B. Recámaras: Prioriza URL > Perfil Guardado > Default
+    const urlRooms = params.get('rooms');
+    const profileRooms = profile?.recamarasDeseadas;
+    const initialRooms = urlRooms
+        ? safeNum(urlRooms)
+        : (profileRooms !== undefined && profileRooms !== null ? safeNum(profileRooms) : defaultRooms);
+        
+    // C. Status de Entrega: Prioriza URL > Perfil Guardado (convertido a string) > Default
+    const urlStatus = params.get('status');
+    const profileStatus = profile?.interesInmediato === true ? 'inmediata' : (profile?.interesInmediato === false ? 'preventa' : defaultStatus);
+
+    const initialStatus = urlStatus && ['inmediata', 'preventa'].includes(urlStatus)
+        ? urlStatus
+        : profileStatus;
+
+    // Retornamos el objeto de filtros inicial
+    return {
+      precioMax: initialMaxPrice, 
+      habitaciones: initialRooms,
+      status: initialStatus,
+      amenidad: '',
+      tipo: 'all'
+    };
+  }, [userProfile, location.search]); // Depende del perfil y la URL para re-evaluar
+
+  // 2. Inicializamos el estado de los filtros usando el cálculo inicial.
+  const [filtros, setFiltros] = useState(getInitialFilters);
+
+  // Detector de Filtros Activos (para mostrar el botón de "Limpiar Todo")
   const hayFiltrosActivos = useMemo(() => {
-    // PORQUÉ: Comparamos el precio actual con el MÁXIMO DEFINIDO PARA EL SLIDER (UI_OPCIONES).
+    // Verificamos si el precio es diferente al MÁXIMO de la UI
     const isPriceFiltered = filtros.precioMax < UI_OPCIONES.FILTRO_PRECIO_MAX;
     
-    // Si el usuario tiene un presupuesto menor al máximo, consideramos que el filtro de precio está activo, 
-    // A MENOS que sea exactamente su presupuesto calculado que se cargó por defecto.
+    // Obtenemos el presupuesto base del usuario para saber si el filtro de precio es "personalizado"
+    const userBudget = userProfile?.perfilFinanciero?.presupuestoCalculado;
+
+    // Consideramos que el filtro de precio está activo si es menor al máximo de la UI O
+    // si el valor actual no coincide con el presupuesto que se cargó por defecto desde el perfil.
     const isCustomPriceFilter = isPriceFiltered && (
-        !user?.presupuestoCalculado || 
-        filtros.precioMax !== Math.min(Number(user.presupuestoCalculado), UI_OPCIONES.FILTRO_PRECIO_MAX)
+        !userBudget || 
+        // Comparamos el valor actual con el valor que debería haber cargado el perfil
+        filtros.precioMax !== Math.min(Number(userBudget), UI_OPCIONES.FILTRO_PRECIO_MAX)
     );
 
+    // Si cualquier filtro es diferente a su valor por defecto, está activo.
     return (
       searchTerm !== '' ||
       isCustomPriceFilter ||
@@ -89,38 +124,41 @@ export default function Catalogo() {
       filtros.amenidad !== '' ||
       filtros.tipo !== 'all'
     );
-  }, [filtros, searchTerm, user]);
+  }, [filtros, searchTerm, userProfile]);
 
-  // 3. Motor de Filtrado
+  // 3. Motor de Filtrado (Aplica los filtros al catálogo maestro)
   const modelosFiltrados = useMemo(() => {
-    // PORQUÉ: Si el catálogo aún no ha terminado de cargar, no filtramos nada.
-    if (loading) return [];
+    if (loading) return []; // Si el catálogo no carga, no hay modelos.
 
     const term = normalizar(searchTerm);
     return dataMaestra.filter(item => {
-      // Filtros numéricos
+      
+      // FILTRO 1: Precio máximo (el filtro más importante)
       if (item.precioNumerico > filtros.precioMax) return false;
+      
+      // FILTRO 2: Recámaras mínimas
       if (filtros.habitaciones > 0 && (item.recamaras || 0) < filtros.habitaciones) return false;
       
-      // Filtros de Status (Entrega)
+      // FILTRO 3: Status (Entrega Inmediata / Preventa)
       if (filtros.status === 'inmediata' && item.esPreventa === true) return false;
       if (filtros.status === 'preventa' && item.esPreventa === false) return false;
 
-      // Filtro de Tipo
+      // FILTRO 4: Tipo de Vivienda (Casa/Departamento)
       if (filtros.tipo !== 'all') {
         const tipoItem = normalizar(item.tipoVivienda);
         if (filtros.tipo === 'casa' && !tipoItem.includes('casa')) return false;
         if (filtros.tipo === 'departamento' && !tipoItem.includes('departamento') && !tipoItem.includes('loft')) return false;
       }
 
-      // Filtro Amenidad
-      // Ahora usamos el campo correcto amenidadesDesarrollo
+      // FILTRO 5: Amenidad (Filtro por palabra clave en amenidades del desarrollo)
       if (filtros.amenidad && Array.isArray(item.amenidadesDesarrollo)) {
+        // Busca si alguna amenidad del modelo incluye el término del filtro.
         if (!item.amenidadesDesarrollo.some(a => normalizar(a).includes(normalizar(filtros.amenidad)))) return false;
       }
 
-      // Buscador Universal (Corregido para incluir nombre_modelo)
+      // FILTRO 6: Buscador Universal (Coincidencia de texto)
       if (term) {
+        // Construye una cadena gigante con todos los campos relevantes para buscar.
         const amenidadesTexto = Array.isArray(item.amenidadesDesarrollo) ? item.amenidadesDesarrollo.join(' ') : '';
         const searchTarget = `
           ${normalizar(item.nombre)} ${normalizar(item.nombre_modelo)} ${normalizar(item.nombreDesarrollo)}
@@ -130,18 +168,26 @@ export default function Catalogo() {
         `;
         if (!searchTarget.includes(term)) return false;
       }
-      return true;
+      return true; // Pasa todos los filtros
     });
-  }, [dataMaestra, filtros, searchTerm, loading, user]);
+  }, [dataMaestra, filtros, searchTerm, loading, userProfile]);
 
   const handleFilterChange = (key, val) => setFiltros(prev => ({ ...prev, [key]: val }));
   
+  // Resetea todos los filtros a sus valores por defecto (máximo precio, 0 recámaras, 'all' status)
   const limpiarTodo = () => {
     setSearchTerm('');
-    // Al limpiar, volvemos al máximo de la UI/Filtro.
-    setFiltros({ precioMax: UI_OPCIONES.FILTRO_PRECIO_MAX, habitaciones: 0, status: 'all', amenidad: '', tipo: 'all' });
+    // Al limpiar, usamos los valores máximos de la UI
+    setFiltros({ 
+      precioMax: UI_OPCIONES.FILTRO_PRECIO_MAX, 
+      habitaciones: 0, 
+      status: 'all', 
+      amenidad: '', 
+      tipo: 'all' 
+    });
   };
 
+  // Efecto para controlar el scroll del body cuando el modal está abierto (UX)
   useEffect(() => {
     document.body.style.overflow = isFilterOpen ? 'hidden' : 'unset';
     return () => { document.body.style.overflow = 'unset'; }
@@ -167,10 +213,12 @@ export default function Catalogo() {
     );
   }
 
+  // --- RENDERIZADO PRINCIPAL ---
   return (
     <div className="main-content animate-fade-in" style={styles.pageContainer}>
       
       <style>{`
+        /* Estilos de animación para una mejor UX */
         @keyframes fadeInPage { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeInPage 0.5s ease-out forwards; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -179,12 +227,13 @@ export default function Catalogo() {
 
       <header style={styles.header}>
         <div style={styles.headerContent}>
-          <h1 style={styles.title}>{user?.nombre ? `Hola, ${user.nombre}` : 'Catálogo'}</h1>
+          {/* Muestra el nombre del usuario si está logueado */}
+          <h1 style={styles.title}>{userProfile?.nombre ? `Hola, ${userProfile.nombre}` : 'Catálogo'}</h1>
           <p style={styles.subtitle}>Encuentra tu hogar ideal</p>
         </div>
       </header>
 
-      {/* SEARCH BAR */}
+      {/* SEARCH BAR (Buscador Global) */}
       <div style={styles.searchContainer}>
         <div style={styles.searchBox}>
           <div style={styles.searchIconWrapper}><Icons.Search /></div>
@@ -197,21 +246,21 @@ export default function Catalogo() {
         </div>
       </div>
 
-      {/* FILTER BAR */}
+      {/* FILTER BAR (Filtros Activos) */}
       <div style={styles.stickyFilterBar}>
         <button onClick={() => setIsFilterOpen(true)} style={styles.filterTriggerBtn}>
           <Icons.Filter /> Filtros
         </button>
         {hayFiltrosActivos && (
-          <button onClick={limpiarTodo} style={styles.clearAllBtn} title="Limpiar filtros">
+          <button onClick={limpiarTodo} style={styles.clearAllBtn} title="Limpiar todos los filtros">
             <Icons.Trash />
           </button>
         )}
         <div style={styles.activeChipsContainer}>
-          {/* Mostramos el chip de precio solo si es diferente al máximo de la UI o al valor de perfil inicial */}
-          {(filtros.precioMax < UI_OPCIONES.FILTRO_PRECIO_MAX || 
-            (user?.presupuestoCalculado && filtros.precioMax !== Math.min(Number(user.presupuestoCalculado), UI_OPCIONES.FILTRO_PRECIO_MAX))
-          ) && <span style={styles.chip}>Max {formatoMoneda(filtros.precioMax)}</span>}
+          {/* Muestra el chip de precio solo si el filtro no es el valor máximo predeterminado */}
+          {hayFiltrosActivos && filtros.precioMax < UI_OPCIONES.FILTRO_PRECIO_MAX && 
+            <span style={styles.chip}>Max {formatoMoneda(filtros.precioMax)}</span>
+          }
           
           {filtros.habitaciones > 0 && <span style={styles.chip}>{filtros.habitaciones}+ Rec.</span>}
           {filtros.tipo !== 'all' && (
@@ -237,6 +286,8 @@ export default function Catalogo() {
               <button onClick={() => setIsFilterOpen(false)} style={styles.closeBtn}><Icons.Close /></button>
             </div>
             <div style={styles.modalBody}>
+              
+              {/* SECCIÓN FILTRO DE PRECIO */}
               <div style={styles.filterSection}>
                 <label style={styles.filterLabel}>Presupuesto Máximo</label>
                 <div style={styles.priceDisplay}>{formatoMoneda(filtros.precioMax)}</div>
@@ -250,6 +301,8 @@ export default function Catalogo() {
                   style={styles.slider} 
                 />
               </div>
+
+              {/* SECCIÓN FILTRO DE RECÁMARAS */}
               <div style={styles.filterSection}>
                 <label style={styles.filterLabel}>Recámaras</label>
                 <div style={styles.pillGroup}>
@@ -258,6 +311,8 @@ export default function Catalogo() {
                   ))}
                 </div>
               </div>
+
+              {/* SECCIÓN FILTRO DE ETAPA */}
               <div style={styles.filterSection}>
                 <label style={styles.filterLabel}>Etapa</label>
                  <div style={styles.pillGroup}>
@@ -266,45 +321,54 @@ export default function Catalogo() {
                    ))}
                  </div>
               </div>
+              
+              {/* SECCIÓN FILTRO DE AMENIDADES */}
               <div style={styles.filterSection}>
                 <label style={styles.filterLabel}>Amenidades Populares</label>
                 <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px'}}>
                   <button onClick={() => handleFilterChange('amenidad', '')} style={{...styles.amenityChip, backgroundColor: filtros.amenidad === '' ? '#e0f2fe' : '#f3f4f6', color: filtros.amenidad === '' ? '#0284c7' : '#4b5563', border: filtros.amenidad === '' ? '1px solid #7dd3fc' : '1px solid transparent'}}>Todas</button>
+                  {/* Amenidades populares cargadas desde el contexto */}
                   {topAmenidades.map((am, idx) => (
                     <button key={idx} onClick={() => handleFilterChange('amenidad', filtros.amenidad === am ? '' : am)} style={{...styles.amenityChip, backgroundColor: filtros.amenidad === am ? '#e0f2fe' : '#f3f4f6', color: filtros.amenidad === am ? '#0284c7' : '#4b5563', border: filtros.amenidad === am ? '1px solid #7dd3fc' : '1px solid transparent'}}>{am}</button>
                   ))}
                 </div>
               </div>
             </div>
+
+            {/* FOOTER DEL MODAL */}
             <div style={styles.modalFooter}>
               <button style={styles.clearBtn} onClick={limpiarTodo}>Limpiar</button>
-              <button style={styles.applyBtn} onClick={() => setIsFilterOpen(false)}>Ver {modelosFiltrados.length} prop.</button>
+              <button style={styles.applyBtn} onClick={() => setIsFilterOpen(false)}>
+                Ver {modelosFiltrados.length} prop.
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* RESULTADOS */}
+      {/* RESULTADOS (La cuadrícula de propiedades) */}
       <section style={styles.gridContainer} className="animate-fade-in">
         {modelosFiltrados.map((item) => (
           <article key={item.id} style={styles.card}>
             
             {/* CARRUSEL DE IMÁGENES */}
             <div style={styles.carouselContainer} className="hide-scrollbar">
+               {/* Itera sobre las imágenes del modelo o usa la imagen principal como fallback */}
                {(item.imagenes || [item.imagen]).map((imgSrc, idx) => (
                  <div key={idx} style={styles.carouselSlide}>
                     <ImageLoader 
                       src={imgSrc} 
-                      // ✅ Corrección: Uso de nombre_modelo con fallback
                       alt={`${item.nombre_modelo || item.nombre} - vista ${idx}`} 
                       style={styles.image} 
                     />
+                    {/* Muestra un hint de cuántas fotos hay si son más de una */}
                     {idx === 0 && item.imagenes?.length > 1 && (
                        <div style={styles.swipeHint}>+{item.imagenes.length - 1}</div>
                     )}
                  </div>
                ))}
 
+               {/* Etiqueta de Status (Preventa/Inmediata) */}
                <span style={{
                  ...styles.statusTag,
                  backgroundColor: item.esPreventa ? '#f59e0b' : '#10b981'
@@ -312,23 +376,24 @@ export default function Catalogo() {
                  {item.esPreventa ? 'PRE-VENTA' : 'ENTREGA INMEDIATA'}
                </span>
 
+               {/* Overlay con información del desarrollo y modelo */}
                <div style={styles.imageOverlay}>
                  <h3 style={styles.overlayDevName}>{item.nombreDesarrollo}</h3>
                  <p style={styles.overlayModelName}>
-                    {/* ✅ Corrección: Uso de nombre_modelo */}
                     {item.constructora ? `${item.constructora} • ` : ''} {item.nombre_modelo || item.nombre}
                  </p>
                </div>
             </div>
 
             <div style={styles.cardBody}>
+               {/* Ubicación */}
                <div style={styles.locationRow}>
                  <span style={{marginRight: '5px'}}>📍</span> 
                  {item.colonia ? `${item.colonia}, ` : ''}{item.zona || item.ciudad}
                </div>
 
+               {/* Especificaciones Técnicas */}
                <div style={styles.featuresRow}>
-                 {/* ✅ Corrección: Fallbacks para evitar vacíos */}
                  <span style={styles.featureItem}>🛏 {item.recamaras || 0} Rec.</span>
                  <span style={styles.separator}>|</span>
                  <span style={styles.featureItem}>🚿 {item.banos || 0} Baños</span>
@@ -336,6 +401,7 @@ export default function Catalogo() {
                  <span style={styles.featureItem}>📐 {item.m2 || 0} m²</span>
                </div>
 
+               {/* Precio y Gastos Notariales */}
                <div style={styles.priceBox}>
                  <div style={{display:'flex', justifyContent:'space-between'}}>
                     <span style={styles.priceLabel}>PRECIO DE LISTA</span>
@@ -348,10 +414,13 @@ export default function Catalogo() {
                    {item.precioNumerico > 0 ? formatoMoneda(item.precioNumerico) : "Pendiente"}
                  </div>
                  {item.precioNumerico > 0 && (
-                   <div style={styles.priceNote}>*Escrituración aprox: {calcularEscrituracion(item.precioNumerico)}</div>
+                   <div style={styles.priceNote}>
+                     *Escrituración aprox: {calcularEscrituracion(item.precioNumerico)}
+                   </div>
                  )}
                </div>
 
+               {/* Botón de Detalle */}
                <Link 
                  to={`/modelo/${item.id}`} 
                  style={styles.detailsButton}
@@ -363,6 +432,7 @@ export default function Catalogo() {
           </article>
         ))}
 
+        {/* Estado Vacío */}
         {modelosFiltrados.length === 0 && (
           <div style={styles.emptyState}>
             <h3>No encontramos resultados</h3>
