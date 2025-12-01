@@ -2,8 +2,9 @@
 // ÚLTIMA MODIFICACION: 01/12/2025
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { useUser } from '../context/UserContext'; // ✅ Importamos contexto
-// ⭐ NUEVA IMPORTACIÓN: Contexto de Favoritos para el contador
+// ✅ Importamos contexto y la función logout
+import { useUser } from '../context/UserContext'; 
+// Importamos el hook de Favoritos para el contador
 import { useFavorites } from '../context/FavoritesContext'; 
 
 // URL del Logotipo Oficial
@@ -16,8 +17,9 @@ const MenuIcons = {
 };
 
 export default function Layout() {
-  const { userProfile, user } = useUser(); // ✅ Obtenemos el perfil y el estado de login
-  // ⭐ USAMOS EL NUEVO HOOK
+  // ✅ Obtenemos logout, userProfile y user
+  const { userProfile, user, logout } = useUser(); 
+  // Obtenemos el ID de favoritos (para el badge en el paso anterior)
   const { favoritosIds } = useFavorites(); 
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false); 
@@ -84,14 +86,12 @@ export default function Layout() {
             <Link to="/catalogo" style={getLinkStyle('/catalogo')}>Catálogo</Link>
             <Link to="/mapa" style={getLinkStyle('/mapa')}>Mapa</Link>
             
-            {/* ⭐ NUEVO ENLACE: Favoritos/Comparador con contador dinámico */}
             <Link 
               to="/favoritos" 
               style={getLinkStyle('/favoritos')}
             >
               <span style={styles.linkWithBadge}>
                  Comparador
-                 {/* Badge solo visible si hay favoritos */}
                  {favoritosIds.length > 0 && (
                    <span style={styles.favoriteBadge}>
                       {favoritosIds.length}
@@ -100,9 +100,8 @@ export default function Layout() {
               </span>
             </Link>
             
-            {/* TAREA 2.1: LÓGICA DE NAVEGACIÓN DUAL */}
             {isAsesor ? (
-               // Si es ASESOR -> Ve su Dashboard
+               // DASHBOARD ASESOR
                <Link 
                  to="/account-asesor" 
                  style={getLinkStyle('/account-asesor')}
@@ -110,16 +109,24 @@ export default function Layout() {
                  Panel Asesor
                </Link>
             ) : (
-               // Si es CLIENTE o PÚBLICO (No Asesor) -> Ve invitación
+               // ENLACE ASESOR/ONBOARDING
                <Link 
-                 to={user ? '/onboarding-asesor' : '/soy-asesor'} // Si está logueado va al onboarding, si no al landing
+                 to={user ? '/onboarding-asesor' : '/soy-asesor'} 
                  style={getLinkStyle(user ? '/onboarding-asesor' : '/soy-asesor')}
                >
                  Soy Asesor
                </Link>
             )}
-            
-            {/* NOTA: El Asesor ahora tiene acceso directo a / y puede rellenar su perfil financiero. */}
+
+            {/* ⭐ NUEVO: BOTÓN DE LOGOUT CONDICIONAL */}
+            {user && (
+                <button 
+                    onClick={logout} 
+                    style={styles.logoutButton}
+                >
+                    Cerrar Sesión ({userProfile?.nombre?.split(' ')[0] || 'Usuario'})
+                </button>
+            )}
             
           </nav>
 
@@ -196,7 +203,28 @@ const styles = {
     // La clase .nav-menu en index.css maneja el responsive (flex row vs column)
   },
   
-  // ⭐ NUEVOS ESTILOS para el Badge de Favoritos
+  // ⭐ NUEVO ESTILO: Botón de Cerrar Sesión (Se ve como un enlace en el menú)
+  logoutButton: {
+    background: 'none',
+    border: 'none',
+    color: '#ffc107', // Color dorado/amarillo para destacar
+    padding: '4px 0',
+    fontSize: '0.95rem',
+    fontWeight: '700',
+    cursor: 'pointer',
+    textAlign: 'center',
+    transition: 'opacity 0.2s',
+    // Asegura que en móvil tenga el mismo estilo que los Links
+    '@media (max-width: 768px)': {
+        fontSize: '1.5rem',
+        padding: '15px 0',
+        width: '80%', 
+        borderBottom: '3px solid transparent',
+        textDecoration: 'none',
+        display: 'block'
+    }
+  },
+  
   linkWithBadge: {
     display: 'flex',
     alignItems: 'center',
@@ -211,7 +239,6 @@ const styles = {
     borderRadius: '10px',
     lineHeight: 1,
   },
-  // END NUEVOS ESTILOS
   
   footer: {
     backgroundColor: '#1f2937',

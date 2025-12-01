@@ -6,16 +6,15 @@ import { Link, useLocation } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import ImageLoader from '../components/ImageLoader';
 
-// ⭐ NUEVA IMPORTACIÓN: Componente para marcar y desmarcar modelos
-import FavoriteBtn from '../components/FavoriteBtn'; 
-
 // Importamos el hook de contexto para acceder a los datos centralizados.
 import { useCatalog } from '../context/CatalogContext'; 
+// Importamos el componente de favoritos (asumo que se implementó en el paso 6)
+import FavoriteBtn from '../components/FavoriteBtn'; 
 
 // Importación de constantes centralizadas.
 import { FINANZAS, UI_OPCIONES } from '../config/constants';
 
-// --- ICONOS (No es necesario comentar los iconos, ya están definidos) ---
+// --- ICONOS ---
 const Icons = {
   Filter: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>,
   Close: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
@@ -34,36 +33,29 @@ const formatoMoneda = (val) => {
   return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
 };
 
-// Función para calcular los gastos notariales (utiliza la constante global)
 const calcularEscrituracion = (precio) => formatoMoneda(precio * FINANZAS.PORCENTAJE_GASTOS_NOTARIALES);
 
 export default function Catalogo() {
   const { userProfile, trackBehavior } = useUser();
-  // Accedemos a los datos centralizados del catálogo y al estado de carga.
   const { modelos: dataMaestra, amenidades: topAmenidades, loadingCatalog: loading } = useCatalog();
-  // Hook de React Router para leer los parámetros de la URL.
   const location = useLocation(); 
   
-  // --- ESTADOS DE UI ---
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
   // 1. Lógica de Inicialización de Filtros (Usa useMemo para calcular valores iniciales)
   const getInitialFilters = useMemo(() => {
-    // Obtenemos los parámetros de la URL y los datos del perfil si existen.
+    // PORQUÉ: Esta función DEBE volver a calcularse si cambia location.search o userProfile
     const params = new URLSearchParams(location.search);
     const profile = userProfile?.perfilFinanciero;
     
-    // Definición de valores base
     const defaultMaxPrice = UI_OPCIONES.FILTRO_PRECIO_MAX;
     const defaultRooms = 0;
     const defaultStatus = 'all';
 
-    // Función auxiliar para convertir a número de forma segura
     const safeNum = (val, max = Infinity) => {
         const num = Number(val);
         if (isNaN(num) || num < 0) return defaultRooms;
-        // Limitamos el valor al máximo permitido por el slider de la UI
         return Math.min(num, max);
     }
     
@@ -81,7 +73,7 @@ export default function Catalogo() {
         ? safeNum(urlRooms)
         : (profileRooms !== undefined && profileRooms !== null ? safeNum(profileRooms) : defaultRooms);
         
-    // C. Status de Entrega: Prioriza URL > Perfil Guardado (convertido a string) > Default
+    // C. Status de Entrega: Prioriza URL > Perfil Guardado > Default
     const urlStatus = params.get('status');
     const profileStatus = profile?.interesInmediato === true ? 'inmediata' : (profile?.interesInmediato === false ? 'preventa' : defaultStatus);
 
@@ -89,7 +81,6 @@ export default function Catalogo() {
         ? urlStatus
         : profileStatus;
 
-    // Retornamos el objeto de filtros inicial
     return {
       precioMax: initialMaxPrice, 
       habitaciones: initialRooms,
@@ -97,28 +88,31 @@ export default function Catalogo() {
       amenidad: '',
       tipo: 'all'
     };
-  }, [userProfile, location.search]); // Depende del perfil y la URL para re-evaluar
+  }, [userProfile, location.search]); // Dependencias: Si la URL cambia, recalcula.
 
   // 2. Inicializamos el estado de los filtros usando el cálculo inicial.
   const [filtros, setFiltros] = useState(getInitialFilters);
 
-  // Detector de Filtros Activos (para mostrar el botón de "Limpiar Todo")
+  // ⭐ FIX 2.2: Hook para sincronizar el estado de filtros con la URL/Perfil
+  // Este efecto se dispara cada vez que `getInitialFilters` (dependiente de location.search) cambia.
+  useEffect(() => {
+    // Usamos stringify para una comparación simple y profunda (si el objeto cambió lógicamente)
+    // Esto asegura que si navegamos desde Perfil a Catálogo con nuevos parámetros, el estado de `filtros` se actualice.
+    if (JSON.stringify(filtros) !== JSON.stringify(getInitialFilters)) {
+        setFiltros(getInitialFilters);
+    }
+  }, [getInitialFilters]);
+  
+  // Detector de Filtros Activos 
   const hayFiltrosActivos = useMemo(() => {
-    // Verificamos si el precio es diferente al MÁXIMO de la UI
     const isPriceFiltered = filtros.precioMax < UI_OPCIONES.FILTRO_PRECIO_MAX;
-    
-    // Obtenemos el presupuesto base del usuario para saber si el filtro de precio es "personalizado"
     const userBudget = userProfile?.perfilFinanciero?.presupuestoCalculado;
 
-    // Consideramos que el filtro de precio está activo si es menor al máximo de la UI O
-    // si el valor actual no coincide con el presupuesto que se cargó por defecto desde el perfil.
     const isCustomPriceFilter = isPriceFiltered && (
         !userBudget || 
-        // Comparamos el valor actual con el valor que debería haber cargado el perfil
         filtros.precioMax !== Math.min(Number(userBudget), UI_OPCIONES.FILTRO_PRECIO_MAX)
     );
 
-    // Si cualquier filtro es diferente a su valor por defecto, está activo.
     return (
       searchTerm !== '' ||
       isCustomPriceFilter ||
@@ -129,39 +123,29 @@ export default function Catalogo() {
     );
   }, [filtros, searchTerm, userProfile]);
 
-  // 3. Motor de Filtrado (Aplica los filtros al catálogo maestro)
+  // 3. Motor de Filtrado
   const modelosFiltrados = useMemo(() => {
-    if (loading) return []; // Si el catálogo no carga, no hay modelos.
+    if (loading) return [];
 
     const term = normalizar(searchTerm);
     return dataMaestra.filter(item => {
       
-      // FILTRO 1: Precio máximo (el filtro más importante)
       if (item.precioNumerico > filtros.precioMax) return false;
-      
-      // FILTRO 2: Recámaras mínimas
       if (filtros.habitaciones > 0 && (item.recamaras || 0) < filtros.habitaciones) return false;
-      
-      // FILTRO 3: Status (Entrega Inmediata / Preventa)
       if (filtros.status === 'inmediata' && item.esPreventa === true) return false;
       if (filtros.status === 'preventa' && item.esPreventa === false) return false;
 
-      // FILTRO 4: Tipo de Vivienda (Casa/Departamento)
       if (filtros.tipo !== 'all') {
         const tipoItem = normalizar(item.tipoVivienda);
         if (filtros.tipo === 'casa' && !tipoItem.includes('casa')) return false;
         if (filtros.tipo === 'departamento' && !tipoItem.includes('departamento') && !tipoItem.includes('loft')) return false;
       }
 
-      // FILTRO 5: Amenidad (Filtro por palabra clave en amenidades del desarrollo)
       if (filtros.amenidad && Array.isArray(item.amenidadesDesarrollo)) {
-        // Busca si alguna amenidad del modelo incluye el término del filtro.
         if (!item.amenidadesDesarrollo.some(a => normalizar(a).includes(normalizar(filtros.amenidad)))) return false;
       }
 
-      // FILTRO 6: Buscador Universal (Coincidencia de texto)
       if (term) {
-        // Construye una cadena gigante con todos los campos relevantes para buscar.
         const amenidadesTexto = Array.isArray(item.amenidadesDesarrollo) ? item.amenidadesDesarrollo.join(' ') : '';
         const searchTarget = `
           ${normalizar(item.nombre)} ${normalizar(item.nombre_modelo)} ${normalizar(item.nombreDesarrollo)}
@@ -171,16 +155,14 @@ export default function Catalogo() {
         `;
         if (!searchTarget.includes(term)) return false;
       }
-      return true; // Pasa todos los filtros
+      return true;
     });
   }, [dataMaestra, filtros, searchTerm, loading, userProfile]);
 
   const handleFilterChange = (key, val) => setFiltros(prev => ({ ...prev, [key]: val }));
   
-  // Resetea todos los filtros a sus valores por defecto (máximo precio, 0 recámaras, 'all' status)
   const limpiarTodo = () => {
     setSearchTerm('');
-    // Al limpiar, usamos los valores máximos de la UI
     setFiltros({ 
       precioMax: UI_OPCIONES.FILTRO_PRECIO_MAX, 
       habitaciones: 0, 
@@ -190,7 +172,6 @@ export default function Catalogo() {
     });
   };
 
-  // Efecto para controlar el scroll del body cuando el modal está abierto (UX)
   useEffect(() => {
     document.body.style.overflow = isFilterOpen ? 'hidden' : 'unset';
     return () => { document.body.style.overflow = 'unset'; }
@@ -379,8 +360,7 @@ export default function Catalogo() {
                  {item.esPreventa ? 'PRE-VENTA' : 'ENTREGA INMEDIATA'}
                </span>
                
-               {/* 🚀 NUEVA FUNCIONALIDAD: Botón de Favoritos */}
-               {/* Se utiliza el nuevo componente FavoriteBtn con el ID del modelo */}
+               {/* Botón de Favoritos */}
                <div style={styles.favoriteBtnWrapper}>
                   <FavoriteBtn modeloId={item.id} />
                </div>
@@ -491,7 +471,6 @@ const styles = {
   applyBtn: { flex: 1, backgroundColor: 'var(--primary-color)', color: 'white', padding: '14px', borderRadius: '12px', border: 'none', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer' },
 
   gridContainer: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '25px', padding: '25px 20px' },
-  // Importante: Se agrega position: 'relative' para que FavoriteBtn (position: 'absolute') funcione.
   card: { backgroundColor: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', position: 'relative' }, 
   
   carouselContainer: { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', width: '100%', height: '220px', position: 'relative', backgroundColor: '#e5e7eb' },
@@ -500,12 +479,11 @@ const styles = {
   swipeHint: { position: 'absolute', top: '12px', left: '12px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', zIndex: 10 },
 
   statusTag: { position: 'absolute', top: '12px', right: '12px', color: 'white', padding: '6px 12px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: '800', letterSpacing: '0.5px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)', pointerEvents: 'none', zIndex: 10 },
-  // ⭐ NUEVO ESTILO: Contenedor para posicionar el botón de favorito
   favoriteBtnWrapper: { 
     position: 'absolute', 
     top: '12px', 
     left: '12px', 
-    zIndex: 11 // Asegura que esté por encima del swipeHint
+    zIndex: 11 
   },
   imageOverlay: { position: 'absolute', bottom: 0, left: 0, width: '100%', padding: '40px 16px 12px 16px', background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%)', display: 'flex', flexDirection: 'column', pointerEvents: 'none', zIndex: 10 }, 
   overlayDevName: { color: 'white', fontSize: '1.4rem', fontWeight: '700', margin: 0, lineHeight: '1.2', textShadow: '0 2px 4px rgba(0,0,0,0.5)' },

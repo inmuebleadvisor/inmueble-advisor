@@ -2,89 +2,104 @@
 // ÚLTIMA MODIFICACION: 01/12/2025
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-// Importamos userProfile, loadingUser Y el objeto 'user' del contexto de Firebase Auth
 import { useUser } from '../context/UserContext'; 
-
-// ✅ 1. Importación del Servicio Modular
 import { obtenerDatosUnificados } from '../services/catalog.service';
-
-// ✅ 2. Importación de Constantes Centralizadas
 import { FINANZAS, IMAGES } from '../config/constants';
-
-// Importamos herramientas de la Base de Datos
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
+// Clave para guardar el progreso en el navegador (Persistencia ante recargas)
+const STORAGE_KEY = 'inmueble_advisor_onboarding_temp';
+
 export default function Perfil() {
   const navigate = useNavigate();
-  // 🛠️ TAREA: Importamos 'user' para verificar el estado de autenticación.
   const { loginWithGoogle, trackBehavior, userProfile, loadingUser, user } = useUser(); 
 
-  const [step, setStep] = useState(0); 
+  // --- 1. ESTADOS CON RECUPERACIÓN (Persistencia) ---
+  // Intentamos leer del localStorage al iniciar el componente
+  const getSavedState = (key, def) => {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            return parsed[key] !== undefined ? parsed[key] : def;
+        }
+    } catch (e) { console.error(e); }
+    return def;
+  };
+
+  const [step, setStep] = useState(() => getSavedState('step', 0)); 
   const totalSteps = 3; 
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  const [capitalInicial, setCapitalInicial] = useState(250000);
-  const [mensualidad, setMensualidad] = useState(15000);
-  const [recamaras, setRecamaras] = useState(null); 
-  const [entregaInmediata, setEntregaInmediata] = useState(null);
+  const [capitalInicial, setCapitalInicial] = useState(() => getSavedState('capitalInicial', 250000));
+  const [mensualidad, setMensualidad] = useState(() => getSavedState('mensualidad', 15000));
+  const [recamaras, setRecamaras] = useState(() => getSavedState('recamaras', null)); 
+  const [entregaInmediata, setEntregaInmediata] = useState(() => getSavedState('entregaInmediata', null));
 
   const [dataMaestra, setDataMaestra] = useState([]);
-
   const [presupuestoMaximo, setPresupuestoMaximo] = useState(0);
   const [notaDinamica, setNotaDinamica] = useState('');
   const [esAlerta, setEsAlerta] = useState(false);
 
-  // Función auxiliar para dar formato de moneda
+  // --- 2. EFECTO DE GUARDADO AUTOMÁTICO ---
+  // Cada vez que el usuario mueve algo, lo guardamos por si se recarga la página
+  useEffect(() => {
+    const estadoAGuardar = { step, capitalInicial, mensualidad, recamaras, entregaInmediata };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(estadoAGuardar));
+  }, [step, capitalInicial, mensualidad, recamaras, entregaInmediata]);
+
   const formatoMoneda = (val) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
 
-  // LÓGICA DE FLUJO ASESOR (Saltar Step 0)
+  // --- 3. LÓGICA DE REDIRECCIÓN INTELIGENTE ---
   useEffect(() => {
-    if (loadingUser) return; 
+    if (loadingUser) return;
 
-    // Si el usuario tiene el rol de asesor y está en la pantalla de inicio, saltamos al Step 1.
-    if (userProfile?.role === 'asesor' && step === 0) {
-      setStep(1); 
+    // Caso A: Asesor Incompleto -> Onboarding
+    if (user && userProfile?.role === 'asesor' && !userProfile?.onboardingCompleto) {
+        navigate('/onboarding-asesor');
+        return;
     }
-  }, [userProfile, loadingUser, step]);
 
-  // CARGA DE DATOS
+    // Caso B: Usuario Logueado (Cualquier rol) en Paso Final
+    // Si ya tienes sesión y estás viendo resultados (step 3), te mandamos al catálogo automáticamente.
+    // Esto soluciona el problema de "quedarse atorado" tras el login en móvil.
+    if (user && step === 3) {
+         const statusParam = entregaInmediata === true ? 'inmediata' : (entregaInmediata === false ? 'preventa' : 'all');
+         const maxPrice = presupuestoMaximo > 0 ? Math.round(presupuestoMaximo) : '';
+         const rooms = recamaras || '';
+         
+         // Limpiamos storage y navegamos
+         localStorage.removeItem(STORAGE_KEY);
+         navigate(`/catalogo?maxPrice=${maxPrice}&rooms=${rooms}&status=${statusParam}`, { replace: true });
+    }
+  }, [user, userProfile, loadingUser, step, navigate, presupuestoMaximo, recamaras, entregaInmediata]);
+
+  // Carga de Datos Catálogo
   useEffect(() => {
-    const cargarDatosParaConteo = async () => {
-      try {
-        const datos = await obtenerDatosUnificados();
-        setDataMaestra(datos);
-      } catch (error) {
-        console.error("Error cargando datos para perfil:", error);
-      }
+    const cargar = async () => {
+      const datos = await obtenerDatosUnificados();
+      setDataMaestra(datos);
     };
-    cargarDatosParaConteo();
+    cargar();
   }, []);
 
-  // LÓGICA FINANCIERA (Cálculo de capacidad)
+  // Lógica Financiera
   useEffect(() => {
-    const { 
-      PORCENTAJE_GASTOS_NOTARIALES, 
-      PORCENTAJE_ENGANCHE_MINIMO, 
-      FACTOR_MENSUALIDAD_POR_MILLON 
-    } = FINANZAS;
-
+    const { PORCENTAJE_GASTOS_NOTARIALES, PORCENTAJE_ENGANCHE_MINIMO, FACTOR_MENSUALIDAD_POR_MILLON } = FINANZAS;
     const maxCreditoBanco = (mensualidad / FACTOR_MENSUALIDAD_POR_MILLON) * 1000000;
-    
     const limitePorEfectivo = capitalInicial / (PORCENTAJE_GASTOS_NOTARIALES + PORCENTAJE_ENGANCHE_MINIMO);
-    
     const limitePorCapacidadTotal = (capitalInicial + maxCreditoBanco) / (1 + PORCENTAJE_GASTOS_NOTARIALES);
-
     const capacidadReal = Math.min(limitePorEfectivo, limitePorCapacidadTotal);
+    
     setPresupuestoMaximo(capacidadReal);
 
     if (capacidadReal > 0) {
       const costoTotalInicial = capacidadReal * (PORCENTAJE_ENGANCHE_MINIMO + PORCENTAJE_GASTOS_NOTARIALES);
       const remanente = Math.max(0, capitalInicial - costoTotalInicial);
-      
       const pctEnganche = (PORCENTAJE_ENGANCHE_MINIMO * 100).toFixed(0);
       const pctNotaria = (PORCENTAJE_GASTOS_NOTARIALES * 100).toFixed(0);
-
       const mensajeBase = `Incluye gastos notariales (${pctNotaria}%) y enganche (${pctEnganche}%). Te sobran ${formatoMoneda(remanente)} de tu efectivo.`;
 
       if (limitePorEfectivo < (limitePorCapacidadTotal - 50000)) {
@@ -97,10 +112,9 @@ export default function Perfil() {
     }
   }, [capitalInicial, mensualidad]);
 
-  // CONTEO DE OPCIONES
+  // Conteo
   const opcionesEncontradas = useMemo(() => {
     if (presupuestoMaximo === 0 || dataMaestra.length === 0) return 0;
-    
     return dataMaestra.filter(item => {
       if (item.precioNumerico > presupuestoMaximo) return false;
       if (recamaras && item.recamaras < recamaras) return false;
@@ -110,10 +124,8 @@ export default function Perfil() {
     }).length;
   }, [presupuestoMaximo, recamaras, entregaInmediata, dataMaestra]);
 
-  // ==========================================
-  // NAVEGACIÓN Y HANDLERS
-  // ==========================================
-  
+  // --- HANDLERS ---
+
   const handleRoleSelection = (role) => {
     trackBehavior('select_role', { role });
     if (role === 'asesor') {
@@ -123,17 +135,23 @@ export default function Perfil() {
     }
   };
 
-  const isStepValid = () => {
-    switch(step) {
-      case 1: return recamaras !== null && entregaInmediata !== null;
-      case 2: return true;
-      case 3: return true;
-      default: return false;
+  const handleLoginDirecto = async () => {
+    setIsLoggingIn(true);
+    try {
+        const firebaseUser = await loginWithGoogle();
+        if (firebaseUser) {
+            localStorage.removeItem(STORAGE_KEY);
+            navigate('/catalogo');
+        }
+    } catch (error) {
+        console.error("Login directo fallido", error);
+    } finally {
+        setIsLoggingIn(false);
     }
   };
 
   const nextStep = () => {
-    if (isStepValid() && step < totalSteps) {
+    if (step < totalSteps) {
       trackBehavior('step_completed', { step_number: step });
       setStep(step + 1);
     }
@@ -146,67 +164,65 @@ export default function Perfil() {
   const handleFinalizar = async () => {
     setIsSaving(true);
     try {
+      let firebaseUser = user;
       
-      // 🛠️ TAREA DE MEJORA: Evitar login redundante si ya está logueado
-      // Si 'user' existe, usamos ese objeto para guardar (Guardado invisible/silencioso).
-      // Si no, ejecutamos loginWithGoogle para forzar la autenticación.
-      const firebaseUser = user || (await loginWithGoogle('cliente')); 
+      if (!firebaseUser) {
+        // Al llamar esto, si es mobile redirect, la página se recargará
+        // y el useEffect de arriba manejará la continuación.
+        firebaseUser = await loginWithGoogle('cliente'); 
+      }
       
       if (firebaseUser) {
-        
-        // LÓGICA DE ROL HÍBRIDO: Preservar 'asesor' si ya lo es.
-        const rolAguardar = userProfile?.role === 'asesor' ? 'asesor' : 'cliente';
-        
-        // Preparamos los datos del perfil
-        const userProfileData = {
-          // Usamos los datos del usuario autenticado (sea el existente o el recién logueado)
+        // Guardado de datos
+        const updates = {
           uid: firebaseUser.uid,
           email: firebaseUser.email,
           nombre: firebaseUser.displayName,
-          foto: firebaseUser.photoURL,
-          
-          role: rolAguardar, 
-          
+          ultimoAcceso: new Date().toISOString(),
           perfilFinanciero: {
             capitalInicial,
             mensualidadMaxima: mensualidad,
             presupuestoCalculado: presupuestoMaximo,
             recamarasDeseadas: recamaras,
             interesInmediato: entregaInmediata
-          },
-          
-          ultimoAcceso: new Date().toISOString(),
-          registroCompleto: true
+          }
         };
 
-        // Guardamos/fusionamos (merge: true) los datos
-        await setDoc(doc(db, "users", firebaseUser.uid), userProfileData, { merge: true });
+        await setDoc(doc(db, "users", firebaseUser.uid), updates, { merge: true });
 
         trackBehavior('onboarding_completed', { 
           presupuesto: presupuestoMaximo,
           opciones_vistas: opcionesEncontradas
         });
         
-        // Navegamos al catálogo con los filtros
+        // Redirección explícita (para desktop/popup)
         const statusParam = entregaInmediata === true ? 'inmediata' : (entregaInmediata === false ? 'preventa' : 'all');
-        const urlConFiltros = `/catalogo?maxPrice=${Math.round(presupuestoMaximo)}&rooms=${recamaras}&status=${statusParam}`;
-        navigate(urlConFiltros);
+        const maxPrice = presupuestoMaximo > 0 ? Math.round(presupuestoMaximo) : '';
+        const rooms = recamaras || '';
+        
+        localStorage.removeItem(STORAGE_KEY);
+        navigate(`/catalogo?maxPrice=${maxPrice}&rooms=${rooms}&status=${statusParam}`, { replace: true });
       }
     } catch (error) {
-      console.error("Error guardando perfil:", error);
-      alert("Hubo un error al guardar tu sesión. Intenta de nuevo.");
+      console.error("Error en finalización:", error);
+      if (error.code !== 'auth/popup-closed-by-user') {
+          alert("Hubo un problema al conectar. Intenta de nuevo.");
+      }
     } finally {
-      setIsSaving(false);
+      if (!user) setIsSaving(false); 
     }
+  };
+
+  const isStepValid = () => {
+      if (step === 1) return recamaras !== null && entregaInmediata !== null;
+      return true;
   };
 
   return (
     <div style={styles.container}>
       <style>{`
-          /* Comentarios Didácticos: Estilos y animaciones */
           @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
           .step-content { animation: slideIn 0.4s ease-out forwards; width: 100%; }
-          /* Estilos para el slider de rango */
           input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
           input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: var(--primary-color); cursor: pointer; margin-top: -10px; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
           input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #e0e0e0; border-radius: 3px; }
@@ -219,7 +235,6 @@ export default function Perfil() {
           </div>
         )}
 
-        {/* Solo se muestra la selección de rol si step === 0 */}
         {step === 0 && ( 
           <div style={styles.logoContainer}>
             <img src={IMAGES.LOGO_URL} alt="Logo" style={styles.logoIcon} />
@@ -243,6 +258,16 @@ export default function Perfil() {
                   <h3 style={styles.roleTitle}>Soy Asesor</h3>
                   <p style={styles.roleDesc}>Quiero subir propiedades y captar clientes.</p>
                 </button>
+              </div>
+
+              <div style={{marginTop: '25px', borderTop: '1px solid #eee', paddingTop: '20px'}}>
+                 <button 
+                    onClick={handleLoginDirecto} 
+                    disabled={isLoggingIn}
+                    style={styles.textLinkButton}
+                 >
+                    {isLoggingIn ? 'Conectando...' : '¿Ya tienes cuenta? Iniciar Sesión'}
+                 </button>
               </div>
             </>
           )}
@@ -317,7 +342,7 @@ export default function Perfil() {
                 }}
             >
                 {step === totalSteps 
-                    ? (isSaving ? 'Guardando...' : 'Ver Propiedades')
+                    ? (isSaving ? 'Procesando...' : 'Ver Propiedades')
                     : (step === 1 ? 'Comenzar' : 'Siguiente 👉')}
             </button>
           </div>
@@ -341,6 +366,7 @@ const styles = {
   roleIcon: { fontSize: '2.5rem', marginBottom: '10px' },
   roleTitle: { margin: '0 0 5px 0', fontSize: '1.2rem', fontWeight: 'bold', color: '#333' },
   roleDesc: { margin: 0, fontSize: '0.9rem', color: '#666' },
+  textLinkButton: { background: 'none', border: 'none', color: 'var(--primary-color)', fontSize: '0.95rem', fontWeight: '600', cursor: 'pointer', textDecoration: 'underline' },
   input: { width: '100%', padding: '15px', borderRadius: '15px', border: '2px solid #eee', fontSize: '1.2rem', textAlign: 'center', outline: 'none', marginBottom: '20px' },
   label: { display: 'block', fontWeight: 'bold', color: '#333', marginBottom: '10px', textAlign: 'left' },
   optionsContainer: { display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '10px' },

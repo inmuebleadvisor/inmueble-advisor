@@ -1,4 +1,5 @@
 // src/screens/OnboardingAsesor.jsx
+// ÚLTIMA MODIFICACION: 01/12/2025
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
@@ -8,7 +9,7 @@ const CheckIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="no
 
 export default function OnboardingAsesor() {
   const navigate = useNavigate();
-  const { convertirEnAsesor, userProfile } = useUser();
+  const { convertirEnAsesor, userProfile, loadingUser } = useUser();
 
   const [step, setStep] = useState(1);
   const [loadingData, setLoadingData] = useState(true);
@@ -19,10 +20,17 @@ export default function OnboardingAsesor() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    if (userProfile?.role === 'asesor') {
+    if (loadingUser) return;
+    
+    // ✅ FIX CRÍTICO: Si ya es asesor Y TIENE EL ONBOARDING COMPLETO, redirigir al Dashboard.
+    // Esto evita que un asesor ya registrado tenga que llenar los datos de nuevo.
+    if (userProfile?.role === 'asesor' && userProfile?.onboardingCompleto === true) {
         navigate('/account-asesor');
         return;
     }
+    
+    // Si el usuario llega hasta aquí, necesita el wizard (es cliente o asesor incompleto).
+    // Cargamos los datos del inventario para el paso 2.
     const cargar = async () => {
       setLoadingData(true);
       try {
@@ -35,7 +43,7 @@ export default function OnboardingAsesor() {
       }
     };
     cargar();
-  }, [userProfile, navigate]);
+  }, [userProfile, loadingUser, navigate]);
 
   const listaFiltrada = useMemo(() => {
     if (!searchTerm) return inventarioDB;
@@ -70,12 +78,9 @@ export default function OnboardingAsesor() {
       const inventarioFinal = seleccionados.map(id => ({ 
         tipo: 'db', 
         idDesarrollo: id,
-        activo: false, // <--- CAMBIO AQUÍ: Boolean explícito (false = pendiente)
+        activo: false, // <--- Boolean explícito (false = pendiente de activación por Admin)
         fechaSolicitud: new Date().toISOString() 
       }));
-
-      // Diagnóstico para desarrollador
-      console.log("💾 Guardando perfil Asesor con Schema V1:", { inventario: inventarioFinal });
 
       const datosInicialesAsesor = {
         telefono,
@@ -91,7 +96,8 @@ export default function OnboardingAsesor() {
       };
 
       await convertirEnAsesor(datosInicialesAsesor);
-      navigate('/account-asesor');
+      // Redirección final a la cuenta de asesor
+      navigate('/account-asesor', { replace: true });
 
     } catch (error) {
       console.error("Error al finalizar registro:", error);
