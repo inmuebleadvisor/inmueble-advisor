@@ -6,6 +6,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import ImageLoader from '../components/ImageLoader';
 
+// ⭐ NUEVA IMPORTACIÓN: Componente para marcar y desmarcar modelos
+import FavoriteBtn from '../components/FavoriteBtn'; 
+
 // Importamos el hook de contexto para acceder a los datos centralizados.
 import { useCatalog } from '../context/CatalogContext'; 
 
@@ -375,6 +378,12 @@ export default function Catalogo() {
                }}>
                  {item.esPreventa ? 'PRE-VENTA' : 'ENTREGA INMEDIATA'}
                </span>
+               
+               {/* 🚀 NUEVA FUNCIONALIDAD: Botón de Favoritos */}
+               {/* Se utiliza el nuevo componente FavoriteBtn con el ID del modelo */}
+               <div style={styles.favoriteBtnWrapper}>
+                  <FavoriteBtn modeloId={item.id} />
+               </div>
 
                {/* Overlay con información del desarrollo y modelo */}
                <div style={styles.imageOverlay}>
@@ -482,7 +491,8 @@ const styles = {
   applyBtn: { flex: 1, backgroundColor: 'var(--primary-color)', color: 'white', padding: '14px', borderRadius: '12px', border: 'none', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer' },
 
   gridContainer: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '25px', padding: '25px 20px' },
-  card: { backgroundColor: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', position: 'relative' },
+  // Importante: Se agrega position: 'relative' para que FavoriteBtn (position: 'absolute') funcione.
+  card: { backgroundColor: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', position: 'relative' }, 
   
   carouselContainer: { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', width: '100%', height: '220px', position: 'relative', backgroundColor: '#e5e7eb' },
   carouselSlide: { minWidth: '100%', height: '100%', scrollSnapAlign: 'center', position: 'relative' },
@@ -490,6 +500,13 @@ const styles = {
   swipeHint: { position: 'absolute', top: '12px', left: '12px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', zIndex: 10 },
 
   statusTag: { position: 'absolute', top: '12px', right: '12px', color: 'white', padding: '6px 12px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: '800', letterSpacing: '0.5px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)', pointerEvents: 'none', zIndex: 10 },
+  // ⭐ NUEVO ESTILO: Contenedor para posicionar el botón de favorito
+  favoriteBtnWrapper: { 
+    position: 'absolute', 
+    top: '12px', 
+    left: '12px', 
+    zIndex: 11 // Asegura que esté por encima del swipeHint
+  },
   imageOverlay: { position: 'absolute', bottom: 0, left: 0, width: '100%', padding: '40px 16px 12px 16px', background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%)', display: 'flex', flexDirection: 'column', pointerEvents: 'none', zIndex: 10 }, 
   overlayDevName: { color: 'white', fontSize: '1.4rem', fontWeight: '700', margin: 0, lineHeight: '1.2', textShadow: '0 2px 4px rgba(0,0,0,0.5)' },
   overlayModelName: { color: '#e5e7eb', fontSize: '0.95rem', margin: '4px 0 0 0', fontWeight: '500' },

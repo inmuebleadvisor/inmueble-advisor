@@ -1,10 +1,12 @@
 // src/screens/DetalleModelo.jsx
-import React, { useState, useEffect, useRef } from 'react';
+// ÚLTIMA MODIFICACION: 01/12/2025
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 // ✅ MODIFICACIÓN: Importamos el nuevo hook de contexto
 import { useCatalog } from '../context/CatalogContext'; 
-// Eliminamos: import { obtenerDatosUnificados } from '../services/catalog.service'; 
+// ⭐ NUEVA IMPORTACIÓN: Componente para marcar y desmarcar modelos
+import FavoriteBtn from '../components/FavoriteBtn'; 
 import ImageLoader from '../components/ImageLoader';
 
 const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
@@ -127,12 +129,20 @@ export default function DetalleModelo() {
 
       <main style={styles.contentBody}>
 
-        <div style={styles.titleSection}>
-          <h1 style={styles.modelTitle}>Modelo {modelo.nombre_modelo}</h1>
-          <div style={styles.priceContainer}>
-            <span style={styles.priceLabel}>Precio desde</span>
-            <span style={styles.priceValue}>{formatoMoneda(modelo.precioNumerico)}</span>
-          </div>
+        {/* ⭐ NUEVA SECCIÓN: Título, Precio y Botón de Favorito alineados */}
+        <div style={styles.titleSectionContainer}> 
+            <div style={styles.titleSectionLeft}>
+                <h1 style={styles.modelTitle}>Modelo {modelo.nombre_modelo}</h1>
+                <div style={styles.priceContainer}>
+                    <span style={styles.priceLabel}>Precio desde</span>
+                    <span style={styles.priceValue}>{formatoMoneda(modelo.precioNumerico)}</span>
+                </div>
+            </div>
+            
+            <div style={styles.favoriteWrapper}>
+                {/* Botón de Favorito, toma el ID de la URL (que es el ID del modelo) */}
+                <FavoriteBtn modeloId={id} style={styles.favoriteButtonOverride} />
+            </div>
         </div>
 
         {/* Tira de Miniaturas */}
@@ -230,8 +240,28 @@ const styles = {
   imageCounter: { position: 'absolute', bottom: '20px', right: '20px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold', zIndex: 10 },
   headerGradient: { position: 'absolute', bottom: 0, left: 0, width: '100%', height: '80px', background: 'linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0))', pointerEvents: 'none' },
   floatingBackButton: { position: 'absolute', top: '20px', left: '20px', backgroundColor: 'rgba(255, 255, 255, 0.9)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', zIndex: 10, color: '#333' },
+  
+  // ⭐ NUEVOS ESTILOS para alinear Título/Precio y Botón
+  titleSectionContainer: { 
+    display: 'flex', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    marginBottom: '15px' 
+  },
+  titleSectionLeft: {
+    flex: 1
+  },
+  favoriteWrapper: {
+    flexShrink: 0, // Evita que el botón se haga pequeño
+    marginLeft: '15px'
+  },
+  favoriteButtonOverride: { 
+    backgroundColor: '#fff', 
+    border: '1px solid #e5e7eb' 
+  },
+  // END NUEVOS ESTILOS
+  
   contentBody: { padding: '0 20px', position: 'relative', zIndex: 2, marginTop: '-20px' },
-  titleSection: { marginBottom: '15px' }, 
   modelTitle: { fontSize: '2rem', fontWeight: '800', color: '#111827', margin: '0 0 5px 0', lineHeight: '1.1' },
   priceContainer: { display: 'flex', flexDirection: 'column' },
   priceLabel: { fontSize: '0.85rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '600' },

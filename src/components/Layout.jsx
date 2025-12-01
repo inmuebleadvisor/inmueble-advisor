@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useUser } from '../context/UserContext'; // ✅ Importamos contexto
+// ⭐ NUEVA IMPORTACIÓN: Contexto de Favoritos para el contador
+import { useFavorites } from '../context/FavoritesContext'; 
 
 // URL del Logotipo Oficial
 const LOGO_URL = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/Logo-InmuebleAdvisor-en-fondo-Azul-e1758163267740.png";
@@ -15,6 +17,8 @@ const MenuIcons = {
 
 export default function Layout() {
   const { userProfile, user } = useUser(); // ✅ Obtenemos el perfil y el estado de login
+  // ⭐ USAMOS EL NUEVO HOOK
+  const { favoritosIds } = useFavorites(); 
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false); 
 
@@ -79,6 +83,22 @@ export default function Layout() {
             
             <Link to="/catalogo" style={getLinkStyle('/catalogo')}>Catálogo</Link>
             <Link to="/mapa" style={getLinkStyle('/mapa')}>Mapa</Link>
+            
+            {/* ⭐ NUEVO ENLACE: Favoritos/Comparador con contador dinámico */}
+            <Link 
+              to="/favoritos" 
+              style={getLinkStyle('/favoritos')}
+            >
+              <span style={styles.linkWithBadge}>
+                 Comparador
+                 {/* Badge solo visible si hay favoritos */}
+                 {favoritosIds.length > 0 && (
+                   <span style={styles.favoriteBadge}>
+                      {favoritosIds.length}
+                   </span>
+                 )}
+              </span>
+            </Link>
             
             {/* TAREA 2.1: LÓGICA DE NAVEGACIÓN DUAL */}
             {isAsesor ? (
@@ -175,6 +195,23 @@ const styles = {
   nav: {
     // La clase .nav-menu en index.css maneja el responsive (flex row vs column)
   },
+  
+  // ⭐ NUEVOS ESTILOS para el Badge de Favoritos
+  linkWithBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px'
+  },
+  favoriteBadge: {
+    backgroundColor: '#fbbf24', // Amarillo dorado
+    color: 'var(--primary-color)',
+    fontSize: '0.75rem',
+    fontWeight: '800',
+    padding: '2px 8px',
+    borderRadius: '10px',
+    lineHeight: 1,
+  },
+  // END NUEVOS ESTILOS
   
   footer: {
     backgroundColor: '#1f2937',
