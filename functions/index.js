@@ -1,3 +1,6 @@
+// functions/index.js (Código Completo y Final)
+// DOCUMENTO MODIFICADO EL 01/12/2025
+
 /**
  * BACKEND: INMUEBLE ADVISOR - CLOUD FUNCTIONS (CORREGIDO)
  * =======================================================
@@ -5,6 +8,7 @@
  * 1. Uso estricto de FieldValue.serverTimestamp() para fechas.
  * 2. Corrección de lógica de inventario (Boolean 'activo').
  * 3. Estandarización de códigos de estado (STATUS).
+ * * ✅ CORRECCIÓN DE FASE 2: Se asegura que las fechas del historial sean TIPO TIMESTAMP.
  */
 
 const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/firestore");
@@ -53,8 +57,7 @@ exports.asignarLead = onDocumentCreated("leads/{leadId}", async (event) => {
     snapshotAsesores.forEach((doc) => {
       const asesor = { uid: doc.id, ...doc.data() };
       
-      // ✅ CORRECCIÓN CRÍTICA: Validación contra Boolean 'activo' (Schema V1)
-      // Antes: item.status === 'activo' (Incorrecto según migración)
+      // ✅ Validación contra Boolean 'activo' (Schema V1)
       const tieneDesarrollo = asesor.inventario?.find(item => 
         String(item.idDesarrollo) === String(desarrolloId) && item.activo === true
       );
@@ -70,12 +73,11 @@ exports.asignarLead = onDocumentCreated("leads/{leadId}", async (event) => {
       await snapshot.ref.update({
         status: STATUS.LEAD_PENDING_ADMIN, // ✅ Uso de constante
         motivoAsignacion: 'Sin cobertura de asesores',
-        // ✅ CORRECCIÓN CRÍTICA: Uso de serverTimestamp() dentro de arrayUnion
-        // Nota: Firestore permite serverTimestamp en arrayUnion, pero es mejor práctica 
-        // usar fechas consistentes.
+        
+        // 🛠️ CORRECCIÓN APLICADA
         historial: FieldValue.arrayUnion({
           accion: 'error_asignacion',
-          fecha: new Date().toISOString(), // Fallback seguro para arrays si serverTimestamp da problemas en versiones viejas, pero idealmente timestamp.
+          fecha: FieldValue.serverTimestamp(), // ✅ Usamos Timestamp
           detalle: 'No se encontraron asesores con este desarrollo activo.'
         })
       });
@@ -127,12 +129,10 @@ exports.asignarLead = onDocumentCreated("leads/{leadId}", async (event) => {
       // ✅ CORRECCIÓN CRÍTICA: Timestamps reales del servidor
       fechaAsignacion: FieldValue.serverTimestamp(), 
       
-      // Agregamos el evento inicial al historial
+      // 🛠️ CORRECCIÓN APLICADA
       historial: FieldValue.arrayUnion({
         accion: 'asignacion_automatica',
-        // Nota: Usamos ISO string aquí para evitar complejidad de tipos mixtos en arrays antiguos,
-        // pero alineado al cambio de fechaAsignacion.
-        fecha: new Date().toISOString(), 
+        fecha: FieldValue.serverTimestamp(), // ✅ Usamos Timestamp
         detalle: `Asignado a ${asesorGanador.nombre} por ${motivoAsignacion}`
       })
     });
