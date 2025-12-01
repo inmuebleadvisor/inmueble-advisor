@@ -5,55 +5,54 @@ import { useUser } from '../context/UserContext';
 
 export default function LandingAsesores() {
   const navigate = useNavigate();
-  // Extraemos lo necesario del contexto. 'userProfile' es vital para saber si ya tiene rol.
-  const { trackBehavior, loginWithGoogle, userProfile, user } = useUser(); 
+  const { trackBehavior, loginWithGoogle, userProfile, user, loadingUser } = useUser(); 
   
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // --- DIDÁCTICO: Lógica de Redirección Automática ---
-  // Si el usuario ya está logueado y YA ES asesor, no debería ver esta pantalla de venta.
-  // Lo redirigimos automáticamente a su panel.
+  // ✅ CORRECCIÓN 1: Redirección Reactiva Unificada
+  // Este efecto actúa como un "semáforo" inteligente. En cuanto detecta sesión, decide a dónde mandarte.
   useEffect(() => {
-    if (user && userProfile?.role === 'asesor') {
-      navigate('/account-asesor');
+    if (loadingUser) return; // Esperamos a que Firebase termine de checar
+
+    if (user && userProfile) {
+      if (userProfile.role === 'asesor') {
+        // Si ya eres asesor -> Dashboard
+        navigate('/account-asesor');
+      } else {
+        // Si eres cliente o nuevo -> Onboarding
+        navigate('/onboarding-asesor');
+      }
     }
-  }, [user, userProfile, navigate]);
+  }, [user, userProfile, loadingUser, navigate]);
 
   const handleComenzar = async () => {
     setIsProcessing(true);
     trackBehavior('click_advisor_cta', { source: 'landing_hero' });
 
     try {
-      // 1. Si NO hay usuario, forzamos el login.
-      // Si YA hay usuario (ej. un cliente que quiere volverse asesor), esta función retorna el usuario actual sin pedir login de nuevo.
       if (!user) {
-        await loginWithGoogle(); // Esto crea el usuario como 'cliente' por defecto (seguridad).
+        await loginWithGoogle(); 
+        // 💡 NOTA: Ya no navegamos aquí manualmente.
+        // Dejamos que el useEffect de arriba detecte el cambio de 'user' y redirija.
+        // Esto evita que el ProtectedRoute nos bloquee por race conditions.
       }
-      
-      // 2. Una vez que tenemos sesión, lo enviamos al Wizard para que complete su perfil.
-      navigate('/onboarding-asesor');
-      
     } catch (error) {
       console.error("Error en el flujo de entrada:", error);
       alert("Hubo un error al conectar. Por favor intenta de nuevo.");
-    } finally {
       setIsProcessing(false);
     }
   };
 
   return (
     <div className="main-content animate-fade-in" style={styles.container}>
-      
       {/* HEADER HERO */}
       <header style={styles.heroSection}>
         <div style={styles.heroContent}>
           <span style={styles.badge}>Portal de Aliados</span>
-          
           <h1 style={styles.title}>
             Tu red inmobiliaria,<br />
             <span style={{color: 'var(--primary-color)'}}>basada en resultados.</span>
           </h1>
-
           <p style={styles.subtitle}>
             Olvídate de pagar por publicidad sin garantía. En Inmueble Advisor, 
             te conectamos con clientes pre-calificados listos para comprar.
@@ -68,38 +67,23 @@ export default function LandingAsesores() {
               cursor: isProcessing ? 'wait' : 'pointer'
             }}
           >
-            {isProcessing ? 'Conectando tu cuenta...' : 'Comenzar Registro Gratuito'}
+            {isProcessing ? 'Conectando...' : 'Comenzar Registro Gratuito'}
           </button>
           
           <p style={styles.microCopy}>*Sin tarjetas de crédito. Registro en 2 minutos.</p>
         </div>
       </header>
 
-      {/* SECCIÓN DE BENEFICIOS (Grid Responsive) */}
+      {/* SECCIÓN DE BENEFICIOS */}
       <section style={styles.benefitsSection}>
-        <BenefitCard 
-          emoji="🚀" 
-          title="Leads Calificados" 
-          desc="Olvídate de 'sólo estoy viendo'. Recibe clientes con perfil financiero validado." 
-        />
-        <BenefitCard 
-          emoji="🤝" 
-          title="Cero Riesgo" 
-          desc="No cobramos mensualidad. Solo ganamos una comisión si tú cierras la venta." 
-        />
-        <BenefitCard 
-          emoji="⭐" 
-          title="Meritocracia" 
-          desc="Tu posición en el buscador depende de tus reseñas y velocidad, no de cuánto pagues." 
-        />
+        <BenefitCard emoji="🚀" title="Leads Calificados" desc="Olvídate de 'sólo estoy viendo'. Recibe clientes con perfil financiero validado." />
+        <BenefitCard emoji="🤝" title="Cero Riesgo" desc="No cobramos mensualidad. Solo ganamos una comisión si tú cierras la venta." />
+        <BenefitCard emoji="⭐" title="Meritocracia" desc="Tu posición en el buscador depende de tus reseñas y velocidad, no de cuánto pagues." />
       </section>
-
     </div>
   );
 }
 
-// --- DIDÁCTICO: Componente Pequeño Interno ---
-// Extraer partes repetitivas (como las tarjetas) hace el código principal más limpio.
 const BenefitCard = ({ emoji, title, desc }) => (
   <div style={styles.card}>
     <div style={{fontSize: '2.5rem', marginBottom: '15px'}}>{emoji}</div>
@@ -108,7 +92,6 @@ const BenefitCard = ({ emoji, title, desc }) => (
   </div>
 );
 
-// Estilos extraídos al final para limpieza visual
 const styles = {
   container: { paddingBottom: '50px' },
   heroSection: { textAlign: 'center', padding: '60px 20px 40px', backgroundColor: 'white' },

@@ -108,8 +108,21 @@ export default function DetalleDesarrollo() {
   const modelos = desarrollo.modelos || [];
   const direccionCompleta = `${desarrollo.ubicacion?.calle || ''}, ${desarrollo.ubicacion?.colonia || ''}, ${desarrollo.ubicacion?.ciudad || ''}`;
   
-  // ✅ CORRECCIÓN FASE 3.1: URL válida de Google Maps con interpolación correcta
-  const mapsUrl = `https://www.google.com/maps?q=${desarrollo.ubicacion?.latitud},${desarrollo.ubicacion?.longitud}&z=15`;
+  // ✅ CORRECCIÓN 1: Diagnóstico de datos (Ver en Consola F12)
+  console.log("📍 [DetalleDesarrollo] Datos de ubicación:", {
+    lat: desarrollo.ubicacion?.latitud,
+    lng: desarrollo.ubicacion?.longitud,
+    raw: desarrollo.ubicacion
+  });
+
+  // ✅ CORRECCIÓN 2: Construcción Robusta de URL
+  const lat = desarrollo.ubicacion?.latitud;
+  const lng = desarrollo.ubicacion?.longitud;
+
+  // Usamos el formato universal de Google Maps (HTTPS) que funciona en Web y Apps
+  const mapsUrl = (lat && lng) 
+    ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+    : '#';
 
   return (
     <div className="main-content animate-fade-in" style={styles.pageContainer}>
@@ -253,11 +266,22 @@ export default function DetalleDesarrollo() {
         {/* BOTÓN UBICACIÓN CORREGIDO */}
         <div style={styles.locationActionSection}>
            <h3 style={styles.sectionTitle}>Ubicación</h3>
+           {/* ✅ CORRECCIÓN 3: Manejo de estado visual si no hay URL */}
            <a 
              href={mapsUrl}
-             target="_blank"
+             target={mapsUrl !== '#' ? "_blank" : "_self"}
              rel="noopener noreferrer"
-             style={styles.mapButtonExternal}
+             style={{
+                ...styles.mapButtonExternal,
+                opacity: mapsUrl === '#' ? 0.5 : 1,
+                cursor: mapsUrl === '#' ? 'not-allowed' : 'pointer'
+             }}
+             onClick={(e) => {
+                if(mapsUrl === '#') {
+                    e.preventDefault();
+                    alert("La ubicación exacta no está disponible para este desarrollo.");
+                }
+             }}
            >
              <Icons.MapPin /> Abrir en Google Maps
            </a>
