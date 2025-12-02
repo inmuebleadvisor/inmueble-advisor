@@ -26,7 +26,13 @@ export default function PropertyCard({ item, showDevName = true, style }) {
   // Validación básica para evitar errores si el objeto viene incompleto
   if (!item) return null;
 
+  // ✅ CAMBIO V2: Las imágenes ya vienen listas del servicio (media.gallery)
+  // item.imagenes ahora es el array de galería. item.imagen es la portada.
   const imagenes = item.imagenes && item.imagenes.length > 0 ? item.imagenes : [item.imagen];
+
+  // Didáctica: Si el array 'imagenes' está vacío (por si catalog.service.js falló), 
+  // aseguramos que al menos se use la portada para mostrar algo.
+  // ¡El servicio ahora garantiza que esto funcione con la nueva estructura 'media'!
 
   return (
     <article style={{...styles.card, ...style}}>
@@ -130,6 +136,7 @@ export default function PropertyCard({ item, showDevName = true, style }) {
 const styles = {
   card: { backgroundColor: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', position: 'relative', border: '1px solid #f1f5f9', transition: 'transform 0.2s', height: '100%' }, 
   
+  // Didáctica: ScrollSnap en el contenedor permite el carrusel horizontal con el ratón/dedo
   carouselContainer: { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', width: '100%', height: '220px', position: 'relative', backgroundColor: '#e5e7eb' },
   carouselSlide: { minWidth: '100%', height: '100%', scrollSnapAlign: 'center', position: 'relative' },
   image: { width: '100%', height: '100%', objectFit: 'cover' },

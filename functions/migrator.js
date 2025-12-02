@@ -1,144 +1,193 @@
 // functions/migrator.js
+// ÚLTIMA MODIFICACION: 02/12/2025
 const { getFirestore, FieldValue, Timestamp } = require("firebase-admin/firestore");
 
-const db = getFirestore();
+// ⚠️ ELIMINADO: const db = getFirestore(); 
+// (Esto causaba el error al intentar conectarse antes de tiempo)
 
-// --- HELPERS ---
-const parseNumber = (val) => {
-  if (typeof val === 'number') return val;
-  if (!val) return 0;
-  const clean = String(val).replace(/[^0-9.-]+/g, ""); 
-  return Number(clean) || 0;
+// --- HELPERS (Funciones Puras) ---
+
+const generarKeywords = (textos) => {
+  if (!Array.isArray(textos)) textos = [textos];
+  const keywords = new Set(); 
+
+  textos.forEach(texto => {
+    if (!texto) return;
+    const limpio = String(texto)
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .trim();
+    
+    if (limpio.length > 0) {
+      keywords.add(limpio);
+      const palabras = limpio.split(" ");
+      if (palabras.length > 1) {
+        palabras.forEach(p => keywords.add(p));
+      }
+    }
+  });
+  return Array.from(keywords);
 };
 
-// Convierte "14/03/2024" -> Firestore Timestamp
-const parseFecha = (dateString) => {
-  if (!dateString || typeof dateString !== 'string') return null;
-  const parts = dateString.split('/');
-  if (parts.length === 3) {
-    // Mes en JS es 0-indexado (0=Enero)
-    return Timestamp.fromDate(new Date(parts[2], parts[1] - 1, parts[0]));
-  }
-  return null;
+const estandarizarMedia = (data) => {
+  const galeriaSet = new Set();
+  let cover = null;
+
+  const fuentes = [
+    data.imagen, 
+    data.multimedia?.portada, 
+    data.portadaDesarrollo,
+    ...(Array.isArray(data.multimedia?.galeria) ? data.multimedia.galeria : []),
+    ...(Array.isArray(data.imagenes) ? data.imagenes : []) 
+  ];
+
+  fuentes.forEach(url => {
+    // Validamos que sea string, tenga longitud y NO sea el placeholder lento
+    if (url && typeof url === 'string' && url.length > 5 && !url.includes('via.placeholder.com')) {
+      if (!cover) cover = url; 
+      galeriaSet.add(url);
+    }
+  });
+
+  return {
+    cover: cover || null, 
+    gallery: Array.from(galeriaSet),
+    video: data.multimedia?.video || null,
+    brochure: data.multimedia?.brochure || null
+  };
 };
 
-// Convierte "Gym, Alberca, Jardín" -> ["Gym", "Alberca", "Jardín"]
-const parseStringArray = (str) => {
-  if (!str) return [];
-  if (Array.isArray(str)) return str;
-  return str.split(',').map(s => s.trim()).filter(s => s.length > 0);
-};
+// --- FUNCIONES EXPORTADAS ---
 
+// V1 Legacy (Opcional, la mantenemos para que no rompa imports)
 exports.ejecutarMigracion = async () => {
-  console.log("🔥 Iniciando OPTIMIZACIÓN FINAL (Sin pérdida de datos)...");
+    return { success: false, message: "Lógica V1 obsoleta." };
+};
+
+// FASE 1: Estandarización V2
+exports.ejecutarEstandarizacion = async () => {
+  console.log("🚀 Iniciando Migración FASE 1: Estandarización V2...");
+  
+  // ✅ SOLUCIÓN: Inicializamos DB aquí dentro, cuando la App ya existe.
+  const db = getFirestore(); 
   const batch = db.batch();
   let opCount = 0;
-  const MAX_BATCH_SIZE = 400; // Margen de seguridad
+  const MAX_BATCH_SIZE = 450; 
 
-  // ==================================================================
-  // 1. MODELOS: Aplanado y Arrays
-  // ==================================================================
+  // 1. MODELOS
   const modelosSnap = await db.collection('modelos').get();
-  modelosSnap.forEach(doc => {
+  for (const doc of modelosSnap.docs) {
+    if (opCount >= MAX_BATCH_SIZE) break;
     const data = doc.data();
     const updateData = {};
 
-    // A. Rescate de Datos Anidados
-    if (data.caracteristicas) {
-        updateData.recamaras = parseNumber(data.caracteristicas.recamaras);
-        updateData.banos = parseNumber(data.caracteristicas.banos);
-        updateData.niveles = parseNumber(data.caracteristicas.niveles);
-        updateData.cajones = parseNumber(data.caracteristicas.cajones);
-        updateData.caracteristicas = FieldValue.delete(); // Ya seguro borrar
+    if (!data.media) {
+        updateData.media = estandarizarMedia(data);
     }
+
+    const fuentesDeTexto = [
+        data.nombreModelo || data.nombre_modelo,
+        data.nombreDesarrollo,
+        data.ubicacion?.zona || data.zona,
+        data.ubicacion?.ciudad || data.ciudad,
+        ...(data.amenidades || [])
+    ];
     
-    if (data.dimensiones) {
-        updateData.m2 = parseNumber(data.dimensiones.construccion);
-        updateData.terreno = parseNumber(data.dimensiones.terreno);
-        updateData.dimensiones = FieldValue.delete();
-    }
+    updateData.keywords = generarKeywords(fuentesDeTexto);
+    updateData.updatedAt = FieldValue.serverTimestamp();
 
-    // B. Amenidades: String -> Array (¡Mejora clave!)
-    // Si existe 'extras.amenidades_modelo', lo convertimos a array en la raíz
-    if (data.extras?.amenidades_modelo) {
-        updateData.amenidades = parseStringArray(data.extras.amenidades_modelo);
-    }
-    // Rescatamos bodega si existe
-    if (data.extras?.distr_bodega) {
-        updateData.bodega = data.extras.distr_bodega;
-    }
-    // Borramos extras solo si ya movimos todo
-    if (data.extras) updateData.extras = FieldValue.delete();
-
-    // C. Precios y Limpieza
-    updateData.precioNumerico = parseNumber(data.precioNumerico || data.precio?.actual);
-    if (data.precio) updateData.precio = FieldValue.delete();
-
-    batch.update(doc.ref, updateData);
-    opCount++;
-  });
-
-  // ==================================================================
-  // 2. USERS: Inventario Boolean
-  // ==================================================================
-  const usersSnap = await db.collection('users').get();
-  usersSnap.forEach(doc => {
-    const data = doc.data();
-    
-    if (Array.isArray(data.inventario)) {
-        // Transformamos el array de inventario
-        const inventarioOptimizado = data.inventario.map(item => {
-            // Creamos un nuevo objeto item
-            const newItem = { ...item };
-            
-            // Lógica: status 'activo' -> activo: true
-            // Cualquier otro status -> activo: false
-            const isActivo = (item.status === 'activo' || item.status === true);
-            
-            newItem.activo = isActivo; 
-            delete newItem.status; // Eliminamos la variable 'string' antigua
-            
-            return newItem;
-        });
-
-        batch.update(doc.ref, { inventario: inventarioOptimizado });
+    if (Object.keys(updateData).length > 0) {
+        batch.update(doc.ref, updateData);
         opCount++;
     }
-  });
+  }
 
-  // ==================================================================
-  // 3. DESARROLLOS: Fechas y Números
-  // ==================================================================
+  // 2. DESARROLLOS
   const devSnap = await db.collection('desarrollos').get();
-  devSnap.forEach(doc => {
+  for (const doc of devSnap.docs) {
+    if (opCount >= MAX_BATCH_SIZE) break;
     const data = doc.data();
-    const info = data.info_comercial || {};
     const updateData = {};
 
-    // Convertir fechas string a Timestamp real
-    // Solo si es string, para no romper si corres el script 2 veces
-    if (typeof info.fecha_entrega === 'string') {
-        updateData["info_comercial.fecha_entrega"] = parseFecha(info.fecha_entrega);
+    if (!data.media) {
+        updateData.media = estandarizarMedia(data);
     }
 
-    // Convertir números en info comercial
-    updateData["info_comercial.inventario"] = parseNumber(info.inventario);
-    updateData["info_comercial.unidades_proyectadas"] = parseNumber(info.unidades_proyectadas);
-    updateData["info_comercial.unidades_vendidas"] = parseNumber(info.unidades_vendidas);
+    const fuentesDeTexto = [
+        data.nombre,
+        data.constructora,
+        data.ubicacion?.zona,
+        data.ubicacion?.ciudad,
+        ...(data.amenidades || [])
+    ];
 
-    // Limpieza de precios (ya tenemos precioDesde)
-    if (data.precios) updateData.precios = FieldValue.delete();
+    updateData.keywords = generarKeywords(fuentesDeTexto);
+    updateData.updatedAt = FieldValue.serverTimestamp();
 
-    batch.update(doc.ref, updateData);
-    opCount++;
-  });
+    if (Object.keys(updateData).length > 0) {
+        batch.update(doc.ref, updateData);
+        opCount++;
+    }
+  }
 
-  // Ejecución
   if (opCount > 0) {
     await batch.commit();
-    console.log(`✅ Optimización finalizada. ${opCount} documentos mejorados.`);
-    return { success: true, count: opCount };
+    return { success: true, count: opCount, message: "Estandarización V2 completada." };
   } else {
-    return { success: true, count: 0, message: "Base de datos ya optimizada." };
+    return { success: true, count: 0, message: "Sin cambios pendientes." };
   }
+};
+
+// FASE 2.3: Limpieza V3
+exports.ejecutarLimpieza = async () => {
+    console.log("🧹 Iniciando Limpieza FASE 2.3...");
+    
+    // ✅ SOLUCIÓN: Inicializamos DB aquí también
+    const db = getFirestore();
+    const batch = db.batch();
+    let opCount = 0;
+    const MAX_BATCH_SIZE = 450;
+    
+    const camposAborrar = ["imagen", "multimedia", "portadaDesarrollo", "imagenes"];
+
+    const modelosSnap = await db.collection('modelos').get();
+    for (const doc of modelosSnap.docs) {
+      if (opCount >= MAX_BATCH_SIZE) break;
+      const updateData = {};
+      let tieneCambios = false;
+      camposAborrar.forEach(campo => {
+          if (doc.data()[campo] !== undefined) {
+              updateData[campo] = FieldValue.delete();
+              tieneCambios = true;
+          }
+      });
+      if (tieneCambios) {
+          batch.update(doc.ref, updateData);
+          opCount++;
+      }
+    }
+
+    const devSnap = await db.collection('desarrollos').get();
+    for (const doc of devSnap.docs) {
+      if (opCount >= MAX_BATCH_SIZE) break;
+      const updateData = {};
+      let tieneCambios = false;
+      camposAborrar.forEach(campo => {
+          if (doc.data()[campo] !== undefined) {
+              updateData[campo] = FieldValue.delete();
+              tieneCambios = true;
+          }
+      });
+      if (tieneCambios) {
+          batch.update(doc.ref, updateData);
+          opCount++;
+      }
+    }
+
+    if (opCount > 0) {
+      await batch.commit();
+      return { success: true, count: opCount, detalles: `Campos obsoletos eliminados en ${opCount} docs.` };
+    } else {
+      return { success: true, count: 0, detalles: "Base de datos ya limpia." };
+    }
 };
