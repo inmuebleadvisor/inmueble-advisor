@@ -1,16 +1,18 @@
 // src/screens/Catalogo.jsx
-// ÚLTIMA MODIFICACION: 01/12/2025
+// ÚLTIMA MODIFICACION: 02/12/2025
 import React, { useState, useMemo, useEffect } from 'react';
 // Importamos useLocation y Link de react-router-dom para leer parámetros de URL y navegar.
 import { Link, useLocation } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import ImageLoader from '../components/ImageLoader';
+
+// ⭐ NUEVO IMPORTE: Importamos el componente de tarjeta reutilizable
+import PropertyCard from '../components/PropertyCard';
+
+// Eliminamos: import ImageLoader from '../components/ImageLoader';
+// Eliminamos: import FavoriteBtn from '../components/FavoriteBtn';
 
 // Importamos el hook de contexto para acceder a los datos centralizados.
 import { useCatalog } from '../context/CatalogContext'; 
-// Importamos el componente de favoritos (asumo que se implementó en el paso 6)
-import FavoriteBtn from '../components/FavoriteBtn'; 
-
 // Importación de constantes centralizadas.
 import { FINANZAS, UI_OPCIONES } from '../config/constants';
 
@@ -23,29 +25,32 @@ const Icons = {
 };
 
 // --- HELPERS ---
+// Función didáctica: Normaliza texto quitando acentos y minúsculas para una búsqueda flexible.
 const normalizar = (texto) => {
   if (!texto) return '';
   return String(texto).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 };
 
+// Función didáctica: Formatea un número a moneda.
 const formatoMoneda = (val) => {
   if (!val) return "$0";
   return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
 };
 
-const calcularEscrituracion = (precio) => formatoMoneda(precio * FINANZAS.PORCENTAJE_GASTOS_NOTARIALES);
+// Eliminamos: const calcularEscrituracion = (precio) => formatoMoneda(precio * FINANZAS.PORCENTAJE_GASTOS_NOTARIALES);
 
 export default function Catalogo() {
   const { userProfile, trackBehavior } = useUser();
+  // Obtiene los datos del catálogo desde el contexto centralizado.
   const { modelos: dataMaestra, amenidades: topAmenidades, loadingCatalog: loading } = useCatalog();
   const location = useLocation(); 
   
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
-  // 1. Lógica de Inicialización de Filtros (Usa useMemo para calcular valores iniciales)
+  // 1. Lógica de Inicialización de Filtros (Prioriza URL > Perfil > Default)
   const getInitialFilters = useMemo(() => {
-    // PORQUÉ: Esta función DEBE volver a calcularse si cambia location.search o userProfile
+    // Lectura de parámetros de la URL
     const params = new URLSearchParams(location.search);
     const profile = userProfile?.perfilFinanciero;
     
@@ -59,21 +64,21 @@ export default function Catalogo() {
         return Math.min(num, max);
     }
     
-    // A. Presupuesto Máximo: Prioriza URL > Perfil Guardado > Default
+    // Presupuesto Máximo
     const urlMaxPrice = params.get('maxPrice');
     const profileMaxPrice = profile?.presupuestoCalculado;
     const initialMaxPrice = urlMaxPrice
         ? safeNum(urlMaxPrice, defaultMaxPrice)
         : (profileMaxPrice ? safeNum(profileMaxPrice, defaultMaxPrice) : defaultMaxPrice);
 
-    // B. Recámaras: Prioriza URL > Perfil Guardado > Default
+    // Recámaras
     const urlRooms = params.get('rooms');
     const profileRooms = profile?.recamarasDeseadas;
     const initialRooms = urlRooms
         ? safeNum(urlRooms)
         : (profileRooms !== undefined && profileRooms !== null ? safeNum(profileRooms) : defaultRooms);
         
-    // C. Status de Entrega: Prioriza URL > Perfil Guardado > Default
+    // Status de Entrega
     const urlStatus = params.get('status');
     const profileStatus = profile?.interesInmediato === true ? 'inmediata' : (profile?.interesInmediato === false ? 'preventa' : defaultStatus);
 
@@ -88,16 +93,13 @@ export default function Catalogo() {
       amenidad: '',
       tipo: 'all'
     };
-  }, [userProfile, location.search]); // Dependencias: Si la URL cambia, recalcula.
+  }, [userProfile, location.search]);
 
   // 2. Inicializamos el estado de los filtros usando el cálculo inicial.
   const [filtros, setFiltros] = useState(getInitialFilters);
 
-  // ⭐ FIX 2.2: Hook para sincronizar el estado de filtros con la URL/Perfil
-  // Este efecto se dispara cada vez que `getInitialFilters` (dependiente de location.search) cambia.
+  // Hook para sincronizar el estado de filtros con la URL/Perfil
   useEffect(() => {
-    // Usamos stringify para una comparación simple y profunda (si el objeto cambió lógicamente)
-    // Esto asegura que si navegamos desde Perfil a Catálogo con nuevos parámetros, el estado de `filtros` se actualice.
     if (JSON.stringify(filtros) !== JSON.stringify(getInitialFilters)) {
         setFiltros(getInitialFilters);
     }
@@ -125,26 +127,31 @@ export default function Catalogo() {
 
   // 3. Motor de Filtrado
   const modelosFiltrados = useMemo(() => {
+    // No filtramos si aún no se carga la data
     if (loading) return [];
 
     const term = normalizar(searchTerm);
     return dataMaestra.filter(item => {
       
+      // Filtros numéricos y de estado
       if (item.precioNumerico > filtros.precioMax) return false;
       if (filtros.habitaciones > 0 && (item.recamaras || 0) < filtros.habitaciones) return false;
       if (filtros.status === 'inmediata' && item.esPreventa === true) return false;
       if (filtros.status === 'preventa' && item.esPreventa === false) return false;
 
+      // Filtro por Tipo de Vivienda
       if (filtros.tipo !== 'all') {
         const tipoItem = normalizar(item.tipoVivienda);
         if (filtros.tipo === 'casa' && !tipoItem.includes('casa')) return false;
         if (filtros.tipo === 'departamento' && !tipoItem.includes('departamento') && !tipoItem.includes('loft')) return false;
       }
 
+      // Filtro por Amenidad
       if (filtros.amenidad && Array.isArray(item.amenidadesDesarrollo)) {
         if (!item.amenidadesDesarrollo.some(a => normalizar(a).includes(normalizar(filtros.amenidad)))) return false;
       }
 
+      // Filtro de Búsqueda de Texto Global
       if (term) {
         const amenidadesTexto = Array.isArray(item.amenidadesDesarrollo) ? item.amenidadesDesarrollo.join(' ') : '';
         const searchTarget = `
@@ -173,6 +180,7 @@ export default function Catalogo() {
   };
 
   useEffect(() => {
+    // Función didáctica: Evita el scroll del fondo cuando el modal de filtros está abierto
     document.body.style.overflow = isFilterOpen ? 'hidden' : 'unset';
     return () => { document.body.style.overflow = 'unset'; }
   }, [isFilterOpen]);
@@ -332,93 +340,14 @@ export default function Catalogo() {
 
       {/* RESULTADOS (La cuadrícula de propiedades) */}
       <section style={styles.gridContainer} className="animate-fade-in">
+        
+        {/* ⭐ REFACTORIZACIÓN CRÍTICA: Usamos el componente PropertyCard */}
         {modelosFiltrados.map((item) => (
-          <article key={item.id} style={styles.card}>
-            
-            {/* CARRUSEL DE IMÁGENES */}
-            <div style={styles.carouselContainer} className="hide-scrollbar">
-               {/* Itera sobre las imágenes del modelo o usa la imagen principal como fallback */}
-               {(item.imagenes || [item.imagen]).map((imgSrc, idx) => (
-                 <div key={idx} style={styles.carouselSlide}>
-                    <ImageLoader 
-                      src={imgSrc} 
-                      alt={`${item.nombre_modelo || item.nombre} - vista ${idx}`} 
-                      style={styles.image} 
-                    />
-                    {/* Muestra un hint de cuántas fotos hay si son más de una */}
-                    {idx === 0 && item.imagenes?.length > 1 && (
-                       <div style={styles.swipeHint}>+{item.imagenes.length - 1}</div>
-                    )}
-                 </div>
-               ))}
-
-               {/* Etiqueta de Status (Preventa/Inmediata) */}
-               <span style={{
-                 ...styles.statusTag,
-                 backgroundColor: item.esPreventa ? '#f59e0b' : '#10b981'
-               }}>
-                 {item.esPreventa ? 'PRE-VENTA' : 'ENTREGA INMEDIATA'}
-               </span>
-               
-               {/* Botón de Favoritos */}
-               <div style={styles.favoriteBtnWrapper}>
-                  <FavoriteBtn modeloId={item.id} />
-               </div>
-
-               {/* Overlay con información del desarrollo y modelo */}
-               <div style={styles.imageOverlay}>
-                 <h3 style={styles.overlayDevName}>{item.nombreDesarrollo}</h3>
-                 <p style={styles.overlayModelName}>
-                    {item.constructora ? `${item.constructora} • ` : ''} {item.nombre_modelo || item.nombre}
-                 </p>
-               </div>
-            </div>
-
-            <div style={styles.cardBody}>
-               {/* Ubicación */}
-               <div style={styles.locationRow}>
-                 <span style={{marginRight: '5px'}}>📍</span> 
-                 {item.colonia ? `${item.colonia}, ` : ''}{item.zona || item.ciudad}
-               </div>
-
-               {/* Especificaciones Técnicas */}
-               <div style={styles.featuresRow}>
-                 <span style={styles.featureItem}>🛏 {item.recamaras || 0} Rec.</span>
-                 <span style={styles.separator}>|</span>
-                 <span style={styles.featureItem}>🚿 {item.banos || 0} Baños</span>
-                 <span style={styles.separator}>|</span>
-                 <span style={styles.featureItem}>📐 {item.m2 || 0} m²</span>
-               </div>
-
-               {/* Precio y Gastos Notariales */}
-               <div style={styles.priceBox}>
-                 <div style={{display:'flex', justifyContent:'space-between'}}>
-                    <span style={styles.priceLabel}>PRECIO DE LISTA</span>
-                 </div>
-                 <div style={{
-                    ...styles.priceValue,
-                    color: item.precioNumerico > 0 ? '#1e293b' : '#64748b',
-                    fontSize: item.precioNumerico > 0 ? '1.8rem' : '1.4rem'
-                 }}>
-                   {item.precioNumerico > 0 ? formatoMoneda(item.precioNumerico) : "Pendiente"}
-                 </div>
-                 {item.precioNumerico > 0 && (
-                   <div style={styles.priceNote}>
-                     *Escrituración aprox: {calcularEscrituracion(item.precioNumerico)}
-                   </div>
-                 )}
-               </div>
-
-               {/* Botón de Detalle */}
-               <Link 
-                 to={`/modelo/${item.id}`} 
-                 style={styles.detailsButton}
-                 onClick={() => trackBehavior('select_property', { id: item.id })}
-               >
-                 Ver Detalles Completos
-               </Link>
-            </div>
-          </article>
+          <PropertyCard 
+             key={item.id} 
+             item={item} 
+             showDevName={true} // Mostramos el nombre del desarrollo en el catálogo principal
+          />
         ))}
 
         {/* Estado Vacío */}
@@ -434,8 +363,9 @@ export default function Catalogo() {
   );
 }
 
-// --- ESTILOS ---
+// --- ESTILOS CSS-IN-JS (Solo Layout, Headers y Filtros) ---
 const styles = {
+  // Nota Didáctica: Los estilos de la tarjeta fueron MOVIDOS a PropertyCard.jsx
   pageContainer: { paddingBottom: '100px', backgroundColor: '#f9fafb', minHeight: '100vh', fontFamily: "'Segoe UI', sans-serif" },
   header: { backgroundColor: 'white', padding: '15px 20px', borderBottom: '1px solid #f3f4f6' },
   title: { color: '#111827', margin: 0, fontSize: '1.4rem', fontWeight: '800' },
@@ -470,35 +400,8 @@ const styles = {
   clearBtn: { background: 'none', border: 'none', textDecoration: 'underline', color: '#6b7280', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem' },
   applyBtn: { flex: 1, backgroundColor: 'var(--primary-color)', color: 'white', padding: '14px', borderRadius: '12px', border: 'none', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer' },
 
+  // Estilos del Contenedor de la Grilla
   gridContainer: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '25px', padding: '25px 20px' },
-  card: { backgroundColor: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', position: 'relative' }, 
-  
-  carouselContainer: { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', width: '100%', height: '220px', position: 'relative', backgroundColor: '#e5e7eb' },
-  carouselSlide: { minWidth: '100%', height: '100%', scrollSnapAlign: 'center', position: 'relative' },
-  image: { width: '100%', height: '100%', objectFit: 'cover' },
-  swipeHint: { position: 'absolute', top: '12px', left: '12px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', zIndex: 10 },
-
-  statusTag: { position: 'absolute', top: '12px', right: '12px', color: 'white', padding: '6px 12px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: '800', letterSpacing: '0.5px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)', pointerEvents: 'none', zIndex: 10 },
-  favoriteBtnWrapper: { 
-    position: 'absolute', 
-    top: '12px', 
-    left: '12px', 
-    zIndex: 11 
-  },
-  imageOverlay: { position: 'absolute', bottom: 0, left: 0, width: '100%', padding: '40px 16px 12px 16px', background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%)', display: 'flex', flexDirection: 'column', pointerEvents: 'none', zIndex: 10 }, 
-  overlayDevName: { color: 'white', fontSize: '1.4rem', fontWeight: '700', margin: 0, lineHeight: '1.2', textShadow: '0 2px 4px rgba(0,0,0,0.5)' },
-  overlayModelName: { color: '#e5e7eb', fontSize: '0.95rem', margin: '4px 0 0 0', fontWeight: '500' },
-  
-  cardBody: { padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' },
-  locationRow: { color: '#6b7280', fontSize: '0.9rem', display: 'flex', alignItems: 'center' },
-  featuresRow: { display: 'flex', alignItems: 'center', gap: '8px', color: '#374151', fontSize: '0.95rem', fontWeight: '500' },
-  featureItem: { display: 'flex', alignItems: 'center', gap: '4px' },
-  separator: { color: '#d1d5db', fontSize: '1.2rem', fontWeight: '300' },
-  priceBox: { backgroundColor: '#eff6ff', borderRadius: '12px', padding: '16px', marginTop: '5px', border: '1px solid #dbeafe' },
-  priceLabel: { fontSize: '0.7rem', fontWeight: '800', color: '#1e293b', letterSpacing: '1px', textTransform: 'uppercase' },
-  priceValue: { fontWeight: '800', margin: '4px 0' },
-  priceNote: { fontSize: '0.8rem', color: '#64748b', marginTop: '4px' },
-  detailsButton: { backgroundColor: '#0f172a', color: 'white', textAlign: 'center', padding: '12px', borderRadius: '8px', textDecoration: 'none', fontWeight: '600', fontSize: '0.95rem', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' },
   emptyState: { gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px', color: '#6b7280' },
   retryBtn: { marginTop: '15px', padding: '10px 20px', backgroundColor: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: '25px', fontWeight: 'bold', cursor: 'pointer' }
 };

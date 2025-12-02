@@ -1,20 +1,22 @@
 // src/screens/DetalleDesarrollo.jsx
+// ÚLTIMA MODIFICACION: 02/12/2025
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { obtenerInformacionDesarrollo } from '../services/catalog.service'; 
 import { useCatalog } from '../context/CatalogContext'; 
+
+// Componentes UI
 import ImageLoader from '../components/ImageLoader';
+import PropertyCard from '../components/PropertyCard';
+import DevelopmentInfoSection from '../components/DevelopmentInfoSection'; // ✅ NUEVO COMPONENTE
 
 const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
 
-// --- ICONOS ---
+// --- ICONOS (Solo los necesarios para el Header/Título) ---
 const Icons = {
   Back: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>,
-  MapPin: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>,
-  Check: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>,
-  Play: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>,
-  Download: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+  MapPin: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
 };
 
 // Helper para validar si es imagen
@@ -30,12 +32,12 @@ export default function DetalleDesarrollo() {
   const navigate = useNavigate();
   const scrollRef = useRef(null);
 
-  // --- ESTADOS (Async) ---
+  // --- ESTADOS ---
   const [desarrollo, setDesarrollo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // 1. CARGA DE DATOS ASÍNCRONA
+  // 1. CARGA DE DATOS
   useEffect(() => {
     if (loadingCatalog) return; 
 
@@ -59,7 +61,7 @@ export default function DetalleDesarrollo() {
     window.scrollTo(0, 0);
   }, [id, loadingCatalog]); 
 
-  // 2. CONSTRUCCIÓN DE GALERÍA
+  // 2. GALERÍA HEADER
   const galeriaImagenes = useMemo(() => {
     if (!desarrollo) return [];
     
@@ -83,11 +85,6 @@ export default function DetalleDesarrollo() {
     }
   };
 
-  const formatoMoneda = (val) => {
-    if (!val || val === 0) return 'Pendiente';
-    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
-  };
-
   if (loadingCatalog || loading) { 
     return (
       <div className="main-content" style={{ ...styles.pageContainer, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -107,27 +104,11 @@ export default function DetalleDesarrollo() {
 
   const modelos = desarrollo.modelos || [];
   const direccionCompleta = `${desarrollo.ubicacion?.calle || ''}, ${desarrollo.ubicacion?.colonia || ''}, ${desarrollo.ubicacion?.ciudad || ''}`;
-  
-  // ✅ CORRECCIÓN 1: Diagnóstico de datos (Ver en Consola F12)
-  console.log("📍 [DetalleDesarrollo] Datos de ubicación:", {
-    lat: desarrollo.ubicacion?.latitud,
-    lng: desarrollo.ubicacion?.longitud,
-    raw: desarrollo.ubicacion
-  });
-
-  // ✅ CORRECCIÓN 2: Construcción Robusta de URL
-  const lat = desarrollo.ubicacion?.latitud;
-  const lng = desarrollo.ubicacion?.longitud;
-
-  // Usamos el formato universal de Google Maps (HTTPS) que funciona en Web y Apps
-  const mapsUrl = (lat && lng) 
-    ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
-    : '#';
 
   return (
     <div className="main-content animate-fade-in" style={styles.pageContainer}>
       
-      {/* HEADER: Carrusel */}
+      {/* HEADER: Carrusel Principal */}
       <header style={styles.carouselWrapper}>
         <div 
           ref={scrollRef}
@@ -165,7 +146,7 @@ export default function DetalleDesarrollo() {
 
       <main style={styles.contentBody}>
         
-        {/* INFO PRINCIPAL */}
+        {/* TÍTULO Y UBICACIÓN RÁPIDA */}
         <div style={styles.titleSection}>
           <h1 style={styles.devTitle}>{desarrollo.nombre}</h1>
           <div style={styles.locationRow}>
@@ -175,46 +156,10 @@ export default function DetalleDesarrollo() {
           <p style={styles.addressText}>{direccionCompleta}</p>
         </div>
 
-        {/* BOTONES MULTIMEDIA */}
-        {(desarrollo.multimedia?.video || desarrollo.multimedia?.brochure) && (
-          <div style={styles.mediaButtonsContainer}>
-            {desarrollo.multimedia?.video && (
-              <a href={desarrollo.multimedia.video} target="_blank" rel="noopener noreferrer" style={styles.mediaButton}>
-                <Icons.Play /> Ver Video
-              </a>
-            )}
-            {desarrollo.multimedia?.brochure && (
-              <a href={desarrollo.multimedia.brochure} target="_blank" rel="noopener noreferrer" style={{...styles.mediaButton, backgroundColor: '#f3f4f6', color: '#1f2937', border: '1px solid #e5e7eb'}}>
-                <Icons.Download /> Brochure
-              </a>
-            )}
-          </div>
-        )}
-
         <hr style={styles.divider} />
 
-        {/* DESCRIPCIÓN */}
-        <section style={styles.section}>
-          <h3 style={styles.sectionTitle}>Sobre el lugar</h3>
-          <p style={styles.descriptionText}>
-            {desarrollo.descripcion || "Un lugar increíble para vivir con tu familia."}
-          </p>
-        </section>
-
-        {/* AMENIDADES */}
-        {desarrollo.amenidades && desarrollo.amenidades.length > 0 && (
-          <section style={styles.section}>
-            <h3 style={styles.sectionTitle}>Amenidades</h3>
-            <div style={styles.amenitiesContainer}>
-              {desarrollo.amenidades.map((am, idx) => (
-                <div key={idx} style={styles.amenityChip}>
-                  <div style={styles.checkIcon}><Icons.Check /></div>
-                  {am}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+        {/* ✅ BLOQUE UNIFICADO DE INFORMACIÓN (Video, Texto, Amenidades, Mapa) */}
+        <DevelopmentInfoSection desarrollo={desarrollo} />
 
         {/* LISTA DE MODELOS DISPONIBLES */}
         <section style={styles.modelsSection}>
@@ -225,36 +170,11 @@ export default function DetalleDesarrollo() {
 
            <div style={styles.modelsGrid}>
              {modelos.map((modelo) => (
-               <Link 
+               <PropertyCard 
                  key={modelo.id}
-                 to={`/modelo/${modelo.id}`}
-                 style={styles.modelCard}
-                 onClick={() => trackBehavior('select_model_from_dev', { model_name: modelo.nombre_modelo })}
-               >
-                 <div style={styles.modelImgContainer}>
-                    <ImageLoader 
-                      src={modelo.imagen} 
-                      alt={modelo.nombre_modelo} 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                    />
-                    <span style={styles.modelTag}>Ver Detalles</span>
-                 </div>
-                 
-                 <div style={styles.modelInfo}>
-                   <h4 style={styles.modelName}>{modelo.nombre_modelo}</h4>
-                   <div style={styles.modelSpecs}>
-                      <span>🛏 {modelo.recamaras} Rec.</span>
-                      <span>🚿 {modelo.banos} Baños</span>
-                   </div>
-                   <div style={{
-                     ...styles.modelPrice,
-                     color: modelo.precioNumerico > 0 ? 'var(--primary-color)' : '#6b7280',
-                     fontSize: modelo.precioNumerico > 0 ? '1.2rem' : '1rem'
-                   }}>
-                     {formatoMoneda(modelo.precioNumerico)}
-                   </div>
-                 </div>
-               </Link>
+                 item={modelo}
+                 showDevName={false} 
+               />
              ))}
            </div>
 
@@ -263,36 +183,12 @@ export default function DetalleDesarrollo() {
            )}
         </section>
 
-        {/* BOTÓN UBICACIÓN CORREGIDO */}
-        <div style={styles.locationActionSection}>
-           <h3 style={styles.sectionTitle}>Ubicación</h3>
-           {/* ✅ CORRECCIÓN 3: Manejo de estado visual si no hay URL */}
-           <a 
-             href={mapsUrl}
-             target={mapsUrl !== '#' ? "_blank" : "_self"}
-             rel="noopener noreferrer"
-             style={{
-                ...styles.mapButtonExternal,
-                opacity: mapsUrl === '#' ? 0.5 : 1,
-                cursor: mapsUrl === '#' ? 'not-allowed' : 'pointer'
-             }}
-             onClick={(e) => {
-                if(mapsUrl === '#') {
-                    e.preventDefault();
-                    alert("La ubicación exacta no está disponible para este desarrollo.");
-                }
-             }}
-           >
-             <Icons.MapPin /> Abrir en Google Maps
-           </a>
-        </div>
-
       </main>
     </div>
   );
 }
 
-// --- ESTILOS ---
+// --- ESTILOS LIMPIOS ---
 const styles = {
   pageContainer: { backgroundColor: 'white', minHeight: '100vh', paddingBottom: '40px', fontFamily: "'Segoe UI', sans-serif" },
   carouselWrapper: { position: 'relative', width: '100%', height: '280px', backgroundColor: '#e5e7eb' },
@@ -303,33 +199,27 @@ const styles = {
   statusBadgeOverlay: { position: 'absolute', bottom: '20px', right: '20px', backgroundColor: 'var(--primary-color)', color: 'white', padding: '6px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '700', zIndex: 5, boxShadow: '0 2px 6px rgba(0,0,0,0.2)' },
   imageCounter: { position: 'absolute', bottom: '20px', left: '20px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold', zIndex: 10 },
   headerGradient: { position: 'absolute', bottom: 0, left: 0, width: '100%', height: '100px', background: 'linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0))', pointerEvents: 'none' },
+  
   contentBody: { padding: '0 20px', position: 'relative', zIndex: 2, marginTop: '-30px' },
+  
   titleSection: { marginBottom: '15px' },
   devTitle: { fontSize: '2.2rem', fontWeight: '800', color: '#111827', margin: '0 0 8px 0', lineHeight: '1' },
   locationRow: { display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--primary-color)', fontWeight: '600', fontSize: '1rem', marginBottom: '5px' },
   addressText: { color: '#6b7280', fontSize: '0.9rem', margin: 0 },
-  mediaButtonsContainer: { display: 'flex', gap: '10px', marginBottom: '20px' },
-  mediaButton: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#eff6ff', color: 'var(--secondary-color)', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '12px', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem', transition: 'background 0.2s' },
+  
   divider: { border: 'none', borderTop: '1px solid #f3f4f6', margin: '25px 0' },
-  section: { marginBottom: '30px' },
-  sectionTitle: { fontSize: '1.3rem', fontWeight: '800', marginBottom: '15px', color: '#1f2937' },
-  descriptionText: { color: '#4b5563', lineHeight: '1.6', fontSize: '0.95rem' },
-  amenitiesContainer: { display: 'flex', flexWrap: 'wrap', gap: '10px' },
-  amenityChip: { display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#f0fdf4', color: '#166534', padding: '8px 12px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: '600', border: '1px solid #dcfce7' },
-  checkIcon: { display: 'flex', alignItems: 'center' },
-  modelsSection: { backgroundColor: '#f9fafb', margin: '0 -20px', padding: '30px 20px', borderTop: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb' },
+  
+  // Estilos de la sección de modelos
+  modelsSection: { backgroundColor: '#f9fafb', margin: '20px -20px 0', padding: '30px 20px', borderTop: '1px solid #e5e7eb' },
   sectionHeaderRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px' },
+  sectionTitle: { fontSize: '1.3rem', fontWeight: '800', margin: 0, color: '#1f2937' },
   modelCountBadge: { backgroundColor: '#e5e7eb', color: '#374151', padding: '2px 8px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold' },
-  modelsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' },
-  modelCard: { display: 'flex', flexDirection: 'column', backgroundColor: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', textDecoration: 'none', transition: 'transform 0.2s', border: '1px solid #f3f4f6' },
-  modelImgContainer: { height: '160px', width: '100%', position: 'relative', backgroundColor: '#eee' },
-  modelTag: { position: 'absolute', bottom: '8px', right: '8px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', fontSize: '0.7rem', padding: '4px 8px', borderRadius: '4px', fontWeight: '600', zIndex: 10 },
-  modelInfo: { padding: '15px' },
-  modelName: { margin: '0 0 5px 0', color: '#111', fontSize: '1.1rem', fontWeight: '700' },
-  modelSpecs: { display: 'flex', gap: '10px', fontSize: '0.85rem', color: '#6b7280', marginBottom: '10px' },
-  modelPrice: { fontSize: '1.2rem', fontWeight: '800' },
-  locationActionSection: { marginTop: '30px' },
-  mapButtonExternal: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: '100%', padding: '15px', backgroundColor: 'white', border: '2px solid #e5e7eb', borderRadius: '12px', color: '#374151', fontWeight: '700', textDecoration: 'none', fontSize: '1rem', transition: 'background 0.2s' },
+  modelsGrid: { 
+    display: 'grid', 
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+    gap: '20px'
+  },
+  
   errorContainer: { padding: '40px', textAlign: 'center', color: '#374151' },
   backButtonSimple: { marginTop: '20px', padding: '10px 20px', backgroundColor: '#111', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }
 };
