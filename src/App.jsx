@@ -1,5 +1,6 @@
 // src/App.jsx
-// ÚLTIMA MODIFICACION: 01/12/2025
+
+// ÚLTIMA MODIFICACION: 02/12/2025
 import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
@@ -25,6 +26,9 @@ import OnboardingAsesor from './screens/OnboardingAsesor';
 import AccountAsesor from './screens/AccountAsessor';
 // ⭐ NUEVO: Pantalla de Comparador y Favoritos (implementado en el plan)
 import Comparador from './screens/Comparador'; 
+
+// ⭐ HERRAMIENTA ADMIN: Importamos la pantalla de exportación
+import AdminDataExport from './screens/AdminDataExport';
 
 function App() {
   // El orden de los Providers es estratégico. FavoritesProvider usa datos de User y Catalog.
@@ -78,6 +82,10 @@ function App() {
                 {/* 6. RUTAS DE DETALLE */}
                 <Route path="modelo/:id" element={<DetalleModelo />} />
                 <Route path="desarrollo/:id" element={<DetalleDesarrollo />} />
+
+                {/* 7. HERRAMIENTAS ADMINISTRATIVAS (Uso interno) */}
+                {/* Accede manualmente escribiendo /admin-export-tool en la URL */}
+                <Route path="admin-export-tool" element={<AdminDataExport />} />
 
                 {/* 404 - Redirección por defecto */}
                 <Route path="*" element={<Navigate to="/" replace />} />
