@@ -1,18 +1,21 @@
 // functions/index.js
 // ÚLTIMA MODIFICACION: 02/12/2025
 
+// --- 1. IMPORTACIÓN DE LIBRERÍAS ---
 const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/firestore");
 const { onRequest } = require("firebase-functions/v2/https");
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore, FieldValue, Timestamp } = require("firebase-admin/firestore");
 
-// 1. INICIALIZACIÓN GLOBAL (Debe ser lo primero)
+// --- 2. INICIALIZACIÓN DE LA APP ---
 initializeApp();
 const db = getFirestore();
 
-// 2. IMPORTS LOCALES (Después de inicializar)
-const { ejecutarMigracion, ejecutarEstandarizacion, ejecutarLimpieza } = require("./migrator");
+// --- 3. IMPORTS LOCALES ---
+const { ejecutarReestructuracionV2 } = require("./migrator"); 
+const { mapearDesarrolloV2, mapearModeloV2 } = require("./csvImporter");
 
+// --- 4. CONSTANTES ---
 const STATUS = {
     LEAD_NEW: 'NEW',
     LEAD_WON: 'WON',
@@ -20,11 +23,15 @@ const STATUS = {
     LEAD_PENDING_ADMIN: 'PENDING_ADMIN'
 };
 
-// --- TRIGGERS ---
+// ==================================================================
+// SECCIÓN A: TRIGGERS AUTOMÁTICOS (CRM Y LEADS)
+// ==================================================================
 
+// TRIGGER: Asignar Lead
 exports.asignarLead = onDocumentCreated("leads/{leadId}", async (event) => {
   const snapshot = event.data;
   if (!snapshot) return;
+  
   const leadId = snapshot.id;
   const leadData = snapshot.data();
 
@@ -56,8 +63,7 @@ exports.asignarLead = onDocumentCreated("leads/{leadId}", async (event) => {
       return;
     }
 
-    let asesorGanador = candidatos[0]; // Simplificado para brevedad, tu lógica completa iba aquí
-    // (Puedes mantener tu lógica completa de sorteo/lealtad aquí si la tienes guardada)
+    let asesorGanador = candidatos[0]; 
     
     await snapshot.ref.update({
       asesorUid: asesorGanador.uid,
@@ -75,9 +81,11 @@ exports.asignarLead = onDocumentCreated("leads/{leadId}", async (event) => {
   }
 });
 
+// TRIGGER: Actualizar Métricas Asesor
 exports.actualizarMetricasAsesor = onDocumentUpdated("leads/{leadId}", async (event) => {
   const antes = event.data.before.data();
   const despues = event.data.after.data();
+  
   if (antes.status === despues.status) return;
 
   const asesorUid = despues.asesorUid;
@@ -97,8 +105,6 @@ exports.actualizarMetricasAsesor = onDocumentUpdated("leads/{leadId}", async (ev
 
     const finalizados = ganados + perdidos;
     const tasaCierre = finalizados > 0 ? ((ganados / finalizados) * 100) : 0;
-    
-    // Cálculo simplificado de score (puedes restaurar tu fórmula completa)
     const scoreFinal = Math.round(Math.min(tasaCierre + 50, 100)); 
 
     await asesorRef.update({
@@ -112,23 +118,100 @@ exports.actualizarMetricasAsesor = onDocumentUpdated("leads/{leadId}", async (ev
   }
 });
 
-// --- MANTENIMIENTO ---
 
-exports.mantenimientoDB = onRequest(async (req, res) => {
-  if (req.query.key !== "MIGRACION_2025_SECURE") return res.status(403).send("⛔ Acceso Denegado");
-  
-  try {
-    const step = req.query.step;
-    let resultado = { mensaje: "Sin acción" };
+// ==================================================================
+// SECCIÓN B: ADMINISTRACIÓN DE DATOS
+// ==================================================================
 
-    if (step === 'v2' || !step) {
-      resultado = await ejecutarEstandarizacion();
-    } else if (step === 'v3') {
-      resultado = await ejecutarLimpieza();
+/**
+ * FUNCIÓN HTTP: Importación Masiva de Datos
+ * CAMBIO CRÍTICO: Se agregó { cors: true } para permitir peticiones desde la herramienta HTML.
+ */
+exports.importarDatosMasivos = onRequest({ cors: true }, async (req, res) => {
+    // 1. Validación de Método
+    if (req.method !== 'POST') return res.status(405).send("Método no permitido. Use POST.");
+    
+    // 2. Extracción de Datos
+    const { tipo, datos } = req.body;
+    
+    if (!datos || !Array.isArray(datos)) {
+        return res.status(400).json({ error: "Formato incorrecto. Se espera un array en 'datos'." });
     }
 
-    res.json({ mensaje: "✅ Mantenimiento OK", detalles: resultado });
+    const batchSize = 400; 
+    let batch = db.batch();
+    let contador = 0;
+    let procesados = 0;
+
+    try {
+        console.log(`>>> Iniciando importación masiva. Tipo: ${tipo}, Cantidad: ${datos.length}`);
+        
+        for (const row of datos) {
+            let docRef;
+            let dataLimpia;
+
+            // 3. Mapeo y Limpieza
+            if (tipo === 'desarrollos') {
+                dataLimpia = mapearDesarrolloV2(row);
+                docRef = db.collection('desarrollos').doc(String(dataLimpia.id));
+            
+            } else if (tipo === 'modelos') {
+                dataLimpia = mapearModeloV2(row);
+                
+                if (dataLimpia.id) {
+                    docRef = db.collection('modelos').doc(String(dataLimpia.id));
+                } else {
+                    docRef = db.collection('modelos').doc();
+                }
+            } else {
+                return res.status(400).json({ error: "Tipo desconocido. Use 'desarrollos' o 'modelos'." });
+            }
+
+            // 4. Auditoría y Escritura
+            dataLimpia.updatedAt = FieldValue.serverTimestamp();
+            batch.set(docRef, dataLimpia, { merge: true });
+
+            contador++;
+            procesados++;
+
+            if (contador >= batchSize) {
+                await batch.commit();
+                batch = db.batch();
+                contador = 0;
+            }
+        }
+        
+        if (contador > 0) await batch.commit();
+
+        res.json({ 
+            success: true, 
+            mensaje: "Importación finalizada", 
+            procesados: procesados, 
+            tipo: tipo 
+        });
+
+    } catch (error) {
+        console.error("Error crítico en importación:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * FUNCIÓN HTTP: Mantenimiento DB
+ */
+exports.mantenimientoDB = onRequest(async (req, res) => {
+  if (req.query.key !== "MIGRACION_2025_SECURE") {
+      return res.status(403).send("⛔ Acceso Denegado: Clave incorrecta.");
+  }
+  
+  try {
+    const resultado = await ejecutarReestructuracionV2();
+    res.json({ 
+        mensaje: "✅ Mantenimiento V2.1 Ejecutado Correctamente", 
+        detalles: resultado 
+    });
   } catch (error) {
+    console.error("Error en mantenimiento:", error);
     res.status(500).json({ error: error.message });
   }
 });

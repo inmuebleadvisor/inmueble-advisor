@@ -1,193 +1,112 @@
 // functions/migrator.js
 // ÚLTIMA MODIFICACION: 02/12/2025
-const { getFirestore, FieldValue, Timestamp } = require("firebase-admin/firestore");
 
-// ⚠️ ELIMINADO: const db = getFirestore(); 
-// (Esto causaba el error al intentar conectarse antes de tiempo)
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+const db = getFirestore();
 
-// --- HELPERS (Funciones Puras) ---
-
-const generarKeywords = (textos) => {
-  if (!Array.isArray(textos)) textos = [textos];
-  const keywords = new Set(); 
-
-  textos.forEach(texto => {
-    if (!texto) return;
-    const limpio = String(texto)
-      .toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .trim();
+async function ejecutarReestructuracionV2() {
+    console.log(">>> INICIANDO REESTRUCTURACIÓN COMPLETA V2.1...");
+    const batchSize = 400;
     
-    if (limpio.length > 0) {
-      keywords.add(limpio);
-      const palabras = limpio.split(" ");
-      if (palabras.length > 1) {
-        palabras.forEach(p => keywords.add(p));
-      }
+    // --- A. MIGRAR DESARROLLOS ---
+    const desarrollosRef = db.collection('desarrollos');
+    const snapshotDes = await desarrollosRef.get();
+    let batch = db.batch();
+    let contador = 0;
+
+    for (const doc of snapshotDes.docs) {
+        const data = doc.data();
+        let update = {};
+
+        // 1. Corregir STATUS (Traducción)
+        if (data.status === 'IMMEDIATE') update.status = 'Entrega Inmediata';
+        else if (data.status === 'PRESALE') update.status = 'Pre-Venta';
+        else if (!data.status) update.status = 'Entrega Inmediata'; // Default
+
+        // 2. Reestructurar Info Comercial
+        // Si ya existen datos sueltos, muévelos aquí, si no, inicializa en 0
+        update.infoComercial = {
+            fechaEntrega: data.info_comercial?.fecha_entrega || data.fecha_entrega || null,
+            unidadesTotales: data.info_comercial?.unidades_proyectadas || 0,
+            unidadesVendidas: data.info_comercial?.unidades_vendidas || 0,
+            // Calculamos disponibles si es posible
+            unidadesDisponibles: (data.info_comercial?.unidades_proyectadas || 0) - (data.info_comercial?.unidades_vendidas || 0),
+            cantidadModelos: 0, // Se llenará después o manual
+            plusvaliaPromedio: 0,
+            fechaInicioVenta: null
+        };
+
+        // 3. Ubicación: Asegurar campo 'localidad'
+        if (data.ubicacion) {
+            update.ubicacion = {
+                ...data.ubicacion,
+                localidad: data.ubicacion.localidad || data.ubicacion.ciudad // Default ciudad si no hay localidad
+            };
+        }
+
+        // 4. Media: Asegurar brochure
+        if (!data.media?.brochure) {
+            update["media.brochure"] = null;
+        }
+
+        batch.update(doc.ref, update);
+        contador++;
+        if (contador >= batchSize) { await batch.commit(); batch = db.batch(); contador = 0; }
     }
-  });
-  return Array.from(keywords);
-};
+    if (contador > 0) await batch.commit();
 
-const estandarizarMedia = (data) => {
-  const galeriaSet = new Set();
-  let cover = null;
 
-  const fuentes = [
-    data.imagen, 
-    data.multimedia?.portada, 
-    data.portadaDesarrollo,
-    ...(Array.isArray(data.multimedia?.galeria) ? data.multimedia.galeria : []),
-    ...(Array.isArray(data.imagenes) ? data.imagenes : []) 
-  ];
+    // --- B. MIGRAR MODELOS ---
+    const modelosRef = db.collection('modelos');
+    const snapshotMod = await modelosRef.get();
+    batch = db.batch(); // Reiniciar
+    contador = 0;
 
-  fuentes.forEach(url => {
-    // Validamos que sea string, tenga longitud y NO sea el placeholder lento
-    if (url && typeof url === 'string' && url.length > 5 && !url.includes('via.placeholder.com')) {
-      if (!cover) cover = url; 
-      galeriaSet.add(url);
+    for (const doc of snapshotMod.docs) {
+        const data = doc.data();
+        let update = {};
+        let deletes = {};
+
+        // 1. ELIMINAR esPreventa (Ahora vive en Desarrollo)
+        deletes.esPreventa = FieldValue.delete();
+        deletes.precioNumerico = FieldValue.delete(); // Borramos el campo viejo
+
+        // 2. Precios
+        const pBase = data.precioNumerico || 0;
+        update.precios = {
+            base: pBase,
+            inicial: pBase, // Mismo valor inicial
+            maximo: pBase,
+            metroCuadrado: 0, // Calcular después: precio / m2
+            mantenimientoMensual: data.mantenimiento || 0,
+            moneda: "MXN"
+        };
+
+        // 3. Info Comercial Nueva
+        update.infoComercial = {
+            unidadesVendidas: 0,
+            plusvaliaEstimada: 0,
+            fechaInicioVenta: null
+        };
+
+        // 4. Media Nueva
+        update.media = {
+            ...data.media,
+            plantasArquitectonicas: [],
+            videoPromocional: null,
+            recorridoVirtual: data.recorridoVirtual || null
+        };
+        
+        // Ejecutar Update + Delete
+        batch.update(doc.ref, { ...update, ...deletes });
+        
+        contador++;
+        if (contador >= batchSize) { await batch.commit(); batch = db.batch(); contador = 0; }
     }
-  });
+    if (contador > 0) await batch.commit();
 
-  return {
-    cover: cover || null, 
-    gallery: Array.from(galeriaSet),
-    video: data.multimedia?.video || null,
-    brochure: data.multimedia?.brochure || null
-  };
-};
+    console.log(">>> MIGRACIÓN V2.1 FINALIZADA.");
+    return { status: "OK" };
+}
 
-// --- FUNCIONES EXPORTADAS ---
-
-// V1 Legacy (Opcional, la mantenemos para que no rompa imports)
-exports.ejecutarMigracion = async () => {
-    return { success: false, message: "Lógica V1 obsoleta." };
-};
-
-// FASE 1: Estandarización V2
-exports.ejecutarEstandarizacion = async () => {
-  console.log("🚀 Iniciando Migración FASE 1: Estandarización V2...");
-  
-  // ✅ SOLUCIÓN: Inicializamos DB aquí dentro, cuando la App ya existe.
-  const db = getFirestore(); 
-  const batch = db.batch();
-  let opCount = 0;
-  const MAX_BATCH_SIZE = 450; 
-
-  // 1. MODELOS
-  const modelosSnap = await db.collection('modelos').get();
-  for (const doc of modelosSnap.docs) {
-    if (opCount >= MAX_BATCH_SIZE) break;
-    const data = doc.data();
-    const updateData = {};
-
-    if (!data.media) {
-        updateData.media = estandarizarMedia(data);
-    }
-
-    const fuentesDeTexto = [
-        data.nombreModelo || data.nombre_modelo,
-        data.nombreDesarrollo,
-        data.ubicacion?.zona || data.zona,
-        data.ubicacion?.ciudad || data.ciudad,
-        ...(data.amenidades || [])
-    ];
-    
-    updateData.keywords = generarKeywords(fuentesDeTexto);
-    updateData.updatedAt = FieldValue.serverTimestamp();
-
-    if (Object.keys(updateData).length > 0) {
-        batch.update(doc.ref, updateData);
-        opCount++;
-    }
-  }
-
-  // 2. DESARROLLOS
-  const devSnap = await db.collection('desarrollos').get();
-  for (const doc of devSnap.docs) {
-    if (opCount >= MAX_BATCH_SIZE) break;
-    const data = doc.data();
-    const updateData = {};
-
-    if (!data.media) {
-        updateData.media = estandarizarMedia(data);
-    }
-
-    const fuentesDeTexto = [
-        data.nombre,
-        data.constructora,
-        data.ubicacion?.zona,
-        data.ubicacion?.ciudad,
-        ...(data.amenidades || [])
-    ];
-
-    updateData.keywords = generarKeywords(fuentesDeTexto);
-    updateData.updatedAt = FieldValue.serverTimestamp();
-
-    if (Object.keys(updateData).length > 0) {
-        batch.update(doc.ref, updateData);
-        opCount++;
-    }
-  }
-
-  if (opCount > 0) {
-    await batch.commit();
-    return { success: true, count: opCount, message: "Estandarización V2 completada." };
-  } else {
-    return { success: true, count: 0, message: "Sin cambios pendientes." };
-  }
-};
-
-// FASE 2.3: Limpieza V3
-exports.ejecutarLimpieza = async () => {
-    console.log("🧹 Iniciando Limpieza FASE 2.3...");
-    
-    // ✅ SOLUCIÓN: Inicializamos DB aquí también
-    const db = getFirestore();
-    const batch = db.batch();
-    let opCount = 0;
-    const MAX_BATCH_SIZE = 450;
-    
-    const camposAborrar = ["imagen", "multimedia", "portadaDesarrollo", "imagenes"];
-
-    const modelosSnap = await db.collection('modelos').get();
-    for (const doc of modelosSnap.docs) {
-      if (opCount >= MAX_BATCH_SIZE) break;
-      const updateData = {};
-      let tieneCambios = false;
-      camposAborrar.forEach(campo => {
-          if (doc.data()[campo] !== undefined) {
-              updateData[campo] = FieldValue.delete();
-              tieneCambios = true;
-          }
-      });
-      if (tieneCambios) {
-          batch.update(doc.ref, updateData);
-          opCount++;
-      }
-    }
-
-    const devSnap = await db.collection('desarrollos').get();
-    for (const doc of devSnap.docs) {
-      if (opCount >= MAX_BATCH_SIZE) break;
-      const updateData = {};
-      let tieneCambios = false;
-      camposAborrar.forEach(campo => {
-          if (doc.data()[campo] !== undefined) {
-              updateData[campo] = FieldValue.delete();
-              tieneCambios = true;
-          }
-      });
-      if (tieneCambios) {
-          batch.update(doc.ref, updateData);
-          opCount++;
-      }
-    }
-
-    if (opCount > 0) {
-      await batch.commit();
-      return { success: true, count: opCount, detalles: `Campos obsoletos eliminados en ${opCount} docs.` };
-    } else {
-      return { success: true, count: 0, detalles: "Base de datos ya limpia." };
-    }
-};
+module.exports = { ejecutarReestructuracionV2 };
