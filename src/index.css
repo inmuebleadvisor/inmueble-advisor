@@ -4,18 +4,26 @@
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  
+
   /* Tus colores de marca globales */
   --primary-color: #00396a;
+  /* Institutional Blue */
+  --secondary-color: #dcb23a;
+  /* Institutional Gold */
   --bg-color: #f4f6f9;
+  --text-main: #1e293b;
+  --text-secondary: #64748b;
+  --white: #ffffff;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
-  background-color: var(--bg-color); /* Fondo gris claro en toda la ventana */
+  background-color: var(--bg-color);
+  /* Fondo gris claro en toda la ventana */
 }
 
 #root {
@@ -23,37 +31,51 @@ html, body {
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  display: block; /* Importante: quita el display flex/grid por defecto de Vite */
-  max-width: none; /* Importante: quita el límite de ancho */
+  display: block;
+  /* Importante: quita el display flex/grid por defecto de Vite */
+  max-width: none;
+  /* Importante: quita el límite de ancho */
   text-align: left;
 }
 
 /* Opcional: Para que los inputs y botones se comporten bien */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 /* ESTILOS PARA TODA LA APP */
-a { text-decoration: none; color: inherit; }
-button { cursor: pointer; }
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
 
 /* --- CLASE RESPONSIVA PARA EL CONTENEDOR PRINCIPAL --- */
 
 .main-content {
   flex: 1;
   width: 100%;
-  box-sizing: border-box; /* Para que el padding no rompa el ancho */
-  
+  box-sizing: border-box;
+  /* Para que el padding no rompa el ancho */
+
   /* MÓVIL (Por defecto): Márgenes muy pequeños para ganar espacio */
-  padding: 10px 8px; 
+  padding: 10px 8px;
 }
 
 /* PANTALLAS GRANDES (Tablets y PC): Aumentamos el margen para que se vea elegante */
 @media (min-width: 768px) {
   .main-content {
-    padding: 30px 50px; /* Más aire a los lados */
-    max-width: 1200px;  /* Que no se estire infinito en pantallas ultra anchas */
-    margin: 0 auto;     /* Centrado automático */
+    padding: 30px 50px;
+    /* Más aire a los lados */
+    max-width: 1200px;
+    /* Que no se estire infinito en pantallas ultra anchas */
+    margin: 0 auto;
+    /* Centrado automático */
   }
 }
 
@@ -83,26 +105,29 @@ button { cursor: pointer; }
 
 /* El botón de hamburguesa estará oculto en escritorio por defecto */
 .menu-toggle-btn {
-  display: none; 
+  display: none;
   background: none;
   border: none;
   color: white;
   padding: 0;
   cursor: pointer;
-  z-index: 1010; /* Asegura que esté por encima del menú */
+  z-index: 1010;
+  /* Asegura que esté por encima del menú */
 }
 
 @media (max-width: 768px) {
+
   /* Mostrar el botón de hamburguesa en móvil */
   .menu-toggle-btn {
-    display: block; 
+    display: block;
   }
-  
+
   /* Ocultar el menú por defecto en móvil y definir su estilo de Overlay */
   .nav-menu {
-    flex-direction: column; 
+    flex-direction: column;
     position: fixed;
-    top: 60px; /* Empieza debajo del header (60px de alto) */
+    top: 60px;
+    /* Empieza debajo del header (60px de alto) */
     left: 0;
     right: 0;
     bottom: 0;
@@ -114,21 +139,34 @@ button { cursor: pointer; }
     opacity: 0.98;
     transition: transform 0.4s ease-out;
     /* Por defecto, el menú está fuera de la vista */
-    transform: translateY(-120vh); /* Mover fuera de la pantalla */
+    transform: translateY(-120vh);
+    /* Mover fuera de la pantalla */
   }
 
   /* El estado 'is-open' lo trae a la vista */
   .nav-menu.is-open {
     transform: translateY(0);
-    display: flex; /* Asegura que sea visible */
+    display: flex;
+    /* Asegura que sea visible */
   }
-  
+
   /* Estilo de los enlaces en el menú móvil (más grandes) */
   .nav-menu a {
     font-size: 1.5rem !important;
     padding: 15px 0;
-    width: 80%; /* Ancho para facilitar el tap */
+    width: 80%;
+    /* Ancho para facilitar el tap */
     text-align: center;
     /* La línea activa (border-bottom) se ve mejor que 100% de ancho aquí */
+  }
+
+  /* Estilo responsivo para el botón de logout */
+  .logout-btn {
+    font-size: 1.5rem !important;
+    padding: 15px 0 !important;
+    width: 80% !important;
+    border-bottom: 3px solid transparent;
+    text-decoration: none;
+    display: block !important;
   }
 }

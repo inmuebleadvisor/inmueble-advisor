@@ -8,9 +8,9 @@ export const IMAGES = {
 
 // --- REGLAS FINANCIERAS ---
 export const FINANZAS = {
-  PORCENTAJE_GASTOS_NOTARIALES: 0.06, 
-  PORCENTAJE_ENGANCHE_MINIMO: 0.10,   
-  FACTOR_MENSUALIDAD_POR_MILLON: 11000, 
+  PORCENTAJE_GASTOS_NOTARIALES: 0.06,
+  PORCENTAJE_ENGANCHE_MINIMO: 0.10,
+  FACTOR_MENSUALIDAD_POR_MILLON: 11000,
   PRECIO_MAXIMO_DEFAULT: 100000000
 };
 
@@ -25,37 +25,39 @@ export const UI_OPCIONES = {
 // ✅ CÓDIGOS DE ESTADO (Contrato con la BD) - USAR ESTAS CONSTANTES
 // ==========================================
 export const STATUS = {
-    // Desarrollo
-    DEV_IMMEDIATE: 'IMMEDIATE',
-    DEV_PREALE: 'PREALE',
-    
-    // Leads (Embudo)
-    LEAD_NEW: 'NEW', // Antes 'nuevo'
-    LEAD_CONTACTED: 'CONTACTED', // Antes 'contactado'
-    LEAD_VISIT_SCHEDULED: 'VISIT_SCHEDULED', // Antes 'visita_agendada'
-    LEAD_VISIT_CONFIRMED: 'VISIT_CONFIRMED', // Antes 'visita_confirmada'
-    LEAD_VISITED: 'VISITED', // Antes 'visito'
-    LEAD_RESERVED: 'RESERVED', // Antes 'apartado'
-    LEAD_WON: 'WON', // Antes 'vendido'
-    LEAD_LOST: 'LOST', // Antes 'perdido'
-    LEAD_CLOSED: 'CLOSED', // Antes 'escriturado'
-    LEAD_PENDING_ADMIN: 'PENDING_ADMIN',
-    LEAD_PENDING_ASSIGNMENT: 'PENDING_ASSIGNMENT'
+  // Desarrollo
+  DEV_IMMEDIATE: 'IMMEDIATE',
+  DEV_PREALE: 'PREALE',
+  DEV_PREVENTA_STRING: 'Pre-Venta',
+  DEV_INMEDIATA_STRING: 'Entrega Inmediata',
+
+  // Leads (Embudo)
+  LEAD_NEW: 'NEW', // Antes 'nuevo'
+  LEAD_CONTACTED: 'CONTACTED', // Antes 'contactado'
+  LEAD_VISIT_SCHEDULED: 'VISIT_SCHEDULED', // Antes 'visita_agendada'
+  LEAD_VISIT_CONFIRMED: 'VISIT_CONFIRMED', // Antes 'visita_confirmada'
+  LEAD_VISITED: 'VISITED', // Antes 'visito'
+  LEAD_RESERVED: 'RESERVED', // Antes 'apartado'
+  LEAD_WON: 'WON', // Antes 'vendido'
+  LEAD_LOST: 'LOST', // Antes 'perdido'
+  LEAD_CLOSED: 'CLOSED', // Antes 'escriturado'
+  LEAD_PENDING_ADMIN: 'PENDING_ADMIN',
+  LEAD_PENDING_ASSIGNMENT: 'PENDING_ASSIGNMENT'
 };
 
 // --- ETIQUETAS DE UI (Para traducir los códigos) ---
 export const STATUS_LABELS = {
-    [STATUS.DEV_IMMEDIATE]: 'Entrega Inmediata',
-    [STATUS.DEV_PREALE]: 'Pre-Venta',
-    [STATUS.LEAD_NEW]: 'Nuevo',
-    [STATUS.LEAD_CONTACTED]: 'Contactado',
-    [STATUS.LEAD_VISIT_SCHEDULED]: 'Visita Agendada',
-    [STATUS.LEAD_VISIT_CONFIRMED]: 'Visita Confirmada',
-    [STATUS.LEAD_VISITED]: 'Ya Visitó',
-    [STATUS.LEAD_RESERVED]: 'Apartado',
-    [STATUS.LEAD_WON]: 'Vendido',
-    [STATUS.LEAD_LOST]: 'Perdido',
-    [STATUS.LEAD_CLOSED]: 'Escriturado',
-    [STATUS.LEAD_PENDING_ADMIN]: 'Pendiente Admin',
-    [STATUS.LEAD_PENDING_ASSIGNMENT]: 'Asignando (Bot)'
+  [STATUS.DEV_IMMEDIATE]: 'Entrega Inmediata',
+  [STATUS.DEV_PREALE]: 'Pre-Venta',
+  [STATUS.LEAD_NEW]: 'Nuevo',
+  [STATUS.LEAD_CONTACTED]: 'Contactado',
+  [STATUS.LEAD_VISIT_SCHEDULED]: 'Visita Agendada',
+  [STATUS.LEAD_VISIT_CONFIRMED]: 'Visita Confirmada',
+  [STATUS.LEAD_VISITED]: 'Ya Visitó',
+  [STATUS.LEAD_RESERVED]: 'Apartado',
+  [STATUS.LEAD_WON]: 'Vendido',
+  [STATUS.LEAD_LOST]: 'Perdido',
+  [STATUS.LEAD_CLOSED]: 'Escriturado',
+  [STATUS.LEAD_PENDING_ADMIN]: 'Pendiente Admin',
+  [STATUS.LEAD_PENDING_ASSIGNMENT]: 'Asignando (Bot)'
 };

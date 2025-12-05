@@ -1,12 +1,12 @@
 // src/services/catalog.service.js
 // ÚLTIMA MODIFICACION: 02/12/2025
 import { db } from '../firebase/config';
-import { 
-  collection, getDocs, doc, getDoc, query, where 
+import {
+  collection, getDocs, doc, getDoc, query, where
 } from 'firebase/firestore';
 
 const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
-const UNRELIABLE_PLACEHOLDER = "via.placeholder.com"; 
+const UNRELIABLE_PLACEHOLDER = "via.placeholder.com";
 
 let cacheModelos = null;
 let cacheDesarrollos = null;
@@ -17,8 +17,8 @@ let cacheDesarrollos = null;
 const parseCoord = (val) => {
   if (typeof val === 'number') return val;
   if (typeof val === 'string') {
-      const parsed = parseFloat(val);
-      return isNaN(parsed) ? 0 : parsed;
+    const parsed = parseFloat(val);
+    return isNaN(parsed) ? 0 : parsed;
   }
   return 0;
 };
@@ -31,31 +31,32 @@ const procesarImagenes = (data) => {
   // 1. Prioridad: Nuevo Schema (media: { cover, gallery })
   if (data.media) {
     if (data.media.cover) {
-        portada = data.media.cover;
-        listaImagenes.push(portada);
+      portada = data.media.cover;
+      listaImagenes.push(portada);
     }
     if (Array.isArray(data.media.gallery)) {
-        listaImagenes = [...listaImagenes, ...data.media.gallery];
+      listaImagenes = [...listaImagenes, ...data.media.gallery];
     }
-  } 
+  }
   // 2. Fallback: Schema Viejo (multimedia)
   else if (data.multimedia) {
     if (data.multimedia.portada) portada = data.multimedia.portada;
     if (Array.isArray(data.multimedia.galeria)) listaImagenes = data.multimedia.galeria;
-  } 
+  }
+
   // 3. Fallback Final: Campo raíz
   else if (data.imagen) {
-      portada = data.imagen;
-      listaImagenes.push(data.imagen);
+    portada = data.imagen;
+    listaImagenes.push(data.imagen);
   }
 
   // Limpieza de URLs
-  listaImagenes = listaImagenes.filter(url => 
-    url && typeof url === 'string' && url.length > 10 && !url.includes(UNRELIABLE_PLACEHOLDER)
+  listaImagenes = listaImagenes.filter(url =>
+    url && typeof url === 'string' && url.length > 10 && !url.includes(UNRELIABLE_PLACEHOLDER) && !url.includes('static.wixstatic.com')
   );
   listaImagenes = [...new Set(listaImagenes)]; // Unique
 
-  if(listaImagenes.length === 0) listaImagenes.push(FALLBACK_IMG);
+  if (listaImagenes.length === 0) listaImagenes.push(FALLBACK_IMG);
 
   return { imagen: portada, imagenes: listaImagenes };
 };
@@ -69,15 +70,15 @@ const mapModelo = (docSnapshot) => {
   // Extracción segura del precio
   let precioFinal = 0;
   if (data.precios && typeof data.precios.base === 'number') {
-      precioFinal = data.precios.base;
+    precioFinal = data.precios.base;
   } else if (data.precioNumerico) {
-      precioFinal = Number(data.precioNumerico);
+    precioFinal = Number(data.precioNumerico);
   }
 
   return {
     ...data, // Mantenemos toda la data original por seguridad
     id: docSnapshot.id,
-    
+
     // 1. Identificación Normalizada
     // Buscamos cualquier variante del ID del padre para evitar la "Llave Rota"
     idDesarrollo: data.idDesarrollo || data.id_desarrollo || data.desarrollo_id || '',
@@ -114,42 +115,43 @@ const mapModelo = (docSnapshot) => {
     amenidadesDesarrollo: Array.isArray(data.amenidadesDesarrollo) ? data.amenidadesDesarrollo : [],
     keywords: Array.isArray(data.keywords) ? data.keywords : [], // Vital para búsqueda
     tipoVivienda: data.tipoVivienda || 'Propiedad',
-    esPreventa: data.esPreventa === true,
-    
+    tipoVivienda: data.tipoVivienda || 'Propiedad',
+    esPreventa: Boolean(data.esPreventa), // Permite true, 1, "true", etc.
+
     // Info Comercial (Modelo)
     infoComercial: data.infoComercial || {}
   };
 };
 
 const mapDesarrollo = (docSnapshot) => {
-    const data = docSnapshot.data();
-    const imgs = procesarImagenes(data);
+  const data = docSnapshot.data();
+  const imgs = procesarImagenes(data);
 
-    return {
-        ...data,
-        id: docSnapshot.id,
-        nombre: data.nombre || 'Desarrollo',
-        
-        // Datos específicos de Desarrollo
-        info_comercial: data.info_comercial || {}, // snake_case según PDF
-        amenidades: Array.isArray(data.amenidades) ? data.amenidades : [],
-        keywords: Array.isArray(data.keywords) ? data.keywords : [],
+  return {
+    ...data,
+    id: docSnapshot.id,
+    nombre: data.nombre || 'Desarrollo',
 
-        // Imágenes
-        imagen: imgs.imagen,
-        multimedia: { 
-            portada: imgs.imagen,
-            galeria: imgs.imagenes,
-            video: data.media?.video || data.multimedia?.video || null,
-            brochure: data.media?.brochure || data.multimedia?.brochure || null
-        },
+    // Datos específicos de Desarrollo
+    info_comercial: data.info_comercial || {}, // snake_case según PDF
+    amenidades: Array.isArray(data.amenidades) ? data.amenidades : [],
+    keywords: Array.isArray(data.keywords) ? data.keywords : [],
 
-        // Ubicación
-        ubicacion: data.ubicacion || {},
-        zona: data.ubicacion?.zona || '', // Aplanado para hidratar inventario asesor
-        latitud: parseCoord(data.ubicacion?.latitud),
-        longitud: parseCoord(data.ubicacion?.longitud)
-    };
+    // Imágenes
+    imagen: imgs.imagen,
+    multimedia: {
+      portada: imgs.imagen,
+      galeria: imgs.imagenes,
+      video: data.media?.video || data.multimedia?.video || null,
+      brochure: data.media?.brochure || data.multimedia?.brochure || null
+    },
+
+    // Ubicación
+    ubicacion: data.ubicacion || {},
+    zona: data.ubicacion?.zona || '', // Aplanado para hidratar inventario asesor
+    latitud: parseCoord(data.ubicacion?.latitud),
+    longitud: parseCoord(data.ubicacion?.longitud)
+  };
 };
 
 // --- FUNCIONES EXPORTADAS ---
@@ -186,9 +188,9 @@ export const obtenerTopAmenidades = async () => {
   desarrollos.forEach(d => {
     if (Array.isArray(d.amenidades)) {
       d.amenidades.forEach(am => {
-        if(am) {
-            const cleanAm = am.trim();
-            conteo[cleanAm] = (conteo[cleanAm] || 0) + 1;
+        if (am) {
+          const cleanAm = am.trim();
+          conteo[cleanAm] = (conteo[cleanAm] || 0) + 1;
         }
       });
     }
@@ -201,7 +203,7 @@ export const obtenerInformacionDesarrollo = async (id) => {
     const docRef = doc(db, "desarrollos", String(id).trim());
     const docSnap = await getDoc(docRef);
     if (!docSnap.exists()) return null;
-    
+
     const desarrolloData = mapDesarrollo(docSnap);
 
     // Búsqueda de modelos hijos usando el ID normalizado (o intentando variantes)
@@ -210,19 +212,19 @@ export const obtenerInformacionDesarrollo = async (id) => {
     const q = query(collection(db, "modelos"), where("idDesarrollo", "==", id));
     // Si tu DB vieja usa 'id_desarrollo', cambia la línea anterior. 
     // Si tienes mezcla, es mejor traer todo y filtrar en cliente (si son pocos) o usar 'OR' (avanzado).
-    
+
     const modelosSnap = await getDocs(q);
-    
+
     // Si la query directa falla por mezcla de campos (camelCase vs snake_case),
     // una estrategia de seguridad es traer por 'id_desarrollo' también si la primera trajo 0.
     let modelosRaw = modelosSnap.docs;
     if (modelosRaw.length === 0) {
-        const q2 = query(collection(db, "modelos"), where("id_desarrollo", "==", id));
-        const modelosSnap2 = await getDocs(q2);
-        modelosRaw = modelosSnap2.docs;
+      const q2 = query(collection(db, "modelos"), where("id_desarrollo", "==", id));
+      const modelosSnap2 = await getDocs(q2);
+      modelosRaw = modelosSnap2.docs;
     }
 
-    const modelos = modelosRaw.map(mapModelo); 
+    const modelos = modelosRaw.map(mapModelo);
 
     return { ...desarrolloData, modelos };
   } catch (error) {
@@ -240,7 +242,7 @@ export const hidratarInventarioAsesor = async (listaInventarioUsuario) => {
       const dataReal = catalogo.find(d => d.id === itemUsuario.idDesarrollo);
       if (dataReal) {
         return {
-          ...itemUsuario, 
+          ...itemUsuario,
           nombre: dataReal.nombre,
           constructora: dataReal.constructora,
           // Usamos 'zona' que nos aseguramos de aplanar en mapDesarrollo

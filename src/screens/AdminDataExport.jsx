@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 // ÚLTIMA MODIFICACION: 02/12/2025
 
-// Importamos la instancia de la base de datos real.
+// Asegúrate de que esta ruta apunte a tu configuración real de Firebase
 import { db } from '../firebase/config'; 
 import { collection, getDocs } from 'firebase/firestore';
 

@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 // ✅ Importamos contexto y la función logout
-import { useUser } from '../context/UserContext'; 
+import { useUser } from '../context/UserContext';
 // Importamos el hook de Favoritos para el contador
-import { useFavorites } from '../context/FavoritesContext'; 
+import { useFavorites } from '../context/FavoritesContext';
 
 // URL del Logotipo Oficial
 const LOGO_URL = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/Logo-InmuebleAdvisor-en-fondo-Azul-e1758163267740.png";
@@ -18,11 +18,11 @@ const MenuIcons = {
 
 export default function Layout() {
   // ✅ Obtenemos logout, userProfile y user
-  const { userProfile, user, logout } = useUser(); 
+  const { userProfile, user, logout } = useUser();
   // Obtenemos el ID de favoritos (para el badge en el paso anterior)
-  const { favoritosIds } = useFavorites(); 
+  const { favoritosIds } = useFavorites();
   const location = useLocation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false); 
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Cierra el menú móvil al cambiar de ruta
   useEffect(() => {
@@ -33,8 +33,8 @@ export default function Layout() {
 
   // Helper de estilos para enlaces activos
   const getLinkStyle = (path) => {
-    const isActive = path === '/' 
-      ? location.pathname === '/' 
+    const isActive = path === '/'
+      ? location.pathname === '/'
       : location.pathname.startsWith(path);
 
     return {
@@ -46,10 +46,10 @@ export default function Layout() {
       opacity: isActive ? 1 : 0.85,
       fontSize: '0.95rem',
       transition: 'all 0.2s ease',
-      display: 'block' 
+      display: 'block'
     };
   };
-  
+
   // Define si el usuario es un asesor
   const isAsesor = userProfile?.role === 'asesor';
 
@@ -64,70 +64,71 @@ export default function Layout() {
           <Link to="/" style={styles.logoContainer} onClick={() => setIsMenuOpen(false)}>
             <img src={LOGO_URL} alt="Inmueble Advisor" style={styles.logoImage} />
           </Link>
-          
+
           {/* BOTÓN HAMBURGUESA (Móvil) */}
           <button onClick={toggleMenu} className="menu-toggle-btn">
             {isMenuOpen ? <MenuIcons.Close /> : <MenuIcons.Menu />}
           </button>
 
           {/* MENÚ DE NAVEGACIÓN */}
-          <nav 
+          <nav
             className={`nav-menu ${isMenuOpen ? 'is-open' : ''}`}
             style={styles.nav}
           >
             {/* Tareas de Cliente (Visibles para todos los logueados) */}
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               style={getLinkStyle('/')}
             >
               {isAsesor ? 'Mi Perfil' : 'Inicio'}
             </Link>
-            
+
             <Link to="/catalogo" style={getLinkStyle('/catalogo')}>Catálogo</Link>
             <Link to="/mapa" style={getLinkStyle('/mapa')}>Mapa</Link>
-            
-            <Link 
-              to="/favoritos" 
+
+            <Link
+              to="/favoritos"
               style={getLinkStyle('/favoritos')}
             >
               <span style={styles.linkWithBadge}>
-                 Comparador
-                 {favoritosIds.length > 0 && (
-                   <span style={styles.favoriteBadge}>
-                      {favoritosIds.length}
-                   </span>
-                 )}
+                Comparador
+                {favoritosIds.length > 0 && (
+                  <span style={styles.favoriteBadge}>
+                    {favoritosIds.length}
+                  </span>
+                )}
               </span>
             </Link>
-            
+
             {isAsesor ? (
-               // DASHBOARD ASESOR
-               <Link 
-                 to="/account-asesor" 
-                 style={getLinkStyle('/account-asesor')}
-               >
-                 Panel Asesor
-               </Link>
+              // DASHBOARD ASESOR
+              <Link
+                to="/account-asesor"
+                style={getLinkStyle('/account-asesor')}
+              >
+                Panel Asesor
+              </Link>
             ) : (
-               // ENLACE ASESOR/ONBOARDING
-               <Link 
-                 to={user ? '/onboarding-asesor' : '/soy-asesor'} 
-                 style={getLinkStyle(user ? '/onboarding-asesor' : '/soy-asesor')}
-               >
-                 Soy Asesor
-               </Link>
+              // ENLACE ASESOR/ONBOARDING
+              <Link
+                to={user ? '/onboarding-asesor' : '/soy-asesor'}
+                style={getLinkStyle(user ? '/onboarding-asesor' : '/soy-asesor')}
+              >
+                Soy Asesor
+              </Link>
             )}
 
             {/* ⭐ NUEVO: BOTÓN DE LOGOUT CONDICIONAL */}
             {user && (
-                <button 
-                    onClick={logout} 
-                    style={styles.logoutButton}
-                >
-                    Cerrar Sesión ({userProfile?.nombre?.split(' ')[0] || 'Usuario'})
-                </button>
+              <button
+                onClick={logout}
+                style={styles.logoutButton}
+                className="logout-btn"
+              >
+                Cerrar Sesión ({userProfile?.nombre?.split(' ')[0] || 'Usuario'})
+              </button>
             )}
-            
+
           </nav>
 
         </div>
@@ -145,7 +146,7 @@ export default function Layout() {
           <span style={styles.footerSeparator}>|</span>
           <span style={styles.footerLink}>Aviso de Privacidad</span>
           <span style={styles.footerSeparator}>|</span>
-          
+
           {/* Enlace de Asesor en footer dual */}
           {isAsesor ? (
             <Link to="/account-asesor" style={styles.footerLinkAnchor}>Panel Asesor</Link>
@@ -202,7 +203,7 @@ const styles = {
   nav: {
     // La clase .nav-menu en index.css maneja el responsive (flex row vs column)
   },
-  
+
   // ⭐ NUEVO ESTILO: Botón de Cerrar Sesión (Se ve como un enlace en el menú)
   logoutButton: {
     background: 'none',
@@ -214,17 +215,8 @@ const styles = {
     cursor: 'pointer',
     textAlign: 'center',
     transition: 'opacity 0.2s',
-    // Asegura que en móvil tenga el mismo estilo que los Links
-    '@media (max-width: 768px)': {
-        fontSize: '1.5rem',
-        padding: '15px 0',
-        width: '80%', 
-        borderBottom: '3px solid transparent',
-        textDecoration: 'none',
-        display: 'block'
-    }
   },
-  
+
   linkWithBadge: {
     display: 'flex',
     alignItems: 'center',
@@ -239,7 +231,7 @@ const styles = {
     borderRadius: '10px',
     lineHeight: 1,
   },
-  
+
   footer: {
     backgroundColor: '#1f2937',
     color: '#9ca3af',
