@@ -2,7 +2,7 @@
 // ÚLTIMA MODIFICACION: 01/12/2025
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../context/UserContext'; 
+import { useUser } from '../context/UserContext';
 import { obtenerDatosUnificados } from '../services/catalog.service';
 import { FINANZAS, IMAGES } from '../config/constants';
 import { doc, setDoc } from 'firebase/firestore';
@@ -13,29 +13,29 @@ const STORAGE_KEY = 'inmueble_advisor_onboarding_temp';
 
 export default function Perfil() {
   const navigate = useNavigate();
-  const { loginWithGoogle, trackBehavior, userProfile, loadingUser, user } = useUser(); 
+  const { loginWithGoogle, trackBehavior, userProfile, loadingUser, user } = useUser();
 
   // --- 1. ESTADOS CON RECUPERACIÓN (Persistencia) ---
   // Intentamos leer del localStorage al iniciar el componente
   const getSavedState = (key, def) => {
     try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            return parsed[key] !== undefined ? parsed[key] : def;
-        }
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed[key] !== undefined ? parsed[key] : def;
+      }
     } catch (e) { console.error(e); }
     return def;
   };
 
-  const [step, setStep] = useState(() => getSavedState('step', 0)); 
-  const totalSteps = 3; 
+  const [step, setStep] = useState(() => getSavedState('step', 0));
+  const totalSteps = 3;
   const [isSaving, setIsSaving] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const [capitalInicial, setCapitalInicial] = useState(() => getSavedState('capitalInicial', 250000));
   const [mensualidad, setMensualidad] = useState(() => getSavedState('mensualidad', 15000));
-  const [recamaras, setRecamaras] = useState(() => getSavedState('recamaras', null)); 
+  const [recamaras, setRecamaras] = useState(() => getSavedState('recamaras', null));
   const [entregaInmediata, setEntregaInmediata] = useState(() => getSavedState('entregaInmediata', null));
 
   const [dataMaestra, setDataMaestra] = useState([]);
@@ -58,21 +58,37 @@ export default function Perfil() {
 
     // Caso A: Asesor Incompleto -> Onboarding
     if (user && userProfile?.role === 'asesor' && !userProfile?.onboardingCompleto) {
-        navigate('/onboarding-asesor');
-        return;
+      navigate('/onboarding-asesor');
+      return;
     }
 
     // Caso B: Usuario Logueado (Cualquier rol) en Paso Final
     // Si ya tienes sesión y estás viendo resultados (step 3), te mandamos al catálogo automáticamente.
     // Esto soluciona el problema de "quedarse atorado" tras el login en móvil.
     if (user && step === 3) {
-         const statusParam = entregaInmediata === true ? 'inmediata' : (entregaInmediata === false ? 'preventa' : 'all');
-         const maxPrice = presupuestoMaximo > 0 ? Math.round(presupuestoMaximo) : '';
-         const rooms = recamaras || '';
-         
-         // Limpiamos storage y navegamos
-         localStorage.removeItem(STORAGE_KEY);
-         navigate(`/catalogo?maxPrice=${maxPrice}&rooms=${rooms}&status=${statusParam}`, { replace: true });
+      const statusParam = entregaInmediata === true ? 'inmediata' : (entregaInmediata === false ? 'preventa' : 'all');
+      const maxPrice = presupuestoMaximo > 0 ? Math.round(presupuestoMaximo) : '';
+      const rooms = recamaras || '';
+
+      // Limpiamos storage y navegamos
+      localStorage.removeItem(STORAGE_KEY);
+      navigate(`/catalogo?maxPrice=${maxPrice}&rooms=${rooms}&status=${statusParam}`, { replace: true });
+    }
+
+    // Caso C: Usuario Logueado con Perfil ya completado (UX Improvement)
+    // Si ya tienes un perfil financiero guardado, no te hacemos pasar por el wizard de nuevo.
+    if (user && userProfile?.perfilFinanciero) {
+      const pf = userProfile.perfilFinanciero;
+
+      // Recuperamos los datos guardados
+      const statusParam = pf.interesInmediato === true ? 'inmediata' : (pf.interesInmediato === false ? 'preventa' : 'all');
+      const maxPrice = pf.presupuestoCalculado > 0 ? Math.round(pf.presupuestoCalculado) : '';
+      const rooms = pf.recamarasDeseadas || '';
+
+      // Limpiamos storage local para evitar conflictos y navegamos
+      localStorage.removeItem(STORAGE_KEY);
+      console.log("Redirigiendo usuario perfilado al catálogo...");
+      navigate(`/catalogo?maxPrice=${maxPrice}&rooms=${rooms}&status=${statusParam}`, { replace: true });
     }
   }, [user, userProfile, loadingUser, step, navigate, presupuestoMaximo, recamaras, entregaInmediata]);
 
@@ -92,7 +108,7 @@ export default function Perfil() {
     const limitePorEfectivo = capitalInicial / (PORCENTAJE_GASTOS_NOTARIALES + PORCENTAJE_ENGANCHE_MINIMO);
     const limitePorCapacidadTotal = (capitalInicial + maxCreditoBanco) / (1 + PORCENTAJE_GASTOS_NOTARIALES);
     const capacidadReal = Math.min(limitePorEfectivo, limitePorCapacidadTotal);
-    
+
     setPresupuestoMaximo(capacidadReal);
 
     if (capacidadReal > 0) {
@@ -129,24 +145,24 @@ export default function Perfil() {
   const handleRoleSelection = (role) => {
     trackBehavior('select_role', { role });
     if (role === 'asesor') {
-      navigate('/soy-asesor'); 
+      navigate('/soy-asesor');
     } else {
-      setStep(1); 
+      setStep(1);
     }
   };
 
   const handleLoginDirecto = async () => {
     setIsLoggingIn(true);
     try {
-        const firebaseUser = await loginWithGoogle();
-        if (firebaseUser) {
-            localStorage.removeItem(STORAGE_KEY);
-            navigate('/catalogo');
-        }
+      const firebaseUser = await loginWithGoogle();
+      if (firebaseUser) {
+        localStorage.removeItem(STORAGE_KEY);
+        navigate('/catalogo');
+      }
     } catch (error) {
-        console.error("Login directo fallido", error);
+      console.error("Login directo fallido", error);
     } finally {
-        setIsLoggingIn(false);
+      setIsLoggingIn(false);
     }
   };
 
@@ -165,13 +181,13 @@ export default function Perfil() {
     setIsSaving(true);
     try {
       let firebaseUser = user;
-      
+
       if (!firebaseUser) {
         // Al llamar esto, si es mobile redirect, la página se recargará
         // y el useEffect de arriba manejará la continuación.
-        firebaseUser = await loginWithGoogle('cliente'); 
+        firebaseUser = await loginWithGoogle('cliente');
       }
-      
+
       if (firebaseUser) {
         // Guardado de datos
         const updates = {
@@ -190,32 +206,32 @@ export default function Perfil() {
 
         await setDoc(doc(db, "users", firebaseUser.uid), updates, { merge: true });
 
-        trackBehavior('onboarding_completed', { 
+        trackBehavior('onboarding_completed', {
           presupuesto: presupuestoMaximo,
           opciones_vistas: opcionesEncontradas
         });
-        
+
         // Redirección explícita (para desktop/popup)
         const statusParam = entregaInmediata === true ? 'inmediata' : (entregaInmediata === false ? 'preventa' : 'all');
         const maxPrice = presupuestoMaximo > 0 ? Math.round(presupuestoMaximo) : '';
         const rooms = recamaras || '';
-        
+
         localStorage.removeItem(STORAGE_KEY);
         navigate(`/catalogo?maxPrice=${maxPrice}&rooms=${rooms}&status=${statusParam}`, { replace: true });
       }
     } catch (error) {
       console.error("Error en finalización:", error);
       if (error.code !== 'auth/popup-closed-by-user') {
-          alert("Hubo un problema al conectar. Intenta de nuevo.");
+        alert("Hubo un problema al conectar. Intenta de nuevo.");
       }
     } finally {
-      if (!user) setIsSaving(false); 
+      if (!user) setIsSaving(false);
     }
   };
 
   const isStepValid = () => {
-      if (step === 1) return recamaras !== null && entregaInmediata !== null;
-      return true;
+    if (step === 1) return recamaras !== null && entregaInmediata !== null;
+    return true;
   };
 
   return (
@@ -231,18 +247,18 @@ export default function Perfil() {
       <div style={styles.card}>
         {step > 0 && (
           <div style={styles.progressBarContainer}>
-            <div style={{...styles.progressBarFill, width: `${(step / totalSteps) * 100}%`}}></div>
+            <div style={{ ...styles.progressBarFill, width: `${(step / totalSteps) * 100}%` }}></div>
           </div>
         )}
 
-        {step === 0 && ( 
+        {step === 0 && (
           <div style={styles.logoContainer}>
             <img src={IMAGES.LOGO_URL} alt="Logo" style={styles.logoIcon} />
           </div>
         )}
 
         <div className="step-content" key={step}>
-          
+
           {step === 0 && (
             <>
               <h1 style={styles.title}>Bienvenido</h1>
@@ -253,21 +269,21 @@ export default function Perfil() {
                   <h3 style={styles.roleTitle}>Busco mi Hogar</h3>
                   <p style={styles.roleDesc}>Quiero ver opciones a mi alcance.</p>
                 </button>
-                <button onClick={() => handleRoleSelection('asesor')} style={{...styles.roleCard, border: '2px solid #e2e8f0'}}>
+                <button onClick={() => handleRoleSelection('asesor')} style={{ ...styles.roleCard, border: '2px solid #e2e8f0' }}>
                   <div style={styles.roleIcon}>💼</div>
                   <h3 style={styles.roleTitle}>Soy Asesor</h3>
                   <p style={styles.roleDesc}>Quiero subir propiedades y captar clientes.</p>
                 </button>
               </div>
 
-              <div style={{marginTop: '25px', borderTop: '1px solid #eee', paddingTop: '20px'}}>
-                 <button 
-                    onClick={handleLoginDirecto} 
-                    disabled={isLoggingIn}
-                    style={styles.textLinkButton}
-                 >
-                    {isLoggingIn ? 'Conectando...' : '¿Ya tienes cuenta? Iniciar Sesión'}
-                 </button>
+              <div style={{ marginTop: '25px', borderTop: '1px solid #eee', paddingTop: '20px' }}>
+                <button
+                  onClick={handleLoginDirecto}
+                  disabled={isLoggingIn}
+                  style={styles.textLinkButton}
+                >
+                  {isLoggingIn ? 'Conectando...' : '¿Ya tienes cuenta? Iniciar Sesión'}
+                </button>
               </div>
             </>
           )}
@@ -279,13 +295,13 @@ export default function Perfil() {
               <label style={styles.label}>Recámaras mínimas:</label>
               <div style={styles.optionsContainer}>
                 {[1, 2, 3, 4].map((num) => (
-                  <button key={num} onClick={() => setRecamaras(num)} style={{...styles.circleBtn, backgroundColor: recamaras === num ? 'var(--primary-color)' : '#f0f0f0', color: recamaras === num ? 'white' : '#555', transform: recamaras === num ? 'scale(1.1)' : 'scale(1)'}}>{num === 4 ? '4+' : num}</button>
+                  <button key={num} onClick={() => setRecamaras(num)} style={{ ...styles.circleBtn, backgroundColor: recamaras === num ? 'var(--primary-color)' : '#f0f0f0', color: recamaras === num ? 'white' : '#555', transform: recamaras === num ? 'scale(1.1)' : 'scale(1)' }}>{num === 4 ? '4+' : num}</button>
                 ))}
               </div>
-              <label style={{...styles.label, marginTop: '20px'}}>Tiempo de entrega:</label>
+              <label style={{ ...styles.label, marginTop: '20px' }}>Tiempo de entrega:</label>
               <div style={styles.deliveryContainer}>
-                <button onClick={() => setEntregaInmediata(true)} style={{...styles.deliveryBtn, backgroundColor: entregaInmediata === true ? 'var(--primary-color)' : 'white', color: entregaInmediata === true ? 'white' : '#555', borderColor: entregaInmediata === true ? 'var(--primary-color)' : '#eee'}}>Entrega inmediata</button>
-                <button onClick={() => setEntregaInmediata(false)} style={{...styles.deliveryBtn, backgroundColor: entregaInmediata === false ? 'var(--primary-color)' : 'white', color: entregaInmediata === false ? 'white' : '#555', borderColor: entregaInmediata === false ? 'var(--primary-color)' : '#eee'}}>Pre-venta</button>
+                <button onClick={() => setEntregaInmediata(true)} style={{ ...styles.deliveryBtn, backgroundColor: entregaInmediata === true ? 'var(--primary-color)' : 'white', color: entregaInmediata === true ? 'white' : '#555', borderColor: entregaInmediata === true ? 'var(--primary-color)' : '#eee' }}>Entrega inmediata</button>
+                <button onClick={() => setEntregaInmediata(false)} style={{ ...styles.deliveryBtn, backgroundColor: entregaInmediata === false ? 'var(--primary-color)' : 'white', color: entregaInmediata === false ? 'white' : '#555', borderColor: entregaInmediata === false ? 'var(--primary-color)' : '#eee' }}>Pre-venta</button>
               </div>
             </>
           )}
@@ -301,9 +317,9 @@ export default function Perfil() {
                   <input type="range" min="50000" max="3000000" step="10000" value={capitalInicial} onChange={(e) => setCapitalInicial(Number(e.target.value))} />
                 </div>
                 <div style={styles.calcInputGroup}>
-                   <label style={styles.labelSmall}>Mensualidad cómoda:</label>
-                   <div style={styles.sliderValue}>{formatoMoneda(mensualidad)}</div>
-                   <input type="range" min="5000" max="150000" step="1000" value={mensualidad} onChange={(e) => setMensualidad(Number(e.target.value))} />
+                  <label style={styles.labelSmall}>Mensualidad cómoda:</label>
+                  <div style={styles.sliderValue}>{formatoMoneda(mensualidad)}</div>
+                  <input type="range" min="5000" max="150000" step="1000" value={mensualidad} onChange={(e) => setMensualidad(Number(e.target.value))} />
                 </div>
               </div>
             </>
@@ -314,15 +330,15 @@ export default function Perfil() {
               <h1 style={styles.title}>¡Listo!</h1>
               <p style={styles.subtitle}>Basado en tus finanzas, este es el valor máximo de propiedad que te recomendamos:</p>
               <div style={styles.finalResultBox}>
-                <span style={{fontSize: '0.9rem', opacity: 0.8}}>Tu Presupuesto Máximo:</span>
+                <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Tu Presupuesto Máximo:</span>
                 <div style={styles.finalAmount}>{formatoMoneda(presupuestoMaximo)}</div>
-                <div style={{...styles.resultNote, color: esAlerta ? '#fff9c4' : 'white', fontWeight: '500'}}>{notaDinamica}</div>
+                <div style={{ ...styles.resultNote, color: esAlerta ? '#fff9c4' : 'white', fontWeight: '500' }}>{notaDinamica}</div>
               </div>
-              <p style={{fontSize: '0.9rem', color: '#666', marginTop: '20px'}}>
+              <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '20px' }}>
                 {dataMaestra.length > 0 ? (
-                   opcionesEncontradas > 0 
-                   ? `Hemos analizado el mercado y encontramos ${opcionesEncontradas} opciones para ti.` 
-                   : "Con estos parámetros, el mercado está limitado. Ajusta tus filtros para encontrar más opciones."
+                  opcionesEncontradas > 0
+                    ? `Hemos analizado el mercado y encontramos ${opcionesEncontradas} opciones para ti.`
+                    : "Con estos parámetros, el mercado está limitado. Ajusta tus filtros para encontrar más opciones."
                 ) : "Cargando datos del mercado..."}
               </p>
             </>
@@ -332,18 +348,18 @@ export default function Perfil() {
         {step > 0 && (
           <div style={styles.navContainer}>
             <button onClick={prevStep} style={styles.secondaryButton}>Atrás</button>
-            <button 
-                onClick={step < totalSteps ? nextStep : handleFinalizar} 
-                disabled={!isStepValid() || isSaving}
-                style={{
-                    ...styles.primaryButton, 
-                    opacity: (!isStepValid() || isSaving) ? 0.5 : 1,
-                    backgroundColor: step === totalSteps ? '#28a745' : 'var(--primary-color)'
-                }}
+            <button
+              onClick={step < totalSteps ? nextStep : handleFinalizar}
+              disabled={!isStepValid() || isSaving}
+              style={{
+                ...styles.primaryButton,
+                opacity: (!isStepValid() || isSaving) ? 0.5 : 1,
+                backgroundColor: step === totalSteps ? '#28a745' : 'var(--primary-color)'
+              }}
             >
-                {step === totalSteps 
-                    ? (isSaving ? 'Procesando...' : 'Ver Propiedades')
-                    : (step === 1 ? 'Comenzar' : 'Siguiente 👉')}
+              {step === totalSteps
+                ? (isSaving ? 'Procesando...' : 'Ver Propiedades')
+                : (step === 1 ? 'Comenzar' : 'Siguiente 👉')}
             </button>
           </div>
         )}
