@@ -1,9 +1,9 @@
-// src/screens/test_OnboardingCliente.jsx
+// tests/test_OnboardingCliente.jsx
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import OnboardingCliente from './OnboardingCliente';
-import { UserContext } from '../context/UserContext';
+import OnboardingCliente from '../src/screens/OnboardingCliente';
+import { UserContext } from '../src/context/UserContext';
 import { MemoryRouter } from 'react-router-dom';
 
 // Mock de hooks y servicios
@@ -16,11 +16,11 @@ vi.mock('react-router-dom', async () => {
     };
 });
 
-vi.mock('../services/catalog.service', () => ({
+vi.mock('../src/services/catalog.service', () => ({
     obtenerDatosUnificados: vi.fn().mockResolvedValue([]),
 }));
 
-vi.mock('../firebase/config', () => ({
+vi.mock('../src/firebase/config', () => ({
     db: {},
 }));
 

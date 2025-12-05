@@ -1,9 +1,9 @@
-// src/screens/test_Perfil.jsx
+// tests/test_Perfil.jsx
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import Perfil from './Perfil';
-import { UserContext } from '../context/UserContext';
+import Perfil from '../src/screens/Perfil';
+import { UserContext } from '../src/context/UserContext';
 import { MemoryRouter } from 'react-router-dom';
 
 const mockNavigate = vi.fn();
