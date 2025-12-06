@@ -67,17 +67,9 @@ function App() {
 
                 {/* 5. RUTAS DEL SISTEMA (Protegidas) */}
 
-                <Route path="catalogo" element={
-                  <ProtectedRoute requireOnboarding={true}>
-                    <Catalogo />
-                  </ProtectedRoute>
-                } />
+                <Route path="catalogo" element={<Catalogo />} />
 
-                <Route path="mapa" element={
-                  <ProtectedRoute requireOnboarding={true}>
-                    <Mapa />
-                  </ProtectedRoute>
-                } />
+                <Route path="mapa" element={<Mapa />} />
 
                 {/* ⭐ NUEVA RUTA: Ruta para la pantalla de Comparador y Favoritos */}
                 <Route path="favoritos" element={<Comparador />} />

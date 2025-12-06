@@ -75,23 +75,19 @@ export default function Layout() {
             className={`nav-menu ${isMenuOpen ? 'is-open' : ''}`}
             style={styles.nav}
           >
-            {/* Tareas de Cliente (Visibles para todos los logueados) */}
-            <Link
-              to="/"
-              style={getLinkStyle('/')}
-            >
-              {isAsesor ? 'Mi Perfil' : 'Inicio'}
-            </Link>
-
+            {/* 1. CATÁLOGO */}
             <Link to="/catalogo" style={getLinkStyle('/catalogo')}>Catálogo</Link>
+
+            {/* 2. MAPA */}
             <Link to="/mapa" style={getLinkStyle('/mapa')}>Mapa</Link>
 
+            {/* 3. FAVORITOS */}
             <Link
               to="/favoritos"
               style={getLinkStyle('/favoritos')}
             >
               <span style={styles.linkWithBadge}>
-                Comparador
+                Favoritos
                 {favoritosIds.length > 0 && (
                   <span style={styles.favoriteBadge}>
                     {favoritosIds.length}
@@ -100,25 +96,27 @@ export default function Layout() {
               </span>
             </Link>
 
+            {/* 4. PERFILADO */}
+            <Link to="/onboarding-cliente" style={getLinkStyle('/onboarding-cliente')}>Perfilado</Link>
+
+            {/* 5. OPCIÓN CONDICIONAL: Mis Leads (Asesor) o Soy Asesor (Público/Cliente) */}
             {isAsesor ? (
-              // DASHBOARD ASESOR
               <Link
                 to="/account-asesor"
                 style={getLinkStyle('/account-asesor')}
               >
-                Panel Asesor
+                Mis Leads
               </Link>
             ) : (
-              // ENLACE ASESOR/ONBOARDING
               <Link
-                to={user ? '/onboarding-asesor' : '/soy-asesor'}
-                style={getLinkStyle(user ? '/onboarding-asesor' : '/soy-asesor')}
+                to="/soy-asesor"
+                style={getLinkStyle('/soy-asesor')}
               >
-                Soy Asesor
+                Soy asesor
               </Link>
             )}
 
-            {/* ⭐ NUEVO: BOTÓN DE LOGOUT CONDICIONAL */}
+            {/* BOTÓN DE LOGOUT CONDICIONAL */}
             {user && (
               <button
                 onClick={logout}
@@ -220,7 +218,8 @@ const styles = {
   linkWithBadge: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px'
+    gap: '8px',
+    justifyContent: 'center' // Centra el contenido (texto + badge)
   },
   favoriteBadge: {
     backgroundColor: '#fbbf24', // Amarillo dorado
