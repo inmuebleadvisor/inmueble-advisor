@@ -23,7 +23,7 @@ import DetalleDesarrollo from './screens/DetalleDesarrollo';
 import Mapa from './screens/Mapa';
 import LandingAsesores from './screens/LandingAsesores';
 import OnboardingAsesor from './screens/OnboardingAsesor';
-import AccountAsesor from './screens/AccountAsessor';
+import AccountAsesor from './screens/AccountAsesor';
 // ⭐ NUEVO: Pantalla de Onboarding Cliente (migración UX)
 import OnboardingCliente from './screens/OnboardingCliente';
 // ⭐ NUEVO: Pantalla de Comparador y Favoritos (implementado en el plan)
