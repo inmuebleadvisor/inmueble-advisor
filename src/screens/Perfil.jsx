@@ -1,15 +1,26 @@
 // src/screens/Perfil.jsx
 // ÚLTIMA MODIFICACION: 01/12/2025
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { IMAGES } from '../config/constants';
 
 export default function Perfil() {
   const navigate = useNavigate();
-  // Solo necesitamos trackBehavior y loginWithGoogle aquí
-  const { loginWithGoogle, trackBehavior } = useUser();
+  // Solo necesitamos trackBehavior y loginWithGoogle aquí, pero ahora también user data para redirección
+  const { loginWithGoogle, trackBehavior, user, userProfile, loadingUser } = useUser();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  // EFECTO: Redirección automática si ya tiene onboarding completo
+  useEffect(() => {
+    if (!loadingUser && user && userProfile?.onboardingCompleto) {
+      // Si es asesor, quizás deberíamos mandarlo a /account-asesor, pero el requerimiento dice /catalogo para usuarios
+      // Asumiremos que si el rol es 'cliente' y tiene onboarding, va a catalogo.
+      // Si el rol es 'asesor', el requerimiento no especificó pero 'catalogo' es safe o 'account-asesor'.
+      // El requerimiento dice: "si el visitante ya tiene un usuario y ya nos brindo la informacion del inboardingCliente, lo vamos a reenviar al /catalogo"
+      navigate('/catalogo');
+    }
+  }, [user, userProfile, loadingUser, navigate]);
 
   const handleRoleSelection = (role) => {
     trackBehavior('select_role', { role });
