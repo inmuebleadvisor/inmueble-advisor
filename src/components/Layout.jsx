@@ -6,6 +6,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 // Importamos el hook de Favoritos para el contador
 import { useFavorites } from '../context/FavoritesContext';
+import WhatsAppButton from './common/WhatsAppButton/WhatsAppButton';
 
 // URL del Logotipo Oficial
 const LOGO_URL = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/Logo-InmuebleAdvisor-en-fondo-Azul-e1758163267740.png";
@@ -157,6 +158,8 @@ export default function Layout() {
           © {new Date().getFullYear()} Inmueble Advisor. Tecnología inmobiliaria inteligente.
         </div>
       </footer>
+
+      <WhatsAppButton />
 
     </div>
   );

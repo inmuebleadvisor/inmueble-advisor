@@ -1,0 +1,80 @@
+/* src/components/common/WhatsAppButton/WhatsAppButton.css */
+
+/* Metodología BEM: Bloque Whatsapp Button */
+.whatsapp-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background-color: #25D366; /* WhatsApp Brand Color */
+  color: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.whatsapp-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+}
+
+.whatsapp-btn:active {
+  transform: scale(0.95);
+}
+
+.whatsapp-btn__icon {
+  width: 35px;
+  height: 35px;
+  fill: white;
+}
+
+/* Tooltip opcional (si se desea agregar más adelante) */
+.whatsapp-btn::before {
+  content: '¡Contáctanos!';
+  position: absolute;
+  right: 70px;
+  background-color: white;
+  color: #075E54;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, transform 0.3s;
+  transform: translateX(10px);
+  white-space: nowrap;
+}
+
+.whatsapp-btn:hover::before {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+/* Ajuste para pantallas móviles para no tapar contenido importante */
+@media (max-width: 768px) {
+  .whatsapp-btn {
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .whatsapp-btn__icon {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .whatsapp-btn::before {
+    display: none; /* Ocultar tooltip en móvil */
+  }
+}
