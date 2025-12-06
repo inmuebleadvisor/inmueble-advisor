@@ -27,7 +27,7 @@ import AccountAsesor from './screens/AccountAsessor';
 // ⭐ NUEVO: Pantalla de Onboarding Cliente (migración UX)
 import OnboardingCliente from './screens/OnboardingCliente';
 // ⭐ NUEVO: Pantalla de Comparador y Favoritos (implementado en el plan)
-import Comparador from './screens/Comparador';
+import Favoritos from './screens/Favoritos';
 
 // ⭐ HERRAMIENTA ADMIN: Importamos la pantalla de exportación
 import AdminDataExport from './screens/AdminDataExport';
@@ -72,7 +72,7 @@ function App() {
                 <Route path="mapa" element={<Mapa />} />
 
                 {/* ⭐ NUEVA RUTA: Ruta para la pantalla de Comparador y Favoritos */}
-                <Route path="favoritos" element={<Comparador />} />
+                <Route path="favoritos" element={<Favoritos />} />
 
                 {/* 6. RUTAS DE DETALLE */}
                 <Route path="modelo/:id" element={<DetalleModelo />} />
