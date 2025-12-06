@@ -16,7 +16,7 @@ Representa un complejo habitacional (ej. conjunto de casas, torre de departament
 | **nombre** | `string` | Simple | Nombre comercial del desarrollo. |
 | **descripcion** | `string` | Simple | Texto detallado sobre el desarrollo y estilo de vida. |
 | **constructora** | `string` | Simple | Nombre de la empresa constructora. |
-| **status** | `string` | Simple | Estado de venta/construcción (ej. "Entrega Inmediata", "Preventa"). |
+| **status** | `string` | Simple | Estado de venta/construcción (ej. "Entrega Inmediata", "Pre-Venta"). |
 | **scoreDesarrollo** | `number` | Simple | Puntuación o métrica de calidad/popularidad. |
 | **precioDesde** | `number` | Simple | Precio más bajo disponible entre todos los modelos. |
 | **keywords** | `array<string>` | Lista | Palabras clave para búsqueda y SEO. |

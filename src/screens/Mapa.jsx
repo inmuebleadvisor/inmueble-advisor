@@ -7,7 +7,9 @@ import 'leaflet/dist/leaflet.css';
 
 import { useUser } from '../context/UserContext';
 // ✅ MODIFICACIÓN: Importamos el nuevo hook de contexto
-import { useCatalog } from '../context/CatalogContext'; 
+import { useCatalog } from '../context/CatalogContext';
+import { normalizar } from '../utils/formatters';
+import { STATUS } from '../config/constants';
 // Eliminamos: import { obtenerDatosUnificados, obtenerTopAmenidades } from '../services/catalog.service';
 
 const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
@@ -81,8 +83,8 @@ const Icons = {
 export default function Mapa() {
   const { user, trackBehavior } = useUser();
   // ✅ OBTENEMOS DATOS Y ESTADO DE CARGA DEL CONTEXTO
-  const { modelos: dataMaestra, amenidades: topAmenidades, loadingCatalog: loading } = useCatalog();
-  
+  const { modelos: dataMaestra, desarrollos: dataDesarrollos, amenidades: topAmenidades, loadingCatalog: loading } = useCatalog();
+
   // --- ESTADOS DE UI ---
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -92,7 +94,7 @@ export default function Mapa() {
   const [filtros, setFiltros] = useState({
     precioMax: user?.presupuestoCalculado ? Number(user.presupuestoCalculado) : 5000000,
     habitaciones: user?.recamaras || 0,
-    status: 'all', 
+    status: 'all',
     amenidad: ''
   });
 
@@ -105,60 +107,149 @@ export default function Mapa() {
 
     // A. Filtrar y Agrupar
     dataMaestra.forEach(modelo => {
-      // Filtros básicos
+      // Búsqueda robusta del desarrollo padre
+      const desarrollo = dataDesarrollos.find(d => String(d.id) === String(modelo.idDesarrollo || modelo.id_desarrollo));
+
+      // --- 1. PRECIO ---
       if (modelo.precioNumerico > filtros.precioMax) return;
+
+      // --- 2. HABITACIONES ---
       if (filtros.habitaciones > 0 && modelo.recamaras < filtros.habitaciones) return;
-      if (filtros.status === 'inmediata' && modelo.esPreventa === true) return;
-      if (filtros.status === 'preventa' && modelo.esPreventa === false) return;
-      
-      // Filtro Amenidad
-      // ✅ CORRECCIÓN: Usamos el campo correcto `amenidadesDesarrollo`
-      if (filtros.amenidad && Array.isArray(modelo.amenidadesDesarrollo)) {
-        if (!modelo.amenidadesDesarrollo.some(a => a.toLowerCase().includes(filtros.amenidad.toLowerCase()))) return;
+
+      // --- 3. STATUS (ETAPA) - Lógica Robusta de Catalogo.jsx ---
+      let esPreventa = false;
+
+      // Chequeo en Desarrollo
+      if (desarrollo) {
+        const statusDesarrollo = String(desarrollo.status || '').toUpperCase().trim();
+        if (
+          statusDesarrollo === 'PRE-VENTA' ||
+          statusDesarrollo === 'PREVENTA' ||
+          statusDesarrollo === STATUS?.DEV_PREALE || // Optional chaining por seguridad
+          statusDesarrollo.includes('PRE-VENTA') ||
+          statusDesarrollo.includes('PREVENTA')
+        ) {
+          esPreventa = true;
+        }
+      }
+
+      // Chequeo en Modelo (Fallback/Override)
+      if (!esPreventa && (modelo.esPreventa === true || modelo.esPreventa === 'true' || modelo.esPreventa === 1)) {
+        esPreventa = true;
+      }
+
+      if (filtros.status === 'inmediata' && esPreventa) return;
+      if (filtros.status === 'preventa' && !esPreventa) return;
+
+      // --- 4. AMENIDAD - Lógica Unificada ---
+      if (filtros.amenidad) {
+        const amenidadBuscada = normalizar(filtros.amenidad);
+
+        const amDesarrollo = Array.isArray(desarrollo?.amenidades) ? desarrollo.amenidades : [];
+        const amModelo = Array.isArray(modelo.amenidades) ? modelo.amenidades : [];
+        const amModeloDesarrollo = Array.isArray(modelo.amenidadesDesarrollo) ? modelo.amenidadesDesarrollo : [];
+
+        // Fusión de todas las fuentes posibles de amenidades
+        const todasAmenidades = [...new Set([...amDesarrollo, ...amModelo, ...amModeloDesarrollo])];
+
+        // Verificación estricta: Si no tiene ninguna amenidad listada en ningún lado, no pasa el filtro
+        if (todasAmenidades.length === 0) return;
+
+        const tieneAmenidad = todasAmenidades.some(a => normalizar(a).includes(amenidadBuscada));
+        if (!tieneAmenidad) return;
       }
 
       // Agrupación por ID de Desarrollo
-      const idDev = String(modelo.id_desarrollo || 'sin-id').trim();
-      
+      // Usamos idDesarrollo que es el campo normalizado por el servicio
+      const idDev = String(modelo.idDesarrollo || modelo.id_desarrollo || 'sin-id').trim();
+
       if (!grupos[idDev]) {
         // Inicializamos el grupo con la info "denormalizada" que guardamos en el modelo
         grupos[idDev] = {
           id: idDev,
           nombre: modelo.nombreDesarrollo,
           zona: modelo.zona,
-          ubicacion: modelo.ubicacion,
+          // Usamos las coordenadas seguras parseadas por el servicio
+          ubicacion: { latitud: modelo.latitud, longitud: modelo.longitud },
           portada: modelo.imagen, // Usamos la imagen del primer modelo como portada del pin
           precios: []
         };
       }
-      
+
       grupos[idDev].precios.push(modelo.precioNumerico);
     });
 
-    // B. Calcular etiquetas de precio
-    return Object.values(grupos).map(grupo => {
-      const min = Math.min(...grupo.precios);
-      const max = Math.max(...grupo.precios);
+    // 3. LÓGICA DE MAPEO (Iteramos Desarrollos DIRECTAMENTE para cumplir Schema V3)
+    if (!dataDesarrollos || dataDesarrollos.length === 0) return [];
 
-      const formatCompact = (val) => {
-        if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`;
-        if (val >= 1000) return `$${(val / 1000).toFixed(0)}k`;
-        return `$${val}`;
-      };
+    return dataDesarrollos.map(dev => {
+      // Validamos ubicación estrictamente según Schema
+      if (!dev.latitud || !dev.longitud) return null;
 
-      let etiqueta = formatCompact(min);
-      if (min !== max) {
-        etiqueta = `${formatCompact(min)} - ${formatCompact(max)}`;
+      // --- FILTROS GLOBALES (Aplicados a Nivel Desarrollo) ---
+
+      // 1. Status/Etapa vs Schema V3 "status" (string)
+      const statusDev = String(dev.status || '').toUpperCase();
+      let esPreventa = statusDev.includes('PRE') || statusDev === STATUS?.DEV_PREALE;
+
+      if (filtros.status === 'inmediata' && esPreventa) return null;
+      if (filtros.status === 'preventa' && !esPreventa) return null;
+
+      // 2. Amenidades
+      if (filtros.amenidad) {
+        const amHeaders = Array.isArray(dev.amenidades) ? dev.amenidades : [];
+        if (amHeaders.length === 0) return null;
+        if (!amHeaders.some(a => normalizar(a).includes(normalizar(filtros.amenidad)))) return null;
       }
 
-      return { ...grupo, etiquetaPrecio: etiqueta };
-    });
+      // --- FILTROS DE HIJOS (Precio, Recámaras) ---
+      // Buscamos los modelos para validar PRECIO y RECAMARAS, y calcular rango
+      const modelosHijos = dataMaestra.filter(m => String(m.idDesarrollo) === String(dev.id));
+
+      const modelosQueCumplen = modelosHijos.filter(m => {
+        if (Number(m.precioNumerico) > filtros.precioMax) return false;
+        if (filtros.habitaciones > 0 && Number(m.recamaras) < filtros.habitaciones) return false;
+        return true;
+      });
+
+      // Si se aplicaron filtros de rango y ningun hijo cumple, ocultamos el pin
+      const hayFiltrosRango = filtros.precioMax < 5000000 || filtros.habitaciones > 0;
+      if (hayFiltrosRango && modelosQueCumplen.length === 0) return null;
+
+      // Generación de Etiqueta de Precio
+      let etiqueta = "$ Consultar";
+      if (modelosHijos.length > 0) {
+        const precios = modelosHijos.map(m => Number(m.precioNumerico));
+        const min = Math.min(...precios);
+        const max = Math.max(...precios);
+
+        const formatCompact = (val) => {
+          if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`;
+          if (val >= 1000) return `$${(val / 1000).toFixed(0)}k`;
+          return `$${val}`;
+        };
+
+        etiqueta = formatCompact(min);
+        if (min !== max) etiqueta = `${formatCompact(min)} - ${formatCompact(max)}`;
+      } else if (dev.precioDesde) {
+        etiqueta = `$${(dev.precioDesde / 1000000).toFixed(1)}M`;
+      }
+
+      return {
+        id: dev.id,
+        nombre: dev.nombre,
+        zona: dev.zona,
+        ubicacion: { latitud: dev.latitud, longitud: dev.longitud },
+        portada: dev.imagen,
+        etiquetaPrecio: etiqueta
+      };
+    }).filter(Boolean);
 
   }, [dataMaestra, filtros, loading]); // dataMaestra y loading ahora vienen del contexto
 
   const formatoMoneda = (val) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
   const handleFilterChange = (key, val) => setFiltros(prev => ({ ...prev, [key]: val }));
-  const centroMapa = [21.88, -102.29]; 
+  const centroMapa = [21.88, -102.29];
 
   if (loading) {
     return (
@@ -170,7 +261,7 @@ export default function Mapa() {
 
   return (
     <div className="main-content" style={styles.pageContainer}>
-      
+
       <header style={styles.header}>
         <div style={styles.headerContent}>
           <h1 style={styles.title}>Mapa Interactivo</h1>
@@ -186,17 +277,17 @@ export default function Mapa() {
           <span style={styles.chip}>Max {formatoMoneda(filtros.precioMax)}</span>
           {filtros.habitaciones > 0 && <span style={styles.chip}>{filtros.habitaciones}+ Rec.</span>}
           {filtros.status !== 'all' && (
-             <span style={{...styles.chip, color: '#166534', backgroundColor: '#dcfce7', borderColor: '#bbf7d0'}}>
-               {filtros.status === 'preventa' ? 'Pre-Venta' : 'Entrega Inmediata'}
-             </span>
+            <span style={{ ...styles.chip, color: '#166534', backgroundColor: '#dcfce7', borderColor: '#bbf7d0' }}>
+              {filtros.status === 'preventa' ? 'Pre-Venta' : 'Entrega Inmediata'}
+            </span>
           )}
         </div>
       </div>
 
       <div style={styles.mapContainer}>
-        <MapContainer 
-          center={centroMapa} 
-          zoom={12} 
+        <MapContainer
+          center={centroMapa}
+          zoom={12}
           style={{ height: '100%', width: '100%' }}
           zoomControl={false}
         >
@@ -210,7 +301,7 @@ export default function Mapa() {
           {marcadoresVisibles.map((dev) => (
             // Validamos que tenga coordenadas antes de pintar
             (dev.ubicacion?.latitud && dev.ubicacion?.longitud) && (
-              <Marker 
+              <Marker
                 key={dev.id}
                 position={[dev.ubicacion.latitud, dev.ubicacion.longitud]}
                 icon={createCustomIcon(dev.etiquetaPrecio)}
@@ -220,8 +311,8 @@ export default function Mapa() {
               >
                 <Popup className="custom-popup">
                   <div style={styles.popupContent}>
-                    <img 
-                      src={dev.portada || FALLBACK_IMG} 
+                    <img
+                      src={dev.portada || FALLBACK_IMG}
                       alt={dev.nombre}
                       style={styles.popupImage}
                       onError={(e) => e.target.src = FALLBACK_IMG}
@@ -229,7 +320,7 @@ export default function Mapa() {
                     <h4 style={styles.popupTitle}>{dev.nombre}</h4>
                     <p style={styles.popupPrice}>{dev.etiquetaPrecio}</p>
                     <p style={styles.popupLocation}>{dev.zona || 'Aguascalientes'}</p>
-                    <Link 
+                    <Link
                       to={`/desarrollo/${dev.id}`}
                       style={styles.popupButton}
                     >
@@ -250,12 +341,12 @@ export default function Mapa() {
               <h2 style={styles.modalTitle}>Filtros</h2>
               <button onClick={() => setIsFilterOpen(false)} style={styles.closeBtn}><Icons.Close /></button>
             </div>
-            
+
             <div style={styles.modalBody}>
               <div style={styles.filterSection}>
                 <label style={styles.filterLabel}>Presupuesto Máximo</label>
                 <div style={styles.priceDisplay}>{formatoMoneda(filtros.precioMax)}</div>
-                <input 
+                <input
                   type="range" min="500000" max="5000000" step="50000"
                   value={filtros.precioMax}
                   onChange={(e) => handleFilterChange('precioMax', Number(e.target.value))}
@@ -310,21 +401,25 @@ export default function Mapa() {
 
               <div style={styles.filterSection}>
                 <label style={styles.filterLabel}>Amenidades</label>
-                <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px'}}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                   <button onClick={() => handleFilterChange('amenidad', '')}
-                      style={{...styles.amenityChip, 
-                        backgroundColor: filtros.amenidad === '' ? '#e0f2fe' : '#f3f4f6', 
-                        color: filtros.amenidad === '' ? '#0284c7' : '#4b5563',
-                        border: filtros.amenidad === '' ? '1px solid #7dd3fc' : '1px solid transparent'}}>
+                    style={{
+                      ...styles.amenityChip,
+                      backgroundColor: filtros.amenidad === '' ? '#e0f2fe' : '#f3f4f6',
+                      color: filtros.amenidad === '' ? '#0284c7' : '#4b5563',
+                      border: filtros.amenidad === '' ? '1px solid #7dd3fc' : '1px solid transparent'
+                    }}>
                     Todas
                   </button>
                   {/* Amenidades ahora vienen del contexto */}
                   {topAmenidades.map((am, idx) => (
                     <button key={idx} onClick={() => handleFilterChange('amenidad', filtros.amenidad === am ? '' : am)}
-                      style={{...styles.amenityChip, 
-                        backgroundColor: filtros.amenidad === am ? '#e0f2fe' : '#f3f4f6', 
+                      style={{
+                        ...styles.amenityChip,
+                        backgroundColor: filtros.amenidad === am ? '#e0f2fe' : '#f3f4f6',
                         color: filtros.amenidad === am ? '#0284c7' : '#4b5563',
-                        border: filtros.amenidad === am ? '1px solid #7dd3fc' : '1px solid transparent'}}>
+                        border: filtros.amenidad === am ? '1px solid #7dd3fc' : '1px solid transparent'
+                      }}>
                       {am}
                     </button>
                   ))}
@@ -334,7 +429,7 @@ export default function Mapa() {
             </div>
 
             <div style={styles.modalFooter}>
-              <button style={styles.clearBtn} onClick={() => setFiltros({precioMax: 5000000, habitaciones: 0, status: 'all', amenidad: ''})}>Limpiar</button>
+              <button style={styles.clearBtn} onClick={() => setFiltros({ precioMax: 5000000, habitaciones: 0, status: 'all', amenidad: '' })}>Limpiar</button>
               <button style={styles.applyBtn} onClick={() => setIsFilterOpen(false)}>
                 Ver {marcadoresVisibles.length} desarrollos
               </button>

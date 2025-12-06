@@ -116,7 +116,7 @@ const mapModelo = (docSnapshot) => {
     keywords: Array.isArray(data.keywords) ? data.keywords : [], // Vital para búsqueda
     tipoVivienda: data.tipoVivienda || 'Propiedad',
     tipoVivienda: data.tipoVivienda || 'Propiedad',
-    esPreventa: Boolean(data.esPreventa), // Permite true, 1, "true", etc.
+    esPreventa: (data.esPreventa === true || data.esPreventa === 'true' || data.esPreventa === 1),
 
     // Info Comercial (Modelo)
     infoComercial: data.infoComercial || {}
