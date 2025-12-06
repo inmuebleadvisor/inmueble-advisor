@@ -37,18 +37,79 @@ export default function FilterModal({
                 <div className="modal__body">
 
                     <div className="filter-section">
-                        <label className="filter-section__label">Presupuesto Máximo</label>
-                        <div className="filter-section__value">{formatoMoneda(filtros.precioMax)}</div>
-                        <input
-                            type="range"
-                            min="500000"
-                            max={UI_OPCIONES.FILTRO_PRECIO_MAX}
-                            step={UI_OPCIONES.FILTRO_PRECIO_STEP}
-                            value={filtros.precioMax}
-                            onChange={(e) => handleFilterChange('precioMax', Number(e.target.value))}
-                            className="filter-section__slider"
-                        />
-                    </div>
+                        <label className="filter-section__label">Rango de Precio</label>
+
+                        {/* Dual Inputs */}
+                        <div className="price-inputs-container">
+                            <div className="price-input-group">
+                                <span className="price-currency">$</span>
+                                <input
+                                    type="text"
+                                    value={new Intl.NumberFormat('es-MX', { maximumFractionDigits: 0 }).format(filtros.precioMin)}
+                                    onChange={(e) => {
+                                        const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                                        const numValue = Number(rawValue);
+                                        const val = Math.min(numValue, filtros.precioMax - 10000);
+                                        handleFilterChange('precioMin', val);
+                                    }}
+                                    className="price-input"
+                                    placeholder="Min"
+                                />
+                            </div>
+                            <span className="price-separator">-</span>
+                            <div className="price-input-group">
+                                <span className="price-currency">$</span>
+                                <input
+                                    type="text"
+                                    value={new Intl.NumberFormat('es-MX', { maximumFractionDigits: 0 }).format(filtros.precioMax)}
+                                    onChange={(e) => {
+                                        const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                                        const numValue = Number(rawValue);
+                                        const val = Math.max(numValue, filtros.precioMin + 10000);
+                                        handleFilterChange('precioMax', val);
+                                    }}
+                                    className="price-input"
+                                    placeholder="Max"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Dual Range Slider */}
+                        < div className="range-slider" >
+                            <input
+                                type="range"
+                                min="0"
+                                max={UI_OPCIONES.FILTRO_PRECIO_MAX}
+                                step={UI_OPCIONES.FILTRO_PRECIO_STEP}
+                                value={filtros.precioMin}
+                                onChange={(e) => {
+                                    const val = Math.min(Number(e.target.value), filtros.precioMax - 10000);
+                                    handleFilterChange('precioMin', val);
+                                }}
+                                className="range-slider__thumb range-slider__thumb--min"
+                            />
+                            <input
+                                type="range"
+                                min="0"
+                                max={UI_OPCIONES.FILTRO_PRECIO_MAX}
+                                step={UI_OPCIONES.FILTRO_PRECIO_STEP}
+                                value={filtros.precioMax}
+                                onChange={(e) => {
+                                    const val = Math.max(Number(e.target.value), filtros.precioMin + 10000);
+                                    handleFilterChange('precioMax', val);
+                                }}
+                                className="range-slider__thumb range-slider__thumb--max"
+                            />
+                            <div className="range-slider__track"></div>
+                            <div
+                                className="range-slider__range"
+                                style={{
+                                    left: `${(filtros.precioMin / UI_OPCIONES.FILTRO_PRECIO_MAX) * 100}%`,
+                                    right: `${100 - (filtros.precioMax / UI_OPCIONES.FILTRO_PRECIO_MAX) * 100}%`
+                                }}
+                            ></div>
+                        </div >
+                    </div >
 
                     <div className="filter-section">
                         <label className="filter-section__label">Recámaras</label>
@@ -104,7 +165,7 @@ export default function FilterModal({
                             ))}
                         </div>
                     </div>
-                </div>
+                </div >
 
                 <div className="modal__footer">
                     <button className="modal__clear-btn" onClick={limpiarTodo}>Limpiar</button>
@@ -112,7 +173,7 @@ export default function FilterModal({
                         Ver {resultadosCount} resultados
                     </button>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

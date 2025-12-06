@@ -4,6 +4,8 @@ import { db } from '../firebase/config';
 import {
   collection, getDocs, doc, getDoc, query, where
 } from 'firebase/firestore';
+import { normalizar } from '../utils/formatters';
+import { STATUS } from '../config/constants';
 
 const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
 const UNRELIABLE_PLACEHOLDER = "via.placeholder.com";
@@ -258,5 +260,119 @@ export const hidratarInventarioAsesor = async (listaInventarioUsuario) => {
       zona: 'N/A',
       imagen: FALLBACK_IMG
     };
+  });
+};
+
+/**
+ * Filter the catalog based on the provided filters.
+ * @param {Array} dataMaestra - List of models.
+ * @param {Array} desarrollos - List of developments.
+ * @param {Object} filters - Filter criteria.
+ * @param {string} searchTerm - Search term.
+ * @returns {Array} - Filtered list of models.
+ */
+export const filterCatalog = (dataMaestra, desarrollos, filters, searchTerm) => {
+  if (!dataMaestra) return [];
+
+  // Create a map of developments for faster lookup if needed, 
+  // but array find is okay for small datasets. 
+  // Keeping logic similar to original for now but isolated.
+
+  const term = normalizar(searchTerm);
+
+  return dataMaestra.filter(item => {
+    // JOIN: Buscamos el desarrollo padre para datos faltantes
+    const desarrollo = desarrollos.find(d => String(d.id) === String(item.idDesarrollo));
+
+    // --- 1. PRECIO ---
+    const precio = Number(item.precioNumerico) || 0;
+    if (precio > filters.precioMax) return false;
+    if (filters.precioMin && precio < filters.precioMin) return false;
+
+    // --- 2. HABITACIONES ---
+    const recamaras = Number(item.recamaras) || 0;
+    if (filters.habitaciones > 0 && recamaras < filters.habitaciones) return false;
+
+    // --- 3. STATUS (ETAPA) ---
+    let esPreventa = false;
+
+    // Lógica de Prioridad:
+    if (desarrollo) {
+      // Normalizamos el status para comparación segura
+      const statusDesarrollo = String(desarrollo.status || '').toUpperCase().trim();
+
+      // Check explícito contra valores de BD y variaciones comunes
+      if (
+        statusDesarrollo === 'PRE-VENTA' ||
+        statusDesarrollo === 'PREVENTA' ||
+        statusDesarrollo === STATUS.DEV_PREALE ||
+        statusDesarrollo.includes('PRE-VENTA') ||
+        statusDesarrollo.includes('PREVENTA')
+      ) {
+        esPreventa = true;
+      }
+    }
+
+    // Si no se detectó por desarrollo, miramos el flag del modelo
+    if (!esPreventa && item.esPreventa) {
+      esPreventa = true;
+    }
+
+    if (filters.status === 'inmediata' && esPreventa) return false;
+    if (filters.status === 'preventa' && !esPreventa) return false;
+
+    // --- 4. TIPO ---
+    if (filters.tipo !== 'all') {
+      const tipoItem = normalizar(item.tipoVivienda);
+      if (filters.tipo === 'casa' && !tipoItem.includes('casa')) return false;
+      if (filters.tipo === 'departamento' && !tipoItem.includes('departamento') && !tipoItem.includes('loft')) return false;
+    }
+
+    // --- 5. AMENIDAD ---
+    if (filters.amenidad) {
+      const amenidadBuscada = normalizar(filters.amenidad);
+
+      const amDesarrollo = Array.isArray(desarrollo?.amenidades) ? desarrollo.amenidades : [];
+      const amModelo = Array.isArray(item.amenidades) ? item.amenidades : [];
+      const amModeloDesarrollo = Array.isArray(item.amenidadesDesarrollo) ? item.amenidadesDesarrollo : [];
+
+      const todasAmenidades = [...new Set([...amDesarrollo, ...amModelo, ...amModeloDesarrollo])];
+
+      const tieneAmenidad = todasAmenidades.some(a => normalizar(a).includes(amenidadBuscada));
+      if (!tieneAmenidad) return false;
+    }
+
+    // --- 6. BÚSQUEDA TEXTO ---
+    if (term) {
+      const keywordsModelo = Array.isArray(item.keywords) ? item.keywords : [];
+      const keywordsDesarrollo = desarrollo && Array.isArray(desarrollo.keywords) ? desarrollo.keywords : [];
+      const allKeywords = [...keywordsModelo, ...keywordsDesarrollo];
+
+      if (allKeywords.length > 0) {
+        const match = allKeywords.some(k => normalizar(k).includes(term));
+        if (!match) {
+          const amenidadesTexto = [...(Array.isArray(item.amenidadesDesarrollo) ? item.amenidadesDesarrollo : []), ...(desarrollo?.amenidades || [])].join(' ');
+          const searchTarget = `
+                   ${normalizar(item.nombre)} ${normalizar(item.nombre_modelo)} ${normalizar(item.nombreDesarrollo)}
+                   ${normalizar(item.constructora)} ${normalizar(item.tipoVivienda)}
+                   ${normalizar(item.colonia)} ${normalizar(item.ciudad)}
+                   ${normalizar(item.zona)} ${normalizar(amenidadesTexto)}
+                   ${normalizar(desarrollo?.nombre || '')}
+                 `;
+          if (!searchTarget.includes(term)) return false;
+        }
+      } else {
+        const amenidadesTexto = [...(Array.isArray(item.amenidadesDesarrollo) ? item.amenidadesDesarrollo : []), ...(desarrollo?.amenidades || [])].join(' ');
+        const searchTarget = `
+              ${normalizar(item.nombre)} ${normalizar(item.nombre_modelo)} ${normalizar(item.nombreDesarrollo)}
+              ${normalizar(item.constructora)} ${normalizar(item.tipoVivienda)}
+              ${normalizar(item.colonia)} ${normalizar(item.ciudad)}
+              ${normalizar(item.zona)} ${normalizar(amenidadesTexto)}
+              ${normalizar(desarrollo?.nombre || '')}
+            `;
+        if (!searchTarget.includes(term)) return false;
+      }
+    }
+    return true;
   });
 };

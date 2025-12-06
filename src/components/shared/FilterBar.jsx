@@ -24,8 +24,15 @@ export default function FilterBar({
             )}
 
             <div className="filter-bar__chips">
-                {hayFiltrosActivos && filtros.precioMax < UI_OPCIONES.FILTRO_PRECIO_MAX &&
-                    <span className="chip chip--primary">Max {formatoMoneda(filtros.precioMax)}</span>
+                {hayFiltrosActivos && (filtros.precioMin > 0 || filtros.precioMax < UI_OPCIONES.FILTRO_PRECIO_MAX) &&
+                    <span className="chip chip--primary">
+                        {filtros.precioMin > 0 && filtros.precioMax < UI_OPCIONES.FILTRO_PRECIO_MAX
+                            ? `${formatoMoneda(filtros.precioMin)} - ${formatoMoneda(filtros.precioMax)}`
+                            : filtros.precioMin > 0
+                                ? `Min ${formatoMoneda(filtros.precioMin)}`
+                                : `Max ${formatoMoneda(filtros.precioMax)}`
+                        }
+                    </span>
                 }
                 {filtros.habitaciones > 0 && (
                     <span className="chip">
