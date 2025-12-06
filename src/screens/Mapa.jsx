@@ -102,89 +102,11 @@ export default function Mapa() {
   const marcadoresVisibles = useMemo(() => {
     // PORQUÉ: Si el catálogo no está cargado, retornamos un array vacío.
     if (loading) return [];
-
-    const grupos = {};
-
-    // A. Filtrar y Agrupar
-    dataMaestra.forEach(modelo => {
-      // Búsqueda robusta del desarrollo padre
-      const desarrollo = dataDesarrollos.find(d => String(d.id) === String(modelo.idDesarrollo || modelo.id_desarrollo));
-
-      // --- 1. PRECIO ---
-      if (modelo.precioNumerico > filtros.precioMax) return;
-
-      // --- 2. HABITACIONES ---
-      if (filtros.habitaciones > 0 && modelo.recamaras < filtros.habitaciones) return;
-
-      // --- 3. STATUS (ETAPA) - Lógica Robusta de Catalogo.jsx ---
-      let esPreventa = false;
-
-      // Chequeo en Desarrollo
-      if (desarrollo) {
-        const statusDesarrollo = String(desarrollo.status || '').toUpperCase().trim();
-        if (
-          statusDesarrollo === 'PRE-VENTA' ||
-          statusDesarrollo === 'PREVENTA' ||
-          statusDesarrollo === STATUS?.DEV_PREALE || // Optional chaining por seguridad
-          statusDesarrollo.includes('PRE-VENTA') ||
-          statusDesarrollo.includes('PREVENTA')
-        ) {
-          esPreventa = true;
-        }
-      }
-
-      // Chequeo en Modelo (Fallback/Override)
-      if (!esPreventa && (modelo.esPreventa === true || modelo.esPreventa === 'true' || modelo.esPreventa === 1)) {
-        esPreventa = true;
-      }
-
-      if (filtros.status === 'inmediata' && esPreventa) return;
-      if (filtros.status === 'preventa' && !esPreventa) return;
-
-      // --- 4. AMENIDAD - Lógica Unificada ---
-      if (filtros.amenidad) {
-        const amenidadBuscada = normalizar(filtros.amenidad);
-
-        const amDesarrollo = Array.isArray(desarrollo?.amenidades) ? desarrollo.amenidades : [];
-        const amModelo = Array.isArray(modelo.amenidades) ? modelo.amenidades : [];
-        const amModeloDesarrollo = Array.isArray(modelo.amenidadesDesarrollo) ? modelo.amenidadesDesarrollo : [];
-
-        // Fusión de todas las fuentes posibles de amenidades
-        const todasAmenidades = [...new Set([...amDesarrollo, ...amModelo, ...amModeloDesarrollo])];
-
-        // Verificación estricta: Si no tiene ninguna amenidad listada en ningún lado, no pasa el filtro
-        if (todasAmenidades.length === 0) return;
-
-        const tieneAmenidad = todasAmenidades.some(a => normalizar(a).includes(amenidadBuscada));
-        if (!tieneAmenidad) return;
-      }
-
-      // Agrupación por ID de Desarrollo
-      // Usamos idDesarrollo que es el campo normalizado por el servicio
-      const idDev = String(modelo.idDesarrollo || modelo.id_desarrollo || 'sin-id').trim();
-
-      if (!grupos[idDev]) {
-        // Inicializamos el grupo con la info "denormalizada" que guardamos en el modelo
-        grupos[idDev] = {
-          id: idDev,
-          nombre: modelo.nombreDesarrollo,
-          zona: modelo.zona,
-          // Usamos las coordenadas seguras parseadas por el servicio
-          ubicacion: { latitud: modelo.latitud, longitud: modelo.longitud },
-          portada: modelo.imagen, // Usamos la imagen del primer modelo como portada del pin
-          precios: []
-        };
-      }
-
-      grupos[idDev].precios.push(modelo.precioNumerico);
-    });
-
-    // 3. LÓGICA DE MAPEO (Iteramos Desarrollos DIRECTAMENTE para cumplir Schema V3)
     if (!dataDesarrollos || dataDesarrollos.length === 0) return [];
 
     return dataDesarrollos.map(dev => {
-      // Validamos ubicación estrictamente según Schema
-      if (!dev.latitud || !dev.longitud) return null;
+      // ✅ FIX: Validamos ubicación anidada correctamente según Schema V3
+      if (!dev.ubicacion?.latitud || !dev.ubicacion?.longitud) return null;
 
       // --- FILTROS GLOBALES (Aplicados a Nivel Desarrollo) ---
 
@@ -239,13 +161,14 @@ export default function Mapa() {
         id: dev.id,
         nombre: dev.nombre,
         zona: dev.zona,
-        ubicacion: { latitud: dev.latitud, longitud: dev.longitud },
+        // ✅ FIX: Usamos la estructura anidada correcta
+        ubicacion: { latitud: dev.ubicacion.latitud, longitud: dev.ubicacion.longitud },
         portada: dev.imagen,
         etiquetaPrecio: etiqueta
       };
     }).filter(Boolean);
 
-  }, [dataMaestra, filtros, loading]); // dataMaestra y loading ahora vienen del contexto
+  }, [dataMaestra, dataDesarrollos, filtros, loading]); // Added dataDesarrollos to usage
 
   const formatoMoneda = (val) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
   const handleFilterChange = (key, val) => setFiltros(prev => ({ ...prev, [key]: val }));
