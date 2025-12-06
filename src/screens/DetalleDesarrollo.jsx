@@ -7,16 +7,7 @@ import { useUser } from '../context/UserContext';
 import { obtenerInformacionDesarrollo } from '../services/catalog.service';
 import { useCatalog } from '../context/CatalogContext';
 
-// Componentes UI
-import ImageLoader from '../components/ImageLoader';
-import PropertyCard from '../components/PropertyCard';
-import DevelopmentInfoSection from '../components/DevelopmentInfoSection';
-
-// --- ICONOS ---
-const Icons = {
-  Back: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>,
-  MapPin: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-};
+import DevelopmentDetailsContent from '../components/DevelopmentDetailsContent';
 
 export default function DetalleDesarrollo() {
   const { id } = useParams();
