@@ -267,6 +267,49 @@ export default function Favoritos() {
     }
 
     // --- RENDERIZADO: MODO GALERÍA (DEFAULT) ---
+
+    // Agrupación por Desarrollo
+    const groupedFavorites = useMemo(() => {
+        const groups = {};
+        favoritosHydrated.forEach(model => {
+            const dev = getDesarrolloForModel(model);
+            const devId = dev ? dev.id : 'unknown';
+            const devName = dev ? dev.nombre : (model.nombreDesarrollo || 'Otros');
+
+            if (!groups[devId]) {
+                groups[devId] = {
+                    id: devId,
+                    name: devName,
+                    desarrollo: dev,
+                    items: []
+                };
+            }
+            groups[devId].items.push(model);
+        });
+        return Object.values(groups);
+    }, [favoritosHydrated, getDesarrolloById]); // added dependency just in case, though usually stable
+
+    const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
+
+    const getImageForModel = (model) => {
+        // Si la imagen es el fallback o no existe, intentamos usar la del desarrollo
+        if (!model.imagen || model.imagen === FALLBACK_IMG) {
+            const dev = getDesarrolloForModel(model);
+            if (dev && dev.imagen && dev.imagen !== FALLBACK_IMG) {
+                return dev.imagen;
+            }
+        }
+        return model.imagen;
+    };
+
+    const getPriceDisplay = (price) => {
+        if (!price || price === 0) return 'Pendiente';
+        return formatCurrency(price);
+    };
+
+    // Helper local para consistencia si formatoMoneda cambia
+    const formatCurrency = (val) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
+
     return (
         <div className="main-content" style={styles.pageContainer}>
             <header style={styles.header}>
@@ -274,57 +317,73 @@ export default function Favoritos() {
                 <p style={styles.subtitle}>Selecciona hasta 3 propiedades para enfrentarlas.</p>
             </header>
 
-            <div style={styles.grid}>
-                {favoritosHydrated.map(item => {
-                    const isSelected = selectedIds.includes(item.id);
-                    return (
-                        <div
-                            key={item.id}
-                            style={{
-                                ...styles.card,
-                                borderColor: isSelected ? 'var(--primary-color)' : 'transparent',
-                                boxShadow: isSelected ? '0 0 0 3px rgba(0, 57, 106, 0.2)' : '0 4px 6px -1px rgba(0,0,0,0.1)'
-                            }}
-                            onClick={() => handleSelect(item.id)}
-                        >
-                            <div style={{
-                                ...styles.checkbox,
-                                backgroundColor: isSelected ? 'var(--primary-color)' : 'white',
-                                borderColor: isSelected ? 'var(--primary-color)' : '#cbd5e1'
-                            }}>
-                                {isSelected && <Icons.Check />}
-                            </div>
+            {groupedFavorites.map(group => (
+                <div key={group.id} style={styles.groupSection}>
+                    <div style={styles.groupHeader}>
+                        <h2 style={styles.groupTitle}>{group.name}</h2>
+                        {group.desarrollo && (
+                            <button
+                                onClick={(e) => openDevelopmentPopup(e, group.id)}
+                                style={styles.viewDevBtn}
+                            >
+                                Ver Desarrollo
+                            </button>
+                        )}
+                    </div>
 
-                            <div style={styles.cardImgWrapper}>
-                                <ImageLoader src={item.imagen} style={styles.cardImg} />
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); toggleFavorite(item.id); }}
-                                    style={styles.cardTrashBtn}
+                    <div style={styles.grid}>
+                        {group.items.map(item => {
+                            const isSelected = selectedIds.includes(item.id);
+                            const displayImage = getImageForModel(item);
+
+                            return (
+                                <div
+                                    key={item.id}
+                                    style={{
+                                        ...styles.card,
+                                        borderColor: isSelected ? 'var(--primary-color)' : 'transparent',
+                                        boxShadow: isSelected ? '0 0 0 3px rgba(0, 57, 106, 0.2)' : '0 4px 6px -1px rgba(0,0,0,0.1)'
+                                    }}
+                                    onClick={() => handleSelect(item.id)}
                                 >
-                                    <Icons.Trash />
-                                </button>
+                                    <div style={{
+                                        ...styles.checkbox,
+                                        backgroundColor: isSelected ? 'var(--primary-color)' : 'white',
+                                        borderColor: isSelected ? 'var(--primary-color)' : '#cbd5e1'
+                                    }}>
+                                        {isSelected && <Icons.Check />}
+                                    </div>
 
-                                {/* BOTÓN POPUP EN TARJETA (Task 2) */}
-                                <button
-                                    onClick={(e) => openModelPopup(e, item)}
-                                    style={styles.cardPopupBtn}
-                                >
-                                    <Icons.Eye />
-                                </button>
-                            </div>
+                                    <div style={styles.cardImgWrapper}>
+                                        <ImageLoader src={displayImage} style={styles.cardImg} />
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); toggleFavorite(item.id); }}
+                                            style={styles.cardTrashBtn}
+                                        >
+                                            <Icons.Trash />
+                                        </button>
 
-                            <div style={styles.cardBody}>
-                                <h3 style={styles.cardTitle}>{item.nombre_modelo}</h3>
-                                <p style={styles.cardDev}>{item.nombreDesarrollo}</p>
-                                <div style={styles.cardPrice}>{formatoMoneda(item.precioNumerico)}</div>
-                                <div style={styles.cardSpecs}>
-                                    <span>{item.recamaras} Rec</span> • <span>{item.m2} m²</span>
+                                        <button
+                                            onClick={(e) => openModelPopup(e, item)}
+                                            style={styles.cardPopupBtn}
+                                        >
+                                            <Icons.Eye />
+                                        </button>
+                                    </div>
+
+                                    <div style={styles.cardBody}>
+                                        <h3 style={styles.cardTitle}>{item.nombre_modelo}</h3>
+                                        <div style={styles.cardPrice}>{getPriceDisplay(item.precioNumerico)}</div>
+                                        <div style={styles.cardSpecs}>
+                                            <span>{item.recamaras} Rec</span> • <span>{item.m2} m²</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            ))}
 
             {/* FLOATING ACTION BAR */}
             <div style={{
@@ -366,9 +425,15 @@ export default function Favoritos() {
 // --- ESTILOS CSS-IN-JS MEJORADOS ---
 const styles = {
     pageContainer: { paddingBottom: '120px', fontFamily: "'Segoe UI', sans-serif" },
-    header: { marginBottom: '30px' },
+    header: { marginBottom: '20px' },
     pageTitle: { fontSize: '1.8rem', fontWeight: '800', color: '#0f172a', margin: '0 0 5px 0' },
     subtitle: { color: '#64748b', fontSize: '1rem' },
+
+    // Group Sections
+    groupSection: { marginBottom: '40px' },
+    groupHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px', paddingBottom: '10px', borderBottom: '1px solid #e2e8f0' },
+    groupTitle: { fontSize: '1.4rem', fontWeight: '700', color: '#334155', margin: 0 },
+    viewDevBtn: { background: 'none', border: 'none', color: 'var(--primary-color)', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem' },
 
     // Estado Vacío
     emptyContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center' },
@@ -391,7 +456,7 @@ const styles = {
 
     cardBody: { padding: '12px' },
     cardTitle: { fontSize: '1rem', fontWeight: '700', margin: '0 0 2px 0', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
-    cardDev: { fontSize: '0.75rem', color: '#64748b', margin: '0 0 8px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+    // cardDev eliminado porque ahora agrupamos
     cardPrice: { fontSize: '1.1rem', fontWeight: '800', color: 'var(--primary-color)' },
     cardSpecs: { fontSize: '0.8rem', color: '#64748b', marginTop: '4px' },
 
