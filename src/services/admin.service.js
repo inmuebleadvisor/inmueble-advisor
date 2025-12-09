@@ -123,15 +123,17 @@ export const hideIncompleteDevelopments = async () => {
 
         snap.docs.forEach(docSnap => {
             const data = docSnap.data();
-            // Criterio: No tiene media.cover Y (no tiene media.gallery O está vacía)
-            // Y check legacy: no tiene imagen
 
-            const hasCover = data.media?.cover || data.imagen || data.multimedia?.portada;
-            const hasGallery = (data.media?.gallery?.length > 0) || (data.multimedia?.galeria?.length > 0);
+            // Estructura Validada: media.cover (string) y media.gallery (array)
+            const hasCover = !!data.media?.cover;
+            const hasGallery = Array.isArray(data.media?.gallery) && data.media.gallery.length > 0;
 
             if (!hasCover && !hasGallery) {
-                batch.update(docSnap.ref, { activo: false });
-                count++;
+                // Para desarrollos el campo es 'activo'
+                if (data.activo !== false) {
+                    batch.update(docSnap.ref, { activo: false });
+                    count++;
+                }
             }
         });
 
@@ -155,15 +157,19 @@ export const hideIncompleteModels = async () => {
         snap.docs.forEach(docSnap => {
             const data = docSnap.data();
 
-            // Criterio: No imagen principal Y no planatas arquitectonicas
-            const hasImage = data.imagen || data.media?.render; // Asumiendo estructura, ajustamos a lo común
-            const hasPlans = data.media?.plantasArquitectonicas?.length > 0 || data.plantas?.length > 0;
-            const hasVirtual = data.media?.recorridoVirtual || data.recorrido360;
+            // Estructura Validada para Modelos
+            // Verificamos si tiene media.cover (render/foto) O plantasArquitectonicas
+            const hasCover = !!data.media?.cover;
+            const hasPlans = Array.isArray(data.media?.plantasArquitectonicas) && data.media.plantasArquitectonicas.length > 0;
+            const hasVirtual = !!data.media?.recorridoVirtual;
 
             // Si no tiene NADA visual, ocultar
-            if (!hasImage && !hasPlans && !hasVirtual) {
-                batch.update(docSnap.ref, { activo: false });
-                count++;
+            if (!hasCover && !hasPlans && !hasVirtual) {
+                // IMPORTANTE: El campo en modelos es 'ActivoModelo'
+                if (data.ActivoModelo !== false) {
+                    batch.update(docSnap.ref, { ActivoModelo: false });
+                    count++;
+                }
             }
         });
 
@@ -187,13 +193,15 @@ export const hidePricelessModels = async () => {
         snap.docs.forEach(docSnap => {
             const data = docSnap.data();
 
-            let price = 0;
-            if (data.precios?.base) price = Number(data.precios.base);
-            else if (data.precioNumerico) price = Number(data.precioNumerico);
+            // Estructura Validada: precios.base
+            const price = data.precios?.base ? Number(data.precios.base) : 0;
 
             if (!price || price <= 0) {
-                batch.update(docSnap.ref, { activo: false });
-                count++;
+                // IMPORTANTE: El campo en modelos es 'ActivoModelo'
+                if (data.ActivoModelo !== false) {
+                    batch.update(docSnap.ref, { ActivoModelo: false });
+                    count++;
+                }
             }
         });
 
@@ -210,16 +218,15 @@ export const hidePricelessModels = async () => {
  */
 export const hideEmptyDevelopments = async () => {
     try {
-        // 1. Obtener todos los modelos activos
-        const modelsQuery = query(collection(db, 'modelos'), where('activo', '!=', false));
+        // 1. Obtener todos los modelos activos usando 'ActivoModelo'
+        const modelsQuery = query(collection(db, 'modelos'), where('ActivoModelo', '==', true));
         const modelsSnap = await getDocs(modelsQuery);
 
         // Set de IDs de desarrollos que TIENEN al menos un modelo activo
         const activeDevIds = new Set();
         modelsSnap.docs.forEach(d => {
             const data = d.data();
-            // Normalizamos IDs
-            const devId = data.idDesarrollo || data.id_desarrollo || data.desarrollo_id;
+            const devId = data.idDesarrollo;
             if (devId) activeDevIds.add(String(devId));
         });
 
@@ -230,10 +237,8 @@ export const hideEmptyDevelopments = async () => {
 
         devsSnap.docs.forEach(docSnap => {
             // Si el desarrollo NO está en el set de IDs activos, lo desactivamos
-            // (a menos que ya esté desactivado para no gastar write ops, aunque batch es ok)
             if (!activeDevIds.has(docSnap.id)) {
-                // Opción: Checar si ya era false para no escribir? Firestore cobra por write.
-                // Leemos el dato actual
+                // Campo 'activo' para desarrollos
                 if (docSnap.data().activo !== false) {
                     batch.update(docSnap.ref, { activo: false });
                     count++;
@@ -271,6 +276,32 @@ export const enableAllDevelopments = async () => {
         return { success: true, count };
     } catch (error) {
         console.error("Error enabling all developments:", error);
+        return { success: false, error };
+    }
+};
+
+/**
+ * Reactiva todos los modelos (opción de emergencia/reset).
+ */
+export const enableAllModels = async () => {
+    try {
+        const snap = await getDocs(collection(db, 'modelos'));
+        const batch = writeBatch(db);
+        let count = 0;
+
+        snap.docs.forEach(docSnap => {
+            const data = docSnap.data();
+            // Si es falso o NO EXISTE (undefined), lo ponemos en true
+            if (data.ActivoModelo !== true) {
+                batch.update(docSnap.ref, { ActivoModelo: true });
+                count++;
+            }
+        });
+
+        if (count > 0) await batch.commit();
+        return { success: true, count };
+    } catch (error) {
+        console.error("Error enabling all models:", error);
         return { success: false, error };
     }
 };

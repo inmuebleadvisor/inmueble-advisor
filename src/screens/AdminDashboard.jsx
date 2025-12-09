@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/AdminDashboard.css';
-import { getAllDesarrollos, getAllLeads, getAllUsers, toggleAdvisorInventory, updateAdvisorMetrics, hideIncompleteDevelopments, hideIncompleteModels, hidePricelessModels, hideEmptyDevelopments, enableAllDevelopments } from '../services/admin.service';
+import { getAllDesarrollos, getAllLeads, getAllUsers, toggleAdvisorInventory, updateAdvisorMetrics, hideIncompleteDevelopments, hideIncompleteModels, hidePricelessModels, hideEmptyDevelopments, enableAllDevelopments, enableAllModels } from '../services/admin.service';
 
 const INITIAL_METRICS = {
     totalLeads: 0,
@@ -241,6 +241,18 @@ const AdminDashboard = () => {
         try {
             const res = await enableAllDevelopments();
             if (res.success) alert(`Se reactivaron ${res.count} desarrollos previamente ocultos.`);
+            else alert("Error al ejecutar.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleShowAllModels = async () => {
+        if (!confirm("¿Estás seguro de reactivar TODOS los modelos? Esto hará visibles modelos sin fotos o vacíos.")) return;
+        setLoading(true);
+        try {
+            const res = await enableAllModels();
+            if (res.success) alert(`Se reactivaron ${res.count} modelos previamente ocultos.`);
             else alert("Error al ejecutar.");
         } finally {
             setLoading(false);
@@ -519,6 +531,7 @@ const AdminDashboard = () => {
                         Herramientas para ocultar automáticamente contenido incompleto del catálogo público.
                     </p>
 
+
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
 
                         <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
@@ -579,7 +592,7 @@ const AdminDashboard = () => {
                         </div>
 
                         <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
-                            <div className="admin-kpi-card__title">Mostrar Todo</div>
+                            <div className="admin-kpi-card__title">Reactivar Desarrollos</div>
                             <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
                                 Reactiva todos los desarrollos (útil para resetear y depurar).
                             </p>
@@ -588,7 +601,21 @@ const AdminDashboard = () => {
                                 className="admin-btn-save"
                                 style={{ background: '#22c55e', marginTop: 'auto' }}
                             >
-                                Reactivar Todo
+                                Reactivar Desarrollos
+                            </button>
+                        </div>
+
+                        <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
+                            <div className="admin-kpi-card__title">Reactivar Modelos</div>
+                            <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
+                                Reactiva todos los modelos (útil para resetear y depurar).
+                            </p>
+                            <button
+                                onClick={handleShowAllModels}
+                                className="admin-btn-save"
+                                style={{ background: '#10b981', marginTop: 'auto' }}
+                            >
+                                Reactivar Modelos
                             </button>
                         </div>
 
