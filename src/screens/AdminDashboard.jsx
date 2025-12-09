@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/AdminDashboard.css';
 import { getAllDesarrollos, getAllLeads, getAllUsers, toggleAdvisorInventory, updateAdvisorMetrics, hideIncompleteDevelopments, hideIncompleteModels, hidePricelessModels, hideEmptyDevelopments, enableAllDevelopments, enableAllModels } from '../services/admin.service';
+import { importData, parseCSV } from '../services/massImport.service';
 
 const INITIAL_METRICS = {
     totalLeads: 0,
@@ -256,6 +257,40 @@ const AdminDashboard = () => {
             else alert("Error al ejecutar.");
         } finally {
             setLoading(false);
+        }
+    };
+
+    // --- MASS IMPORT HANDLERS ---
+    const handleImportFile = async (e, type) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!confirm(`¿Estás seguro de importar ${type} desde ${file.name}? Esto podría sobrescribir datos existentes.`)) {
+            e.target.value = null; // Reset input
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const data = await parseCSV(file);
+            // alert(`Archivo parseado. ${data.length} filas encontradas. Iniciando carga...`);
+
+            const result = await importData(type, data);
+
+            if (result.success) {
+                alert(`Importación ÉXITOSA.\nProcesados: ${result.procesados}\nMensaje: ${result.mensaje}`);
+                // Recargar datos para ver cambios
+                window.location.reload();
+            } else {
+                alert(`Error en importación: ${result.error}`);
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert(`Error crítico: ${error.message}`);
+        } finally {
+            setLoading(false);
+            e.target.value = null;
         }
     };
 
@@ -619,6 +654,33 @@ const AdminDashboard = () => {
                                 >
                                     Reactivar Modelos
                                 </button>
+                            </div>
+
+                            {/* --- IMPORT SECTIONS --- */}
+                            <div className="admin-kpi-card" style={{ alignItems: 'flex-start', border: '2px dashed #6366f1' }}>
+                                <div className="admin-kpi-card__title">Importar Desarrollos</div>
+                                <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
+                                    Sube un CSV para crear/actualizar desarrollos. Las imágenes se descargarán automáticamente.
+                                </p>
+                                <input
+                                    type="file"
+                                    accept=".csv"
+                                    onChange={(e) => handleImportFile(e, 'desarrollos')}
+                                    style={{ fontSize: '0.8rem', marginTop: 'auto' }}
+                                />
+                            </div>
+
+                            <div className="admin-kpi-card" style={{ alignItems: 'flex-start', border: '2px dashed #f59e0b' }}>
+                                <div className="admin-kpi-card__title">Importar Modelos</div>
+                                <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
+                                    Sube un CSV para crear/actualizar modelos.
+                                </p>
+                                <input
+                                    type="file"
+                                    accept=".csv"
+                                    onChange={(e) => handleImportFile(e, 'modelos')}
+                                    style={{ fontSize: '0.8rem', marginTop: 'auto' }}
+                                />
                             </div>
 
                         </div>

@@ -6,10 +6,12 @@ const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/
 const { onRequest } = require("firebase-functions/v2/https");
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore, FieldValue, Timestamp } = require("firebase-admin/firestore");
+const { getStorage } = require("firebase-admin/storage");
 
 // --- 2. INICIALIZACIÓN DE LA APP ---
 initializeApp();
 const db = getFirestore();
+const storage = getStorage();
 
 // --- 3. IMPORTS LOCALES ---
 const { ejecutarReestructuracionV2 } = require("./migrator");
@@ -204,10 +206,69 @@ exports.recalcularScoreUsuario = onDocumentUpdated("users/{uid}", async (event) 
 // ==================================================================
 
 /**
+ * Helper para procesar imagen: Descarga externa -> Sube a Storage -> Retorna URL pública/signed
+ * Evita duplicados si la URL ya es de Firebase o si ya existe (logica simple de reemplazo).
+ * 
+ * @param {string} url - URL original de la imagen
+ * @param {string} type - 'desarrollos' o 'modelos'
+ * @param {string} id - ID del documento
+ * @param {string} sufix - Sufijo para el nombre del archivo (ej. 'cover', 'gallery_0')
+ */
+async function processImage(url, type, id, sufix) {
+  if (!url || typeof url !== 'string') return null;
+
+  // 1. Si ya es interna, devolverla tal cual
+  if (url.includes("firebasestorage.googleapis.com") || url.includes("storage.googleapis.com")) {
+    return url;
+  }
+
+  try {
+    console.log(`Descargando imagen: ${url}`);
+    // 2. Fetch imagen
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Failed to fetch ${url}`);
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // 3. Definir ruta en Storage: imports/{tipo}/{id}/{sufijo}.jpg
+    // Intentar adivinar extensión o default jpg
+    let ext = 'jpg';
+    if (url.includes('.png')) ext = 'png';
+    if (url.includes('.webp')) ext = 'webp';
+    if (url.includes('.jpeg')) ext = 'jpeg';
+
+    const filePath = `imports/${type}/${id}/${sufijo}.${ext}`;
+    const bucket = storage.bucket();
+    const file = bucket.file(filePath);
+
+    // 4. Subir
+    await file.save(buffer, {
+      contentType: `image/${ext}`,
+      public: true, // Hacerla pública para acceso fácil en frontend
+      metadata: {
+        metadata: {
+          originalUrl: url,
+          importedAt: new Date().toISOString()
+        }
+      }
+    });
+
+    // 5. Retornar URL Pública
+    // Construimos URL directa de storage público
+    return `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+
+  } catch (e) {
+    console.error(`Error procesando imagen ${url}:`, e.message);
+    return url; // Fallback a la original si falla
+  }
+}
+
+/**
  * FUNCIÓN HTTP: Importación Masiva de Datos
  * CAMBIO CRÍTICO: Se agregó { cors: true } para permitir peticiones desde la herramienta HTML.
  */
-exports.importarDatosMasivos = onRequest({ cors: true }, async (req, res) => {
+exports.importarDatosMasivos = onRequest({ cors: true, timeoutSeconds: 300, memory: '1GiB' }, async (req, res) => {
   // 1. Validación de Método
   if (req.method !== 'POST') return res.status(405).send("Método no permitido. Use POST.");
 
@@ -218,31 +279,82 @@ exports.importarDatosMasivos = onRequest({ cors: true }, async (req, res) => {
     return res.status(400).json({ error: "Formato incorrecto. Se espera un array en 'datos'." });
   }
 
-  const batchSize = 400;
+  // Aumentamos timeout y memoria en la config de onRequest arriba para soportar imágenes
+  const batchSize = 100; // Reducimos batch size por el peso de las imágenes
   let batch = db.batch();
   let contador = 0;
   let procesados = 0;
 
   try {
-    console.log(`>>> Iniciando importación masiva. Tipo: ${tipo}, Cantidad: ${datos.length}`);
+    console.log(`>>> Iniciando importación masiva con IMÁGENES. Tipo: ${tipo}, Cantidad: ${datos.length}`);
 
     for (const row of datos) {
       let docRef;
       let dataLimpia;
 
-      // 3. Mapeo y Limpieza
+      // 3. Mapeo Inicial
       if (tipo === 'desarrollos') {
         dataLimpia = mapearDesarrolloV2(row);
         docRef = db.collection('desarrollos').doc(String(dataLimpia.id));
 
+        // --- PROCESAMIENTO DE IMÁGENES (DESARROLLOS) ---
+        if (dataLimpia.media) {
+          // Cover
+          if (dataLimpia.media.cover) {
+            dataLimpia.media.cover = await processImage(dataLimpia.media.cover, 'desarrollos', dataLimpia.id, 'cover');
+          }
+          // Gallery
+          if (Array.isArray(dataLimpia.media.gallery)) {
+            const newGallery = [];
+            let i = 0;
+            for (const imgUrl of dataLimpia.media.gallery) {
+              const newUrl = await processImage(imgUrl, 'desarrollos', dataLimpia.id, `gallery_${i}`);
+              if (newUrl) newGallery.push(newUrl);
+              i++;
+            }
+            dataLimpia.media.gallery = newGallery;
+          }
+        }
+
       } else if (tipo === 'modelos') {
         dataLimpia = mapearModeloV2(row);
 
-        if (dataLimpia.id) {
-          docRef = db.collection('modelos').doc(String(dataLimpia.id));
-        } else {
-          docRef = db.collection('modelos').doc();
+        if (!dataLimpia.id) {
+          dataLimpia.id = db.collection('modelos').doc().id;
         }
+        const docId = String(dataLimpia.id);
+        docRef = db.collection('modelos').doc(docId);
+
+        // --- PROCESAMIENTO DE IMÁGENES (MODELOS) ---
+        if (dataLimpia.media) {
+          // Cover
+          if (dataLimpia.media.cover) {
+            dataLimpia.media.cover = await processImage(dataLimpia.media.cover, 'modelos', docId, 'cover');
+          }
+          // Gallery (si hubiera, aunque modelos suele usar plantas)
+          if (Array.isArray(dataLimpia.media.gallery)) {
+            const newGallery = [];
+            let i = 0;
+            for (const imgUrl of dataLimpia.media.gallery) {
+              const newUrl = await processImage(imgUrl, 'modelos', docId, `gallery_${i}`);
+              if (newUrl) newGallery.push(newUrl);
+              i++;
+            }
+            dataLimpia.media.gallery = newGallery;
+          }
+          // Plantas Arquitectonicas
+          if (Array.isArray(dataLimpia.media.plantasArquitectonicas)) {
+            const newPlans = [];
+            let i = 0;
+            for (const imgUrl of dataLimpia.media.plantasArquitectonicas) {
+              const newUrl = await processImage(imgUrl, 'modelos', docId, `plano_${i}`);
+              if (newUrl) newPlans.push(newUrl);
+              i++;
+            }
+            dataLimpia.media.plantasArquitectonicas = newPlans;
+          }
+        }
+
       } else {
         return res.status(400).json({ error: "Tipo desconocido. Use 'desarrollos' o 'modelos'." });
       }
@@ -265,7 +377,7 @@ exports.importarDatosMasivos = onRequest({ cors: true }, async (req, res) => {
 
     res.json({
       success: true,
-      mensaje: "Importación finalizada",
+      mensaje: "Importación finalizada con imágenes",
       procesados: procesados,
       tipo: tipo
     });
