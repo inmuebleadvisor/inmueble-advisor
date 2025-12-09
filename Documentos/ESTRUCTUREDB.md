@@ -17,6 +17,7 @@ Representa un complejo habitacional (ej. conjunto de casas, torre de departament
 | **descripcion** | `string` | Simple | Texto detallado sobre el desarrollo y estilo de vida. |
 | **constructora** | `string` | Simple | Nombre de la empresa constructora. |
 | **status** | `string` | Simple | Estado de venta/construcción (ej. "Entrega Inmediata", "Pre-Venta"). |
+| **activo** | `boolean` | Simple | Indica si el desarrollo está habilitado (ej. `false`). |
 | **scoreDesarrollo** | `number` | Simple | Puntuación o métrica de calidad/popularidad. |
 | **precioDesde** | `number` | Simple | Precio más bajo disponible entre todos los modelos. |
 | **keywords** | `array<string>` | Lista | Palabras clave para búsqueda y SEO. |
@@ -61,6 +62,7 @@ Representa un tipo específico de unidad dentro de un desarrollo.
 | :--- | :--- | :--- | :--- |
 | **id** | `string` | **Clave principal** | ID único (compuesto por `idDesarrollo-nombreModelo`). |
 | **idDesarrollo** | `string` | **Clave foránea** | Referencia al `id` del desarrollo padre. |
+| **ActivoModelo** | `boolean` | Simple | Indica si el modelo está habilitado para mostrarse públicamente. Totalmente independiente del campo `activo` de Desarrollos. |
 | **nombreModelo** | `string` | Simple | Nombre comercial del modelo (ej. "Águila"). |
 | **tipoVivienda** | `string` | Simple | Categoría (ej. "Casas", "Departamentos"). |
 | **m2** | `number` | Simple | Metros cuadrados de construcción. |
@@ -101,6 +103,13 @@ Almacena la información de los usuarios de la plataforma.
 | **fechaRegistro** | `string` (ISO 8601) | Simple | Fecha y hora de registro. |
 | **ultimoAcceso** | `string` (ISO 8601) | Simple | Fecha y hora del último acceso. |
 | **onboardingCompleto** | `boolean` | Simple | Indica si el proceso de bienvenida está finalizado. |
+| **scoreGlobal** | `number` | Simple | Puntuación total del Score Card del asesor. |
+| **metricas** | `map` | Objeto anidado | Métricas detalladas del desempeño y Score Card. |
+| metricas.tasaCierre | `number` | Sub-campo | Porcentaje de leads ganados vs finalizados. |
+| metricas.puntosCierre | `number` | Sub-campo | Puntos otorgados por la tasa de cierre (1.5 pts por %). |
+| metricas.puntosEncuestas | `number` | Sub-campo | (Manual) Puntos por calificación promedio de encuestas. |
+| metricas.puntosActualizacion | `number` | Sub-campo | (Manual) Puntos por mantener info actualizada. |
+| metricas.puntosComunicacion | `number` | Sub-campo | (Manual) Puntos por nivel de comunicación. |
 | **favoritos** | `array<string>` | Lista | Lista de IDs de modelos o desarrollos favoritos. |
 | **perfilFinanciero** | `map` | Objeto anidado | Datos del perfil de compra del cliente. |
 | perfilFinanciero.capitalInicial | `number` | Sub-campo | Monto de ahorro o enganche disponible. |

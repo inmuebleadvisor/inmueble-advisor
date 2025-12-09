@@ -31,6 +31,8 @@ import Favoritos from './screens/Favoritos';
 
 // ⭐ HERRAMIENTA ADMIN: Importamos la pantalla de exportación
 import AdminDataExport from './screens/AdminDataExport';
+// ⭐ NUEVO: Panel de Administrador (Sin link, acceso directo)
+import AdminDashboard from './screens/AdminDashboard';
 
 function App() {
   // El orden de los Providers es estratégico. FavoritesProvider usa datos de User y Catalog.
@@ -81,6 +83,8 @@ function App() {
                 {/* 7. HERRAMIENTAS ADMINISTRATIVAS (Uso interno) */}
                 {/* Accede manualmente escribiendo /admin-export-tool en la URL */}
                 <Route path="admin-export-tool" element={<AdminDataExport />} />
+                {/* Panel de Administrador Oculto */}
+                <Route path="administrador" element={<AdminDashboard />} />
 
                 {/* 404 - Redirección por defecto */}
                 <Route path="*" element={<Navigate to="/" replace />} />

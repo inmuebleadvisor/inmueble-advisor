@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 // ÚLTIMA MODIFICACION: 02/12/2025
 
 // Asegúrate de que esta ruta apunte a tu configuración real de Firebase
-import { db } from '../firebase/config'; 
+import { db } from '../firebase/config';
 import { collection, getDocs } from 'firebase/firestore';
 
 /**
  * Componente AdminDataExport
  * --------------------------
  * Herramienta administrativa para descargar snapshots de Firestore a CSV.
- * Realiza limpieza de datos (Sanity Check) antes de exportar.
+ * Realiza limpieza de datos(Sanity Check) antes de exportar.
  */
 const AdminDataExport = () => {
   const [loading, setLoading] = useState(false);
@@ -56,14 +56,14 @@ const AdminDataExport = () => {
   const downloadDesarrollos = async () => {
     setLoading(true);
     setStatus({ msg: '⏳ Descargando Desarrollos... espera un momento.', type: 'info' });
-    
+
     try {
       // 1. Petición a Firebase
       const querySnapshot = await getDocs(collection(db, "desarrollos"));
-      
+
       // 2. Definición de Columnas (Headers)
       const headers = [
-        "ID_Doc", "Nombre", "Status", "Precio Desde", 
+        "ID_Doc", "Nombre", "Status", "Precio Desde",
         "Latitud", "Longitud", // Aplanamos el mapa 'ubicacion'
         "Inventario", "Unidades Proyectadas", "Unidades Vendidas",
         "Fecha Entrega", "Keywords", "Amenidades"
@@ -73,24 +73,24 @@ const AdminDataExport = () => {
       const rows = querySnapshot.docs.map(doc => {
         const data = doc.data();
         const ubicacion = data.ubicacion || {};
-        
+
         // Convertimos arrays a strings separados por pipes (|)
         const amenidadesStr = Array.isArray(data.amenidades) ? data.amenidades.join(' | ') : '';
         const keywordsStr = Array.isArray(data.keywords) ? data.keywords.join(' | ') : '';
 
         return [
-            cleanField(doc.id),
-            cleanField(data.nombre),
-            cleanField(data.status),
-            cleanField(data.precioDesde),
-            cleanField(parseCoordinate(ubicacion.latitud)),
-            cleanField(parseCoordinate(ubicacion.longitud)),
-            cleanField(data.inventario),
-            cleanField(data.unidades_proyectadas),
-            cleanField(data.unidades_vendidas),
-            cleanField(parseDate(data.fecha_entrega)),
-            cleanField(keywordsStr),
-            cleanField(amenidadesStr)
+          cleanField(doc.id),
+          cleanField(data.nombre),
+          cleanField(data.status),
+          cleanField(data.precioDesde),
+          cleanField(parseCoordinate(ubicacion.latitud)),
+          cleanField(parseCoordinate(ubicacion.longitud)),
+          cleanField(data.inventario),
+          cleanField(data.unidades_proyectadas),
+          cleanField(data.unidades_vendidas),
+          cleanField(parseDate(data.fecha_entrega)),
+          cleanField(keywordsStr),
+          cleanField(amenidadesStr)
         ].join(',');
       });
 
@@ -114,7 +114,7 @@ const AdminDataExport = () => {
 
     try {
       const querySnapshot = await getDocs(collection(db, "modelos"));
-      
+
       const headers = [
         "ID_Modelo", "ID_Desarrollo_Padre", "Nombre Modelo", "Nombre Desarrollo (Ref)",
         "Precio Lista", "Tipo Vivienda", "Es Preventa",
@@ -128,21 +128,21 @@ const AdminDataExport = () => {
         const amenidadesStr = Array.isArray(data.amenidades) ? data.amenidades.join(' | ') : '';
 
         return [
-            cleanField(doc.id),
-            cleanField(data.id_desarrollo), // Clave foránea vital
-            cleanField(data.nombreModelo),
-            cleanField(data.nombreDesarrollo),
-            cleanField(data.precioNumerico),
-            cleanField(data.tipoVivienda),
-            cleanField(data.esPreventa ? 'SI' : 'NO'),
-            cleanField(data.recamaras),
-            cleanField(data.banos),
-            cleanField(data.niveles),
-            cleanField(data.m2),
-            cleanField(data.terreno),
-            cleanField(parseCoordinate(ubicacion.latitud)),
-            cleanField(parseCoordinate(ubicacion.longitud)),
-            cleanField(amenidadesStr)
+          cleanField(doc.id),
+          cleanField(data.id_desarrollo), // Clave foránea vital
+          cleanField(data.nombreModelo),
+          cleanField(data.nombreDesarrollo),
+          cleanField(data.precioNumerico),
+          cleanField(data.tipoVivienda),
+          cleanField(data.esPreventa ? 'SI' : 'NO'),
+          cleanField(data.recamaras),
+          cleanField(data.banos),
+          cleanField(data.niveles),
+          cleanField(data.m2),
+          cleanField(data.terreno),
+          cleanField(parseCoordinate(ubicacion.latitud)),
+          cleanField(parseCoordinate(ubicacion.longitud)),
+          cleanField(amenidadesStr)
         ].join(',');
       });
 
@@ -161,10 +161,10 @@ const AdminDataExport = () => {
 
   const createAndDownloadCSV = (headers, rows, fileName) => {
     const csvContent = [headers.join(','), ...rows].join('\n');
-    
+
     // Agregamos \uFEFF (BOM) para que Excel reconozca acentos latinos correctamente
     const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    
+
     // Truco del elemento <a> invisible para forzar descarga
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
@@ -177,7 +177,7 @@ const AdminDataExport = () => {
   };
 
   // --- INTERFAZ DE USUARIO (UI) ---
-  
+
   return (
     <div className="p-10 max-w-2xl mx-auto mt-10 bg-white shadow-xl rounded-lg border border-gray-200">
       <h2 className="text-2xl font-bold text-gray-800 mb-2">Panel de Exportación DB</h2>
@@ -187,8 +187,8 @@ const AdminDataExport = () => {
 
       {/* Botones de Acción */}
       <div className="flex flex-col gap-4">
-        <button 
-          onClick={downloadDesarrollos} 
+        <button
+          onClick={downloadDesarrollos}
           disabled={loading}
           className={`p-4 rounded-lg font-bold text-white transition-all 
             ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-md'}`}
@@ -196,8 +196,8 @@ const AdminDataExport = () => {
           {loading ? 'Procesando...' : '📥 Descargar CSV Desarrollos'}
         </button>
 
-        <button 
-          onClick={downloadModelos} 
+        <button
+          onClick={downloadModelos}
           disabled={loading}
           className={`p-4 rounded-lg font-bold text-white transition-all 
             ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 shadow-md'}`}
@@ -208,15 +208,14 @@ const AdminDataExport = () => {
 
       {/* Área de Status / Feedback */}
       {status.msg && (
-        <div className={`mt-6 p-4 rounded border ${
-          status.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 
-          status.type === 'success' ? 'bg-green-50 border-green-200 text-green-700' : 
-          'bg-blue-50 border-blue-200 text-blue-700'
-        }`}>
+        <div className={`mt-6 p-4 rounded border ${status.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' :
+            atus.type === 'success' ? 'bg-green-50 border-green-200 text-green-700' :
+              'bblue-50 border-blue-200 text-blue-700'
+          }`}>
           <strong>Status:</strong> {status.msg}
         </div>
       )}
-      
+
       <div className="mt-8 pt-4 border-t border-gray-100 text-xs text-gray-400">
         Inmueble Advisor Web - Internal Tool v1.0
       </div>

@@ -121,7 +121,10 @@ const mapModelo = (docSnapshot) => {
     esPreventa: (data.esPreventa === true || data.esPreventa === 'true' || data.esPreventa === 1),
 
     // Info Comercial (Modelo)
-    infoComercial: data.infoComercial || {}
+    infoComercial: data.infoComercial || {},
+
+    // 7. Visibilidad
+    activo: data.activo !== false // Default to true if undefined
   };
 };
 
@@ -152,7 +155,10 @@ const mapDesarrollo = (docSnapshot) => {
     ubicacion: data.ubicacion || {},
     zona: data.ubicacion?.zona || '', // Aplanado para hidratar inventario asesor
     latitud: parseCoord(data.ubicacion?.latitud),
-    longitud: parseCoord(data.ubicacion?.longitud)
+    longitud: parseCoord(data.ubicacion?.longitud),
+
+    // Visibilidad
+    activo: data.activo !== false // Default to true if undefined
   };
 };
 
@@ -283,6 +289,12 @@ export const filterCatalog = (dataMaestra, desarrollos, filters, searchTerm) => 
   return dataMaestra.filter(item => {
     // JOIN: Buscamos el desarrollo padre para datos faltantes
     const desarrollo = desarrollos.find(d => String(d.id) === String(item.idDesarrollo));
+
+    // --- 0. VISIBILIDAD (NUEVO) ---
+    // Si el modelos está inactivo explícitamente, fuera.
+    if (item.activo === false) return false;
+    // Si el desarrollo padre está inactivo explícitamente, fuera.
+    if (desarrollo && desarrollo.activo === false) return false;
 
     // --- 1. PRECIO ---
     const precio = Number(item.precioNumerico) || 0;

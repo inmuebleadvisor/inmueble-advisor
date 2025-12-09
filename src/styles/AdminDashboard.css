@@ -1,0 +1,235 @@
+/* src/styles/AdminDashboard.css */
+
+.admin-dashboard {
+  padding: 2rem;
+  background-color: #f8f9fa; /* Light clean background */
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  color: #333;
+}
+
+.admin-dashboard__header {
+  margin-bottom: 2rem;
+}
+
+.admin-dashboard__title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.admin-dashboard__subtitle {
+  color: #666;
+  font-size: 1rem;
+}
+
+/* --- TABS --- */
+.admin-dashboard__tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 0.5rem;
+}
+
+.admin-dashboard__tab {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #666;
+  border-radius: 8px 8px 0 0;
+  transition: all 0.2s ease;
+}
+
+.admin-dashboard__tab:hover {
+  background-color: #eee;
+  color: #333;
+}
+
+.admin-dashboard__tab--active {
+  color: #007bff; /* Primary Blue from brand? Using generic primary blue for now */
+  border-bottom: 3px solid #007bff;
+  background-color: transparent;
+}
+
+/* --- KPI CARDS (General Dashboard) --- */
+.admin-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.admin-kpi-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: transform 0.2s;
+}
+
+.admin-kpi-card:hover {
+  transform: translateY(-2px);
+}
+
+.admin-kpi-card__title {
+  font-size: 0.875rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.admin-kpi-card__value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.admin-kpi-card__sub {
+  font-size: 0.875rem;
+  color: #28a745; /* Green for positive */
+  margin-top: 0.25rem;
+}
+
+/* --- SECTIONS --- */
+.admin-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  margin-bottom: 2rem;
+}
+
+.admin-section__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 1rem;
+}
+
+/* --- TABLE STYLES --- */
+.admin-table-container {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.admin-table th {
+  background-color: #fafafa;
+  font-weight: 600;
+  color: #555;
+  white-space: nowrap;
+}
+
+.admin-table tr:hover {
+  background-color: #f8fbff;
+}
+
+.admin-tag {
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.admin-tag--green { background: #d4edda; color: #155724; }
+.admin-tag--red { background: #f8d7da; color: #721c24; }
+.admin-tag--blue { background: #cce5ff; color: #004085; }
+
+/* --- TOGGLE SWITCH --- */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 24px;
+}
+
+.switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  transform: translateX(16px);
+}
+
+/* --- INVENTORY LIST --- */
+.inventory-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.inventory-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background: #f9f9f9;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.inventory-item__name {
+    font-weight: 500;
+}
+
+/* Spinner */
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
+    font-size: 1.5rem;
+    color: #888;
+}
