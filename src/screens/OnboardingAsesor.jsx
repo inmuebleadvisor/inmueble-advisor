@@ -90,13 +90,17 @@ export default function OnboardingAsesor() {
       const datosInicialesAsesor = {
         telefono,
         inventario: inventarioFinal,
-        scoreGlobal: 80,
+        scoreGlobal: 70, // ✅ CORRECCIÓN: Inicio Estricto (0 ventas + 30 + 20 + 20)
         metricas: {
           tasaCierre: 0,
           promedioResenas: 0,
           totalLeadsAsignados: 0,
           cumplimientoAdmin: 100,
-          ultimaActualizacionInventario: new Date().toISOString()
+          ultimaActualizacionInventario: new Date().toISOString(),
+          // Valores iniciales para el Score Card
+          puntosEncuestas: 30,
+          puntosActualizacion: 20,
+          puntosComunicacion: 20
         }
       };
 

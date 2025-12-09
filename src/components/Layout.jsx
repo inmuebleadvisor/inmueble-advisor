@@ -51,8 +51,8 @@ export default function Layout() {
     };
   };
 
-  // Define si el usuario es un asesor
-  const isAsesor = userProfile?.role === 'asesor';
+  // Define si el usuario es un asesor O ADMIN (para ver dashboard ventas)
+  const isAsesor = userProfile?.role === 'asesor' || userProfile?.role === 'admin';
 
   return (
     <div style={styles.layoutContainer}>
