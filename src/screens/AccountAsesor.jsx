@@ -66,8 +66,8 @@ export default function AccountAsesor() {
 
   // --- 2. LISTENERS EN TIEMPO REAL (onSnapshot) ---
   useEffect(() => {
-    // PORQUÉ: Verificamos si el usuario es un asesor y su UID está disponible
-    if (!user?.uid || userProfile?.role !== 'asesor') {
+    // PORQUÉ: Verificamos si el usuario es un asesor o admin y su UID está disponible
+    if (!user?.uid || (userProfile?.role !== 'asesor' && userProfile?.role !== 'admin')) {
       setLoading(false);
       return;
     }

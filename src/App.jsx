@@ -83,8 +83,12 @@ function App() {
                 {/* 7. HERRAMIENTAS ADMINISTRATIVAS (Uso interno) */}
                 {/* Accede manualmente escribiendo /admin-export-tool en la URL */}
                 <Route path="admin-export-tool" element={<AdminDataExport />} />
-                {/* Panel de Administrador Oculto */}
-                <Route path="administrador" element={<AdminDashboard />} />
+                {/* Panel de Administrador Oculto (Protegido) */}
+                <Route path="administrador" element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
 
                 {/* 404 - Redirección por defecto */}
                 <Route path="*" element={<Navigate to="/" replace />} />

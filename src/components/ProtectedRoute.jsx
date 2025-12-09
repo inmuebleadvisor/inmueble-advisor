@@ -13,7 +13,7 @@ import { useUser } from '../context/UserContext';
  * - children: El componente (Pantalla) que queremos proteger.
  * - requireOnboarding: (bool) Si es true, verifica que el usuario haya terminado sus datos.
  */
-const ProtectedRoute = ({ children, requireOnboarding = false }) => {
+const ProtectedRoute = ({ children, requireOnboarding = false, requireAdmin = false }) => {
   const { user, userProfile, loadingUser } = useUser();
   const location = useLocation();
 
@@ -35,7 +35,14 @@ const ProtectedRoute = ({ children, requireOnboarding = false }) => {
     return <Navigate to="/" replace />;
   }
 
-  // 3. VERIFICACIÓN DE ONBOARDING (Solo para Asesores):
+  // 3. VERIFICACIÓN DE ROL: ADMIN (NUEVO)
+  // Si la ruta es exclusiva de Admin y el usuario no lo es.
+  if (requireAdmin && userProfile?.role !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
+
+  // 4. VERIFICACIÓN DE ONBOARDING (Solo para Asesores):
+  // Si soy admin, esta regla NO aplica (Super Usuario).
   // Si la ruta requiere onboarding completo (ej. Dashboard) y el usuario
   // tiene el rol de 'asesor' PERO la bandera 'onboardingCompleto' es falsa...
   if (requireOnboarding && userProfile?.role === 'asesor' && !userProfile?.onboardingCompleto) {
