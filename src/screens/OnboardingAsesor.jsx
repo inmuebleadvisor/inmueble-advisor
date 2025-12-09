@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { obtenerInventarioDesarrollos } from '../services/catalog.service';
 
-const CheckIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>;
+const CheckIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>;
 
 export default function OnboardingAsesor() {
   const navigate = useNavigate();
@@ -15,20 +15,25 @@ export default function OnboardingAsesor() {
   const [loadingData, setLoadingData] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [telefono, setTelefono] = useState('');
-  const [inventarioDB, setInventarioDB] = useState([]); 
-  const [seleccionados, setSeleccionados] = useState([]); 
+  const [inventarioDB, setInventarioDB] = useState([]);
+  const [seleccionados, setSeleccionados] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     if (loadingUser) return;
-    
+
     // ✅ FIX CRÍTICO: Si ya es asesor Y TIENE EL ONBOARDING COMPLETO, redirigir al Dashboard.
-    // Esto evita que un asesor ya registrado tenga que llenar los datos de nuevo.
-    if (userProfile?.role === 'asesor' && userProfile?.onboardingCompleto === true) {
-        navigate('/account-asesor');
-        return;
+    // O SI ES ADMIN, redirigir al panel de administrador.
+    if (userProfile?.role === 'admin') {
+      navigate('/administrador');
+      return;
     }
-    
+
+    if (userProfile?.role === 'asesor' && userProfile?.onboardingCompleto === true) {
+      navigate('/account-asesor');
+      return;
+    }
+
     // Si el usuario llega hasta aquí, necesita el wizard (es cliente o asesor incompleto).
     // Cargamos los datos del inventario para el paso 2.
     const cargar = async () => {
@@ -48,50 +53,50 @@ export default function OnboardingAsesor() {
   const listaFiltrada = useMemo(() => {
     if (!searchTerm) return inventarioDB;
     const lower = searchTerm.toLowerCase();
-    return inventarioDB.filter(item => 
-      item.nombre.toLowerCase().includes(lower) || 
+    return inventarioDB.filter(item =>
+      item.nombre.toLowerCase().includes(lower) ||
       item.constructora.toLowerCase().includes(lower)
     );
   }, [inventarioDB, searchTerm]);
 
   const handleToggle = (id) => {
     setSeleccionados(prev => {
-      if (prev.includes(id)) return prev.filter(item => item !== id); 
-      return [...prev, id]; 
+      if (prev.includes(id)) return prev.filter(item => item !== id);
+      return [...prev, id];
     });
   };
 
   const handleFinalizar = async () => {
     if (!telefono || telefono.length < 10) {
-        alert("Por favor ingresa un teléfono válido de 10 dígitos.");
-        setStep(1); 
-        return;
+      alert("Por favor ingresa un teléfono válido de 10 dígitos.");
+      setStep(1);
+      return;
     }
 
     if (seleccionados.length === 0) {
-        if(!window.confirm("No has seleccionado ningún desarrollo. Tu perfil estará vacío. ¿Continuar?")) return;
+      if (!window.confirm("No has seleccionado ningún desarrollo. Tu perfil estará vacío. ¿Continuar?")) return;
     }
 
     setIsSaving(true);
     try {
       // ✅ CORRECCIÓN CRÍTICA: Schema V1 (Boolean 'activo')
-      const inventarioFinal = seleccionados.map(id => ({ 
-        tipo: 'db', 
+      const inventarioFinal = seleccionados.map(id => ({
+        tipo: 'db',
         idDesarrollo: id,
         activo: false, // <--- Boolean explícito (false = pendiente de activación por Admin)
-        fechaSolicitud: new Date().toISOString() 
+        fechaSolicitud: new Date().toISOString()
       }));
 
       const datosInicialesAsesor = {
         telefono,
         inventario: inventarioFinal,
-        scoreGlobal: 80, 
+        scoreGlobal: 80,
         metricas: {
-            tasaCierre: 0,          
-            promedioResenas: 0,     
-            totalLeadsAsignados: 0, 
-            cumplimientoAdmin: 100, 
-            ultimaActualizacionInventario: new Date().toISOString()
+          tasaCierre: 0,
+          promedioResenas: 0,
+          totalLeadsAsignados: 0,
+          cumplimientoAdmin: 100,
+          ultimaActualizacionInventario: new Date().toISOString()
         }
       };
 
@@ -112,112 +117,112 @@ export default function OnboardingAsesor() {
     <div className="main-content" style={styles.container}>
       <div style={styles.card}>
         <div style={styles.progressBar}>
-            <div style={{...styles.progressFill, width: step === 1 ? '50%' : '100%'}}></div>
+          <div style={{ ...styles.progressFill, width: step === 1 ? '50%' : '100%' }}></div>
         </div>
 
         <h2 style={styles.title}>
-            {step === 1 ? '📱 Tu Contacto' : '🏢 Tu Inventario'}
+          {step === 1 ? '📱 Tu Contacto' : '🏢 Tu Inventario'}
         </h2>
         <p style={styles.subtitle}>
-            {step === 1 
-                ? 'El medio principal por donde te llegarán los leads.' 
-                : 'Selecciona los desarrollos que estás autorizado a vender.'}
+          {step === 1
+            ? 'El medio principal por donde te llegarán los leads.'
+            : 'Selecciona los desarrollos que estás autorizado a vender.'}
         </p>
 
         {step === 1 && (
           <div style={styles.stepContent}>
-             <div style={styles.inputWrapper}>
-                 <span style={{fontSize:'1.5rem', marginRight:'10px'}}>🇲🇽 +52</span>
-                 <input 
-                   type="tel" 
-                   placeholder="123 456 7890" 
-                   value={telefono}
-                   maxLength={10}
-                   onChange={(e) => setTelefono(e.target.value.replace(/\D/g,''))}
-                   style={styles.inputBig}
-                   autoFocus
-                 />
-             </div>
-             <p style={{color: '#6b7280', fontSize: '0.85rem', marginTop: '15px', textAlign: 'center'}}>
-                Te enviaremos notificaciones de nuevos clientes a este número.
-             </p>
+            <div style={styles.inputWrapper}>
+              <span style={{ fontSize: '1.5rem', marginRight: '10px' }}>🇲🇽 +52</span>
+              <input
+                type="tel"
+                placeholder="123 456 7890"
+                value={telefono}
+                maxLength={10}
+                onChange={(e) => setTelefono(e.target.value.replace(/\D/g, ''))}
+                style={styles.inputBig}
+                autoFocus
+              />
+            </div>
+            <p style={{ color: '#6b7280', fontSize: '0.85rem', marginTop: '15px', textAlign: 'center' }}>
+              Te enviaremos notificaciones de nuevos clientes a este número.
+            </p>
           </div>
         )}
 
         {step === 2 && (
-          <div style={{...styles.stepContent, justifyContent: 'flex-start', padding: 0}}>
-             <div style={styles.searchContainer}>
-                <input 
-                  placeholder="🔍 Buscar desarrollo o constructora..." 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={styles.inputSearch}
-                />
-             </div>
+          <div style={{ ...styles.stepContent, justifyContent: 'flex-start', padding: 0 }}>
+            <div style={styles.searchContainer}>
+              <input
+                placeholder="🔍 Buscar desarrollo o constructora..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={styles.inputSearch}
+              />
+            </div>
 
-             <div style={styles.listContainer}>
-                {loadingData && (
-                    <div style={{textAlign:'center', padding:'40px', color:'#9ca3af'}}>
-                        <p>Cargando catálogo...</p>
+            <div style={styles.listContainer}>
+              {loadingData && (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>
+                  <p>Cargando catálogo...</p>
+                </div>
+              )}
+
+              {!loadingData && listaFiltrada.map(item => {
+                const isSelected = seleccionados.includes(item.id);
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => handleToggle(item.id)}
+                    style={{
+                      ...styles.itemRow,
+                      backgroundColor: isSelected ? '#eff6ff' : 'white',
+                      borderColor: isSelected ? 'var(--primary-color)' : '#e5e7eb'
+                    }}
+                  >
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '700', color: '#374151' }}>{item.nombre}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#9ca3af' }}>{item.constructora} • {item.ubicacion?.ciudad || 'General'}</div>
                     </div>
-                )}
-                
-                {!loadingData && listaFiltrada.map(item => {
-                    const isSelected = seleccionados.includes(item.id);
-                    return (
-                        <div 
-                           key={item.id} 
-                           onClick={() => handleToggle(item.id)}
-                           style={{
-                               ...styles.itemRow,
-                               backgroundColor: isSelected ? '#eff6ff' : 'white',
-                               borderColor: isSelected ? 'var(--primary-color)' : '#e5e7eb'
-                           }}
-                        >
-                           <div style={{flex: 1}}>
-                               <div style={{fontWeight: '700', color: '#374151'}}>{item.nombre}</div>
-                               <div style={{fontSize: '0.8rem', color: '#9ca3af'}}>{item.constructora} • {item.ubicacion?.ciudad || 'General'}</div>
-                           </div>
-                           {isSelected && (
-                               <div style={{
-                                   color: 'var(--primary-color)', 
-                                   backgroundColor: '#dbeafe', 
-                                   borderRadius: '50%', 
-                                   width: '28px', height: '28px', 
-                                   display: 'flex', alignItems: 'center', justifyContent: 'center'
-                               }}>
-                                   <CheckIcon />
-                               </div>
-                           )}
-                        </div>
-                    );
-                })}
-             </div>
-             
-             <div style={styles.noticeBar}>
-                ℹ️ Los desarrollos seleccionados quedarán pendientes de validación.
-             </div>
+                    {isSelected && (
+                      <div style={{
+                        color: 'var(--primary-color)',
+                        backgroundColor: '#dbeafe',
+                        borderRadius: '50%',
+                        width: '28px', height: '28px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      }}>
+                        <CheckIcon />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div style={styles.noticeBar}>
+              ℹ️ Los desarrollos seleccionados quedarán pendientes de validación.
+            </div>
           </div>
         )}
 
         <div style={styles.footer}>
-            {step === 2 && (
-                <button onClick={() => setStep(1)} style={styles.btnSecondary}>Atrás</button>
-            )}
-            <button 
-                onClick={() => {
-                    if (step === 1) {
-                        if (telefono.length < 10) alert("El teléfono debe tener 10 dígitos");
-                        else setStep(2);
-                    } else {
-                        handleFinalizar();
-                    }
-                }}
-                disabled={isSaving}
-                style={styles.btnPrimary}
-            >
-                {step === 1 ? 'Siguiente 👉' : (isSaving ? 'Guardando Perfil...' : 'Finalizar Registro 🎉')}
-            </button>
+          {step === 2 && (
+            <button onClick={() => setStep(1)} style={styles.btnSecondary}>Atrás</button>
+          )}
+          <button
+            onClick={() => {
+              if (step === 1) {
+                if (telefono.length < 10) alert("El teléfono debe tener 10 dígitos");
+                else setStep(2);
+              } else {
+                handleFinalizar();
+              }
+            }}
+            disabled={isSaving}
+            style={styles.btnPrimary}
+          >
+            {step === 1 ? 'Siguiente 👉' : (isSaving ? 'Guardando Perfil...' : 'Finalizar Registro 🎉')}
+          </button>
         </div>
       </div>
     </div>

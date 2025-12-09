@@ -374,6 +374,7 @@ const AdminDashboard = () => {
                     <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '15px' }}>
                         Ajusta los puntos manuales. El Score Global se recalculará automáticamente: (Tasa Cierre × 1.5) + Encuestas + Actualización + Comunicación.
                     </p>
+
                     <div className="admin-table-container">
                         <table className="admin-table">
                             <thead>
@@ -387,12 +388,12 @@ const AdminDashboard = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {users.filter(u => u.role === 'asesor').map(asesor => {
+                                {users.filter(u => u.role === 'asesor' || u.role === 'admin').map(asesor => {
                                     const editData = editableMetrics[asesor.uid] || {};
                                     return (
                                         <tr key={asesor.uid}>
                                             <td>
-                                                <div style={{ fontWeight: 'bold' }}>{asesor.nombre}</div>
+                                                <div style={{ fontWeight: 'bold' }}>{asesor.nombre} {asesor.role === 'admin' && <span style={{ fontSize: '0.7em', background: '#e2e8f0', padding: '2px 4px', borderRadius: '4px' }}>ADMIN</span>}</div>
                                                 <div style={{ fontSize: '0.8rem', color: '#888' }}>{asesor.email}</div>
                                                 <div style={{ fontSize: '0.75rem', marginTop: '4px' }}>
                                                     Tasa Cierre: {asesor.metricas?.tasaCierre || 0}%
@@ -476,7 +477,7 @@ const AdminDashboard = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {users.filter(u => u.role === 'asesor').map(asesor => (
+                                    {users.filter(u => u.role === 'asesor' || u.role === 'admin').map(asesor => (
                                         (asesor.inventario || []).map((item, index) => {
                                             // Find real name from catalog
                                             const devInfo = desarrollos.find(d => String(d.id) === String(item.idDesarrollo));
@@ -524,105 +525,107 @@ const AdminDashboard = () => {
 
 
             {/* --- CONTENT: MANTENIMIENTO --- */}
-            {activeTab === 'mantenimiento' && (
-                <div className="admin-section">
-                    <h3 className="admin-section__title">Mantenimiento de Contenido</h3>
-                    <p style={{ color: '#666', marginBottom: '20px' }}>
-                        Herramientas para ocultar automáticamente contenido incompleto del catálogo público.
-                    </p>
+            {
+                activeTab === 'mantenimiento' && (
+                    <div className="admin-section">
+                        <h3 className="admin-section__title">Mantenimiento de Contenido</h3>
+                        <p style={{ color: '#666', marginBottom: '20px' }}>
+                            Herramientas para ocultar automáticamente contenido incompleto del catálogo público.
+                        </p>
 
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
 
-                        <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
-                            <div className="admin-kpi-card__title">Desarrollos sin Fotos</div>
-                            <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
-                                Oculta desarrollos que no tienen imagen de portada ni galería.
-                            </p>
-                            <button
-                                onClick={handleHideDevsNoPhotos}
-                                className="admin-btn-save"
-                                style={{ background: '#ef4444', marginTop: 'auto' }}
-                            >
-                                Ejecutar Limpieza
-                            </button>
+                            <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
+                                <div className="admin-kpi-card__title">Desarrollos sin Fotos</div>
+                                <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
+                                    Oculta desarrollos que no tienen imagen de portada ni galería.
+                                </p>
+                                <button
+                                    onClick={handleHideDevsNoPhotos}
+                                    className="admin-btn-save"
+                                    style={{ background: '#ef4444', marginTop: 'auto' }}
+                                >
+                                    Ejecutar Limpieza
+                                </button>
+                            </div>
+
+                            <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
+                                <div className="admin-kpi-card__title">Modelos sin Fotos</div>
+                                <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
+                                    Oculta modelos que no tienen imagen, render ni planos.
+                                </p>
+                                <button
+                                    onClick={handleHideModelsNoPhotos}
+                                    className="admin-btn-save"
+                                    style={{ background: '#f59e0b', marginTop: 'auto' }}
+                                >
+                                    Ejecutar Limpieza
+                                </button>
+                            </div>
+
+                            <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
+                                <div className="admin-kpi-card__title">Modelos sin Precio</div>
+                                <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
+                                    Oculta modelos con precio 0 o no definido.
+                                </p>
+                                <button
+                                    onClick={handleHidePricelessModels}
+                                    className="admin-btn-save"
+                                    style={{ background: '#3b82f6', marginTop: 'auto' }}
+                                >
+                                    Ejecutar Limpieza
+                                </button>
+                            </div>
+
+
+                            <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
+                                <div className="admin-kpi-card__title">Desarrollos Vacíos</div>
+                                <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
+                                    Oculta desarrollos que no tienen ningún modelo activo visible.
+                                </p>
+                                <button
+                                    onClick={handleHideEmptyDevs}
+                                    className="admin-btn-save"
+                                    style={{ background: '#6366f1', marginTop: 'auto' }}
+                                >
+                                    Ejecutar Limpieza
+                                </button>
+                            </div>
+
+                            <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
+                                <div className="admin-kpi-card__title">Reactivar Desarrollos</div>
+                                <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
+                                    Reactiva todos los desarrollos (útil para resetear y depurar).
+                                </p>
+                                <button
+                                    onClick={handleShowAllDevs}
+                                    className="admin-btn-save"
+                                    style={{ background: '#22c55e', marginTop: 'auto' }}
+                                >
+                                    Reactivar Desarrollos
+                                </button>
+                            </div>
+
+                            <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
+                                <div className="admin-kpi-card__title">Reactivar Modelos</div>
+                                <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
+                                    Reactiva todos los modelos (útil para resetear y depurar).
+                                </p>
+                                <button
+                                    onClick={handleShowAllModels}
+                                    className="admin-btn-save"
+                                    style={{ background: '#10b981', marginTop: 'auto' }}
+                                >
+                                    Reactivar Modelos
+                                </button>
+                            </div>
+
                         </div>
-
-                        <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
-                            <div className="admin-kpi-card__title">Modelos sin Fotos</div>
-                            <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
-                                Oculta modelos que no tienen imagen, render ni planos.
-                            </p>
-                            <button
-                                onClick={handleHideModelsNoPhotos}
-                                className="admin-btn-save"
-                                style={{ background: '#f59e0b', marginTop: 'auto' }}
-                            >
-                                Ejecutar Limpieza
-                            </button>
-                        </div>
-
-                        <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
-                            <div className="admin-kpi-card__title">Modelos sin Precio</div>
-                            <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
-                                Oculta modelos con precio 0 o no definido.
-                            </p>
-                            <button
-                                onClick={handleHidePricelessModels}
-                                className="admin-btn-save"
-                                style={{ background: '#3b82f6', marginTop: 'auto' }}
-                            >
-                                Ejecutar Limpieza
-                            </button>
-                        </div>
-
-
-                        <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
-                            <div className="admin-kpi-card__title">Desarrollos Vacíos</div>
-                            <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
-                                Oculta desarrollos que no tienen ningún modelo activo visible.
-                            </p>
-                            <button
-                                onClick={handleHideEmptyDevs}
-                                className="admin-btn-save"
-                                style={{ background: '#6366f1', marginTop: 'auto' }}
-                            >
-                                Ejecutar Limpieza
-                            </button>
-                        </div>
-
-                        <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
-                            <div className="admin-kpi-card__title">Reactivar Desarrollos</div>
-                            <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
-                                Reactiva todos los desarrollos (útil para resetear y depurar).
-                            </p>
-                            <button
-                                onClick={handleShowAllDevs}
-                                className="admin-btn-save"
-                                style={{ background: '#22c55e', marginTop: 'auto' }}
-                            >
-                                Reactivar Desarrollos
-                            </button>
-                        </div>
-
-                        <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
-                            <div className="admin-kpi-card__title">Reactivar Modelos</div>
-                            <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
-                                Reactiva todos los modelos (útil para resetear y depurar).
-                            </p>
-                            <button
-                                onClick={handleShowAllModels}
-                                className="admin-btn-save"
-                                style={{ background: '#10b981', marginTop: 'auto' }}
-                            >
-                                Reactivar Modelos
-                            </button>
-                        </div>
-
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

@@ -50,7 +50,7 @@ export const UserProvider = ({ children }) => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const firebaseUser = result.user;
-      
+
       const docRef = doc(db, "users", firebaseUser.uid);
       const docSnap = await getDoc(docRef);
 
@@ -87,10 +87,12 @@ export const UserProvider = ({ children }) => {
 
     try {
       const docRef = doc(db, "users", user.uid);
-      
+
       // Actualizamos solo los campos necesarios
+      const newRole = userProfile?.role === 'admin' ? 'admin' : 'asesor'; // 🔒 PROTECCIÓN: Si es admin, SE QUEDA ADMIN.
+
       await updateDoc(docRef, {
-        role: 'asesor', // 🚀 AQUI ocurre la magia
+        role: newRole,
         onboardingCompleto: true,
         fechaRegistroAsesor: new Date().toISOString(),
         ...datosExtra // Telefono, Inventario, etc.
@@ -98,7 +100,7 @@ export const UserProvider = ({ children }) => {
 
       // Actualizamos el estado local para que la UI reaccione rápido
       await fetchUserProfile(user.uid);
-      
+
     } catch (error) {
       console.error("Error convirtiendo asesor:", error);
       throw error;
