@@ -27,10 +27,30 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
             return Math.min(num, max);
         }
 
+        // PRIORITY 1: URL Params (Override everything if present)
+        const hasUrlParams = params.has('minPrice') || params.has('maxPrice') || params.has('rooms') || params.has('status');
+
+        // PRIORITY 2: Local Storage (If no URL params)
+        if (!hasUrlParams) {
+            try {
+                const saved = localStorage.getItem('catalog_filters_v1');
+                if (saved) {
+                    return JSON.parse(saved);
+                }
+            } catch (e) {
+                console.error("Error loading filters from local storage:", e);
+            }
+        }
+
+        // PRIORITY 3: User Profile (First time fallback)
+        // ... (Logic continues below using the calculated defaults)
+
         // Presupuesto
         const urlMinPrice = params.get('minPrice');
         const urlMaxPrice = params.get('maxPrice');
         const profileMaxPrice = profile?.presupuestoCalculado;
+
+        // ... (rest of logic) ...
 
         const initialMinPrice = urlMinPrice ? safeNum(urlMinPrice) : defaultMinPrice;
         const initialMaxPrice = urlMaxPrice
@@ -64,11 +84,10 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
 
     const [filtros, setFiltros] = useState(getInitialFilters);
 
+    // 2. Persistence: Save to Local Storage whenever filters change
     useEffect(() => {
-        if (JSON.stringify(filtros) !== JSON.stringify(getInitialFilters)) {
-            setFiltros(getInitialFilters);
-        }
-    }, [getInitialFilters]);
+        localStorage.setItem('catalog_filters_v1', JSON.stringify(filtros));
+    }, [filtros]);
 
     // Detector de Filtros Activos 
     const hayFiltrosActivos = useMemo(() => {
@@ -95,11 +114,16 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
 
     const limpiarTodo = () => {
         setSearchTerm('');
-        setFiltros({
+        const emptyFilters = {
             precioMin: 0,
             precioMax: UI_OPCIONES.FILTRO_PRECIO_MAX,
             habitaciones: 0, status: 'all', amenidad: '', tipo: 'all'
-        });
+        };
+        setFiltros(emptyFilters);
+        // Also clear local storage effectively by saving the empty state (handled by useEffect)
+        // or we could explicitly remove it if we want 'reset' to mean 'go back to profile on next load'
+        // But user request says "si no tenemos nada en local entonces presentar los filtros en blanco",
+        // forcing empty state here seems correct.
     };
 
     return {
