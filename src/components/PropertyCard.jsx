@@ -6,7 +6,9 @@ import { Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import ImageLoader from './ImageLoader';
 import FavoriteBtn from './FavoriteBtn';
+import Delightbox from './common/Delightbox'; // Import Delightbox
 import { FINANZAS, IMAGES } from '../config/constants';
+import { useState } from 'react'; // Import useState
 
 // --- ICONOS ---
 const Icons = {
@@ -24,6 +26,8 @@ const calcularEscrituracion = (precio) => formatoMoneda(precio * (FINANZAS?.PORC
 
 export default function PropertyCard({ item, showDevName = true, style }) {
   const { trackBehavior } = useUser();
+  const [showDelightbox, setShowDelightbox] = useState(false);
+  const [initialImageIndex, setInitialImageIndex] = useState(0);
 
   if (!item) return null;
 
@@ -44,7 +48,14 @@ export default function PropertyCard({ item, showDevName = true, style }) {
       {/* 1. SECCIÓN VISUAL (CARRUSEL) */}
       <div style={styles.carouselContainer} className="hide-scrollbar">
         {galeriaImagenes.map((imgSrc, idx) => (
-          <div key={`${item.id}-img-${idx}`} style={styles.carouselSlide}>
+          <div
+            key={`${item.id}-img-${idx}`}
+            style={{ ...styles.carouselSlide, cursor: 'zoom-in' }}
+            onClick={() => {
+              setShowDelightbox(true);
+              setInitialImageIndex(idx);
+            }}
+          >
             <ImageLoader
               src={imgSrc}
               alt={`${item.nombre_modelo} - foto ${idx + 1}`}
@@ -71,7 +82,7 @@ export default function PropertyCard({ item, showDevName = true, style }) {
 
         {/* Nombre del Desarrollo (Overlay) */}
         {showDevName && (
-          <div style={styles.imageOverlay}>
+          <div style={styles.imageOverlay} className="pointer-events-none">
             <h3 style={styles.overlayDevName}>{item.nombreDesarrollo}</h3>
             <p style={styles.overlayModelName}>
               {item.constructora ? `${item.constructora} • ` : ''} {item.nombre_modelo}
@@ -129,6 +140,16 @@ export default function PropertyCard({ item, showDevName = true, style }) {
           Ver Detalles Completos
         </Link>
       </div>
+
+      {/* DELIGHTBOX INTEGRATION */}
+      {showDelightbox && (
+        <Delightbox
+          isOpen={showDelightbox}
+          images={galeriaImagenes}
+          initialIndex={initialImageIndex}
+          onClose={() => setShowDelightbox(false)}
+        />
+      )}
     </article>
   );
 }

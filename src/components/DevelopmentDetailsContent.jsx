@@ -3,6 +3,7 @@ import ImageLoader from './ImageLoader';
 import PropertyCard from './PropertyCard';
 import DevelopmentInfoSection from './DevelopmentInfoSection';
 import { useNavigate } from 'react-router-dom';
+import Delightbox from './common/Delightbox'; // Import Delightbox
 import { IMAGES } from '../config/constants';
 
 // Icons
@@ -18,6 +19,8 @@ export default function DevelopmentDetailsContent({
 }) {
     const scrollRef = useRef(null);
     const [activeIndex, setActiveIndex] = useState(0);
+    const [showDelightbox, setShowDelightbox] = useState(false);
+    const [initialImageIndex, setInitialImageIndex] = useState(0);
 
     // GALERÍA HEADER
     const galeriaImagenes = useMemo(() => {
@@ -55,7 +58,14 @@ export default function DevelopmentDetailsContent({
                     onScroll={handleScroll}
                 >
                     {galeriaImagenes.map((img, idx) => (
-                        <div key={idx} style={styles.carouselSlide}>
+                        <div
+                            key={idx}
+                            style={{ ...styles.carouselSlide, cursor: 'zoom-in' }}
+                            onClick={() => {
+                                setShowDelightbox(true);
+                                setInitialImageIndex(idx);
+                            }}
+                        >
                             <ImageLoader
                                 src={img}
                                 alt={`${desarrollo.nombre} - vista ${idx}`}
@@ -64,6 +74,16 @@ export default function DevelopmentDetailsContent({
                         </div>
                     ))}
                 </div>
+
+                {/* DELIGHTBOX INTEGRATION */}
+                {showDelightbox && (
+                    <Delightbox
+                        isOpen={showDelightbox}
+                        images={galeriaImagenes}
+                        initialIndex={initialImageIndex}
+                        onClose={() => setShowDelightbox(false)}
+                    />
+                )}
 
                 {!isModal && onBack && (
                     <button onClick={onBack} style={styles.floatingBackButton} aria-label="Volver">
