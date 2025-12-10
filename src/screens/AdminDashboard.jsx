@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/AdminDashboard.css';
-import { getAllDesarrollos, getAllLeads, getAllUsers, toggleAdvisorInventory, updateAdvisorMetrics, hideIncompleteDevelopments, hideIncompleteModels, hidePricelessModels, hideEmptyDevelopments, enableAllDevelopments, enableAllModels } from '../services/admin.service';
+import { getAllDesarrollos, getAllLeads, getAllUsers, toggleAdvisorInventory, updateAdvisorMetrics } from '../services/admin.service';
 import { importData, parseCSV } from '../services/massImport.service';
 
 const INITIAL_METRICS = {
@@ -173,95 +173,7 @@ const AdminDashboard = () => {
         }
     };
 
-    // --- MAINTENANCE HANDLERS ---
-    const handleHideDevsNoPhotos = async () => {
-        if (!confirm("¿Ocultar desarrollos sin portada/galería?")) return;
-        const res = await hideIncompleteDevelopments();
-        if (res.success) alert(`Se ocultaron ${res.count} desarrollos.`);
-        else alert("Error al ejecutar.");
-    };
 
-    const handleHideModelsNoPhotos = async () => {
-        if (!confirm("¿Ocultar modelos sin imágenes?")) return;
-        setLoading(true); // Visual feedback
-        try {
-            const resModels = await hideIncompleteModels();
-            // Chain: Check for empty developments now
-            const resDevs = await hideEmptyDevelopments();
-
-            let msg = "";
-            if (resModels.success) msg += `Se ocultaron ${resModels.count} modelos sin fotos. `;
-            else msg += "Error ocultando modelos. ";
-
-            if (resDevs.success && resDevs.count > 0) msg += `Además, se ocultaron ${resDevs.count} desarrollos que quedaron vacíos.`;
-
-            alert(msg);
-        } catch (e) {
-            console.error(e);
-            alert("Error ejecutando la limpieza.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleHidePricelessModels = async () => {
-        if (!confirm("¿Ocultar modelos sin precio?")) return;
-        setLoading(true);
-        try {
-            const resModels = await hidePricelessModels();
-            // Chain: Check for empty developments now
-            const resDevs = await hideEmptyDevelopments();
-
-            let msg = "";
-            if (resModels.success) msg += `Se ocultaron ${resModels.count} modelos sin precio. `;
-            else msg += "Error ocultando modelos. ";
-
-            if (resDevs.success && resDevs.count > 0) msg += `Además, se ocultaron ${resDevs.count} desarrollos que quedaron vacíos.`;
-
-            alert(msg);
-        } catch (e) {
-            console.error(e);
-            alert("Error ejecutando la limpieza.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleHideEmptyDevs = async () => {
-        if (!confirm("¿Ocultar desarrollos sin modelos activos?")) return;
-        setLoading(true);
-        try {
-            const res = await hideEmptyDevelopments();
-            if (res.success) alert(`Se ocultaron ${res.count} desarrollos vacíos.`);
-            else alert("Error al ejecutar.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleShowAllDevs = async () => {
-        if (!confirm("¿Estás seguro de reactivar TODOS los desarrollos? Esto hará visibles desarrollos sin fotos o vacíos.")) return;
-        setLoading(true);
-        try {
-            const res = await enableAllDevelopments();
-            if (res.success) alert(`Se reactivaron ${res.count} desarrollos previamente ocultos.`);
-            else alert("Error al ejecutar.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleShowAllModels = async () => {
-        if (!confirm("¿Estás seguro de reactivar TODOS los modelos? Esto hará visibles modelos sin fotos o vacíos.")) return;
-        setLoading(true);
-        try {
-            const res = await enableAllModels();
-            if (res.success) alert(`Se reactivaron ${res.count} modelos previamente ocultos.`);
-            else alert("Error al ejecutar.");
-        } finally {
-            setLoading(false);
-        }
-    };
 
     // --- MASS IMPORT HANDLERS ---
     const handleImportFile = async (e, type) => {
@@ -328,12 +240,7 @@ const AdminDashboard = () => {
                 >
                     Propiedades e Inventario
                 </button>
-                <button
-                    className={`admin-dashboard__tab ${activeTab === 'mantenimiento' ? 'admin-dashboard__tab--active' : ''}`}
-                    onClick={() => setActiveTab('mantenimiento')}
-                >
-                    Mantenimiento
-                </button>
+
             </div>
 
             {/* --- CONTENT: GENERAL --- */}
@@ -563,147 +470,7 @@ const AdminDashboard = () => {
 
 
             {/* --- CONTENT: MANTENIMIENTO --- */}
-            {
-                activeTab === 'mantenimiento' && (
-                    <div className="admin-section">
-                        <h3 className="admin-section__title">Mantenimiento de Contenido</h3>
-                        <p style={{ color: '#666', marginBottom: '20px' }}>
-                            Herramientas para ocultar automáticamente contenido incompleto del catálogo público.
-                        </p>
 
-
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-
-                            <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
-                                <div className="admin-kpi-card__title">Desarrollos sin Fotos</div>
-                                <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
-                                    Oculta desarrollos que no tienen imagen de portada ni galería.
-                                </p>
-                                <button
-                                    onClick={handleHideDevsNoPhotos}
-                                    className="admin-btn-save"
-                                    style={{ background: '#ef4444', marginTop: 'auto' }}
-                                >
-                                    Ejecutar Limpieza
-                                </button>
-                            </div>
-
-                            <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
-                                <div className="admin-kpi-card__title">Modelos sin Fotos</div>
-                                <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
-                                    Oculta modelos que no tienen imagen, render ni planos.
-                                </p>
-                                <button
-                                    onClick={handleHideModelsNoPhotos}
-                                    className="admin-btn-save"
-                                    style={{ background: '#f59e0b', marginTop: 'auto' }}
-                                >
-                                    Ejecutar Limpieza
-                                </button>
-                            </div>
-
-                            <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
-                                <div className="admin-kpi-card__title">Modelos sin Precio</div>
-                                <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
-                                    Oculta modelos con precio 0 o no definido.
-                                </p>
-                                <button
-                                    onClick={handleHidePricelessModels}
-                                    className="admin-btn-save"
-                                    style={{ background: '#3b82f6', marginTop: 'auto' }}
-                                >
-                                    Ejecutar Limpieza
-                                </button>
-                            </div>
-
-
-                            <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
-                                <div className="admin-kpi-card__title">Desarrollos Vacíos</div>
-                                <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
-                                    Oculta desarrollos que no tienen ningún modelo activo visible.
-                                </p>
-                                <button
-                                    onClick={handleHideEmptyDevs}
-                                    className="admin-btn-save"
-                                    style={{ background: '#6366f1', marginTop: 'auto' }}
-                                >
-                                    Ejecutar Limpieza
-                                </button>
-                            </div>
-
-                            <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
-                                <div className="admin-kpi-card__title">Reactivar Desarrollos</div>
-                                <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
-                                    Reactiva todos los desarrollos (útil para resetear y depurar).
-                                </p>
-                                <button
-                                    onClick={handleShowAllDevs}
-                                    className="admin-btn-save"
-                                    style={{ background: '#22c55e', marginTop: 'auto' }}
-                                >
-                                    Reactivar Desarrollos
-                                </button>
-                            </div>
-
-                            <div className="admin-kpi-card" style={{ alignItems: 'flex-start' }}>
-                                <div className="admin-kpi-card__title">Reactivar Modelos</div>
-                                <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
-                                    Reactiva todos los modelos (útil para resetear y depurar).
-                                </p>
-                                <button
-                                    onClick={handleShowAllModels}
-                                    className="admin-btn-save"
-                                    style={{ background: '#10b981', marginTop: 'auto' }}
-                                >
-                                    Reactivar Modelos
-                                </button>
-                            </div>
-
-                            {/* --- IMPORT SECTIONS --- */}
-                            <div className="admin-kpi-card" style={{ alignItems: 'flex-start', border: '2px dashed #6366f1' }}>
-                                <div className="admin-kpi-card__title">Importar Desarrollos</div>
-                                <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
-                                    Sube un CSV para crear/actualizar desarrollos. Las imágenes se descargarán automáticamente.
-                                </p>
-                                <input
-                                    type="file"
-                                    accept=".csv"
-                                    onChange={(e) => handleImportFile(e, 'desarrollos')}
-                                    style={{ fontSize: '0.8rem', marginTop: 'auto' }}
-                                />
-                            </div>
-
-                            <div className="admin-kpi-card" style={{ alignItems: 'flex-start', border: '2px dashed #f59e0b' }}>
-                                <div className="admin-kpi-card__title">Importar Modelos</div>
-                                <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '10px' }}>
-                                    Sube un CSV para crear/actualizar modelos.
-                                </p>
-                                <input
-                                    type="file"
-                                    accept=".csv"
-                                    onChange={(e) => handleImportFile(e, 'modelos')}
-                                    style={{ fontSize: '0.8rem', marginTop: 'auto' }}
-                                />
-                            </div>
-
-                        </div>
-
-                        {/* DEBUG CONSOLE */}
-                        {debugLogs.length > 0 && (
-                            <div style={{ marginTop: '30px', background: '#1e293b', padding: '20px', borderRadius: '8px', color: '#10b981', fontFamily: 'monospace', maxHeight: '400px', overflowY: 'auto' }}>
-                                <h4 style={{ marginTop: 0, borderBottom: '1px solid #334155', paddingBottom: '10px' }}>📟 Consola de Importación</h4>
-                                <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.85rem' }}>
-                                    {debugLogs.map((log, i) => (
-                                        <li key={i} style={{ marginBottom: '4px', borderBottom: '1px solid #334155' }}>
-                                            {log}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-                    </div>
-                )
-            }
         </div >
     );
 };

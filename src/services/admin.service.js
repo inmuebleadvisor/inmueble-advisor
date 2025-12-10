@@ -124,12 +124,12 @@ export const hideIncompleteDevelopments = async () => {
         snap.docs.forEach(docSnap => {
             const data = docSnap.data();
 
-            // Estructura Validada: media.cover (string) y media.gallery (array)
-            const hasCover = !!data.media?.cover;
-            const hasGallery = Array.isArray(data.media?.gallery) && data.media.gallery.length > 0;
+            // Estructura Validada: Chequeo Híbrido (Nuevo Schema OR Legacy Schema)
+            const hasCover = !!data.media?.cover || !!data.multimedia?.portada || !!data.imagen;
+            const hasGallery = (Array.isArray(data.media?.gallery) && data.media.gallery.length > 0) ||
+                (Array.isArray(data.multimedia?.galeria) && data.multimedia.galeria.length > 0);
 
             // POLITICA DE IMAGENES: se oculta SOLO si falta TODO (tanto cover como gallery).
-            // Si tiene partial data (ej. solo cover), se mantiene ACTIVO y el frontend lo maneja.
             if (!hasCover && !hasGallery) {
                 // Para desarrollos el campo es 'activo'
                 if (data.activo !== false) {
@@ -159,14 +159,16 @@ export const hideIncompleteModels = async () => {
         snap.docs.forEach(docSnap => {
             const data = docSnap.data();
 
-            // Estructura Validada para Modelos
-            // Verificamos si tiene media.cover (render/foto) O plantasArquitectonicas
-            const hasCover = !!data.media?.cover;
-            const hasPlans = Array.isArray(data.media?.plantasArquitectonicas) && data.media.plantasArquitectonicas.length > 0;
+            // Estructura Validada para Modelos (Híbrido)
+            // 1. Cover: media.cover OR imagen (legacy)
+            const hasCover = !!data.media?.cover || !!data.imagen;
+            // 2. Plans/Gallery: media.plantas OR multimedia.galeria (legacy fallback used as visual)
+            const hasPlans = (Array.isArray(data.media?.plantasArquitectonicas) && data.media.plantasArquitectonicas.length > 0) ||
+                (Array.isArray(data.multimedia?.galeria) && data.multimedia.galeria.length > 0);
+
             const hasVirtual = !!data.media?.recorridoVirtual;
 
             // POLITICA DE IMAGENES: Se oculta SOLO si no tiene absolutamente nada visual.
-            // Si tiene partial data (ej. solo foto), se mantiene ACTIVO (frontend usa fallback).
             if (!hasCover && !hasPlans && !hasVirtual) {
                 // IMPORTANTE: El campo en modelos es 'ActivoModelo'
                 if (data.ActivoModelo !== false) {
@@ -196,8 +198,10 @@ export const hidePricelessModels = async () => {
         snap.docs.forEach(docSnap => {
             const data = docSnap.data();
 
-            // Estructura Validada: precios.base
-            const price = data.precios?.base ? Number(data.precios.base) : 0;
+            // Estructura Validada: precios.base OR precioNumerico (legacy)
+            let price = 0;
+            if (data.precios?.base) price = Number(data.precios.base);
+            else if (data.precioNumerico) price = Number(data.precioNumerico);
 
             if (!price || price <= 0) {
                 // IMPORTANTE: El campo en modelos es 'ActivoModelo'
@@ -222,15 +226,21 @@ export const hidePricelessModels = async () => {
 export const hideEmptyDevelopments = async () => {
     try {
         // 1. Obtener todos los modelos activos usando 'ActivoModelo'
-        const modelsQuery = query(collection(db, 'modelos'), where('ActivoModelo', '==', true));
-        const modelsSnap = await getDocs(modelsQuery);
+        // 1. Obtener todos los modelos (sin filtro estricto para soportar legacy undefined)
+        const modelsSnap = await getDocs(collection(db, 'modelos'));
 
         // Set de IDs de desarrollos que TIENEN al menos un modelo activo
         const activeDevIds = new Set();
         modelsSnap.docs.forEach(d => {
             const data = d.data();
-            const devId = data.idDesarrollo;
-            if (devId) activeDevIds.add(String(devId));
+            // Legacy Safe Check: Activo por defecto a menos que sea false explícito
+            const isActive = data.ActivoModelo !== false;
+
+            if (isActive) {
+                // Intentamos ID normalizado y variaciones comunes de DB legacy
+                const devId = data.idDesarrollo || data.id_desarrollo;
+                if (devId) activeDevIds.add(String(devId));
+            }
         });
 
         // 2. Revisar todos los desarrollos
