@@ -78,7 +78,7 @@ export default function FilterModal({
                         <div className="filter-toggle-row">
                             <label className="filter-toggle-label" htmlFor="showNoPrice">
                                 Mostrar Propiedades Sin Precio
-                                <span className="filter-toggle-subtext"> (Precios "Consultar")</span>
+                                <span className="filter-toggle-subtext"> (Precios por Confirmar)</span>
                             </label>
                             <input
                                 id="showNoPrice"
