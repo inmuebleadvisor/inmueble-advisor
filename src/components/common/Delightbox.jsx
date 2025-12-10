@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import ImageLoader from '../ImageLoader';
 
 const Icons = {
     Close: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
@@ -27,7 +26,7 @@ export default function Delightbox({ isOpen, images = [], initialIndex = 0, onCl
         setIsAnimating(true);
         setCurrentIndex((prev) => (prev + 1) % items.length);
         setTimeout(() => setIsAnimating(false), 300);
-    }, [images]); // See note below about 'items' vs 'images'
+    }, [images]);
 
     const handlePrev = useCallback((e) => {
         e?.stopPropagation();
@@ -83,13 +82,13 @@ export default function Delightbox({ isOpen, images = [], initialIndex = 0, onCl
                             </a>
                         </div>
                     ) : (
-                        <ImageLoader
+                        <img
                             src={currentItem.url}
                             alt={`Imagen ${currentIndex + 1}`}
                             style={{
                                 ...styles.image,
-                                opacity: isAnimating ? 0.5 : 1,
-                                transform: isAnimating ? 'scale(0.98)' : 'scale(1)'
+                                opacity: isAnimating ? 0.5 : 1, // Simple fade during splice switch
+                                transform: isAnimating ? 'scale(0.98)' : 'scale(1)',
                             }}
                             className="delightbox-image"
                         />
