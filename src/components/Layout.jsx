@@ -89,11 +89,7 @@ export default function Layout() {
             >
               <span style={styles.linkWithBadge}>
                 Favoritos
-                {favoritosIds.length > 0 && (
-                  <span style={styles.favoriteBadge}>
-                    {favoritosIds.length}
-                  </span>
-                )}
+
               </span>
             </Link>
 
