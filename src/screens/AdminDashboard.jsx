@@ -28,6 +28,9 @@ const AdminDashboard = () => {
     // Estado local para edición de métricas manuales { [uid]: { puntosEncuestas: 30, ... } }
     const [editableMetrics, setEditableMetrics] = useState({});
 
+    // Debug Logs State
+    const [debugLogs, setDebugLogs] = useState([]);
+
     // Initial Data Load
     useEffect(() => {
         const fetchData = async () => {
@@ -684,6 +687,20 @@ const AdminDashboard = () => {
                             </div>
 
                         </div>
+
+                        {/* DEBUG CONSOLE */}
+                        {debugLogs.length > 0 && (
+                            <div style={{ marginTop: '30px', background: '#1e293b', padding: '20px', borderRadius: '8px', color: '#10b981', fontFamily: 'monospace', maxHeight: '400px', overflowY: 'auto' }}>
+                                <h4 style={{ marginTop: 0, borderBottom: '1px solid #334155', paddingBottom: '10px' }}>📟 Consola de Importación</h4>
+                                <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.85rem' }}>
+                                    {debugLogs.map((log, i) => (
+                                        <li key={i} style={{ marginBottom: '4px', borderBottom: '1px solid #334155' }}>
+                                            {log}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                     </div>
                 )
             }

@@ -128,6 +128,8 @@ export const hideIncompleteDevelopments = async () => {
             const hasCover = !!data.media?.cover;
             const hasGallery = Array.isArray(data.media?.gallery) && data.media.gallery.length > 0;
 
+            // POLITICA DE IMAGENES: se oculta SOLO si falta TODO (tanto cover como gallery).
+            // Si tiene partial data (ej. solo cover), se mantiene ACTIVO y el frontend lo maneja.
             if (!hasCover && !hasGallery) {
                 // Para desarrollos el campo es 'activo'
                 if (data.activo !== false) {
@@ -163,7 +165,8 @@ export const hideIncompleteModels = async () => {
             const hasPlans = Array.isArray(data.media?.plantasArquitectonicas) && data.media.plantasArquitectonicas.length > 0;
             const hasVirtual = !!data.media?.recorridoVirtual;
 
-            // Si no tiene NADA visual, ocultar
+            // POLITICA DE IMAGENES: Se oculta SOLO si no tiene absolutamente nada visual.
+            // Si tiene partial data (ej. solo foto), se mantiene ACTIVO (frontend usa fallback).
             if (!hasCover && !hasPlans && !hasVirtual) {
                 // IMPORTANTE: El campo en modelos es 'ActivoModelo'
                 if (data.ActivoModelo !== false) {

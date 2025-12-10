@@ -5,9 +5,9 @@ import {
   collection, getDocs, doc, getDoc, query, where
 } from 'firebase/firestore';
 import { normalizar } from '../utils/formatters';
-import { STATUS } from '../config/constants';
+import { IMAGES, STATUS } from '../config/constants';
 
-const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
+const FALLBACK_IMG = IMAGES.FALLBACK_PROPERTY;
 const UNRELIABLE_PLACEHOLDER = "via.placeholder.com";
 
 let cacheModelos = null;
@@ -28,9 +28,9 @@ const parseCoord = (val) => {
 // Procesa imágenes para obtener estructura limpia { imagen, imagenes }
 const procesarImagenes = (data) => {
   let listaImagenes = [];
-  let portada = FALLBACK_IMG;
+  let portada = null;
 
-  // 1. Prioridad: Nuevo Schema (media: { cover, gallery })
+  // 1. Prioridad: Nuevo Schema (media: { cover, gallery, plantasArquitectonicas })
   if (data.media) {
     if (data.media.cover) {
       portada = data.media.cover;
@@ -42,14 +42,26 @@ const procesarImagenes = (data) => {
   }
   // 2. Fallback: Schema Viejo (multimedia)
   else if (data.multimedia) {
-    if (data.multimedia.portada) portada = data.multimedia.portada;
-    if (Array.isArray(data.multimedia.galeria)) listaImagenes = data.multimedia.galeria;
+    if (data.multimedia.portada) {
+      portada = data.multimedia.portada;
+      if (!listaImagenes.includes(portada)) listaImagenes.push(portada);
+    }
+    if (Array.isArray(data.multimedia.galeria)) {
+      listaImagenes = [...listaImagenes, ...data.multimedia.galeria];
+    }
   }
-
   // 3. Fallback Final: Campo raíz
   else if (data.imagen) {
     portada = data.imagen;
     listaImagenes.push(data.imagen);
+  }
+
+  // 4. Lógica de Fallback de Plantas (SOLO si la lista está vacía hasta ahora)
+  // Requisito: "si no hay imagen principal y tampoco hay galeria, tomaras la galeria de plantas"
+  if (listaImagenes.length === 0 && data.media && Array.isArray(data.media.plantasArquitectonicas) && data.media.plantasArquitectonicas.length > 0) {
+    listaImagenes = [...data.media.plantasArquitectonicas];
+    // Si no había portada, usamos la primera planta como portada
+    if (!portada) portada = listaImagenes[0];
   }
 
   // Limpieza de URLs
@@ -58,7 +70,16 @@ const procesarImagenes = (data) => {
   );
   listaImagenes = [...new Set(listaImagenes)]; // Unique
 
-  if (listaImagenes.length === 0) listaImagenes.push(FALLBACK_IMG);
+  // 5. Placeholder Oficial (Si todo falló)
+  if (listaImagenes.length === 0) {
+    listaImagenes.push(FALLBACK_IMG);
+    if (!portada) portada = FALLBACK_IMG;
+  }
+
+  // Aseguramos que 'portada' siempre tenga valor (si la lista tiene algo)
+  if (!portada && listaImagenes.length > 0) {
+    portada = listaImagenes[0];
+  }
 
   return { imagen: portada, imagenes: listaImagenes };
 };

@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { IMAGES } from '../config/constants';
 import Carousel from './Carousel';
 import CaracteristicasBox from './CaracteristicasBox';
 import AmenidadesList from './AmenidadesList';
@@ -31,6 +32,9 @@ export default function ModelDetailsContent({
         if (modelo.media?.videoPromocional || modelo.video) {
             const vid = modelo.media?.videoPromocional || modelo.video;
             items.unshift({ url: vid, type: 'video' });
+        }
+        if (items.length === 0) {
+            items.push({ url: IMAGES.FALLBACK_PROPERTY, type: 'image' });
         }
         return items;
     }, [modelo]);

@@ -213,20 +213,25 @@ exports.recalcularScoreUsuario = onDocumentUpdated("users/{uid}", async (event) 
  * @param {string} type - 'desarrollos' o 'modelos'
  * @param {string} id - ID del documento
  * @param {string} sufix - Sufijo para el nombre del archivo (ej. 'cover', 'gallery_0')
+ * @param {Array} logs - Array para acumular logs de depuración
  */
-async function processImage(url, type, id, sufix) {
-  if (!url || typeof url !== 'string') return null;
+async function processImage(url, type, id, sufix, logs) {
+  if (!url || typeof url !== 'string') {
+    if (logs) logs.push(`⚠️ [${id}] URL inválida o vacía para ${sufix}`);
+    return null;
+  }
 
   // 1. Si ya es interna, devolverla tal cual
   if (url.includes("firebasestorage.googleapis.com") || url.includes("storage.googleapis.com")) {
+    if (logs) logs.push(`ℹ️ [${id}] Imagen ya alojada en Firebase: ${sufix}`);
     return url;
   }
 
   try {
-    console.log(`Descargando imagen: ${url}`);
+    if (logs) logs.push(`⬇️ [${id}] Descargando: ${url} (${sufix})`);
     // 2. Fetch imagen
     const response = await fetch(url);
-    if (!response.ok) throw new Error(`Failed to fetch ${url}`);
+    if (!response.ok) throw new Error(`Status ${response.status}: ${response.statusText}`);
 
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -243,6 +248,7 @@ async function processImage(url, type, id, sufix) {
     const file = bucket.file(filePath);
 
     // 4. Subir
+    if (logs) logs.push(`⬆️ [${id}] Subiendo a Storage: ${filePath}`);
     await file.save(buffer, {
       contentType: `image/${ext}`,
       public: true, // Hacerla pública para acceso fácil en frontend
@@ -255,10 +261,12 @@ async function processImage(url, type, id, sufix) {
     });
 
     // 5. Retornar URL Pública
-    // Construimos URL directa de storage público
-    return `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+    if (logs) logs.push(`✅ [${id}] Éxito: ${publicUrl}`);
+    return publicUrl;
 
   } catch (e) {
+    if (logs) logs.push(`❌ [${id}] Error procesando ${sufix}: ${e.message}`);
     console.error(`Error procesando imagen ${url}:`, e.message);
     return url; // Fallback a la original si falla
   }
@@ -285,6 +293,11 @@ exports.importarDatosMasivos = onRequest({ cors: true, timeoutSeconds: 300, memo
   let contador = 0;
   let procesados = 0;
 
+  // --- DEBUG LOGS ---
+  const logs = [];
+  logs.push(`🚀 Iniciando importación de ${datos.length} items de tipo '${tipo}'`);
+  logs.push(`Node Version: ${process.version}`);
+
   try {
     console.log(`>>> Iniciando importación masiva con IMÁGENES. Tipo: ${tipo}, Cantidad: ${datos.length}`);
 
@@ -301,14 +314,14 @@ exports.importarDatosMasivos = onRequest({ cors: true, timeoutSeconds: 300, memo
         if (dataLimpia.media) {
           // Cover
           if (dataLimpia.media.cover) {
-            dataLimpia.media.cover = await processImage(dataLimpia.media.cover, 'desarrollos', dataLimpia.id, 'cover');
+            dataLimpia.media.cover = await processImage(dataLimpia.media.cover, 'desarrollos', dataLimpia.id, 'cover', logs);
           }
           // Gallery
           if (Array.isArray(dataLimpia.media.gallery)) {
             const newGallery = [];
             let i = 0;
             for (const imgUrl of dataLimpia.media.gallery) {
-              const newUrl = await processImage(imgUrl, 'desarrollos', dataLimpia.id, `gallery_${i}`);
+              const newUrl = await processImage(imgUrl, 'desarrollos', dataLimpia.id, `gallery_${i}`, logs);
               if (newUrl) newGallery.push(newUrl);
               i++;
             }
@@ -329,14 +342,14 @@ exports.importarDatosMasivos = onRequest({ cors: true, timeoutSeconds: 300, memo
         if (dataLimpia.media) {
           // Cover
           if (dataLimpia.media.cover) {
-            dataLimpia.media.cover = await processImage(dataLimpia.media.cover, 'modelos', docId, 'cover');
+            dataLimpia.media.cover = await processImage(dataLimpia.media.cover, 'modelos', docId, 'cover', logs);
           }
           // Gallery (si hubiera, aunque modelos suele usar plantas)
           if (Array.isArray(dataLimpia.media.gallery)) {
             const newGallery = [];
             let i = 0;
             for (const imgUrl of dataLimpia.media.gallery) {
-              const newUrl = await processImage(imgUrl, 'modelos', docId, `gallery_${i}`);
+              const newUrl = await processImage(imgUrl, 'modelos', docId, `gallery_${i}`, logs);
               if (newUrl) newGallery.push(newUrl);
               i++;
             }
@@ -347,7 +360,7 @@ exports.importarDatosMasivos = onRequest({ cors: true, timeoutSeconds: 300, memo
             const newPlans = [];
             let i = 0;
             for (const imgUrl of dataLimpia.media.plantasArquitectonicas) {
-              const newUrl = await processImage(imgUrl, 'modelos', docId, `plano_${i}`);
+              const newUrl = await processImage(imgUrl, 'modelos', docId, `plano_${i}`, logs);
               if (newUrl) newPlans.push(newUrl);
               i++;
             }
@@ -375,16 +388,19 @@ exports.importarDatosMasivos = onRequest({ cors: true, timeoutSeconds: 300, memo
 
     if (contador > 0) await batch.commit();
 
+    logs.push("✨ Importación Completada.");
+
     res.json({
       success: true,
       mensaje: "Importación finalizada con imágenes",
       procesados: procesados,
-      tipo: tipo
+      tipo: tipo,
+      debugLogs: logs // ENVIAMOS LOGS AL FRONTEND
     });
 
   } catch (error) {
     console.error("Error crítico en importación:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message, debugLogs: logs });
   }
 });
 

@@ -3,6 +3,7 @@ import ImageLoader from './ImageLoader';
 import PropertyCard from './PropertyCard';
 import DevelopmentInfoSection from './DevelopmentInfoSection';
 import { useNavigate } from 'react-router-dom';
+import { IMAGES } from '../config/constants';
 
 // Icons
 const Icons = {
@@ -21,11 +22,9 @@ export default function DevelopmentDetailsContent({
     // GALERÍA HEADER
     const galeriaImagenes = useMemo(() => {
         if (!desarrollo || !desarrollo.multimedia) return [];
-        const lista = desarrollo.multimedia.galeria || [];
-        if (lista.length === 0 && desarrollo.multimedia.portada) {
-            return [desarrollo.multimedia.portada];
-        }
-        return lista;
+        // La lógica de unificación ya está en el servicio (catalog.service.js), 
+        // desarrollo.multimedia.galeria ya debería traer todo unificado.
+        return desarrollo.multimedia.galeria || [];
     }, [desarrollo]);
 
     const handleScroll = () => {
