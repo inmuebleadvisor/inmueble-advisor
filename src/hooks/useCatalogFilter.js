@@ -50,24 +50,6 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
         const urlMaxPrice = params.get('maxPrice');
         const profileMaxPrice = profile?.presupuestoCalculado;
 
-        // ... (rest of logic) ...
-
-        const initialMinPrice = urlMinPrice ? safeNum(urlMinPrice) : defaultMinPrice;
-        const initialMaxPrice = urlMaxPrice
-            ? safeNum(urlMaxPrice, defaultMaxPrice)
-            : (profileMaxPrice ? safeNum(profileMaxPrice, defaultMaxPrice) : defaultMaxPrice);
-
-        // Recámaras
-        const urlRooms = params.get('rooms');
-        const profileRooms = profile?.recamarasDeseadas;
-        const initialRooms = urlRooms
-            ? safeNum(urlRooms)
-            : (profileRooms !== undefined && profileRooms !== null ? safeNum(profileRooms) : defaultRooms);
-
-        // Status
-        const urlStatus = params.get('status');
-        const profileStatus = profile?.interesInmediato === true ? 'inmediata' : (profile?.interesInmediato === false ? 'preventa' : defaultStatus);
-
         const initialStatus = urlStatus && ['inmediata', 'preventa'].includes(urlStatus)
             ? urlStatus
             : profileStatus;
@@ -78,7 +60,8 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
             habitaciones: initialRooms,
             status: initialStatus,
             amenidad: '',
-            tipo: 'all'
+            tipo: 'all',
+            showNoPrice: false // Default: Don't show items without price
         };
     }, [userProfile, location.search]);
 
@@ -102,7 +85,8 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
 
         return (
             searchTerm !== '' || isCustomPriceFilter || filtros.habitaciones > 0 ||
-            filtros.status !== 'all' || filtros.amenidad !== '' || filtros.tipo !== 'all'
+            filtros.status !== 'all' || filtros.amenidad !== '' || filtros.tipo !== 'all' ||
+            filtros.showNoPrice === true
         );
     }, [filtros, searchTerm, userProfile]);
 
@@ -117,7 +101,8 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
         const emptyFilters = {
             precioMin: 0,
             precioMax: UI_OPCIONES.FILTRO_PRECIO_MAX,
-            habitaciones: 0, status: 'all', amenidad: '', tipo: 'all'
+            habitaciones: 0, status: 'all', amenidad: '', tipo: 'all',
+            showNoPrice: false
         };
         setFiltros(emptyFilters);
         // Also clear local storage effectively by saving the empty state (handled by useEffect)

@@ -74,6 +74,21 @@ export default function FilterModal({
                             </div>
                         </div>
 
+                        {/* Show No Price Toggle */}
+                        <div className="filter-toggle-row">
+                            <label className="filter-toggle-label" htmlFor="showNoPrice">
+                                Mostrar Propiedades Sin Precio
+                                <span className="filter-toggle-subtext"> (Precios "Consultar")</span>
+                            </label>
+                            <input
+                                id="showNoPrice"
+                                type="checkbox"
+                                checked={filtros.showNoPrice || false}
+                                onChange={(e) => handleFilterChange('showNoPrice', e.target.checked)}
+                                className="filter-checkbox"
+                            />
+                        </div>
+
                         {/* Dual Range Slider */}
                         < div className="range-slider" >
                             <input

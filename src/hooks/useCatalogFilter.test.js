@@ -44,8 +44,11 @@ describe('useCatalogFilter Hook', () => {
             precioMax: UI_OPCIONES.FILTRO_PRECIO_MAX,
             habitaciones: 0,
             status: 'all',
+            habitaciones: 0,
+            status: 'all',
             amenidad: '',
-            tipo: 'all'
+            tipo: 'all',
+            showNoPrice: false
         });
     });
 
@@ -75,7 +78,8 @@ describe('useCatalogFilter Hook', () => {
             habitaciones: 3,
             status: 'preventa',
             amenidad: '',
-            tipo: 'all'
+            tipo: 'all',
+            showNoPrice: true
         };
         localStorage.setItem('catalog_filters_v1', JSON.stringify(savedFilters));
 

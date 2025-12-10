@@ -319,8 +319,21 @@ export const filterCatalog = (dataMaestra, desarrollos, filters, searchTerm) => 
 
     // --- 1. PRECIO ---
     const precio = Number(item.precioNumerico) || 0;
-    if (precio > filters.precioMax) return false;
-    if (filters.precioMin && precio < filters.precioMin) return false;
+
+    // Lógica "Show No Price":
+    // Si filters.showNoPrice es FALSE (default), ocultamos los de precio 0.
+    // Si es TRUE, los permitimos (saltando el chequeo de Minimo).
+    if (!filters.showNoPrice && precio <= 0) return false;
+
+    // Filtros normales de rango (solo si tiene precio, o si decidimos cómo filtrar los sin precio en rango)
+    // Usualmente los sin precio (0) no entran en rango numérico normal salvo que sea explícito.
+    // Si tiene precio > 0, aplicamos rango:
+    if (precio > 0) {
+      if (precio > filters.precioMax) return false;
+      if (filters.precioMin && precio < filters.precioMin) return false;
+    }
+    // Si precio es 0 y showNoPrice es true, PASA (no return false por rango).
+
 
     // --- 2. HABITACIONES ---
     const recamaras = Number(item.recamaras) || 0;
