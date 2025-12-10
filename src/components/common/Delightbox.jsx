@@ -48,6 +48,39 @@ export default function Delightbox({ isOpen, images = [], initialIndex = 0, onCl
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleKeyDown]);
 
+    // Touch state for swipe
+    const [touchStart, setTouchStart] = useState(null);
+    const [touchEnd, setTouchEnd] = useState(null);
+
+    // Minimum swipe distance (in px) 
+    const minSwipeDistance = 50;
+
+    // Touch Event Handlers
+    const onTouchStart = (e) => {
+        setTouchEnd(null); // Reset
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        if (isLeftSwipe) {
+            // Swiped Left -> Next Image
+            handleNext();
+        } else if (isRightSwipe) {
+            // Swiped Right -> Prev Image
+            handlePrev();
+        }
+    };
+
     if (!isOpen || images.length === 0) return null;
 
     // Normalize images to be objects (since we might pass strings or objects)
@@ -66,15 +99,29 @@ export default function Delightbox({ isOpen, images = [], initialIndex = 0, onCl
                 <Icons.Close />
             </button>
 
-            <div style={styles.contentWrapper} onClick={(e) => e.stopPropagation()}>
+            {/* Remove stopPropagation from here so clicks on empty space close the modal */}
+            {/* Add touch handlers to the wrapper so you can swipe anywhere */}
+            <div
+                style={styles.contentWrapper}
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+            >
                 {/* Navigation Buttons for Desktop (Left) */}
                 {items.length > 1 && (
-                    <button style={{ ...styles.navButton, left: '20px' }} onClick={handlePrev} aria-label="Anterior">
+                    <button
+                        style={{ ...styles.navButton, left: '20px' }}
+                        onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+                        aria-label="Anterior"
+                    >
                         <Icons.Prev />
                     </button>
                 )}
 
-                <div style={styles.imageContainer}>
+                <div
+                    style={styles.imageContainer}
+                    onClick={(e) => e.stopPropagation()} // Stop propagation here so clicking image DOES NOT close
+                >
                     {currentItem.type === 'video' ? (
                         <div style={styles.videoPlaceholder}>
                             <a href={currentItem.url} target="_blank" rel="noopener noreferrer" style={styles.videoLink}>
@@ -101,7 +148,11 @@ export default function Delightbox({ isOpen, images = [], initialIndex = 0, onCl
 
                 {/* Navigation Buttons for Desktop (Right) */}
                 {items.length > 1 && (
-                    <button style={{ ...styles.navButton, right: '20px' }} onClick={handleNext} aria-label="Siguiente">
+                    <button
+                        style={{ ...styles.navButton, right: '20px' }}
+                        onClick={(e) => { e.stopPropagation(); handleNext(); }}
+                        aria-label="Siguiente"
+                    >
                         <Icons.Next />
                     </button>
                 )}
