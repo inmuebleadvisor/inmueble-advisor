@@ -50,6 +50,22 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
         const urlMaxPrice = params.get('maxPrice');
         const profileMaxPrice = profile?.presupuestoCalculado;
 
+        const initialMinPrice = urlMinPrice ? safeNum(urlMinPrice) : defaultMinPrice;
+        const initialMaxPrice = urlMaxPrice
+            ? safeNum(urlMaxPrice, defaultMaxPrice)
+            : (profileMaxPrice ? safeNum(profileMaxPrice, defaultMaxPrice) : defaultMaxPrice);
+
+        // Recámaras
+        const urlRooms = params.get('rooms');
+        const profileRooms = profile?.recamarasDeseadas;
+        const initialRooms = urlRooms
+            ? safeNum(urlRooms)
+            : (profileRooms !== undefined && profileRooms !== null ? safeNum(profileRooms) : defaultRooms);
+
+        // Status
+        const urlStatus = params.get('status');
+        const profileStatus = profile?.interesInmediato === true ? 'inmediata' : (profile?.interesInmediato === false ? 'preventa' : defaultStatus);
+
         const initialStatus = urlStatus && ['inmediata', 'preventa'].includes(urlStatus)
             ? urlStatus
             : profileStatus;
