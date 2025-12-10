@@ -39,8 +39,31 @@ export const CatalogProvider = ({ children }) => {
 
         // --- FILTRADO GLOBAL POR VISIBILIDAD DE ADMINISTRACIÓN ---
 
-        // 1. Filtrar Modelos
-        let filteredModels = modelosData.filter(m => {
+        // 0. ENRICHMENT: Hydrate models with parent development data (Localización, etc.)
+        // This fixes "Ubicación pendiente" issues by inheriting from the parent.
+        const modelsEnriched = modelosData.map(m => {
+          const idDev = m.idDesarrollo || m.id_desarrollo;
+          if (!idDev) return m;
+
+          const parentDev = desarrollosData.find(d => String(d.id) === String(idDev));
+          if (!parentDev) return m;
+
+          return {
+            ...m,
+            // Inherit location if missing in model
+            colonia: m.colonia || parentDev.ubicacion?.colonia || '',
+            zona: m.zona || parentDev.zona || parentDev.ubicacion?.zona || '',
+            // Ensure nested object is also populated
+            ubicacion: {
+              ...m.ubicacion,
+              colonia: m.ubicacion?.colonia || parentDev.ubicacion?.colonia || '',
+              zona: m.ubicacion?.zona || parentDev.ubicacion?.zona || parentDev.zona || ''
+            }
+          };
+        });
+
+        // 1. Filtrar Modelos (Use enriched data)
+        let filteredModels = modelsEnriched.filter(m => {
           // Regla: Hide No Price
           if (settings.hideNoPriceModels) {
             const price = typeof m.precioNumerico === 'number' ? m.precioNumerico : 0;

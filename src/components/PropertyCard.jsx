@@ -101,7 +101,7 @@ export default function PropertyCard({ item, showDevName = true, style }) {
         {/* Ubicación */}
         <div style={styles.locationRow}>
           <span style={{ marginRight: '4px', display: 'flex' }}><Icons.Pin /></span>
-          {item.colonia ? `${item.colonia}, ` : ''}{item.zona || item.ciudad || "Ubicación pendiente"}
+          {item.colonia || (item.zona ? `Zona: ${item.zona}` : "Ubicación pendiente")}
         </div>
 
         {/* Características Básicas */}

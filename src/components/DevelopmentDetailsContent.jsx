@@ -111,7 +111,13 @@ export default function DevelopmentDetailsContent({
                     <h1 style={styles.devTitle}>{desarrollo.nombre}</h1>
                     <div style={styles.locationRow}>
                         <Icons.MapPin />
-                        <span>{desarrollo.zona || desarrollo.ubicacion?.ciudad}</span>
+                        <span>
+                            {desarrollo.ubicacion?.colonia
+                                ? desarrollo.ubicacion.colonia
+                                : (desarrollo.zona
+                                    ? `Zona: ${desarrollo.zona}`
+                                    : "Ubicación pendiente")}
+                        </span>
                     </div>
                     <p style={styles.addressText}>{direccionCompleta}</p>
                 </div>
