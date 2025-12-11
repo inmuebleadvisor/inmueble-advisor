@@ -370,8 +370,20 @@ export const filterCatalog = (dataMaestra, desarrollos, filters, searchTerm) => 
     // --- 4. TIPO ---
     if (filters.tipo !== 'all') {
       const tipoItem = normalizar(item.tipoVivienda);
-      if (filters.tipo === 'casa' && !tipoItem.includes('casa')) return false;
-      if (filters.tipo === 'departamento' && !tipoItem.includes('departamento') && !tipoItem.includes('loft')) return false;
+      const tipoFiltro = normalizar(filters.tipo);
+
+      // Lógica inclusiva: si el tipo de vivienda del item contiene la palabra del filtro, pasa.
+      // Ej: "Casa de lujo" pasa con filtro "casa".
+      if (!tipoItem.includes(tipoFiltro)) {
+        // Excepciones o alias específicos si fueran necesarios:
+        // Si buscamos 'departamento', aceptamos 'loft' si queremos agruparlos (opcional, por ahora estricto pero flexible en string)
+        if (tipoFiltro === 'departamento' && (tipoItem.includes('loft') || tipoItem.includes('studio'))) {
+          // Pasa (Opcional: Descomentar si se desea esta agrupación, por ahora el usuario pidió filtro explícito de Loft también)
+          // return true; 
+          return false;
+        }
+        return false;
+      }
     }
 
     // --- 5. AMENIDAD ---

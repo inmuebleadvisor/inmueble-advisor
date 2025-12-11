@@ -142,6 +142,26 @@ export default function FilterModal({
                     </div>
 
                     <div className="filter-section">
+                        <label className="filter-section__label">Tipo de Propiedad</label>
+                        <div className="pill-group">
+                            {[
+                                { val: 'all', label: 'Todo' },
+                                { val: 'casa', label: 'Casas' },
+                                { val: 'duplex', label: 'Duplex' },
+                                { val: 'departamento', label: 'Deptos' }
+                            ].map(opt => (
+                                <button
+                                    key={opt.val}
+                                    onClick={() => handleFilterChange('tipo', opt.val)}
+                                    className={`pill ${filtros.tipo === opt.val ? 'pill--active' : ''}`}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="filter-section">
                         <label className="filter-section__label">Etapa</label>
                         <div className="pill-group">
                             {[
