@@ -3,6 +3,7 @@ import csv from 'csv-parser';
 import { initializeFirebase } from './utils.js';
 import colors from 'colors';
 import { Timestamp } from 'firebase-admin/firestore';
+import { recalculateDevelopmentStats } from './calculations.js';
 
 // --- UTILIDADES ---
 const parseArray = (str) => (!str ? [] : str.split('|').map(s => s.trim()).filter(s => s !== ""));
@@ -141,6 +142,16 @@ const mapearModelo = (row) => {
     if ('unidades_vendidas' in row) info.unidadesVendidas = parseNumber(row.unidades_vendidas);
     if ('plusvalia_pct' in row) info.plusvaliaEstimada = parseNumber(row.plusvalia_pct);
     if ('fecha_inicio' in row) info.fechaInicioVenta = parseDate(row.fecha_inicio);
+    // ActivoModelo mapping with Fallbacks
+    const valActivo = row.ActivoModelo || row.activo_modelo || row.activo;
+    if (valActivo !== undefined && valActivo !== "") {
+        // Convert various truthy values
+        const s = String(valActivo).trim().toLowerCase();
+        out.ActivoModelo = (s === 'true' || s === '1' || s === 'si' || s === 'yes');
+    } else {
+        // Default to true if missing, ensuring the field exists in Firebase
+        out.ActivoModelo = true;
+    }
     if (Object.keys(info).length > 0) out.infoComercial = info;
 
     // Specs
@@ -201,6 +212,9 @@ export const importCollection = async (collectionName, filePath) => {
             let count = 0;
             let totalProcessed = 0;
 
+            // Track affected developments for recalculation
+            const affectedDevelopmentIds = new Set();
+
             for (const row of rows) {
                 let docData;
                 let docRef;
@@ -227,6 +241,13 @@ export const importCollection = async (collectionName, filePath) => {
 
                 if (docData.id) {
                     docRef = db.collection(collectionName).doc(String(docData.id));
+
+                    // Add to tracking set
+                    if (collectionName === 'desarrollos') {
+                        affectedDevelopmentIds.add(String(docData.id));
+                    } else if (collectionName === 'modelos' && docData.idDesarrollo) {
+                        affectedDevelopmentIds.add(String(docData.idDesarrollo));
+                    }
                 } else {
                     // Si sigue sin ID (es nuevo y no trae ID), generamos uno nuevo o error?
                     // Para desarrollos con ID numérico estricto, esto debería idealmente venir en el CSV.
@@ -257,5 +278,10 @@ export const importCollection = async (collectionName, filePath) => {
             }
 
             console.log(colors.green(`\n✅ Importación completada. ${totalProcessed} documentos procesados.`));
+
+            // Recalculate stats for affected developments
+            if (affectedDevelopmentIds.size > 0) {
+                await recalculateDevelopmentStats(db, Array.from(affectedDevelopmentIds));
+            }
         });
 };
