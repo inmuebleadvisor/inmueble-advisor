@@ -138,7 +138,7 @@ export const UserProvider = ({ children }) => {
     loginWithGoogle,
     convertirEnAsesor, // 👈 Exportamos la nueva función
     logout,
-    logout,
+
     trackBehavior,
     // Contexto de Ciudad
     selectedCity,

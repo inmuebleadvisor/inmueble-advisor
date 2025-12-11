@@ -155,7 +155,7 @@ export const CatalogProvider = ({ children }) => {
 
         setModelos(filteredModels);
         setDesarrollos(filteredDevs);
-        setAmenidades(amenidadesData);
+        setAmenidades(amenidadesResult);
 
         console.log(`✅ Catálogo cargado (Filtrado): ${filteredModels.length} modelos, ${filteredDevs.length} desarrollos.`);
 
