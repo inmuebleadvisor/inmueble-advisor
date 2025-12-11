@@ -82,7 +82,7 @@ const AdminDataExport = () => {
           cleanField(doc.id),
           cleanField(data.nombre),
           cleanField(data.status),
-          cleanField(data.precioDesde),
+          cleanField(data.precios?.desde),
           cleanField(parseCoordinate(ubicacion.latitud)),
           cleanField(parseCoordinate(ubicacion.longitud)),
           cleanField(data.inventario),
@@ -132,7 +132,7 @@ const AdminDataExport = () => {
           cleanField(data.id_desarrollo), // Clave foránea vital
           cleanField(data.nombreModelo),
           cleanField(data.nombreDesarrollo),
-          cleanField(data.precioNumerico),
+          cleanField(data.precios?.base),
           cleanField(data.tipoVivienda),
           cleanField(data.esPreventa ? 'SI' : 'NO'),
           cleanField(data.recamaras),
@@ -209,8 +209,8 @@ const AdminDataExport = () => {
       {/* Área de Status / Feedback */}
       {status.msg && (
         <div className={`mt-6 p-4 rounded border ${status.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' :
-            atus.type === 'success' ? 'bg-green-50 border-green-200 text-green-700' :
-              'bblue-50 border-blue-200 text-blue-700'
+          atus.type === 'success' ? 'bg-green-50 border-green-200 text-green-700' :
+            'bblue-50 border-blue-200 text-blue-700'
           }`}>
           <strong>Status:</strong> {status.msg}
         </div>

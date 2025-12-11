@@ -29,8 +29,8 @@ export default function ModelDetailsContent({
     const galeriaImagenes = useMemo(() => {
         if (!modelo) return [];
         const items = (modelo.imagenes || []).map(url => ({ url, type: 'image' }));
-        if (modelo.media?.videoPromocional || modelo.video) {
-            const vid = modelo.media?.videoPromocional || modelo.video;
+        if (modelo.media?.video || modelo.media?.videoPromocional || modelo.video) {
+            const vid = modelo.media?.video || modelo.media?.videoPromocional || modelo.video;
             items.unshift({ url: vid, type: 'video' });
         }
         if (items.length === 0) {

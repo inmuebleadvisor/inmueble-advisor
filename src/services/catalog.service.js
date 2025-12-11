@@ -147,7 +147,7 @@ const mapModelo = (docSnapshot) => {
     infoComercial: data.infoComercial || {},
 
     // 7. Visibilidad
-    activo: data.activo !== false // Default to true if undefined
+    activo: data.activo !== undefined ? data.activo !== false : (data.ActivoModelo !== false)
   };
 };
 
@@ -161,9 +161,13 @@ const mapDesarrollo = (docSnapshot) => {
     nombre: data.nombre || 'Desarrollo',
 
     // Datos específicos de Desarrollo
-    info_comercial: data.info_comercial || {}, // snake_case según PDF
+    info_comercial: data.infoComercial || data.info_comercial || {}, // CamelCase priority
     amenidades: Array.isArray(data.amenidades) ? data.amenidades : [],
     keywords: Array.isArray(data.keywords) ? data.keywords : [],
+
+    // Mapping Precio Desde (New Schema: precios.desde -> Old Frontend: precioDesde)
+    precioDesde: (data.precios && data.precios.desde) ? data.precios.desde : (data.precioDesde || 0),
+    precios: data.precios || {}, // Ensure structure exists
 
     // Imágenes
     imagen: imgs.imagen,

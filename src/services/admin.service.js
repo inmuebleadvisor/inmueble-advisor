@@ -170,9 +170,9 @@ export const hideIncompleteModels = async () => {
 
             // POLITICA DE IMAGENES: Se oculta SOLO si no tiene absolutamente nada visual.
             if (!hasCover && !hasPlans && !hasVirtual) {
-                // IMPORTANTE: El campo en modelos es 'ActivoModelo'
-                if (data.ActivoModelo !== false) {
-                    batch.update(docSnap.ref, { ActivoModelo: false });
+                // IMPORTANTE: El campo en modelos se estandarizó a 'activo'
+                if (data.activo !== false) {
+                    batch.update(docSnap.ref, { activo: false });
                     count++;
                 }
             }
@@ -204,9 +204,9 @@ export const hidePricelessModels = async () => {
             else if (data.precioNumerico) price = Number(data.precioNumerico);
 
             if (!price || price <= 0) {
-                // IMPORTANTE: El campo en modelos es 'ActivoModelo'
-                if (data.ActivoModelo !== false) {
-                    batch.update(docSnap.ref, { ActivoModelo: false });
+                // IMPORTANTE: El campo en modelos se estandarizó a 'activo'
+                if (data.activo !== false) {
+                    batch.update(docSnap.ref, { activo: false });
                     count++;
                 }
             }
@@ -234,7 +234,8 @@ export const hideEmptyDevelopments = async () => {
         modelsSnap.docs.forEach(d => {
             const data = d.data();
             // Legacy Safe Check: Activo por defecto a menos que sea false explícito
-            const isActive = data.ActivoModelo !== false;
+            // Nota: Se valida 'activo' (estándar) o 'ActivoModelo' (legacy)
+            const isActive = (data.activo !== undefined ? data.activo : data.ActivoModelo) !== false;
 
             if (isActive) {
                 // Intentamos ID normalizado y variaciones comunes de DB legacy
@@ -305,8 +306,8 @@ export const enableAllModels = async () => {
         snap.docs.forEach(docSnap => {
             const data = docSnap.data();
             // Si es falso o NO EXISTE (undefined), lo ponemos en true
-            if (data.ActivoModelo !== true) {
-                batch.update(docSnap.ref, { ActivoModelo: true });
+            if (data.activo !== true) {
+                batch.update(docSnap.ref, { activo: true });
                 count++;
             }
         });
