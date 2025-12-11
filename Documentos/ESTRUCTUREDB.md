@@ -23,7 +23,6 @@ Representa un complejo habitacional (ej. conjunto de casas, torre de departament
 | analisisIA.puntosFuertes | `array<string>` | Sub-campo | Lista de puntos fuertes detectados. |
 | analisisIA.puntosDebiles | `array<string>` | Sub-campo | Lista de áreas de oportunidad. |
 | **scoreDesarrollo** | `number` | Simple | Puntuación o métrica de calidad/popularidad. |
-| **precioDesde** | `number` | Simple | Precio más bajo disponible entre todos los modelos. |
 | **keywords** | `array<string>` | Lista | Palabras clave para búsqueda y SEO. |
 | **amenidades** | `array<string>` | Lista | Lista de amenidades del *desarrollo* (ej. "Áreas verdes"). |
 | **entorno** | `array<string>` | Lista | Lista de puntos de interés o características cercanas. |

@@ -81,7 +81,7 @@ export const recalculateDevelopmentStats = async (db, developmentIds) => {
             const unidadesTotales = devData.infoComercial?.unidadesTotales || 0;
 
             const updateData = {
-                'precioDesde': precioDesde,
+                'precios.desde': precioDesde,
                 'infoComercial.cantidadModelos': activeModelsCount,
                 'updatedAt': Timestamp.now()
             };

@@ -86,7 +86,6 @@ export const DesarrolloSchema = z.object({
     status: z.string().default('Entrega Inmediata'),
     activo: z.preprocess(parseBoolean, z.boolean().default(false)),
     scoreDesarrollo: z.preprocess(parseNumber, z.number().optional()),
-    precioDesde: z.preprocess(parseNumber, z.number().optional()),
     keywords: z.preprocess(parseArray, z.array(z.string()).optional()),
     amenidades: z.preprocess(parseArray, z.array(z.string()).optional()),
     entorno: z.preprocess(parseArray, z.array(z.string()).optional()),
