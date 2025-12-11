@@ -16,7 +16,7 @@ Para usar esta herramienta, necesitas estar ubicado exactamente en la carpeta `d
     ```
     *(Verás que la ruta en la terminal termina en `.../inmueble-advisor/data-manager`)*.
 
-### Opción B: Instalación (Solo la primera vez)
+### Opción B: Instalación (Solo la primera vez) (Ya se instaló)
 Si es la primera vez que usas esto en esta computadora, ejecuta:
 ```bash
 npm install

@@ -1,6 +1,6 @@
 # 🏗️ ESQUEMA DE DATOS - INMUEBLE ADVISOR WEB
 
-ÚLTIMA MODIFICACION: 03/12/2025
+ÚLTIMA MODIFICACION: 11/12/2025
 
 Este documento describe la estructura detallada de las colecciones principales de la base de datos de Inmueble Advisor Web. Está diseñado para ser claro y conciso, facilitando la comprensión de variables, tipos de información y relaciones.
 
@@ -18,6 +18,10 @@ Representa un complejo habitacional (ej. conjunto de casas, torre de departament
 | **constructora** | `string` | Simple | Nombre de la empresa constructora. |
 | **status** | `string` | Simple | Estado de venta/construcción (ej. "Entrega Inmediata", "Pre-Venta"). |
 | **activo** | `boolean` | Simple | Indica si el desarrollo está habilitado (ej. `false`). |
+| **analisisIA** | `map` | Objeto anidado | Análisis generado por IA sobre el desarrollo. |
+| analisisIA.resumen | `string` | Sub-campo | Resumen ejecutivo del análisis. |
+| analisisIA.puntosFuertes | `array<string>` | Sub-campo | Lista de puntos fuertes detectados. |
+| analisisIA.puntosDebiles | `array<string>` | Sub-campo | Lista de áreas de oportunidad. |
 | **scoreDesarrollo** | `number` | Simple | Puntuación o métrica de calidad/popularidad. |
 | **precioDesde** | `number` | Simple | Precio más bajo disponible entre todos los modelos. |
 | **keywords** | `array<string>` | Lista | Palabras clave para búsqueda y SEO. |
@@ -27,6 +31,7 @@ Representa un complejo habitacional (ej. conjunto de casas, torre de departament
 | **ubicacion** | `map` | Objeto anidado | Datos geográficos y de dirección. |
 | ubicacion.calle | `string` | Sub-campo | Calle y número. |
 | ubicacion.colonia | `string` | Sub-campo | Nombre de la colonia o barrio. |
+| ubicacion.localidad | `string` | Sub-campo | Localidad o municipio (entre colonia y ciudad). |
 | ubicacion.ciudad | `string` | Sub-campo | Ciudad. |
 | ubicacion.estado | `string` | Sub-campo | Estado o provincia. |
 | ubicacion.zona | `string` | Sub-campo | Nombre de la zona de la ciudad (ej. "Oriente"). |
@@ -51,6 +56,8 @@ Representa un complejo habitacional (ej. conjunto de casas, torre de departament
 | **media** | `map` | Objeto anidado | Archivos multimedia. |
 | media.cover | `string` (URL) | Sub-campo | URL de la imagen principal/portada. |
 | media.gallery | `array<string>` (URLs) | Sub-campo | URLs para la galería de imágenes. |
+| media.brochure | `string` (URL) | Sub-campo | URL del folleto PDF. |
+| media.video | `string` (URL) | Sub-campo | URL del video promocional del desarrollo. |
 
 ---
 
@@ -62,8 +69,9 @@ Representa un tipo específico de unidad dentro de un desarrollo.
 | :--- | :--- | :--- | :--- |
 | **id** | `string` | **Clave principal** | ID único (compuesto por `idDesarrollo-nombreModelo`). |
 | **idDesarrollo** | `string` | **Clave foránea** | Referencia al `id` del desarrollo padre. |
-| **ActivoModelo** | `boolean` | Simple | Indica si el modelo está habilitado para mostrarse públicamente. Totalmente independiente del campo `activo` de Desarrollos. |
+| **activo** | `boolean` | Simple | Indica si el modelo está habilitado. Anteriormente `ActivoModelo`. |
 | **nombreModelo** | `string` | Simple | Nombre comercial del modelo (ej. "Águila"). |
+| **descripcion** | `string` | Simple | Texto promocional o descriptivo del modelo. |
 | **tipoVivienda** | `string` | Simple | Categoría (ej. "Casas", "Departamentos"). |
 | **m2** | `number` | Simple | Metros cuadrados de construcción. |
 | **terreno** | `number` | Simple | Metros cuadrados de terreno. |
@@ -77,15 +85,22 @@ Representa un tipo específico de unidad dentro de un desarrollo.
 | acabados.cocina | `string` | Sub-campo | Descripción de acabados de cocina. |
 | acabados.pisos | `string` | Sub-campo | Descripción de acabados de pisos. |
 | **precios** | `map` | Objeto anidado | Estructura de precios detallada. |
-| precios.base | `number` | Sub-campo | Precio base del modelo. |
+| precios.base | `number` | Sub-campo | Precio actual base del modelo. |
+| precios.inicial | `number` | Sub-campo | Precio de lista original/lanzamiento. |
+| precios.metroCuadrado | `number` | Sub-campo | Costo por metro cuadrado (`m2`). |
 | precios.mantenimientoMensual | `number` | Sub-campo | Costo mensual de mantenimiento. |
 | precios.moneda | `string` | Sub-campo | Código de la moneda. |
 | **infoComercial** | `map` | Objeto anidado | Datos comerciales del modelo. |
+| infoComercial.fechaInicioVenta | `timestamp` | Sub-campo | Fecha cuando inició la venta del modelo. |
 | infoComercial.plusvaliaEstimada | `number` | Sub-campo | Plusvalía estimada del modelo. |
 | infoComercial.unidadesVendidas | `number` | Sub-campo | Unidades vendidas de este modelo. |
+| **analisisIA** | `map` | Objeto anidado | Análisis generado por IA sobre el modelo. |
+| analisisIA.resumen | `string` | Sub-campo | Resumen ejecutivo del análisis. |
 | **media** | `map` | Objeto anidado | Archivos multimedia del modelo. |
 | media.plantasArquitectonicas | `array<string>` (URLs) | Sub-campo | URLs de los planos arquitectónicos. |
+| media.gallery | `array<string>` (URLs) | Sub-campo | Galería de imágenes del modelo (renders, fotos). |
 | media.recorridoVirtual | `string` (URL) | Sub-campo | URL del recorrido virtual. |
+| media.video | `string` (URL) | Sub-campo | URL del video promocional del modelo. |
 
 ---
 
