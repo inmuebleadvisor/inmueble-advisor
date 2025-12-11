@@ -53,6 +53,10 @@ export const CatalogProvider = ({ children }) => {
             // Inherit location if missing in model
             colonia: m.colonia || parentDev.ubicacion?.colonia || '',
             zona: m.zona || parentDev.zona || parentDev.ubicacion?.zona || '',
+            // Inherit constructor name
+            constructora: m.constructora || parentDev.constructora || '',
+            // Inherit housing type (important for UI cards)
+            tipoVivienda: m.tipoVivienda || parentDev.tipoVivienda || parentDev.tipo || 'Propiedad',
             // Ensure nested object is also populated
             ubicacion: {
               ...m.ubicacion,

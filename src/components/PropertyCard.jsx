@@ -85,7 +85,7 @@ export default function PropertyCard({ item, showDevName = true, style }) {
           <div style={styles.imageOverlay} className="pointer-events-none">
             <h3 style={styles.overlayDevName}>{item.nombreDesarrollo}</h3>
             <p style={styles.overlayModelName}>
-              {item.constructora ? `${item.constructora} • ` : ''} {item.nombre_modelo}
+              {item.constructora ? `${item.constructora} • ` : ''}{item.tipoVivienda ? `${item.tipoVivienda} • ` : ''}{item.nombre_modelo}
             </p>
           </div>
         )}
@@ -95,7 +95,10 @@ export default function PropertyCard({ item, showDevName = true, style }) {
       <div style={styles.cardBody}>
 
         {!showDevName && (
-          <h3 style={styles.inlineTitle}>{item.nombre_modelo}</h3>
+          <>
+            {item.tipoVivienda && <span style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 'bold' }}>{item.tipoVivienda}</span>}
+            <h3 style={styles.inlineTitle}>{item.nombre_modelo}</h3>
+          </>
         )}
 
         {/* Ubicación */}
