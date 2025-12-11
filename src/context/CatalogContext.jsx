@@ -9,6 +9,8 @@ import {
 } from '../services/catalog.service';
 import { getPlatformSettings } from '../services/config.service';
 
+import { useUser } from './UserContext'; // Importamos UserContext
+
 const CatalogContext = createContext();
 
 export const useCatalog = () => {
@@ -16,6 +18,7 @@ export const useCatalog = () => {
 };
 
 export const CatalogProvider = ({ children }) => {
+  const { selectedCity } = useUser(); // Obtenemos la ciudad seleccionada
   const [modelos, setModelos] = useState([]);
   const [desarrollos, setDesarrollos] = useState([]);
   const [amenidades, setAmenidades] = useState([]);
@@ -23,21 +26,51 @@ export const CatalogProvider = ({ children }) => {
 
   useEffect(() => {
     const loadCatalogData = async () => {
+      // Si no hay ciudad seleccionada, tal vez deberíamos esperar o cargar vacío?
+      // Por compatibilidad, si es null cargamos todo (o nada, según decisión UX).
+      // El plan dice: "Query only matching docs".
+      // Si selectedCity es null, el servicio carga todo (global).
+
       setLoadingCatalog(true);
       try {
-        console.log("🔄 Iniciando carga de catálogo v1.1...");
+        let modelosResult = [];
+        let desarrollosResult = [];
+        let amenidadesResult = [];
+        let settingsResult = {};
 
-        // Ejecutamos en paralelo para eficiencia
-        const [modelosData, desarrollosData, amenidadesData, settings] = await Promise.all([
-          obtenerDatosUnificados(),
-          obtenerInventarioDesarrollos(),
-          obtenerTopAmenidades(),
-          getPlatformSettings()
-        ]);
-
-        console.log("Configuración Global cargada:", settings);
+        // 1. Carga Inteligente: Si no hay ciudad filtro, NO cargamos modelos masivos.
+        // Esto mantiene la carga inicial ligera hasta que el usuario elija en el modal.
+        if (!selectedCity) {
+          console.log("⏳ Esperando selección de ciudad (Carga de modelos pausada)...");
+          // Aún cargamos configuración y desarrollos (ligero) para el sistema
+          const [desarrollosData, amenidadesData, settings] = await Promise.all([
+            obtenerInventarioDesarrollos(),
+            obtenerTopAmenidades(),
+            getPlatformSettings()
+          ]);
+          desarrollosResult = desarrollosData;
+          amenidadesResult = amenidadesData;
+          settingsResult = settings;
+        } else {
+          console.log("🔄 Iniciando carga de catálogo filtrado (Ciudad: " + selectedCity + ")...");
+          const [modelosData, desarrollosData, amenidadesData, settings] = await Promise.all([
+            obtenerDatosUnificados(selectedCity),
+            obtenerInventarioDesarrollos(),
+            obtenerTopAmenidades(),
+            getPlatformSettings()
+          ]);
+          modelosResult = modelosData;
+          desarrollosResult = desarrollosData;
+          amenidadesResult = amenidadesData;
+          settingsResult = settings;
+        }
 
         // --- FILTRADO GLOBAL POR VISIBILIDAD DE ADMINISTRACIÓN ---
+        const modelosData = modelosResult; // Alias para continuar con la lógica existente
+        const desarrollosData = desarrollosResult;
+        const settings = settingsResult;
+
+        // 0. ENRICHMENT: Hydrate models with parent development data (Localización, etc.)
 
         // 0. ENRICHMENT: Hydrate models with parent development data (Localización, etc.)
         // This fixes "Ubicación pendiente" issues by inheriting from the parent.
@@ -134,7 +167,7 @@ export const CatalogProvider = ({ children }) => {
     };
 
     loadCatalogData();
-  }, []);
+  }, [selectedCity]); // Recargamos si cambia la ciudad
 
   const value = {
     modelos,

@@ -18,8 +18,8 @@ const MenuIcons = {
 };
 
 export default function Layout() {
-  // ✅ Obtenemos logout, userProfile y user
-  const { userProfile, user, logout } = useUser();
+  // ✅ Obtenemos logout, userProfile, user y userSelectedCity
+  const { userProfile, user, logout, selectedCity, updateSelectedCity } = useUser();
   // Obtenemos el ID de favoritos (para el badge en el paso anterior)
   const { favoritosIds } = useFavorites();
   const location = useLocation();
@@ -113,6 +113,19 @@ export default function Layout() {
               </Link>
             )}
 
+            {/* ⭐ BOTÓN CAMBIAR CIUDAD */}
+            {selectedCity && (
+              <button
+                onClick={() => {
+                  updateSelectedCity(null); // Resetea para mostrar modal
+                  setIsMenuOpen(false);
+                }}
+                style={styles.changeCityBtn}
+              >
+                📍 {selectedCity}
+              </button>
+            )}
+
             {/* BOTÓN DE LOGOUT CONDICIONAL */}
             {user && (
               <button
@@ -199,6 +212,22 @@ const styles = {
   },
   nav: {
     // La clase .nav-menu en index.css maneja el responsive (flex row vs column)
+  },
+
+  changeCityBtn: {
+    background: 'none',
+    border: '1px solid rgba(255,255,255,0.3)',
+    borderRadius: '20px',
+    color: 'white',
+    padding: '4px 12px',
+    fontSize: '0.85rem',
+    cursor: 'pointer',
+    margin: '0 5px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    opacity: 0.9,
+    transition: 'all 0.2s',
   },
 
   // ⭐ NUEVO ESTILO: Botón de Cerrar Sesión (Se ve como un enlace en el menú)

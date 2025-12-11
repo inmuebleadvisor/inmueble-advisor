@@ -10,7 +10,9 @@ import { IMAGES, STATUS } from '../config/constants';
 const FALLBACK_IMG = IMAGES.FALLBACK_PROPERTY;
 const UNRELIABLE_PLACEHOLDER = "via.placeholder.com";
 
+// Cache simple (se podría mejorar por ciudad, pero por ahora reseteamos si cambia criterio)
 let cacheModelos = null;
+let lastCityCached = null;
 let cacheDesarrollos = null;
 
 // --- HELPERS ---
@@ -185,17 +187,94 @@ const mapDesarrollo = (docSnapshot) => {
 
 // --- FUNCIONES EXPORTADAS ---
 
-export const obtenerDatosUnificados = async () => {
-  if (cacheModelos) return cacheModelos;
+// Limit for Firestore 'in' query
+const FIRESTORE_BATCH_LIMIT = 30;
+
+export const obtenerDatosUnificados = async (ciudadFilter = null) => {
+  // Si tenemos cache y es la misma ciudad (o sin filtro), retornamos cache
+  if (cacheModelos && lastCityCached === ciudadFilter) return cacheModelos;
+
   try {
-    const snap = await getDocs(collection(db, "modelos"));
-    const modelos = snap.docs.map(mapModelo);
+    let modelos = [];
+
+    if (ciudadFilter) {
+      console.log(`📡 Consultando modelos para ciudad: ${ciudadFilter} (Estrategia: Desarrollos -> Modelos)`);
+
+      // PASO 1: Obtener IDs de Desarrollos en esa ciudad
+      // Usamos cache de desarrollos si está lleno, sino query nativa pequeña
+      let devIds = [];
+
+      // Optimización: Intentar filtrar desde cache de desarrollos si existe
+      if (cacheDesarrollos) {
+        devIds = cacheDesarrollos
+          .filter(d => d.ubicacion?.ciudad === ciudadFilter)
+          .map(d => d.id);
+      } else {
+        // Si no hay cache, hacemos query ligera a 'desarrollos' (menos docs que modelos)
+        const qDevs = query(collection(db, "desarrollos"), where("ubicacion.ciudad", "==", ciudadFilter));
+        const snapDevs = await getDocs(qDevs);
+        devIds = snapDevs.docs.map(d => d.id);
+      }
+
+      if (devIds.length === 0) {
+        console.warn(`⚠️ No se encontraron desarrollos en ${ciudadFilter}`);
+        return [];
+      }
+
+      console.log(`ℹ️ Encontrados ${devIds.length} desarrollos en ${ciudadFilter}. Buscando sus modelos...`);
+
+      // PASO 2: Buscar modelos que pertenezcan a esos IDs
+      // Firestore 'IN' limit is 30. We must batch.
+      const chunks = [];
+      for (let i = 0; i < devIds.length; i += FIRESTORE_BATCH_LIMIT) {
+        chunks.push(devIds.slice(i, i + FIRESTORE_BATCH_LIMIT));
+      }
+
+      // Ejecutar promesas en paralelo
+      const promises = chunks.map(async (chunkIds) => {
+        const qModelos = query(collection(db, "modelos"), where("idDesarrollo", "in", chunkIds));
+        const snap = await getDocs(qModelos);
+        return snap.docs.map(mapModelo);
+      });
+
+      const results = await Promise.all(promises);
+      modelos = results.flat();
+
+    } else {
+      console.log(`📡 Consultando modelos (Total Global)`);
+      const snap = await getDocs(collection(db, "modelos"));
+      modelos = snap.docs.map(mapModelo);
+    }
+
+    // Actualizamos cache
     cacheModelos = modelos;
+    lastCityCached = ciudadFilter;
+
     return modelos;
   } catch (error) {
     console.error("Error obteniendo modelos:", error);
     return [];
   }
+};
+
+/**
+ * Obtiene la lista única de ciudades disponibles basada en el inventario de Desarrollos.
+ * Es más ligero leer solo los desarrollos (60 docs) que todos los modelos.
+ */
+export const obtenerCiudadesDisponibles = async () => {
+  // Reutilizamos la función de inventario de desarrollos (que ya tiene cache interno)
+  const desarrollos = await obtenerInventarioDesarrollos();
+  const ciudades = new Set();
+
+  desarrollos.forEach(d => {
+    // Normalización básica
+    const city = d.ubicacion?.ciudad;
+    if (city) {
+      ciudades.add(city.trim());
+    }
+  });
+
+  return Array.from(ciudades).sort();
 };
 
 export const obtenerInventarioDesarrollos = async () => {

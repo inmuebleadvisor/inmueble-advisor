@@ -15,6 +15,20 @@ export const UserProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
+  // ⭐ NUEVO CONSTEXTO: Ciudad Seleccionada (Global Preference)
+  const [selectedCity, setSelectedCity] = useState(() => {
+    return localStorage.getItem('user_selected_city') || null;
+  });
+
+  const updateSelectedCity = (city) => {
+    setSelectedCity(city);
+    if (city) {
+      localStorage.setItem('user_selected_city', city);
+    } else {
+      localStorage.removeItem('user_selected_city');
+    }
+  };
+
   // 1. ESCUCHA DE SESIÓN
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -124,7 +138,11 @@ export const UserProvider = ({ children }) => {
     loginWithGoogle,
     convertirEnAsesor, // 👈 Exportamos la nueva función
     logout,
-    trackBehavior
+    logout,
+    trackBehavior,
+    // Contexto de Ciudad
+    selectedCity,
+    updateSelectedCity
   };
 
   return (

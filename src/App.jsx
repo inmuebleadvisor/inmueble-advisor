@@ -32,7 +32,10 @@ import Favoritos from './screens/Favoritos';
 // ⭐ HERRAMIENTA ADMIN: Importamos la pantalla de exportación
 import AdminDataExport from './screens/AdminDataExport';
 // ⭐ NUEVO: Panel de Administrador (Sin link, acceso directo)
+// ⭐ NUEVO: Panel de Administrador (Sin link, acceso directo)
 import AdminDashboard from './screens/AdminDashboard';
+// ⭐ NUEVO: Modal de selección de ciudad
+import CitySelectorModal from './components/shared/CitySelectorModal';
 
 function App() {
   // El orden de los Providers es estratégico. FavoritesProvider usa datos de User y Catalog.
@@ -41,6 +44,9 @@ function App() {
       <CatalogProvider>
         {/* ⭐ AÑADIMOS EL NUEVO PROVEEDOR AQUÍ */}
         <FavoritesProvider>
+          {/* ⭐ MODAL DE SELECCIÓN DE CIUDAD (Global) */}
+          <CitySelectorModal />
+
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Layout />}>
