@@ -1,0 +1,20 @@
+{
+    "name": "inmueble-advisor-data-manager",
+    "version": "1.0.0",
+    "description": "Standalone CLI tool for Firestore import/export",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "start": "node index.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "firebase-admin": "^12.0.0",
+        "yargs": "^17.7.0",
+        "csv-parser": "^3.0.0",
+        "json2csv": "^5.0.0",
+        "colors": "^1.4.0"
+    },
+    "author": "",
+    "license": "ISC"
+}
