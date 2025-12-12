@@ -108,3 +108,206 @@ export const recalculateDevelopmentStats = async (db, developmentIds) => {
 
     console.log(colors.green(`\n✅ Recálculo completado. ${processed} desarrollos actualizados.`));
 };
+
+/**
+ * Recalculates highlights for all models in a specific city.
+ * Comparisons:
+ * - Lowest Price (City & Zone)
+ * - Lowest Price/m2 (City & Zone)
+ * - Most Terrain (City & Zone)
+ * - Most Construction m2 (City & Zone)
+ */
+export const recalculateCityHighlights = async (db, city) => {
+    if (!city) return;
+    console.log(colors.cyan(`\n🏆 Calculando Highlights para la ciudad: ${city}...`));
+
+    try {
+        // 1. Get all Developments in this city to map DevID -> Zone & Name
+        const devsSnapshot = await db.collection('desarrollos')
+            .where('ubicacion.ciudad', '==', city)
+            .where('activo', '==', true)
+            .get();
+
+        const devMap = {}; // { devId: { zona: 'Norte', nombre: 'Paseos...' } }
+        const devIds = [];
+
+        devsSnapshot.forEach(doc => {
+            const data = doc.data();
+            devMap[doc.id] = {
+                zona: data.ubicacion?.zona || 'Sin Zona',
+                nombre: data.nombre
+            };
+            devIds.push(doc.id);
+        });
+
+        if (devIds.length === 0) {
+            console.log(colors.yellow(`   > No active developments found in ${city}.`));
+            return;
+        }
+
+        // 2. Get all Active Models linked to these developments
+        // Strategy: Query ALL active models, filter in memory for those in devIds.
+
+        const modelsSnapshot = await db.collection('modelos').get();
+
+        const cityModels = [];
+
+        modelsSnapshot.forEach(doc => {
+            const m = doc.data();
+            // Check if model belongs to one of our city devs
+            if (m.idDesarrollo && devMap[m.idDesarrollo]) {
+                // Must be active
+                const isActive = (m.activo === true || m.ActivoModelo === true || m.activo === 'true');
+                if (isActive) {
+                    cityModels.push({
+                        id: doc.id,
+                        ...m,
+                        _zona: devMap[m.idDesarrollo].zona
+                    });
+                }
+            }
+        });
+
+        console.log(`   > Obtenidos ${cityModels.length} modelos activos en ${city}.`);
+        if (cityModels.length === 0) return;
+
+        // 3. Find Winners
+        // Metrics: price (asc), priceM2 (asc), terrain (desc), construction (desc)
+
+        const winners = {
+            city: {
+                lowestPrice: null,
+                lowestPriceM2: null,
+                maxTerrain: null,
+                maxConstruction: null
+            },
+            zones: {} // { 'Norte': { lowestPrice: ... } }
+        };
+
+        const updateWinner = (scope, key, model, value, type) => {
+            // type: 'min' or 'max'
+            // Ensure value is valid number
+            if (!value || isNaN(value)) return;
+
+            if (!scope[key]) {
+                scope[key] = { model, value };
+            } else {
+                if (type === 'min' && value < scope[key].value) {
+                    scope[key] = { model, value };
+                }
+                if (type === 'max' && value > scope[key].value) {
+                    scope[key] = { model, value };
+                }
+            }
+        };
+
+        cityModels.forEach(m => {
+            const price = m.precios?.base || 0;
+            const priceM2 = m.precios?.metroCuadrado || 0;
+            const terrain = m.terreno || 0;
+            const construction = m.m2 || 0;
+            const zona = m._zona;
+
+            // Initialize zone container
+            if (!winners.zones[zona]) {
+                winners.zones[zona] = {
+                    lowestPrice: null,
+                    lowestPriceM2: null,
+                    maxTerrain: null,
+                    maxConstruction: null
+                };
+            }
+
+            // Price analysis
+            if (price > 0) {
+                updateWinner(winners.city, 'lowestPrice', m, price, 'min');
+                updateWinner(winners.zones[zona], 'lowestPrice', m, price, 'min');
+            }
+
+            // Price M2 analysis
+            if (priceM2 > 0) {
+                updateWinner(winners.city, 'lowestPriceM2', m, priceM2, 'min');
+                updateWinner(winners.zones[zona], 'lowestPriceM2', m, priceM2, 'min');
+            }
+
+            // Terrain analysis
+            if (terrain > 0) {
+                updateWinner(winners.city, 'maxTerrain', m, terrain, 'max');
+                updateWinner(winners.zones[zona], 'maxTerrain', m, terrain, 'max');
+            }
+
+            // Construction analysis
+            if (construction > 0) {
+                updateWinner(winners.city, 'maxConstruction', m, construction, 'max');
+                updateWinner(winners.zones[zona], 'maxConstruction', m, construction, 'max');
+            }
+        });
+
+        // 4. Assign Highlights Strings to Models
+        const modelHighlights = {}; // { modelId: Set<string> }
+
+        const addHighlight = (modelId, text) => {
+            if (!modelHighlights[modelId]) modelHighlights[modelId] = new Set();
+            modelHighlights[modelId].add(text);
+        };
+
+        // Process City Winners
+        if (winners.city.lowestPrice) addHighlight(winners.city.lowestPrice.model.id, `Modelo con el precio más bajo de ${city}`);
+        if (winners.city.lowestPriceM2) addHighlight(winners.city.lowestPriceM2.model.id, `Modelo con el precio más bajo por m² de ${city}`);
+        if (winners.city.maxTerrain) addHighlight(winners.city.maxTerrain.model.id, `Modelo con más terreno de ${city}`);
+        if (winners.city.maxConstruction) addHighlight(winners.city.maxConstruction.model.id, `Modelo con más m² de construcción de ${city}`);
+
+        // Process Zone Winners
+        Object.keys(winners.zones).forEach(zona => {
+            const zWins = winners.zones[zona];
+            if (zWins.lowestPrice) addHighlight(zWins.lowestPrice.model.id, `Modelo con el precio más bajo de la zona ${zona}`);
+            if (zWins.lowestPriceM2) addHighlight(zWins.lowestPriceM2.model.id, `Modelo con el precio más bajo por m² de la zona ${zona}`);
+            if (zWins.maxTerrain) addHighlight(zWins.maxTerrain.model.id, `Modelo con más terreno de la zona ${zona}`);
+            if (zWins.maxConstruction) addHighlight(zWins.maxConstruction.model.id, `Modelo con más m² de construcción de la zona ${zona}`);
+        });
+
+        // 5. Batch Updates
+        const batch = db.batch();
+        let batchCount = 0;
+
+        // Iterate ALL city models to either set or clear highlights
+        cityModels.forEach(m => {
+            const ref = db.collection('modelos').doc(m.id);
+            const generatedHighlights = modelHighlights[m.id] ? Array.from(modelHighlights[m.id]) : [];
+
+            // Preserve manual highlights if they exist? The prompt says "Recalculate all".
+            // "Si un modelo no tiene highlights se deja en blanco."
+            // "Si un modelo tiene mas de 1 highlight se ponen todos."
+            // Assuming this overrides previous calculations.
+
+            // NOTE: If we want to keep "manual" highlights from CSV that are NOT calculated, 
+            // we would need to know which ones are manual. 
+            // For now, I will OVERWRITE `highlights` with the calculated ones, 
+            // assuming "highlights" field is purely for this automatic system as requested.
+            // If the user wants manual + auto, we'd need a separate field or logic.
+            // Given the prompt "Si un modelo no tiene highlights se deja en blanco", implies full control.
+
+            // Only update if changed
+            // Sort for comparison
+            generatedHighlights.sort();
+            const currentHighlights = (m.highlights || []).sort();
+
+            const isSame = JSON.stringify(generatedHighlights) === JSON.stringify(currentHighlights);
+
+            if (!isSame) {
+                batch.update(ref, { highlights: generatedHighlights });
+                batchCount++;
+            }
+        });
+
+        if (batchCount > 0) {
+            await batch.commit();
+            console.log(colors.green(`   > ✅ Highlights actualizados para ${batchCount} modelos en ${city}.`));
+        } else {
+            console.log(`   > No hubo cambios en los highlights.`);
+        }
+
+    } catch (e) {
+        console.error(colors.red(`   > ❌ Error calculating highlights: ${e.message}`));
+    }
+};

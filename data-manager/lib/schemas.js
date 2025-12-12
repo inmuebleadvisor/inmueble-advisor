@@ -150,6 +150,7 @@ export const ModeloSchema = z.object({
 
     nombreModelo: z.string().min(1, "Nombre Modelo es requerido"),
     descripcion: z.string().optional(),
+    highlights: z.array(z.string()).optional(),
     tipoVivienda: z.string().default('Casas'),
 
     // Specs

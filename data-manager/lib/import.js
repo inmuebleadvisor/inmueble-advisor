@@ -3,7 +3,7 @@ import csv from 'csv-parser';
 import colors from 'colors';
 import { Timestamp } from 'firebase-admin/firestore';
 import { initializeFirebase } from './utils.js';
-import { recalculateDevelopmentStats } from './calculations.js';
+import { recalculateDevelopmentStats, recalculateCityHighlights } from './calculations.js';
 import { logger } from './logger.js';
 import { DesarrolloSchema, ModeloSchema } from './schemas.js';
 import { adaptDesarrollo, adaptModelo } from './adapters.js';
@@ -30,6 +30,7 @@ export const importCollection = async (collectionName, filePath) => {
             let errorCount = 0;
 
             const affectedDevelopmentIds = new Set();
+            const affectedCities = new Set(); // Track cities for highlights
             const errors = [];
 
             for (let i = 0; i < rows.length; i++) {
@@ -95,8 +96,15 @@ export const importCollection = async (collectionName, filePath) => {
                     // Stats Tracking
                     if (collectionName === 'desarrollos') {
                         affectedDevelopmentIds.add(String(finalData.id));
+                        if (finalData.ubicacion?.ciudad) affectedCities.add(finalData.ubicacion.ciudad);
                     } else if (collectionName === 'modelos') {
                         affectedDevelopmentIds.add(String(finalData.idDesarrollo));
+                        // For models, we need the city. Usually dev has it. 
+                        // Optimization: We re-calc stats anyway, so we can fetch city then?
+                        // Better: If we import models, we can assume we might want to check DB for dev city or pass it in CSV?
+                        // The CSV doesn't strictly have 'ciudad' for models.
+                        // Option: Just rely on fetching dev later? Or query dev now?
+                        // Let's add 'recalculateCityHighlights' step to query devs of affectedDevelopmentIds to find cities efficiently later.
                     }
 
                     batchCount++;
@@ -130,7 +138,41 @@ export const importCollection = async (collectionName, filePath) => {
             if (affectedDevelopmentIds.size > 0) {
                 // If dev info changed (precioDesde manually set in CSV?), we might overwrite it with recalc.
                 // But typically recalc is desired to keep sync.
+                // 4. Recalculate Development Stats (Precio Desde, etc.)
+                process.stdout.write(`\n🔄 Iniciando recálculo automático para ${affectedDevelopmentIds.size} desarrollos...`);
+                // We can capture cities here while updating devs
+                const citiesFound = new Set();
+                if (affectedCities.size > 0) affectedCities.forEach(c => citiesFound.add(c));
+
+                // existing logic... we need to modify recalculateDevelopmentStats to return cities or we query them separately?
+                // Let's just run dev stats first.
                 await recalculateDevelopmentStats(db, Array.from(affectedDevelopmentIds));
+                process.stdout.write(`\n✅ Recálculo completado. ${affectedDevelopmentIds.size} desarrollos actualizados.`);
+
+                // 5. Detect Cities from Affected Developments to trigger Highlights
+                // Since models import implies updates to dev stats, we can query these devs to find their cities.
+                process.stdout.write(`\n🔍 Identificando ciudades para actualizar Highlights...`);
+                // Note: Firestore 'in' query limited to 10. We might have many devs.
+                // Let's perform a simple loop or use the fact that we might have many IDs.
+                // It's safer to read the modified devs one by one or in batches.
+                const devIdsArray = Array.from(affectedDevelopmentIds);
+                // We can batch read 10 at a time or just iterate since it's a CLI tool.
+
+                for (const devId of devIdsArray) {
+                    const devDoc = await db.collection('desarrollos').doc(devId).get();
+                    const data = devDoc.data();
+                    if (data?.ubicacion?.ciudad) {
+                        citiesFound.add(data.ubicacion.ciudad);
+                    }
+                }
+
+                // 6. Recalculate Highlights for Affected Cities
+                if (citiesFound.size > 0) {
+                    console.log(`\n🏆 Actualizando Highlights para [${Array.from(citiesFound).join(', ')}]...`);
+                    for (const city of citiesFound) {
+                        await recalculateCityHighlights(db, city);
+                    }
+                }
             }
         });
 };

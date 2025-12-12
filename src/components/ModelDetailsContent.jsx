@@ -7,10 +7,13 @@ import FinanciamientoWidget from './FinanciamientoWidget';
 import DevelopmentInfoSection from './DevelopmentInfoSection';
 import PropertyCard from './PropertyCard';
 import FavoriteBtn from './FavoriteBtn';
+import HighlightsModal from './common/HighlightsModal';
+import { useState } from 'react';
 
 // Icons defined locally since they are small
 const Icons = {
-    Back: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+    Back: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>,
+    Flag: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="#f59e0b" stroke="#b45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
 };
 
 const formatoMoneda = (val) => {
@@ -25,6 +28,7 @@ export default function ModelDetailsContent({
     onBack, // Optional: if provided, shows back button (e.g., for full screen). If in modal, might not need it or handled differently.
     isModal = false // To adjust styles for modal view
 }) {
+    const [showHighlightsModal, setShowHighlightsModal] = useState(false);
 
     const galeriaImagenes = useMemo(() => {
         if (!modelo) return [];
@@ -78,6 +82,15 @@ export default function ModelDetailsContent({
                                 <span style={styles.priceValue}>{formatoMoneda(modelo.precioNumerico)}</span>
                                 {modelo.precios?.mantenimientoMensual > 0 && (
                                     <span style={styles.maintenanceLabel}>+ {formatoMoneda(modelo.precios.mantenimientoMensual)} mant. mensual</span>
+                                )}
+                                {modelo.highlights && modelo.highlights.length > 0 && (
+                                    <button
+                                        onClick={() => setShowHighlightsModal(true)}
+                                        style={styles.highlightsButton}
+                                    >
+                                        <Icons.Flag />
+                                        <span style={{ marginLeft: '6px', fontSize: '0.8rem', fontWeight: '700', color: '#b45309' }}>Ver Destacados</span>
+                                    </button>
                                 )}
                             </div>
                         </div>
@@ -155,6 +168,12 @@ export default function ModelDetailsContent({
                 )}
 
             </main>
+
+            <HighlightsModal
+                isOpen={showHighlightsModal}
+                onClose={() => setShowHighlightsModal(false)}
+                highlights={modelo.highlights}
+            />
         </div>
     );
 }
@@ -176,6 +195,7 @@ const styles = {
     priceLabel: { fontSize: '0.7rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '700' },
     priceValue: { fontSize: '1.5rem', fontWeight: '800', color: '#0f172a' },
     maintenanceLabel: { fontSize: '0.8rem', color: '#64748b', marginTop: '2px' },
+    highlightsButton: { marginTop: '8px', display: 'flex', alignItems: 'center', backgroundColor: '#fffbeb', border: '1px solid #fcd34d', padding: '6px 12px', borderRadius: '20px', cursor: 'pointer', maxWidth: 'fit-content', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
     favoriteWrapper: { flexShrink: 0, marginLeft: '15px', marginTop: '5px' },
     favoriteButtonOverride: { backgroundColor: '#fff', border: '1px solid #e5e7eb' },
     divider: { border: 'none', borderTop: '1px solid #e5e7eb', margin: '30px 0' },

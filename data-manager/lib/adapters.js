@@ -130,6 +130,12 @@ export const adaptModelo = (row) => {
     if (nombreModelo) out.nombreModelo = nombreModelo;
     if (row.descripcion) out.descripcion = row.descripcion;
 
+    // Highlights can be manual (single string from CSV) transformed to array, 
+    // BUT usually will be calculated. Leaving mapping for manual override if needed.
+    if (row.highlight || row.destacado) {
+        out.highlights = [row.highlight || row.destacado];
+    }
+
     // Mapping ActivoModelo legacy to active
     // The schema handles 'activo' or 'ActivoModelo', but here we map to 'activo' property or leave row props.
     // Let's rely on strict mapping.

@@ -1,18 +1,17 @@
-// src/components/PropertyCard.jsx
-// ÚLTIMA MODIFICACION: 02/12/2025
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import ImageLoader from './ImageLoader';
 import FavoriteBtn from './FavoriteBtn';
-import Delightbox from './common/Delightbox'; // Import Delightbox
+import Delightbox from './common/Delightbox';
+import HighlightsModal from './common/HighlightsModal';
 import { FINANZAS, IMAGES } from '../config/constants';
-import { useState } from 'react'; // Import useState
+import { useState } from 'react';
 
 // --- ICONOS ---
 const Icons = {
-  Pin: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+  Pin: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>,
+  Flag: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#b45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
 };
 
 // --- HELPERS ---
@@ -27,19 +26,15 @@ const calcularEscrituracion = (precio) => formatoMoneda(precio * (FINANZAS?.PORC
 export default function PropertyCard({ item, showDevName = true, style }) {
   const { trackBehavior } = useUser();
   const [showDelightbox, setShowDelightbox] = useState(false);
+  const [showHighlightsModal, setShowHighlightsModal] = useState(false);
   const [initialImageIndex, setInitialImageIndex] = useState(0);
 
   if (!item) return null;
 
-  // LÓGICA DE IMÁGENES:
-  // El servicio 'catalog.service.js' ya nos entrega 'item.imagenes' como un array limpio.
-  // Si por alguna razón falla, hacemos fallback a un array con la imagen principal.
   const galeriaImagenes = (item.imagenes && item.imagenes.length > 0)
     ? item.imagenes
     : [item.imagen || IMAGES.FALLBACK_PROPERTY];
 
-  // LÓGICA DE PRECIO:
-  // Usamos precioNumerico que viene mapeado desde precios.base en el servicio
   const precioMostrar = item.precioNumerico || 0;
 
   return (
@@ -61,14 +56,12 @@ export default function PropertyCard({ item, showDevName = true, style }) {
               alt={`${item.nombre_modelo} - foto ${idx + 1}`}
               style={styles.image}
             />
-            {/* Indicador de más fotos solo en la primera slide */}
             {idx === 0 && galeriaImagenes.length > 1 && (
               <div style={styles.swipeHint}>+{galeriaImagenes.length - 1}</div>
             )}
           </div>
         ))}
 
-        {/* Etiquetas de estado */}
         <span style={{
           ...styles.statusTag,
           backgroundColor: item.esPreventa ? '#f59e0b' : '#10b981'
@@ -80,10 +73,8 @@ export default function PropertyCard({ item, showDevName = true, style }) {
           <FavoriteBtn modeloId={item.id} />
         </div>
 
-        {/* Nombre del Desarrollo (Overlay) */}
         {showDevName && (
           <div style={styles.imageOverlay} className="pointer-events-none">
-            {/* Solo nombre del modelo, más grande, sin constructora ni tipo */}
             <h3 style={{ ...styles.overlayModelName, fontSize: '1.4rem', fontWeight: '800', margin: 0 }}>{item.nombre_modelo}</h3>
             <p style={{ ...styles.overlayDevName, fontSize: '0.9rem', opacity: 0.9, fontWeight: '500' }}>{item.nombreDesarrollo}</p>
           </div>
@@ -123,7 +114,6 @@ export default function PropertyCard({ item, showDevName = true, style }) {
                 {formatoMoneda(item.precios.metroCuadrado)} m²
               </span>
             )}
-
           </div>
           <div style={{
             ...styles.priceValue,
@@ -131,12 +121,27 @@ export default function PropertyCard({ item, showDevName = true, style }) {
             fontSize: precioMostrar > 0 ? '1.5rem' : '1.2rem'
           }}>
             {precioMostrar > 0 ? formatoMoneda(precioMostrar) : "Consultar Precio"}
-
           </div>
           {precioMostrar > 0 && (
             <div style={styles.priceNote}>
               *Escrituración aprox: {calcularEscrituracion(precioMostrar)}
             </div>
+          )}
+
+          {/* Highlights Trigger */}
+          {item.highlights && item.highlights.length > 0 && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowHighlightsModal(true);
+                trackBehavior('view_highlights', { id: item.id, origin: 'card_flag' });
+              }}
+              style={styles.highlightsFlag}
+              title="Ver beneficios destacados"
+            >
+              <Icons.Flag />
+            </button>
           )}
         </div>
 
@@ -149,6 +154,12 @@ export default function PropertyCard({ item, showDevName = true, style }) {
           Ver Detalles Completos
         </Link>
       </div>
+
+      <HighlightsModal
+        isOpen={showHighlightsModal}
+        onClose={() => setShowHighlightsModal(false)}
+        highlights={item.highlights}
+      />
 
       {/* DELIGHTBOX INTEGRATION */}
       {showDelightbox && (
@@ -181,8 +192,9 @@ const styles = {
   featuresRow: { display: 'flex', alignItems: 'center', gap: '8px', color: '#374151', fontSize: '0.85rem', fontWeight: '500', marginTop: 'auto' },
   featureItem: { display: 'flex', alignItems: 'center', gap: '4px' },
   separator: { color: '#d1d5db', fontSize: '1.2rem', fontWeight: '300' },
-  priceBox: { backgroundColor: '#eff6ff', borderRadius: '12px', padding: '12px', marginTop: '5px', border: '1px solid #dbeafe' },
+  priceBox: { backgroundColor: '#eff6ff', borderRadius: '12px', padding: '12px', marginTop: '5px', border: '1px solid #dbeafe', position: 'relative' },
   priceLabel: { fontSize: '0.65rem', fontWeight: '800', color: '#1e293b', letterSpacing: '1px', textTransform: 'uppercase' },
   priceValue: { fontWeight: '800', margin: '2px 0' },
   priceNote: { fontSize: '0.75rem', color: '#64748b', marginTop: '2px' },
+  highlightsFlag: { position: 'absolute', bottom: '10px', right: '10px', background: 'white', border: '1px solid #fcd34d', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', zIndex: 5 },
 };

@@ -71,6 +71,7 @@ Representa un tipo específico de unidad dentro de un desarrollo.
 | **activo** | `boolean` | Simple | Indica si el modelo está habilitado. Anteriormente `ActivoModelo`. |
 | **nombreModelo** | `string` | Simple | Nombre comercial del modelo (ej. "Águila"). |
 | **descripcion** | `string` | Simple | Texto promocional o descriptivo del modelo. |
+| **highlights** | `array<string>` | Lista | Badges destacados calculados (ej. "Precio más bajo de la Zona"). |
 | **tipoVivienda** | `string` | Simple | Categoría (ej. "Casas", "Departamentos"). |
 | **m2** | `number` | Simple | Metros cuadrados de construcción. |
 | **terreno** | `number` | Simple | Metros cuadrados de terreno. |
