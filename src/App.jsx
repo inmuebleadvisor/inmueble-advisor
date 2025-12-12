@@ -10,6 +10,7 @@ import { UserProvider } from './context/UserContext';
 import { CatalogProvider } from './context/CatalogContext';
 // ⭐ NUEVO: Contexto de Favoritos, necesario para la nueva funcionalidad
 import { FavoritesProvider } from './context/FavoritesContext';
+import { UI_OPCIONES } from './config/constants';
 
 // --- SEGURIDAD Y LAYOUT ---
 import ProtectedRoute from './components/ProtectedRoute';
@@ -80,11 +81,23 @@ function App() {
                 <Route path="mapa" element={<Mapa />} />
 
                 {/* ⭐ NUEVA RUTA: Ruta para la pantalla de Comparador y Favoritos */}
-                <Route path="favoritos" element={<Favoritos />} />
+                <Route path="favoritos" element={
+                  <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
+                    <Favoritos />
+                  </ProtectedRoute>
+                } />
 
                 {/* 6. RUTAS DE DETALLE */}
-                <Route path="modelo/:id" element={<DetalleModelo />} />
-                <Route path="desarrollo/:id" element={<DetalleDesarrollo />} />
+                <Route path="modelo/:id" element={
+                  <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
+                    <DetalleModelo />
+                  </ProtectedRoute>
+                } />
+                <Route path="desarrollo/:id" element={
+                  <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
+                    <DetalleDesarrollo />
+                  </ProtectedRoute>
+                } />
 
                 {/* 7. HERRAMIENTAS ADMINISTRATIVAS (Uso interno) */}
                 {/* Accede manualmente escribiendo /admin-export-tool en la URL */}

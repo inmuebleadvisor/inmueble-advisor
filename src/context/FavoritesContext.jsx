@@ -40,19 +40,16 @@ export const FavoritesProvider = ({ children }) => {
   // 2. ACCIÓN: Toggle (Alternar Favorito)
   const toggleFavorite = async (modeloId) => {
     // A. Validación de Seguridad:
-    // Aunque la UI (botón) debe manejar el login, el contexto actúa como guardián final.
-    if (!user) {
-        console.warn("[Favorites] Intento de modificación sin sesión activa.");
-        return false; 
-    }
+    // El contexto actúa como guardián final, aunque ProtectedRoute ya debería haber prevenido el acceso.
+    if (!user) return false;
 
     const existe = favoritosIds.includes(modeloId);
-    
+
     // B. Optimistic UI Update: 
     // Actualizamos el estado local INMEDIATAMENTE para respuesta instantánea (0ms latencia percibida).
     const estadoAnterior = [...favoritosIds]; // Backup para rollback
     let nuevosFavs;
-    
+
     if (existe) {
       nuevosFavs = favoritosIds.filter(id => id !== modeloId);
     } else {

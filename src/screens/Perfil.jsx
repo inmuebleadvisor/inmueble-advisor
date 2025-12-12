@@ -1,26 +1,43 @@
 // src/screens/Perfil.jsx
 // ÚLTIMA MODIFICACION: 01/12/2025
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { IMAGES } from '../config/constants';
 
 export default function Perfil() {
   const navigate = useNavigate();
+  const location = useLocation(); // Recuperamos el estado de navegación (para redirects)
+  const [searchParams] = useSearchParams(); // Para leer ?openLogin=true
+
   // Solo necesitamos trackBehavior y loginWithGoogle aquí, pero ahora también user data para redirección
   const { loginWithGoogle, trackBehavior, user, userProfile, loadingUser } = useUser();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
+  // EFECTO: Si la URL trae ?openLogin=true (ej. rebote de ProtectedRoute), activamos la UI de logueo
+  useEffect(() => {
+    if (searchParams.get('openLogin') === 'true') {
+      // Podríamos hacer scroll o focus, pero por ahora user initiation es mejor. 
+      // Si queremos simular que ya le dio click:
+      // (Opcional, depende de UX. Por ahora solo dejamos que el usuario lo vea)
+      // Pero para ser más amables, podríamos poner un toast o mensaje.
+      setIsLoggingIn(false); // Mantener cerrado o abrir automáticamente?
+      // El requerimiento dice "invitarlos a loguearse".
+      // Vamos a hacer scroll hacia el botón de login para que lo vean.
+      const loginBtn = document.getElementById('btn-login-action');
+      if (loginBtn) loginBtn.scrollIntoView({ behavior: 'smooth' });
+      // O mejor, un alert o estado que muestre el form directamente si tuvieramos un form visible.
+    }
+  }, [searchParams]);
+
   // EFECTO: Redirección automática si ya tiene onboarding completo
   useEffect(() => {
     if (!loadingUser && user && userProfile?.onboardingCompleto) {
-      // Si es asesor, quizás deberíamos mandarlo a /account-asesor, pero el requerimiento dice /catalogo para usuarios
-      // Asumiremos que si el rol es 'cliente' y tiene onboarding, va a catalogo.
-      // Si el rol es 'asesor', el requerimiento no especificó pero 'catalogo' es safe o 'account-asesor'.
-      // El requerimiento dice: "si el visitante ya tiene un usuario y ya nos brindo la informacion del inboardingCliente, lo vamos a reenviar al /catalogo"
-      navigate('/catalogo');
+      // 1. Prioridad: ¿Venía de alguna ruta protegida?
+      const origin = location.state?.from?.pathname || '/catalogo';
+      navigate(origin, { replace: true });
     }
-  }, [user, userProfile, loadingUser, navigate]);
+  }, [user, userProfile, loadingUser, navigate, location]);
 
   const handleRoleSelection = (role) => {
     trackBehavior('select_role', { role });
@@ -37,7 +54,13 @@ export default function Perfil() {
     try {
       const firebaseUser = await loginWithGoogle();
       if (firebaseUser) {
-        navigate('/catalogo');
+        const firebaseUser = await loginWithGoogle();
+        if (firebaseUser) {
+          // La redirección la maneja el useEffect de arriba cuando detecta auth change
+          // Pero para feedback inmediato si el effect tarda:
+          const origin = location.state?.from?.pathname || '/catalogo';
+          navigate(origin, { replace: true });
+        }
       }
     } catch (error) {
       console.error("Login directo fallido", error);
@@ -75,6 +98,7 @@ export default function Perfil() {
 
           <div style={{ marginTop: '25px', borderTop: '1px solid #eee', paddingTop: '20px' }}>
             <button
+              id="btn-login-action" // ID para scroll
               onClick={handleLoginDirecto}
               disabled={isLoggingIn}
               style={styles.textLinkButton}

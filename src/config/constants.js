@@ -18,7 +18,9 @@ export const FINANZAS = {
 export const UI_OPCIONES = {
   FILTRO_PRECIO_MAX: 10000000,
   FILTRO_PRECIO_STEP: 100000,
-  FILTRO_RECAMARAS_MAX: 4
+  FILTRO_RECAMARAS_MAX: 4,
+  // 🔒 SEGURIDAD: Define si las pantallas de detalle requieren login
+  REQUIRE_AUTH_FOR_DETAILS: true
 };
 
 // ==========================================

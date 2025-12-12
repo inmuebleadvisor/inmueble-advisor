@@ -85,6 +85,27 @@ export default function Favoritos() {
         return favoritosHydrated.filter(p => selectedIds.includes(p.id));
     }, [favoritosHydrated, selectedIds]);
 
+    // Agrupación por Desarrollo (Moved up to avoid conditional hook execution)
+    const groupedFavorites = useMemo(() => {
+        const groups = {};
+        favoritosHydrated.forEach(model => {
+            const dev = getDesarrolloForModel(model);
+            const devId = dev ? dev.id : 'unknown';
+            const devName = dev ? dev.nombre : (model.nombreDesarrollo || 'Otros');
+
+            if (!groups[devId]) {
+                groups[devId] = {
+                    id: devId,
+                    name: devName,
+                    desarrollo: dev,
+                    items: []
+                };
+            }
+            groups[devId].items.push(model);
+        });
+        return Object.values(groups);
+    }, [favoritosHydrated, getDesarrolloById]);
+
 
     // --- RENDERIZADO: ESTADO VACÍO ---
     if (!loadingCatalog && favoritosHydrated.length === 0) {
@@ -268,26 +289,6 @@ export default function Favoritos() {
 
     // --- RENDERIZADO: MODO GALERÍA (DEFAULT) ---
 
-    // Agrupación por Desarrollo
-    const groupedFavorites = useMemo(() => {
-        const groups = {};
-        favoritosHydrated.forEach(model => {
-            const dev = getDesarrolloForModel(model);
-            const devId = dev ? dev.id : 'unknown';
-            const devName = dev ? dev.nombre : (model.nombreDesarrollo || 'Otros');
-
-            if (!groups[devId]) {
-                groups[devId] = {
-                    id: devId,
-                    name: devName,
-                    desarrollo: dev,
-                    items: []
-                };
-            }
-            groups[devId].items.push(model);
-        });
-        return Object.values(groups);
-    }, [favoritosHydrated, getDesarrolloById]); // added dependency just in case, though usually stable
 
     const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
 
