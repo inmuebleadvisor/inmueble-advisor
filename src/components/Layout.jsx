@@ -66,6 +66,19 @@ export default function Layout() {
             <img src={LOGO_URL} alt="Inmueble Advisor" style={styles.logoImage} />
           </Link>
 
+          {/* ⭐ BOTÓN CAMBIAR CIUDAD (Movido al Header para visibilidad móvil) */}
+          {selectedCity && (
+            <button
+              onClick={() => {
+                updateSelectedCity(null); // Resetea para mostrar modal
+                setIsMenuOpen(false);
+              }}
+              style={styles.changeCityBtn}
+            >
+              📍 {selectedCity}
+            </button>
+          )}
+
           {/* BOTÓN HAMBURGUESA (Móvil) */}
           <button onClick={toggleMenu} className="menu-toggle-btn">
             {isMenuOpen ? <MenuIcons.Close /> : <MenuIcons.Menu />}
@@ -111,19 +124,6 @@ export default function Layout() {
               >
                 Soy asesor
               </Link>
-            )}
-
-            {/* ⭐ BOTÓN CAMBIAR CIUDAD */}
-            {selectedCity && (
-              <button
-                onClick={() => {
-                  updateSelectedCity(null); // Resetea para mostrar modal
-                  setIsMenuOpen(false);
-                }}
-                style={styles.changeCityBtn}
-              >
-                📍 {selectedCity}
-              </button>
             )}
 
             {/* BOTÓN DE LOGOUT CONDICIONAL */}
