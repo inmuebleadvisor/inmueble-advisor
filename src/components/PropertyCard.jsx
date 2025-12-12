@@ -83,10 +83,9 @@ export default function PropertyCard({ item, showDevName = true, style }) {
         {/* Nombre del Desarrollo (Overlay) */}
         {showDevName && (
           <div style={styles.imageOverlay} className="pointer-events-none">
-            <h3 style={styles.overlayDevName}>{item.nombreDesarrollo}</h3>
-            <p style={styles.overlayModelName}>
-              {item.constructora ? `${item.constructora} • ` : ''}{item.tipoVivienda ? `${item.tipoVivienda} • ` : ''}{item.nombre_modelo}
-            </p>
+            {/* Solo nombre del modelo, más grande, sin constructora ni tipo */}
+            <h3 style={{ ...styles.overlayModelName, fontSize: '1.4rem', fontWeight: '800', margin: 0 }}>{item.nombre_modelo}</h3>
+            <p style={{ ...styles.overlayDevName, fontSize: '0.9rem', opacity: 0.9, fontWeight: '500' }}>{item.nombreDesarrollo}</p>
           </div>
         )}
       </div>
@@ -96,15 +95,14 @@ export default function PropertyCard({ item, showDevName = true, style }) {
 
         {!showDevName && (
           <>
-            {item.tipoVivienda && <span style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 'bold' }}>{item.tipoVivienda}</span>}
             <h3 style={styles.inlineTitle}>{item.nombre_modelo}</h3>
           </>
         )}
 
-        {/* Ubicación */}
+        {/* Ubicación Nueva: Icono + Tipo + en + Colonia */}
         <div style={styles.locationRow}>
           <span style={{ marginRight: '4px', display: 'flex' }}><Icons.Pin /></span>
-          {item.colonia || (item.zona ? `Zona: ${item.zona}` : "Ubicación pendiente")}
+          <span style={{ fontWeight: 600, marginRight: '4px' }}>{item.tipoVivienda}</span> en {item.colonia || (item.zona ? `${item.zona}` : "Ubicación pendiente")}
         </div>
 
         {/* Características Básicas */}
@@ -120,6 +118,12 @@ export default function PropertyCard({ item, showDevName = true, style }) {
         <div style={styles.priceBox}>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span style={styles.priceLabel}>PRECIO DE LISTA</span>
+            {precioMostrar > 0 && item.precios?.metroCuadrado && (
+              <span style={styles.priceLabel}>
+                {formatoMoneda(item.precios.metroCuadrado)} m²
+              </span>
+            )}
+
           </div>
           <div style={{
             ...styles.priceValue,
@@ -127,6 +131,7 @@ export default function PropertyCard({ item, showDevName = true, style }) {
             fontSize: precioMostrar > 0 ? '1.5rem' : '1.2rem'
           }}>
             {precioMostrar > 0 ? formatoMoneda(precioMostrar) : "Consultar Precio"}
+
           </div>
           {precioMostrar > 0 && (
             <div style={styles.priceNote}>

@@ -423,173 +423,178 @@
 
 .animate-fade-in {
   animation: fadeIn 0.4s ease-out forwards;
-}/* Price Inputs */
+}
+
+/* Price Inputs */
 .price-inputs-container {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .price-input-group {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    border: 1px solid #e2e8f0;
-    border-radius: var(--radius-lg);
-    padding: 0.5rem 0.75rem;
-    background-color: #f8fafc;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-lg);
+  padding: 0.5rem 0.75rem;
+  background-color: #f8fafc;
 }
 
 .price-currency {
-    color: #64748b;
-    font-weight: 600;
-    margin-right: 0.25rem;
+  color: #64748b;
+  font-weight: 600;
+  margin-right: 0.25rem;
 }
 
 .price-input {
-    width: 100%;
-    border: none;
-    background: transparent;
-    outline: none;
-    font-weight: 600;
-    color: var(--text-main);
-    font-size: 0.95rem;
-    -moz-appearance: textfield;
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 0.95rem;
+  -moz-appearance: textfield;
 }
 
 .price-input::-webkit-outer-spin-button,
 .price-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .price-separator {
-    color: #94a3b8;
-    font-weight: 700;
+  color: #94a3b8;
+  font-weight: 700;
 }
 
 /* Dual Range Slider */
 .range-slider {
-    position: relative;
-    width: 100%;
-    height: 6px;
-    margin-top: 10px;
+  position: relative;
+  width: 100%;
+  height: 6px;
+  margin-top: 10px;
 }
 
 .range-slider__track {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-color: #e2e8f0;
-    border-radius: 999px;
-    z-index: 1;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #e2e8f0;
+  border-radius: 999px;
+  z-index: 1;
 }
 
 .range-slider__range {
-    position: absolute;
-    height: 100%;
-    background-color: var(--primary-color);
-    border-radius: 999px;
-    z-index: 2;
+  position: absolute;
+  height: 100%;
+  background-color: var(--primary-color);
+  border-radius: 999px;
+  z-index: 2;
 }
 
 .range-slider__thumb {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 100%;
-    background: none;
-    pointer-events: none;
-    appearance: none;
-    -webkit-appearance: none;
-    z-index: 3;
-    margin: 0; /* Remove default margin */
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  background: none;
+  pointer-events: none;
+  appearance: none;
+  -webkit-appearance: none;
+  z-index: 3;
+  margin: 0;
+  /* Remove default margin */
 }
 
 /* Webkit Range Thumb */
 .range-slider__thumb::-webkit-slider-thumb {
-    pointer-events: auto;
-    -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background-color: var(--white);
-    border: 2px solid var(--primary-color);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    cursor: pointer;
-    margin-top: -8px; /* Correct vertical alignment if needed, usually 0 with transform */
-    /* Remove marginTop for better centering if just transform is used */
+  pointer-events: auto;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--white);
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  margin-top: -8px;
+  /* Correct vertical alignment if needed, usually 0 with transform */
+  /* Remove marginTop for better centering if just transform is used */
 }
 
 /* Firefox Range Thumb */
 .range-slider__thumb::-moz-range-thumb {
-    pointer-events: auto;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background-color: var(--white);
-    border: 2px solid var(--primary-color);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    cursor: pointer;
-    border: none; /* Reset border */
+  pointer-events: auto;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--white);
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  border: none;
+  /* Reset border */
 }
 
 /* Toggle Switch */
 .filter-toggle-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    padding: 0.5rem 0;
-    cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 0.5rem 0;
+  cursor: pointer;
 }
 
 .filter-toggle-label {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--text-main);
-    display: flex;
-    align-items: center;
-    cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
 }
 
 .filter-toggle-subtext {
-    font-weight: 400;
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-    margin-left: 0.5rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-left: 0.5rem;
 }
 
 .filter-checkbox {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 44px;
-    height: 24px;
-    background-color: #cbd5e1;
-    border-radius: 99px;
-    position: relative;
-    cursor: pointer;
-    transition: background-color 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 44px;
+  height: 24px;
+  background-color: #cbd5e1;
+  border-radius: 99px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .filter-checkbox::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 20px;
-    height: 20px;
-    background-color: white;
-    border-radius: 50%;
-    transition: transform 0.2s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .filter-checkbox:checked {
-    background-color: var(--primary-color);
+  background-color: var(--primary-color);
 }
 
 .filter-checkbox:checked::after {
-    transform: translateX(20px);
+  transform: translateX(20px);
 }

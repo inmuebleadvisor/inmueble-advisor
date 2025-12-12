@@ -140,7 +140,6 @@ const mapModelo = (docSnapshot) => {
     amenidadesDesarrollo: Array.isArray(data.amenidadesDesarrollo) ? data.amenidadesDesarrollo : [],
     keywords: Array.isArray(data.keywords) ? data.keywords : [], // Vital para búsqueda
     tipoVivienda: data.tipoVivienda || 'Propiedad',
-    tipoVivienda: data.tipoVivienda || 'Propiedad',
     esPreventa: (data.esPreventa === true || data.esPreventa === 'true' || data.esPreventa === 1),
 
     // Info Comercial (Modelo)

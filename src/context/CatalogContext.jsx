@@ -99,6 +99,8 @@ export const CatalogProvider = ({ children }) => {
           };
         });
 
+
+
         // 1. Filtrar Modelos (Use enriched data)
         let filteredModels = modelsEnriched.filter(m => {
           // Regla: Hide No Price

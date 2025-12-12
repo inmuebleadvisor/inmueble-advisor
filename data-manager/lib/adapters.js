@@ -137,7 +137,7 @@ export const adaptModelo = (row) => {
     else if (row.activo_modelo !== undefined) out.activo = row.activo_modelo;
     else if (row.activo !== undefined) out.activo = row.activo;
 
-    if (row.tipo_vivienda) out.tipoVivienda = row.tipo_vivienda;
+    if (row.tipo_vivienda || row.tipoVivienda) out.tipoVivienda = row.tipo_vivienda || row.tipoVivienda;
 
     // 2. Precios
     const precios = {};
@@ -160,8 +160,8 @@ export const adaptModelo = (row) => {
     if (row.banos) out.banos = row.banos;
     if (row.niveles) out.niveles = row.niveles;
     if (row.cajones) out.cajones = row.cajones;
-    if (row.m2_const) out.m2 = row.m2_const;
-    if (row.m2_terreno) out.terreno = row.m2_terreno;
+    if (row.m2_const || row.m2) out.m2 = row.m2_const || row.m2;
+    if (row.m2_terreno || row.terreno) out.terreno = row.m2_terreno || row.terreno;
     if (row.amenidades) out.amenidades = row.amenidades;
 
     // 5. Acabados
