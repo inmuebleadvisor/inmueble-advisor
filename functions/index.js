@@ -14,7 +14,7 @@ const db = getFirestore();
 const storage = getStorage();
 
 // --- 3. IMPORTS LOCALES ---
-const { ejecutarReestructuracionV2 } = require("./migrator");
+
 
 // --- 4. CONSTANTES ---
 const STATUS = {
@@ -205,22 +205,3 @@ exports.recalcularScoreUsuario = onDocumentUpdated("users/{uid}", async (event) 
 // ==================================================================
 
 
-/**
- * FUNCIÓN HTTP: Mantenimiento DB
- */
-exports.mantenimientoDB = onRequest(async (req, res) => {
-  if (req.query.key !== "MIGRACION_2025_SECURE") {
-    return res.status(403).send("⛔ Acceso Denegado: Clave incorrecta.");
-  }
-
-  try {
-    const resultado = await ejecutarReestructuracionV2();
-    res.json({
-      mensaje: "✅ Mantenimiento V2.1 Ejecutado Correctamente",
-      detalles: resultado
-    });
-  } catch (error) {
-    console.error("Error en mantenimiento:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
