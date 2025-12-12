@@ -1,10 +1,10 @@
 // src/services/leadAssignmentService.js
 import { db } from '../firebase/config';
-import { 
-  collection, 
-  addDoc, 
-  serverTimestamp 
-} from 'firebase/firestore'; 
+import {
+  collection,
+  addDoc,
+  serverTimestamp
+} from 'firebase/firestore';
 
 import { STATUS } from '../config/constants';
 
@@ -20,7 +20,7 @@ import { STATUS } from '../config/constants';
 
 export const generarLeadAutomatico = async (datosCliente, idDesarrollo, nombreDesarrollo, modeloInteres) => {
   try {
-    console.log(`📤 Enviando solicitud para: ${nombreDesarrollo}`);
+
 
     const nuevoLead = {
       // Datos del Cliente
@@ -29,29 +29,29 @@ export const generarLeadAutomatico = async (datosCliente, idDesarrollo, nombreDe
         email: datosCliente.email,
         telefono: datosCliente.telefono,
       },
-      
+
       // Datos de Interés
       desarrolloId: String(idDesarrollo),
       nombreDesarrollo: nombreDesarrollo,
       modeloInteres: modeloInteres || "No especificado",
-      
+
       // Estado Inicial
-      status: STATUS.LEAD_PENDING_ASSIGNMENT, 
+      status: STATUS.LEAD_PENDING_ASSIGNMENT,
       origen: 'web_automatico',
-      
+
       // Fechas de Auditoría (Solo nivel raíz)
       fechaCreacion: serverTimestamp(),
       fechaUltimaInteraccion: serverTimestamp()
-      
+
       // 🗑️ ELIMINADO: historial: [...] 
       // (Delegado al Backend para evitar errores de escritura y duplicidad)
     };
 
     // 2. Guardamos en Firestore
     const docRef = await addDoc(collection(db, "leads"), nuevoLead);
-    
-    console.log(`✅ Solicitud enviada con ID: ${docRef.id}`);
-    
+
+
+
     return { success: true, leadId: docRef.id };
 
   } catch (error) {

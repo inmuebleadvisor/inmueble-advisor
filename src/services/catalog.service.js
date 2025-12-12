@@ -202,7 +202,7 @@ export const obtenerDatosUnificados = async (ciudadFilter = null) => {
     let modelos = [];
 
     if (ciudadFilter) {
-      console.log(`📡 Consultando modelos para ciudad: ${ciudadFilter} (Estrategia: Desarrollos -> Modelos)`);
+
 
       // PASO 1: Obtener IDs de Desarrollos en esa ciudad
       // Usamos cache de desarrollos si está lleno, sino query nativa pequeña
@@ -225,7 +225,7 @@ export const obtenerDatosUnificados = async (ciudadFilter = null) => {
         return [];
       }
 
-      console.log(`ℹ️ Encontrados ${devIds.length} desarrollos en ${ciudadFilter}. Buscando sus modelos...`);
+
 
       // PASO 2: Buscar modelos que pertenezcan a esos IDs
       // Firestore 'IN' limit is 30. We must batch.
@@ -245,7 +245,7 @@ export const obtenerDatosUnificados = async (ciudadFilter = null) => {
       modelos = results.flat();
 
     } else {
-      console.log(`📡 Consultando modelos (Total Global)`);
+
       const snap = await getDocs(collection(db, "modelos"));
       modelos = snap.docs.map(mapModelo);
     }

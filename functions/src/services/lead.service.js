@@ -1,10 +1,40 @@
-// functions/src/services/lead.service.js
+/**
+ * ============================================================================
+ * ARCHIVO: lead.service.js
+ * ----------------------------------------------------------------------------
+ * RESUMEN:
+ * Este módulo contiene la lógica de negocio responsable de reaccionar a la 
+ * creación de un nuevo Lead (prospecto) y asignarle automáticamente un asesor
+ * de ventas.
+ * 
+ * ALCANCE:
+ * - Escucha eventos de creación en la colección "leads".
+ * - Busca asesores aptos que tengan inventario del desarrollo solicitado.
+ * - Ejecuta la asignación o marca el lead para revisión administrativa.
+ * 
+ * ÚLTIMA MODIFICACIÓN: 11/12/2025
+ * ============================================================================
+ */
 const { db, FieldValue, Timestamp } = require("../utils/firestore");
 const { STATUS } = require("../config/constants");
 
 /**
- * Asigna un asesor a un lead basado en el inventario.
- * @param {Object} snapshot - El snapshot del documento creado (event.data).
+ * FUNCIÓN: assignLead
+ * -------------------
+ * PROPÓSITO:
+ * Es el "cerebro" de la asignación. Se ejecuta automáticamente (Trigger)
+ * cuando entra un lead nuevo.
+ * 
+ * EXPLICACIÓN DIDÁCTICA:
+ * 1. Recibe el 'snapshot' (la foto instantánea) del documento recién creado.
+ * 2. Verifica si ya tiene asesor (para evitar reasignaciones infinitas).
+ * 3. Consulta la base de datos ('users') buscando asesores que:
+ *    a) Tengan rol de 'asesor'.
+ *    b) Tengan el ID del desarrollo en su lista de 'inventarioActivoIds'.
+ * 4. Si encuentra candidatos, escoge uno (actualmente el primero encontrado).
+ * 5. Si no hay nadie, cambia el estado del lead a 'PENDING_ADMIN' para que un humano decida.
+ * 
+ * @param {Object} snapshot - Objeto que representa el documento de Firestore.
  */
 exports.assignLead = async (snapshot) => {
     if (!snapshot) return;
