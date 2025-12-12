@@ -1,10 +1,39 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Modal from '../Modal';
 import FavoriteBtn from '../FavoriteBtn';
 import { useFavorites } from '../../context/FavoritesContext';
+import { useUser } from '../../context/UserContext';
+import { normalizar } from '../../utils/formatters';
+import confetti from 'canvas-confetti';
 
 const HighlightsModal = ({ isOpen, onClose, highlights, modeloId }) => {
     const { isFavorite } = useFavorites();
+    const { selectedCity } = useUser();
+    const [modalTitle, setModalTitle] = useState("Felicidades, encontraste un dato destacado!");
+
+    useEffect(() => {
+        if (isOpen && highlights && highlights.length > 0) {
+            const hasCityHighlight = highlights.some(h => {
+                const normH = normalizar(h);
+                const normCity = selectedCity ? normalizar(selectedCity) : '';
+                return normH.includes('ciudad') || (normCity && normH.includes(normCity));
+            });
+
+            if (hasCityHighlight) {
+                setModalTitle("¡El mejor de la ciudad!");
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    zIndex: 10000,
+                    colors: ['#fcd34d', '#f59e0b', '#10b981', '#3b82f6']
+                });
+            } else {
+                setModalTitle("Felicidades, encontraste un dato destacado!");
+            }
+        }
+    }, [isOpen, highlights, selectedCity]);
+
     if (!highlights || highlights.length === 0) return null;
 
     const isFav = isFavorite(modeloId);
@@ -13,7 +42,7 @@ const HighlightsModal = ({ isOpen, onClose, highlights, modeloId }) => {
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="Felicidades, encontraste un dato destacado!"
+            title={modalTitle}
         >
             <div style={styles.container}>
                 <ul style={styles.list}>

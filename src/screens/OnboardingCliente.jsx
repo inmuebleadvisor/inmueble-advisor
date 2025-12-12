@@ -78,7 +78,7 @@ export default function OnboardingCliente() {
             const remanente = Math.max(0, capitalInicial - costoTotalInicial);
             const pctEnganche = (PORCENTAJE_ENGANCHE_MINIMO * 100).toFixed(0);
             const pctNotaria = (PORCENTAJE_GASTOS_NOTARIALES * 100).toFixed(0);
-            const mensajeBase = `Incluye gastos notariales (${pctNotaria}%) y enganche (${pctEnganche}%). Te sobran ${formatoMoneda(remanente)} de tu efectivo.`;
+            const mensajeBase = `Incluye gastos notariales (${pctNotaria}%) y enganche (${pctEnganche}%).`;
 
             if (limitePorEfectivo < (limitePorCapacidadTotal - 50000)) {
                 setNotaDinamica(mensajeBase + " (Tu efectivo limita tu compra, podrías pagar más mensualidad si tuvieras más ahorro).");

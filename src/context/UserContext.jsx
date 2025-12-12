@@ -14,6 +14,7 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true); // ✅ Nuevo estado para la carga inicial
 
   // ⭐ NUEVO CONSTEXTO: Ciudad Seleccionada (Global Preference)
   const [selectedCity, setSelectedCity] = useState(() => {
@@ -41,6 +42,7 @@ export const UserProvider = ({ children }) => {
         setUserProfile(null);
       }
       setLoadingUser(false);
+      setInitialLoading(false); // ✅ Marcamos que la carga inicial terminó
     });
     return () => unsubscribe();
   }, []);
@@ -147,7 +149,7 @@ export const UserProvider = ({ children }) => {
 
   return (
     <UserContext.Provider value={value}>
-      {!loadingUser && children}
+      {!initialLoading && children}
     </UserContext.Provider>
   );
 };
