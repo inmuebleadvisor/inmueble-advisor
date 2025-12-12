@@ -52,24 +52,7 @@ export default function OnboardingCliente() {
     const formatoMoneda = (val) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
 
     // --- 3. LÓGICA DE REDIRECCIÓN INTELIGENTE (Similar a Perfil, pero ajustada) ---
-    useEffect(() => {
-        if (loadingUser) return;
 
-        // Si el usuario ya completó el onboarding previamente, redirigir al catálogo
-        // (Opcional: Si queremos permitir que re-hagan el onboarding, quitamos esto,
-        // pero mantenemos la lógica de login persistente).
-        // Por ahora, asumimos que si llegan aquí es porque quieren hacer el onboarding.
-
-        // Si ya completaron el paso 3 y tienen usuario, redirect automático
-        if (user && step === 3) {
-            const statusParam = entregaInmediata === true ? 'inmediata' : (entregaInmediata === false ? 'preventa' : 'all');
-            const maxPrice = presupuestoMaximo > 0 ? Math.round(presupuestoMaximo) : '';
-            const rooms = recamaras || '';
-
-            localStorage.removeItem(STORAGE_KEY);
-            navigate(`/catalogo?maxPrice=${maxPrice}&rooms=${rooms}&status=${statusParam}`, { replace: true });
-        }
-    }, [user, step, navigate, presupuestoMaximo, recamaras, entregaInmediata, loadingUser]);
 
     // Carga de Datos Catálogo
     useEffect(() => {
