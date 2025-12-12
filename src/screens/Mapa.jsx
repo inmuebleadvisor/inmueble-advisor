@@ -8,6 +8,7 @@ import 'leaflet/dist/leaflet.css';
 import { useUser } from '../context/UserContext';
 import { useCatalog } from '../context/CatalogContext';
 import { useCatalogFilter } from '../hooks/useCatalogFilter';
+import { useFavorites } from '../context/FavoritesContext';
 import { normalizar } from '../utils/formatters';
 
 // Shared Components
@@ -21,11 +22,11 @@ import '../styles/Catalogo.css';
 const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
 
 // --- HELPERS ---
-const createCustomIcon = (textoPrecio) => {
+const createCustomIcon = (textoPrecio, backgroundColor) => {
   return L.divIcon({
     className: 'custom-marker',
     html: `<div style="
-      background-color: var(--primary-color);
+      background-color: ${backgroundColor};
       color: white;
       padding: 6px 10px;
       border-radius: 12px;
@@ -81,6 +82,7 @@ const ControlZoom = ({ marcadores }) => {
 export default function Mapa() {
   const { trackBehavior } = useUser();
   const { modelos: dataMaestra, desarrollos: dataDesarrollos, amenidades: topAmenidades, loadingCatalog: loading } = useCatalog();
+  const { favoritasIds, isFavorite } = useFavorites(); // Integracion de favoritos
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -133,17 +135,23 @@ export default function Mapa() {
         etiqueta = `$${(dev.precioDesde / 1000000).toFixed(1)}M`;
       }
 
+      // Determinamos si el desarrollo tiene algun modelo favorito
+      // Revisamos TODOS los modelos del desarrollo, no solo los filtrados
+      const todosModelosDelDesarrollo = dataMaestra.filter(m => String(m.idDesarrollo) === String(dev.id));
+      const tieneFavorito = todosModelosDelDesarrollo.some(m => isFavorite(m.id));
+
       return {
         id: dev.id,
         nombre: dev.nombre,
         zona: dev.zona,
         ubicacion: { latitud: dev.ubicacion.latitud, longitud: dev.ubicacion.longitud },
         portada: dev.imagen,
-        etiquetaPrecio: etiqueta
+        etiquetaPrecio: etiqueta,
+        esFavorito: tieneFavorito
       };
     }).filter(Boolean);
 
-  }, [dataDesarrollos, modelosFiltrados, loading]);
+  }, [dataDesarrollos, modelosFiltrados, loading, isFavorite, dataMaestra]);
 
   const centroMapa = [21.88, -102.29];
 
@@ -198,7 +206,7 @@ export default function Mapa() {
             <Marker
               key={dev.id}
               position={[dev.ubicacion.latitud, dev.ubicacion.longitud]}
-              icon={createCustomIcon(dev.etiquetaPrecio)}
+              icon={createCustomIcon(dev.etiquetaPrecio, dev.esFavorito ? '#8B0000' : 'var(--primary-color)')}
               eventHandlers={{
                 click: () => trackBehavior('map_marker_click', { dev_name: dev.nombre }),
               }}
@@ -225,6 +233,28 @@ export default function Mapa() {
             </Marker>
           ))}
         </MapContainer>
+
+        {/* Leyenda del Mapa */}
+        <div style={{
+          position: 'absolute',
+          bottom: '20px',
+          left: '20px',
+          backgroundColor: 'white',
+          padding: '10px 15px',
+          borderRadius: '8px',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          fontSize: '0.85rem',
+          fontWeight: '500'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ width: '12px', height: '12px', backgroundColor: '#8B0000', borderRadius: '50%', display: 'inline-block' }}></span>
+            <span>En rojo donde tienes modelos favoritos</span>
+          </div>
+        </div>
       </div>
 
       <FilterModal

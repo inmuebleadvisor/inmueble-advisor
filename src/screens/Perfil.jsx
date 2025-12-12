@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { IMAGES } from '../config/constants';
 
 export default function Perfil() {
   const navigate = useNavigate();
@@ -54,13 +53,10 @@ export default function Perfil() {
     try {
       const firebaseUser = await loginWithGoogle();
       if (firebaseUser) {
-        const firebaseUser = await loginWithGoogle();
-        if (firebaseUser) {
-          // La redirección la maneja el useEffect de arriba cuando detecta auth change
-          // Pero para feedback inmediato si el effect tarda:
-          const origin = location.state?.from?.pathname || '/catalogo';
-          navigate(origin, { replace: true });
-        }
+        // La redirección la maneja el useEffect de arriba cuando detecta auth change
+        // Pero para feedback inmediato si el effect tarda:
+        const origin = location.state?.from?.pathname || '/catalogo';
+        navigate(origin, { replace: true });
       }
     } catch (error) {
       console.error("Login directo fallido", error);
@@ -76,9 +72,6 @@ export default function Perfil() {
           .step-content { animation: slideIn 0.4s ease-out forwards; width: 100%; }
       `}</style>
       <div style={styles.card}>
-        <div style={styles.logoContainer}>
-          <img src={IMAGES.LOGO_URL} alt="Logo" style={styles.logoIcon} />
-        </div>
 
         <div className="step-content">
           <h1 style={styles.title}>Bienvenido</h1>
@@ -115,8 +108,6 @@ export default function Perfil() {
 const styles = {
   container: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '85vh', width: '100%', padding: '20px', boxSizing: 'border-box' },
   card: { backgroundColor: 'white', padding: '40px 30px', borderRadius: '25px', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', maxWidth: '500px', width: '100%', textAlign: 'center', position: 'relative', overflow: 'hidden', minHeight: '500px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }, // Adjusted justifyContent
-  logoContainer: { marginBottom: '20px' },
-  logoIcon: { width: '50px', height: 'auto' },
   title: { color: 'var(--primary-color)', marginBottom: '10px', fontSize: '1.8rem', fontWeight: '800' },
   subtitle: { color: '#666', marginBottom: '30px', fontSize: '1rem', lineHeight: '1.5' },
   roleGrid: { display: 'flex', flexDirection: 'column', gap: '15px' },

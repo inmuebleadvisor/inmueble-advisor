@@ -19,7 +19,7 @@ const MenuIcons = {
 
 export default function Layout() {
   // ✅ Obtenemos logout, userProfile, user y userSelectedCity
-  const { userProfile, user, logout, selectedCity, updateSelectedCity } = useUser();
+  const { userProfile, user, logout, selectedCity, updateSelectedCity, loginWithGoogle } = useUser();
   // Obtenemos el ID de favoritos (para el badge en el paso anterior)
   const { favoritosIds } = useFavorites();
   const location = useLocation();
@@ -126,14 +126,22 @@ export default function Layout() {
               </Link>
             )}
 
-            {/* BOTÓN DE LOGOUT CONDICIONAL */}
-            {user && (
+            {/* BOTÓN DE SESIÓN (LOGIN / LOGOUT) */}
+            {user ? (
               <button
                 onClick={logout}
                 style={styles.logoutButton}
                 className="logout-btn"
               >
                 Cerrar Sesión ({userProfile?.nombre?.split(' ')[0] || 'Usuario'})
+              </button>
+            ) : (
+              <button
+                onClick={loginWithGoogle}
+                style={{ ...styles.logoutButton, color: 'white', border: '1px solid rgba(255,255,255,0.5)', borderRadius: '20px', padding: '6px 16px' }}
+                className="login-btn"
+              >
+                Iniciar Sesión
               </button>
             )}
 
