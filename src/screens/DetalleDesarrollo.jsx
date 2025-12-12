@@ -56,7 +56,7 @@ export default function DetalleDesarrollo() {
     return (
       <div style={styles.errorContainer}>
         <h2>Desarrollo no encontrado</h2>
-        <button onClick={() => navigate('/catalogo')} style={styles.backButtonSimple}>Volver al Catálogo</button>
+        <button onClick={() => navigate('/catalogo')} className="btn btn-secondary">Volver al Catálogo</button>
       </div>
     );
   }
@@ -72,6 +72,5 @@ export default function DetalleDesarrollo() {
 const styles = {
   pageContainer: { backgroundColor: 'white', minHeight: '100vh', paddingBottom: '40px', fontFamily: "'Segoe UI', sans-serif" },
   errorContainer: { padding: '40px', textAlign: 'center', color: '#374151', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' },
-  backButtonSimple: { marginTop: '20px', padding: '10px 20px', backgroundColor: '#111', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }
 };
 

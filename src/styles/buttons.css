@@ -1,0 +1,115 @@
+/* src/styles/buttons.css */
+
+/* --- Base Button --- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    text-decoration: none;
+    line-height: 1.5;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* --- Sizes --- */
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
+
+.btn-md {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+}
+
+.btn-lg {
+    padding: 14px 28px;
+    font-size: 1.1rem;
+}
+
+.btn-full {
+    width: 100%;
+}
+
+/* --- Variants --- */
+
+/* Primary: Institutional Blue */
+.btn-primary {
+    background-color: var(--primary-color, #00396a);
+    color: white;
+    border-color: var(--primary-color, #00396a);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+    background-color: #002a4d;
+    /* Darker shade */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Secondary: Outline / Light */
+.btn-secondary {
+    background-color: white;
+    color: var(--text-main, #333);
+    border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+    background-color: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+/* WhatsApp / Success */
+.btn-whatsapp {
+    background-color: #25D366;
+    color: white;
+    border: none;
+}
+
+.btn-whatsapp:hover {
+    background-color: #128C7E;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Text / Link */
+.btn-text {
+    background: none;
+    border: none;
+    color: var(--text-secondary, #666);
+    padding: 8px;
+    font-weight: 500;
+}
+
+.btn-text:hover {
+    color: var(--text-main, #333);
+    text-decoration: underline;
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Icon Button (Circular) */
+.btn-icon {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+    background-color: transparent;
+    color: var(--text-secondary, #666);
+}
+
+.btn-icon:hover {
+    background-color: #f1f5f9;
+    color: var(--text-main, #333);
+}

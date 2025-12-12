@@ -142,7 +142,8 @@ export default function PropertyCard({ item, showDevName = true, style }) {
 
         <Link
           to={`/modelo/${item.id}`}
-          style={styles.detailsButton}
+          className="btn btn-primary btn-full"
+          style={{ marginTop: '5px' }}
           onClick={() => trackBehavior('select_property', { id: item.id, origin: 'card' })}
         >
           Ver Detalles Completos
@@ -184,5 +185,4 @@ const styles = {
   priceLabel: { fontSize: '0.65rem', fontWeight: '800', color: '#1e293b', letterSpacing: '1px', textTransform: 'uppercase' },
   priceValue: { fontWeight: '800', margin: '2px 0' },
   priceNote: { fontSize: '0.75rem', color: '#64748b', marginTop: '2px' },
-  detailsButton: { backgroundColor: '#0f172a', color: 'white', textAlign: 'center', padding: '10px', borderRadius: '8px', textDecoration: 'none', fontWeight: '600', fontSize: '0.9rem', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', marginTop: '5px' },
 };

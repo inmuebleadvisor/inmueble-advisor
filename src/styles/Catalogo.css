@@ -203,6 +203,12 @@
   padding: 1.5rem 1.25rem;
 }
 
+@media (max-width: 768px) {
+  .catalogo__grid {
+    padding: 1.5rem 0.25rem;
+  }
+}
+
 .catalogo__empty {
   grid-column: 1 / -1;
   text-align: center;

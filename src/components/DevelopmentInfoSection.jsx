@@ -1,9 +1,11 @@
 // src/components/DevelopmentInfoSection.jsx
 // ÚLTIMA MODIFICACION: 02/12/2025
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import AmenidadesList from './AmenidadesList';
 import Carousel from './Carousel'; // Importamos el componente para no duplicar código
+import MapModal from './shared/MapModal';
+
 
 // --- ICONOS ---
 const Icons = {
@@ -15,27 +17,29 @@ const Icons = {
 
 // --- HELPER DE FECHAS ---
 const esFechaFutura = (timestamp) => {
-    if (!timestamp) return false;
-    // Manejo robusto: Funciona si viene de Firebase (seconds) o como Date nativo
-    const fecha = timestamp.seconds ? new Date(timestamp.seconds * 1000) : new Date(timestamp);
-    const hoy = new Date();
-    // Retorna true solo si la fecha de entrega es mayor a hoy
-    return fecha > hoy;
+  if (!timestamp) return false;
+  // Manejo robusto: Funciona si viene de Firebase (seconds) o como Date nativo
+  const fecha = timestamp.seconds ? new Date(timestamp.seconds * 1000) : new Date(timestamp);
+  const hoy = new Date();
+  // Retorna true solo si la fecha de entrega es mayor a hoy
+  return fecha > hoy;
 };
 
 const formatFecha = (timestamp) => {
-    if (!timestamp) return '';
-    const date = timestamp.seconds ? new Date(timestamp.seconds * 1000) : new Date(timestamp);
-    return date.toLocaleDateString('es-MX', { year: 'numeric', month: 'long' });
+  if (!timestamp) return '';
+  const date = timestamp.seconds ? new Date(timestamp.seconds * 1000) : new Date(timestamp);
+  return date.toLocaleDateString('es-MX', { year: 'numeric', month: 'long' });
 };
 
 export default function DevelopmentInfoSection({ desarrollo }) {
+  const [mostrarMapa, setMostrarMapa] = useState(false);
+
   if (!desarrollo) return null;
 
   // 1. Extracción de Datos
   const videoUrl = desarrollo.media?.video || desarrollo.multimedia?.video;
   const brochureUrl = desarrollo.media?.brochure || desarrollo.multimedia?.brochure;
-  
+
   // Ubicación y Mapas
   const lat = desarrollo.ubicacion?.latitud;
   const lng = desarrollo.ubicacion?.longitud;
@@ -49,27 +53,38 @@ export default function DevelopmentInfoSection({ desarrollo }) {
   // 2. Preparar Galería (Reutilizando lógica del componente Carousel)
   // Nota Didáctica: Memoizamos para evitar cálculos innecesarios en cada render
   const galeriaItems = useMemo(() => {
-      let imagenes = [];
-      // Prioridad: media.gallery (v2) -> multimedia.galeria (v1) -> imagen (single)
-      if (desarrollo.media?.gallery && Array.isArray(desarrollo.media.gallery)) {
-          imagenes = desarrollo.media.gallery;
-      } else if (desarrollo.multimedia?.galeria && Array.isArray(desarrollo.multimedia.galeria)) {
-          imagenes = desarrollo.multimedia.galeria;
-      } else if (desarrollo.imagen) {
-          imagenes = [desarrollo.imagen];
-      }
+    let imagenes = [];
 
-      // Transformamos al formato que pide tu Carousel: { url, type }
-      return imagenes.map(url => ({ url, type: 'image' }));
+    // 1. Cover (Priority 1)
+    if (desarrollo.media?.cover) {
+      imagenes.push(desarrollo.media.cover);
+    }
+
+    // 2. Gallery (Priority 2 - appended)
+    if (desarrollo.media?.gallery && Array.isArray(desarrollo.media.gallery)) {
+      imagenes = [...imagenes, ...desarrollo.media.gallery];
+    }
+    // Fallback: Legacy Gallery (only if main gallery missing?) - Actually, let's append if no main gallery
+    else if (desarrollo.multimedia?.galeria && Array.isArray(desarrollo.multimedia.galeria)) {
+      imagenes = [...imagenes, ...desarrollo.multimedia.galeria];
+    }
+
+    // 3. Fallback: Legacy Image (only if nothing else found)
+    if (imagenes.length === 0 && desarrollo.imagen) {
+      imagenes = [desarrollo.imagen];
+    }
+
+    // Transformamos al formato que pide tu Carousel: { url, type }
+    return imagenes.map(url => ({ url, type: 'image' }));
   }, [desarrollo]);
 
   return (
     <div style={styles.container}>
-      
+
       {/* A. GALERÍA (Posición 1: Debajo del título, antes de la descripción) */}
       {/* Asignamos una altura fija para que no desplace el contenido bruscamente al cargar */}
       <div style={styles.carouselContainer}>
-         <Carousel items={galeriaItems} />
+        <Carousel items={galeriaItems} />
       </div>
 
       {/* B. DESCRIPCIÓN (Posición 2) */}
@@ -83,7 +98,7 @@ export default function DevelopmentInfoSection({ desarrollo }) {
       {(videoUrl || brochureUrl) && (
         <div style={styles.mediaButtonsContainer}>
           {brochureUrl && (
-            <a href={brochureUrl} target="_blank" rel="noopener noreferrer" style={{...styles.mediaButton, backgroundColor: '#1f2937', color: 'white', border: 'none'}}>
+            <a href={brochureUrl} target="_blank" rel="noopener noreferrer" style={{ ...styles.mediaButton, backgroundColor: '#1f2937', color: 'white', border: 'none' }}>
               <Icons.Download /> Descargar Brochure
             </a>
           )}
@@ -97,13 +112,13 @@ export default function DevelopmentInfoSection({ desarrollo }) {
 
       {/* D. ENTREGA ESTIMADA (Posición 4: Solo si es futura) */}
       {mostrarFechaEntrega && (
-          <div style={styles.deliveryDateBox}>
-              <div style={styles.iconBox}><Icons.Calendar /></div>
-              <div>
-                  <span style={styles.statLabel}>Entrega Estimada del Proyecto</span>
-                  <div style={styles.statValue}>{formatFecha(info.fecha_entrega)}</div>
-              </div>
+        <div style={styles.deliveryDateBox}>
+          <div style={styles.iconBox}><Icons.Calendar /></div>
+          <div>
+            <span style={styles.statLabel}>Entrega Estimada del Proyecto</span>
+            <div style={styles.statValue}>{formatFecha(info.fecha_entrega)}</div>
           </div>
+        </div>
       )}
 
       {/* E. AMENIDADES (Posición 5) */}
@@ -115,22 +130,25 @@ export default function DevelopmentInfoSection({ desarrollo }) {
       )}
 
       {/* F. UBICACIÓN (Posición 6: Al final) */}
-      <section style={{...styles.section, marginBottom: 0}}>
-         <h3 style={styles.sectionTitle}>Ubicación</h3>
-         <p style={styles.addressText}>{direccion}</p>
-         <a 
-           href={mapsUrl}
-           target={mapsUrl !== '#' ? "_blank" : "_self"}
-           rel="noopener noreferrer"
-           style={{
-              ...styles.mapButtonExternal,
-              opacity: mapsUrl === '#' ? 0.5 : 1,
-              cursor: mapsUrl === '#' ? 'not-allowed' : 'pointer'
-           }}
-         >
-           <Icons.MapPin /> Abrir en Google Maps
-         </a>
+      <section style={{ ...styles.section, marginBottom: 0 }}>
+        <h3 style={styles.sectionTitle}>Ubicación</h3>
+        <p style={styles.addressText}>{direccion}</p>
+        <button
+          onClick={() => setMostrarMapa(true)}
+          disabled={!lat || !lng}
+          className="btn btn-secondary btn-md btn-full"
+          style={{ opacity: (lat && lng) ? 1 : 0.5 }}
+        >
+          <Icons.MapPin /> Ver ubicación
+        </button>
       </section>
+
+      <MapModal
+        isOpen={mostrarMapa}
+        onClose={() => setMostrarMapa(false)}
+        location={desarrollo.ubicacion}
+        developmentName={desarrollo.nombre}
+      />
 
     </div>
   );
@@ -139,15 +157,15 @@ export default function DevelopmentInfoSection({ desarrollo }) {
 // --- ESTILOS ---
 const styles = {
   container: { marginTop: '20px' },
-  
+
   // Carousel Container
-  carouselContainer: { 
-      width: '100%', 
-      height: '300px', // Altura controlada para mantener consistencia visual
-      marginBottom: '25px',
-      borderRadius: '12px',
-      overflow: 'hidden',
-      backgroundColor: '#e5e7eb' // Placeholder color mientras carga
+  carouselContainer: {
+    width: '100%',
+    height: '300px', // Altura controlada para mantener consistencia visual
+    marginBottom: '25px',
+    borderRadius: '12px',
+    overflow: 'hidden',
+    backgroundColor: '#e5e7eb' // Placeholder color mientras carga
   },
 
   // Descripción
@@ -167,7 +185,7 @@ const styles = {
   // Títulos y Textos Generales
   sectionTitle: { fontSize: '1.1rem', fontWeight: '800', marginBottom: '15px', color: '#111827' },
   addressText: { color: '#6b7280', fontSize: '0.95rem', margin: '0 0 15px 0' },
-  
+
   // Botón Mapa
   mapButtonExternal: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: '100%', padding: '15px', backgroundColor: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '12px', color: '#374151', fontWeight: '600', textDecoration: 'none', fontSize: '0.95rem', transition: 'background 0.2s' },
 };
