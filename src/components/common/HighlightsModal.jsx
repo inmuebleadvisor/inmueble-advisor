@@ -1,22 +1,21 @@
 import React from 'react';
 import Modal from '../Modal';
+import FavoriteBtn from '../FavoriteBtn';
+import { useFavorites } from '../../context/FavoritesContext';
 
-const HighlightsModal = ({ isOpen, onClose, highlights }) => {
+const HighlightsModal = ({ isOpen, onClose, highlights, modeloId }) => {
+    const { isFavorite } = useFavorites();
     if (!highlights || highlights.length === 0) return null;
+
+    const isFav = isFavorite(modeloId);
 
     return (
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="¡Felicidades, encontraste un Destacado!"
+            title="Felicidades, encontraste un dato destacado!"
         >
             <div style={styles.container}>
-                <div style={styles.iconContainer}>
-                    <span style={{ fontSize: '3rem' }}>🎉</span>
-                </div>
-                <p style={styles.introText}>
-                    Esta propiedad cuenta con beneficios exclusivos que la hacen única:
-                </p>
                 <ul style={styles.list}>
                     {highlights.map((highlight, index) => (
                         <li key={index} style={styles.listItem}>
@@ -25,13 +24,16 @@ const HighlightsModal = ({ isOpen, onClose, highlights }) => {
                         </li>
                     ))}
                 </ul>
-                <button
-                    onClick={onClose}
-                    className="btn btn-primary"
-                    style={styles.closeButton}
-                >
-                    ¡Entendido!
-                </button>
+
+                <div style={styles.actionContainer}>
+                    <FavoriteBtn
+                        modeloId={modeloId}
+                        style={{ width: '50px', height: '50px', transform: 'scale(1.2)' }}
+                    />
+                </div>
+                <p style={styles.favoriteLegend}>
+                    {isFav ? "Ya está en tus favoritos" : "Agrega a tus favoritos"}
+                </p>
             </div>
         </Modal>
     );
@@ -41,14 +43,6 @@ const styles = {
     container: {
         padding: '20px',
         textAlign: 'center',
-    },
-    iconContainer: {
-        marginBottom: '15px',
-    },
-    introText: {
-        fontSize: '1.1rem',
-        color: '#4b5563',
-        marginBottom: '20px',
     },
     list: {
         listStyle: 'none',
@@ -72,10 +66,17 @@ const styles = {
         color: '#10b981',
         fontWeight: 'bold',
     },
-    closeButton: {
-        width: '100%',
-        padding: '12px',
-        fontSize: '1rem',
+    actionContainer: {
+        display: 'flex',
+        justifyContent: 'center',
+        paddingTop: '10px'
+    },
+    favoriteLegend: {
+        textAlign: 'center',
+        margin: '10px 0 0 0',
+        fontSize: '0.9rem',
+        color: '#64748b',
+        fontWeight: '500'
     }
 };
 

@@ -159,6 +159,7 @@ export default function PropertyCard({ item, showDevName = true, style }) {
         isOpen={showHighlightsModal}
         onClose={() => setShowHighlightsModal(false)}
         highlights={item.highlights}
+        modeloId={item.id}
       />
 
       {/* DELIGHTBOX INTEGRATION */}
