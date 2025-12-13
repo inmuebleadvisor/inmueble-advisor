@@ -7,13 +7,11 @@ import FinanciamientoWidget from './FinanciamientoWidget';
 import DevelopmentInfoSection from './DevelopmentInfoSection';
 import PropertyCard from './PropertyCard';
 import FavoriteBtn from './FavoriteBtn';
-import HighlightsModal from './common/HighlightsModal';
-import { useState } from 'react';
 
 // Icons defined locally since they are small
 const Icons = {
     Back: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>,
-    Flag: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="#f59e0b" stroke="#b45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+    Check: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
 };
 
 const formatoMoneda = (val) => {
@@ -28,8 +26,6 @@ export default function ModelDetailsContent({
     onBack, // Optional: if provided, shows back button (e.g., for full screen). If in modal, might not need it or handled differently.
     isModal = false // To adjust styles for modal view
 }) {
-    const [showHighlightsModal, setShowHighlightsModal] = useState(false);
-
     const galeriaImagenes = useMemo(() => {
         if (!modelo) return [];
         const items = (modelo.imagenes || []).map(url => ({ url, type: 'image' }));
@@ -83,14 +79,23 @@ export default function ModelDetailsContent({
                                 {modelo.precios?.mantenimientoMensual > 0 && (
                                     <span style={styles.maintenanceLabel}>+ {formatoMoneda(modelo.precios.mantenimientoMensual)} mant. mensual</span>
                                 )}
+
+                                {/* ⭐ HIGHLIGHTS INLINE ⭐ */}
                                 {modelo.highlights && modelo.highlights.length > 0 && (
-                                    <button
-                                        onClick={() => setShowHighlightsModal(true)}
-                                        style={styles.highlightsButton}
-                                    >
-                                        <Icons.Flag />
-                                        <span style={{ marginLeft: '6px', fontSize: '0.8rem', fontWeight: '700', color: '#b45309' }}>Ver Destacados</span>
-                                    </button>
+                                    <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                        {modelo.highlights.map((highlight, index) => (
+                                            <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                                                <div style={{
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    width: '20px', height: '20px', borderRadius: '50%',
+                                                    backgroundColor: 'rgba(245, 158, 11, 0.15)', color: 'var(--primary-color)'
+                                                }}>
+                                                    <Icons.Check />
+                                                </div>
+                                                <span style={{ fontWeight: '500' }}>{highlight}</span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -168,42 +173,47 @@ export default function ModelDetailsContent({
                 )}
 
             </main>
-
-            <HighlightsModal
-                isOpen={showHighlightsModal}
-                onClose={() => setShowHighlightsModal(false)}
-                highlights={modelo.highlights}
-            />
         </div>
     );
 }
 
 // Estilos
+// Estilos
 const styles = {
-    pageContainer: { backgroundColor: 'white', minHeight: '100%', paddingBottom: '60px', fontFamily: "'Segoe UI', sans-serif" },
-    modalContainer: { backgroundColor: 'white', minHeight: 'auto', paddingBottom: '40px', fontFamily: "'Segoe UI', sans-serif" }, // Modal specific adjustments
-    carouselWrapper: { position: 'relative', width: '100%', height: '320px', backgroundColor: '#e5e7eb' },
-    headerGradient: { position: 'absolute', bottom: 0, left: 0, width: '100%', height: '80px', background: 'linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0))', pointerEvents: 'none', zIndex: 5 },
-    floatingBackButton: { position: 'absolute', top: '20px', left: '20px', backgroundColor: 'rgba(255, 255, 255, 0.9)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', zIndex: 10, color: '#333' },
-    statusBadge: { position: 'absolute', top: '20px', right: '20px', color: 'white', padding: '6px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', zIndex: 10, boxShadow: '0 2px 4px rgba(0,0,0,0.3)' },
-    contentBody: { padding: '0 20px', position: 'relative', zIndex: 6, marginTop: '-20px' },
-    sectionBlock: { marginBottom: '20px', display: 'block' },
-    titleSectionContainer: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '25px', backgroundColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(5px)', padding: '15px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' },
+    pageContainer: { backgroundColor: 'var(--bg-main)', minHeight: '100%', paddingBottom: '60px', fontFamily: "'Outfit', sans-serif" },
+    modalContainer: { backgroundColor: 'var(--bg-main)', minHeight: 'auto', paddingBottom: '40px', fontFamily: "'Outfit', sans-serif" },
+    carouselWrapper: { position: 'relative', width: '100%', height: '350px', backgroundColor: 'var(--bg-tertiary)' }, // Taller header
+    headerGradient: { position: 'absolute', bottom: 0, left: 0, width: '100%', height: '120px', background: 'linear-gradient(to top, var(--bg-main), rgba(15, 23, 42, 0))', pointerEvents: 'none', zIndex: 5 },
+
+    floatingBackButton: { position: 'absolute', top: '20px', left: '20px', backgroundColor: 'rgba(30, 41, 59, 0.8)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', zIndex: 10, color: 'white', backdropFilter: 'blur(4px)' },
+    statusBadge: { position: 'absolute', top: '20px', right: '20px', color: 'var(--text-inverse)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '800', zIndex: 10, boxShadow: '0 2px 6px rgba(0,0,0,0.3)' },
+
+    contentBody: { padding: '0 24px', position: 'relative', zIndex: 6, marginTop: '-30px' },
+    sectionBlock: { marginBottom: '30px', display: 'block' },
+
+    // Glassmorphic title container
+    titleSectionContainer: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '30px', backgroundColor: 'rgba(30, 41, 59, 0.7)', backdropFilter: 'blur(10px)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 4px 6px rgba(0,0,0,0.2)' },
     titleSectionLeft: { flex: 1 },
-    modelTitle: { fontSize: '1.6rem', fontWeight: '800', color: '#111827', margin: '0 0 5px 0', lineHeight: '1.2' },
+    modelTitle: { fontSize: '1.8rem', fontWeight: '800', color: 'var(--text-main)', margin: '0 0 8px 0', lineHeight: '1.2' },
+
     priceContainer: { display: 'flex', flexDirection: 'column' },
-    priceLabel: { fontSize: '0.7rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '700' },
-    priceValue: { fontSize: '1.5rem', fontWeight: '800', color: '#0f172a' },
-    maintenanceLabel: { fontSize: '0.8rem', color: '#64748b', marginTop: '2px' },
-    highlightsButton: { marginTop: '8px', display: 'flex', alignItems: 'center', backgroundColor: '#fffbeb', border: '1px solid #fcd34d', padding: '6px 12px', borderRadius: '20px', cursor: 'pointer', maxWidth: 'fit-content', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
+    priceLabel: { fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '700' },
+    priceValue: { fontSize: '1.8rem', fontWeight: '800', color: 'var(--primary-color)' },
+    maintenanceLabel: { fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px', fontStyle: 'italic' },
+
+    highlightsButton: { marginTop: '12px', display: 'flex', alignItems: 'center', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--primary-color)', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', maxWidth: 'fit-content', boxShadow: '0 2px 4px rgba(0,0,0,0.2)', transition: 'transform 0.2s', color: 'var(--primary-color)' },
+
     favoriteWrapper: { flexShrink: 0, marginLeft: '15px', marginTop: '5px' },
-    favoriteButtonOverride: { backgroundColor: '#fff', border: '1px solid #e5e7eb' },
-    divider: { border: 'none', borderTop: '1px solid #e5e7eb', margin: '30px 0' },
-    sectionTitle: { fontSize: '1.2rem', fontWeight: '700', marginBottom: '10px', color: '#111' },
-    descriptionText: { color: '#4b5563', lineHeight: '1.6', fontSize: '0.95rem' },
-    contextHeader: { marginBottom: '15px', paddingLeft: '10px', borderLeft: '4px solid #0f172a' },
-    contextLabel: { fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' },
-    contextTitle: { fontSize: '1.4rem', fontWeight: '800', color: '#1e293b', margin: 0 },
-    modelsSection: { backgroundColor: '#f9fafb', margin: '30px -20px 0', padding: '30px 20px', borderTop: '1px solid #e5e7eb' },
-    modelsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px', marginTop: '20px' }
+    favoriteButtonOverride: { backgroundColor: 'var(--bg-secondary)', border: '1px solid rgba(255,255,255,0.1)' },
+
+    divider: { border: 'none', borderTop: '1px solid rgba(255,255,255,0.1)', margin: '30px 0' },
+    sectionTitle: { fontSize: '1.4rem', fontWeight: '700', marginBottom: '15px', color: 'var(--text-main)' },
+    descriptionText: { color: 'var(--text-secondary)', lineHeight: '1.7', fontSize: '1rem' },
+
+    contextHeader: { marginBottom: '20px', paddingLeft: '15px', borderLeft: '4px solid var(--primary-color)' },
+    contextLabel: { fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' },
+    contextTitle: { fontSize: '1.6rem', fontWeight: '800', color: 'var(--text-main)', margin: 0 },
+
+    modelsSection: { backgroundColor: 'var(--bg-secondary)', margin: '40px -24px 0', padding: '40px 24px', borderTop: '1px solid rgba(255,255,255,0.05)' },
+    modelsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px', marginTop: '24px' }
 };

@@ -97,14 +97,14 @@
   position: sticky;
   top: 0;
   z-index: 900;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: var(--bg-main);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   padding: 0.75rem 1.25rem;
   display: flex;
   align-items: center;
   gap: 1rem;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .filter-bar__trigger {
@@ -112,8 +112,8 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: var(--white);
-  border: 1px solid #cbd5e1;
+  background-color: var(--bg-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 0.5rem 1rem;
   border-radius: var(--radius-full);
   font-size: 0.9rem;
@@ -125,8 +125,9 @@
 }
 
 .filter-bar__trigger:hover {
-  background-color: #f8fafc;
-  border-color: #94a3b8;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .filter-bar__clear-all {
@@ -151,18 +152,31 @@
 .filter-bar__chips {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: nowrap;
   overflow-x: auto;
   flex: 1;
   min-width: 0;
-  scrollbar-width: none;
-  /* Firefox */
-  -ms-overflow-style: none;
-  /* IE/Edge */
   padding-right: 1rem;
+  padding-bottom: 4px;
+  /* Space for scrollbar */
+  scrollbar-width: thin;
+  /* Firefox */
+  scrollbar-color: var(--primary-color) transparent;
 }
 
 .filter-bar__chips::-webkit-scrollbar {
-  display: none;
+  height: 4px;
+  /* Visible horizontal scrollbar */
+  display: block;
+}
+
+.filter-bar__chips::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filter-bar__chips::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+  border-radius: 4px;
 }
 
 .chip {
@@ -171,14 +185,14 @@
   font-size: 0.8rem;
   font-weight: 600;
   white-space: nowrap;
-  border: 1px solid #e2e8f0;
-  background-color: var(--white);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: var(--bg-secondary);
   color: var(--text-main);
   flex-shrink: 0;
 }
 
 .chip--primary {
-  background-color: var(--white);
+  background-color: rgba(245, 158, 11, 0.1);
   color: var(--primary-color);
   border-color: var(--primary-color);
 }
@@ -463,6 +477,7 @@
   font-weight: 600;
   color: var(--text-main);
   font-size: 0.95rem;
+  appearance: textfield;
   -moz-appearance: textfield;
 }
 

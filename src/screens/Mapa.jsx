@@ -167,7 +167,7 @@ export default function Mapa() {
     <div className="main-content" style={styles.pageContainer}>
 
       {/* Replaced Header with Shared Components */}
-      <div style={{ padding: '0', backgroundColor: 'white', borderBottom: '1px solid #e5e7eb' }}>
+      <div style={{ padding: '0', backgroundColor: 'var(--bg-main)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
         <header style={styles.header}>
           <div style={styles.headerContent}>
             <h1 style={styles.title}>Mapa Interactivo</h1>
@@ -273,9 +273,9 @@ export default function Mapa() {
 // Cleaned up styles - removed filter/modal specific styles
 const styles = {
   pageContainer: { display: 'flex', flexDirection: 'column', height: 'calc(100vh - 60px)', fontFamily: "'Segoe UI', sans-serif", overflow: 'hidden' },
-  header: { backgroundColor: 'white', padding: '15px 20px 5px 20px' },
-  title: { color: '#111827', margin: 0, fontSize: '1.4rem', fontWeight: '800' },
-  subtitle: { color: '#6b7280', margin: '2px 0 0 0', fontSize: '0.9rem' },
+  header: { backgroundColor: 'var(--bg-main)', padding: '15px 20px 5px 20px' },
+  title: { color: 'white', margin: 0, fontSize: '1.4rem', fontWeight: '800' },
+  subtitle: { color: 'white', margin: '2px 0 0 0', fontSize: '0.9rem' },
   mapContainer: { flex: 1, width: '100%', position: 'relative', zIndex: 1 },
   popupContent: { textAlign: 'center', width: '160px' },
   popupImage: { width: '100%', height: '80px', objectFit: 'cover', borderRadius: '8px', marginBottom: '8px', backgroundColor: '#eee' },

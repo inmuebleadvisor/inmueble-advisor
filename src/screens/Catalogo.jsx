@@ -4,6 +4,7 @@ import React, { useState } from 'react'; // Only useState for modal, if needed, 
 import { useUser } from '../context/UserContext';
 import { useCatalog } from '../context/CatalogContext';
 import { useCatalogFilter } from '../hooks/useCatalogFilter';
+import { useScrollReveal } from '../hooks/useScrollReveal';
 
 // Components
 import PropertyCard from '../components/PropertyCard';
@@ -30,6 +31,10 @@ export default function Catalogo() {
     modelosFiltrados,
     limpiarTodo
   } = useCatalogFilter(dataMaestra, desarrollos, loading);
+
+  // Alternating animations: Odd from left, Even from right
+  useScrollReveal('.catalogo__grid .card:nth-of-type(odd)', { origin: 'left', interval: 100 }, [modelosFiltrados]);
+  useScrollReveal('.catalogo__grid .card:nth-of-type(even)', { origin: 'right', interval: 100 }, [modelosFiltrados]);
 
   // --- RENDER ---
   if (loading) {

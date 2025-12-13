@@ -158,25 +158,35 @@ export default function DevelopmentDetailsContent({
 
 // --- ESTILOS ---
 const styles = {
-    pageContainer: { backgroundColor: 'white', minHeight: '100vh', paddingBottom: '40px', fontFamily: "'Segoe UI', sans-serif" },
-    modalContainer: { backgroundColor: 'white', minHeight: 'auto', paddingBottom: '40px', fontFamily: "'Segoe UI', sans-serif" },
-    carouselWrapper: { position: 'relative', width: '100%', height: '280px', backgroundColor: '#e5e7eb' },
+    pageContainer: { backgroundColor: 'var(--bg-main)', minHeight: '100vh', paddingBottom: '40px', fontFamily: "'Outfit', sans-serif" },
+    modalContainer: { backgroundColor: 'var(--bg-main)', minHeight: 'auto', paddingBottom: '40px', fontFamily: "'Outfit', sans-serif" },
+    carouselWrapper: { position: 'relative', width: '100%', height: '320px', backgroundColor: 'var(--bg-tertiary)' }, // Taller header
     carouselContainer: { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', width: '100%', height: '100%', scrollBehavior: 'smooth' },
     carouselSlide: { minWidth: '100%', height: '100%', scrollSnapAlign: 'center', position: 'relative' },
     headerImage: { width: '100%', height: '100%', objectFit: 'cover' },
-    floatingBackButton: { position: 'absolute', top: '20px', left: '20px', backgroundColor: 'rgba(255, 255, 255, 0.9)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', zIndex: 10, color: '#333' },
-    statusBadgeOverlay: { position: 'absolute', bottom: '20px', right: '20px', backgroundColor: '#0f172a', color: 'white', padding: '6px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '700', zIndex: 5, boxShadow: '0 2px 6px rgba(0,0,0,0.2)' },
+
+    // Buttons & Badges
+    floatingBackButton: { position: 'absolute', top: '20px', left: '20px', backgroundColor: 'rgba(30, 41, 59, 0.8)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', zIndex: 10, color: 'white', backdropFilter: 'blur(4px)' },
+    statusBadgeOverlay: { position: 'absolute', bottom: '20px', right: '20px', backgroundColor: 'var(--primary-color)', color: 'var(--text-inverse)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', zIndex: 5, boxShadow: '0 2px 6px rgba(0,0,0,0.3)' },
     imageCounter: { position: 'absolute', bottom: '20px', left: '20px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold', zIndex: 10 },
-    headerGradient: { position: 'absolute', bottom: 0, left: 0, width: '100%', height: '100px', background: 'linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0))', pointerEvents: 'none' },
-    contentBody: { padding: '0 20px', position: 'relative', zIndex: 2, marginTop: '-30px' },
-    titleSection: { marginBottom: '15px' },
-    devTitle: { fontSize: '2.2rem', fontWeight: '800', color: '#111827', margin: '0 0 8px 0', lineHeight: '1' },
-    locationRow: { display: 'flex', alignItems: 'center', gap: '6px', color: '#0f172a', fontWeight: '600', fontSize: '1rem', marginBottom: '5px' },
-    addressText: { color: '#6b7280', fontSize: '0.9rem', margin: 0 },
-    divider: { border: 'none', borderTop: '1px solid #f3f4f6', margin: '25px 0' },
-    modelsSection: { backgroundColor: '#f9fafb', margin: '20px -20px 0', padding: '30px 20px', borderTop: '1px solid #e5e7eb' },
-    sectionHeaderRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px' },
-    sectionTitle: { fontSize: '1.3rem', fontWeight: '800', margin: 0, color: '#1f2937' },
-    modelCountBadge: { backgroundColor: '#e5e7eb', color: '#374151', padding: '2px 8px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold' },
-    modelsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' },
+
+    // Gradients
+    headerGradient: { position: 'absolute', bottom: 0, left: 0, width: '100%', height: '120px', background: 'linear-gradient(to top, var(--bg-main), rgba(15, 23, 42, 0))', pointerEvents: 'none' },
+
+    // Content
+    contentBody: { padding: '0 24px', position: 'relative', zIndex: 2, marginTop: '-40px' },
+    titleSection: { marginBottom: '20px' },
+    devTitle: { fontSize: '2.5rem', fontWeight: '800', color: 'var(--text-main)', margin: '0 0 8px 0', lineHeight: '1.1' },
+    locationRow: { display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary-color)', fontWeight: '600', fontSize: '1.1rem', marginBottom: '8px' },
+    locationIcon: { color: 'var(--primary-color)' }, // Helper if needed
+    addressText: { color: 'var(--text-secondary)', fontSize: '0.95rem', margin: 0, lineHeight: '1.5' },
+
+    divider: { border: 'none', borderTop: '1px solid rgba(255,255,255,0.1)', margin: '30px 0' },
+
+    // Models Section
+    modelsSection: { backgroundColor: 'var(--bg-secondary)', margin: '30px -24px 0', padding: '40px 24px', borderTop: '1px solid rgba(255,255,255,0.05)' },
+    sectionHeaderRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' },
+    sectionTitle: { fontSize: '1.5rem', fontWeight: '800', margin: 0, color: 'var(--text-main)' },
+    modelCountBadge: { backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-main)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold', border: '1px solid rgba(255,255,255,0.05)' },
+    modelsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' },
 };

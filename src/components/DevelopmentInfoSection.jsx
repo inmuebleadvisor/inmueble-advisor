@@ -165,27 +165,27 @@ const styles = {
     marginBottom: '25px',
     borderRadius: '12px',
     overflow: 'hidden',
-    backgroundColor: '#e5e7eb' // Placeholder color mientras carga
+    backgroundColor: 'var(--bg-tertiary)' // Background matches theme
   },
 
   // Descripción
   section: { marginBottom: '30px' },
-  descriptionText: { color: '#4b5563', lineHeight: '1.7', fontSize: '0.95rem', whiteSpace: 'pre-line' },
+  descriptionText: { color: 'var(--text-secondary)', lineHeight: '1.7', fontSize: '0.95rem', whiteSpace: 'pre-line' },
 
   // Botones Multimedia
   mediaButtonsContainer: { display: 'flex', gap: '15px', marginBottom: '30px', flexWrap: 'wrap' },
-  mediaButton: { flex: 1, minWidth: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: 'white', color: '#1f2937', border: '1px solid #d1d5db', borderRadius: '8px', padding: '12px', textDecoration: 'none', fontWeight: '600', fontSize: '0.9rem', transition: 'all 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' },
+  mediaButton: { flex: 1, minWidth: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-main)', border: '1px solid var(--bg-tertiary)', borderRadius: '8px', padding: '12px', textDecoration: 'none', fontWeight: '600', fontSize: '0.9rem', transition: 'all 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.2)' },
 
   // Fecha de Entrega (Estilo destacado pero limpio)
-  deliveryDateBox: { display: 'inline-flex', alignItems: 'center', gap: '12px', padding: '12px 20px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '50px', marginBottom: '30px', color: '#166534' },
+  deliveryDateBox: { display: 'inline-flex', alignItems: 'center', gap: '12px', padding: '12px 20px', backgroundColor: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: '50px', marginBottom: '30px', color: 'var(--success)' },
   iconBox: { display: 'flex', alignItems: 'center' },
-  statLabel: { fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '2px' },
+  statLabel: { fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '2px', opacity: 0.9 },
   statValue: { fontSize: '1rem', fontWeight: '800' },
 
   // Títulos y Textos Generales
-  sectionTitle: { fontSize: '1.1rem', fontWeight: '800', marginBottom: '15px', color: '#111827' },
-  addressText: { color: '#6b7280', fontSize: '0.95rem', margin: '0 0 15px 0' },
+  sectionTitle: { fontSize: '1.1rem', fontWeight: '800', marginBottom: '15px', color: 'var(--text-main)' },
+  addressText: { color: 'var(--text-secondary)', fontSize: '0.95rem', margin: '0 0 15px 0' },
 
   // Botón Mapa
-  mapButtonExternal: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: '100%', padding: '15px', backgroundColor: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '12px', color: '#374151', fontWeight: '600', textDecoration: 'none', fontSize: '0.95rem', transition: 'background 0.2s' },
+  mapButtonExternal: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: '100%', padding: '15px', backgroundColor: 'var(--bg-tertiary)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'var(--text-main)', fontWeight: '600', textDecoration: 'none', fontSize: '0.95rem', transition: 'background 0.2s' },
 };

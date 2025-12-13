@@ -1,174 +1,132 @@
-/* index.css */
 @import './styles/buttons.css';
+@import './styles/cards.css';
+@import './styles/Header.css';
 
-/* Reinicio básico para ocupar toda la pantalla */
+/* --- DARK PREMIUM THEME VARIABLES --- */
 :root {
-  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  /* Colors */
+  --bg-main: #0f172a;
+  /* Dark Slate - Main Background */
+  --bg-secondary: #1e293b;
+  /* Slightly lighter - Cards/Nav */
+  --bg-tertiary: #334155;
+  /* Inputs/Borders */
 
-  /* Tus colores de marca globales */
-  --primary-color: #00396a;
-  /* Institutional Blue */
-  --secondary-color: #dcb23a;
-  /* Institutional Gold */
-  --bg-color: #f4f6f9;
-  --text-main: #1e293b;
-  --text-secondary: #64748b;
-  --white: #ffffff;
+  --primary-color: #f59e0b;
+  /* Gold/Amber - Primary Action/Highlight */
+  --primary-hover: #d97706;
+
+  --text-main: #f8fafc;
+  /* White/Off-white */
+  --text-secondary: #94a3b8;
+  /* Muted Blue-Grey */
+  --text-inverse: #0f172a;
+  /* Dark text for buttons */
+
+  --accent-blue: #3b82f6;
+  /* For links or info states */
+  --success: #10b981;
+  --error: #ef4444;
+
+  /* Typography */
+  --font-main: 'Outfit', 'Inter', system-ui, sans-serif;
+
+  /* Spacing & Radius */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+  --shadow-glow: 0 0 15px rgba(245, 158, 11, 0.15);
+  /* Soft gold glow */
 }
 
+/* --- GLOBAL RESET & BASE STYLES --- */
 html,
 body {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
-  background-color: var(--bg-color);
-  /* Fondo gris claro en toda la ventana */
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: var(--font-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
   width: 100%;
   min-height: 100vh;
-  margin: 0;
-  padding: 0;
-  display: block;
-  /* Importante: quita el display flex/grid por defecto de Vite */
-  max-width: none;
-  /* Importante: quita el límite de ancho */
-  text-align: left;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Opcional: Para que los inputs y botones se comporten bien */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-/* ESTILOS PARA TODA LA APP */
 a {
   text-decoration: none;
   color: inherit;
+  transition: color 0.2s;
 }
 
 button {
   cursor: pointer;
+  font-family: inherit;
 }
 
-/* --- CLASE RESPONSIVA PARA EL CONTENEDOR PRINCIPAL --- */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0 0 1rem 0;
+  font-weight: 600;
+  color: var(--text-main);
+}
 
+p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* --- LAYOUT UTILITIES --- */
 .main-content {
   flex: 1;
   width: 100%;
-  box-sizing: border-box;
-  /* Para que el padding no rompa el ancho */
-
-  /* MÓVIL (Por defecto): Márgenes muy pequeños para ganar espacio */
-  padding: 10px 8px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 16px;
 }
 
-/* PANTALLAS GRANDES (Tablets y PC): Aumentamos el margen para que se vea elegante */
+/* RESPONSIVE LAYOUT */
 @media (min-width: 768px) {
   .main-content {
-    padding: 30px 50px;
-    /* Más aire a los lados */
-    max-width: 1200px;
-    /* Que no se estire infinito en pantallas ultra anchas */
-    margin: 0 auto;
-    /* Centrado automático */
+    padding: 40px 24px;
   }
 }
 
-/* Clase utilitaria para secciones flexibles que cambian a columna en móvil */
-.flex-responsive {
-  display: flex;
-  align-items: center;
-  gap: 30px;
-  flex-direction: row;
+/* --- SCROLLBAR CUSTOMIZATION --- */
+::-webkit-scrollbar {
+  width: 8px;
 }
 
-@media (max-width: 768px) {
-  .flex-responsive {
-    flex-direction: column;
-    text-align: center;
-  }
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
 }
 
-/* --- CLASES DE NAVEGACIÓN RESPONSIVA --- */
-
-/* Estilo por defecto del menú: Horizontal en escritorio */
-.nav-menu {
-  display: flex;
-  gap: 20px;
-  /* El estilo de los links se manejará en Layout.jsx, pero la estructura base es flex */
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
 }
 
-/* El botón de hamburguesa estará oculto en escritorio por defecto */
-.menu-toggle-btn {
-  display: none;
-  background: none;
-  border: none;
-  color: white;
-  padding: 0;
-  cursor: pointer;
-  z-index: 1010;
-  /* Asegura que esté por encima del menú */
-}
-
-@media (max-width: 768px) {
-
-  /* Mostrar el botón de hamburguesa en móvil */
-  .menu-toggle-btn {
-    display: block;
-  }
-
-  /* Ocultar el menú por defecto en móvil y definir su estilo de Overlay */
-  .nav-menu {
-    flex-direction: column;
-    position: fixed;
-    top: 60px;
-    /* Empieza debajo del header (60px de alto) */
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--primary-color);
-    padding: 30px 20px;
-    z-index: 1000;
-    align-items: center;
-    gap: 30px;
-    opacity: 0.98;
-    transition: transform 0.4s ease-out;
-    /* Por defecto, el menú está fuera de la vista */
-    transform: translateY(-120vh);
-    /* Mover fuera de la pantalla */
-  }
-
-  /* El estado 'is-open' lo trae a la vista */
-  .nav-menu.is-open {
-    transform: translateY(0);
-    display: flex;
-    /* Asegura que sea visible */
-  }
-
-  /* Estilo de los enlaces en el menú móvil (más grandes) */
-  .nav-menu a {
-    font-size: 1.5rem !important;
-    padding: 15px 0;
-    width: 80%;
-    /* Ancho para facilitar el tap */
-    text-align: center;
-    /* La línea activa (border-bottom) se ve mejor que 100% de ancho aquí */
-  }
-
-  /* Estilo responsivo para el botón de logout */
-  .logout-btn {
-    font-size: 1.5rem !important;
-    padding: 15px 0 !important;
-    width: 80% !important;
-    border-bottom: 3px solid transparent;
-    text-decoration: none;
-    display: block !important;
-  }
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
 }

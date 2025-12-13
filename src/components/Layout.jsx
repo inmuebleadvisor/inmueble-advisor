@@ -9,7 +9,8 @@ import { useFavorites } from '../context/FavoritesContext';
 import WhatsAppButton from './common/WhatsAppButton/WhatsAppButton';
 
 // URL del Logotipo Oficial
-const LOGO_URL = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/Logo-InmuebleAdvisor-en-fondo-Azul-e1758163267740.png";
+// URL del Logotipo Oficial
+const LOGO_URL = "https://firebasestorage.googleapis.com/v0/b/inmueble-advisor-app.firebasestorage.app/o/Institucional%2FLogo%20blanco%20con%20amarillo.png?alt=media";
 
 // --- ICONOS SVG ---
 const MenuIcons = {
@@ -126,20 +127,24 @@ export default function Layout() {
               </Link>
             )}
 
-            {/* BOTÓN DE SESIÓN (LOGIN / LOGOUT) */}
+            {/* 1. BOTÓN DE SESIÓN (LOGIN / LOGOUT) */}
             {user ? (
               <button
                 onClick={logout}
-                style={styles.logoutButton}
-                className="logout-btn"
+                style={styles.navLinkButton}
+                className="nav-link-btn"
+                onMouseEnter={(e) => e.target.style.opacity = '1'}
+                onMouseLeave={(e) => e.target.style.opacity = '0.85'}
               >
                 Cerrar Sesión ({userProfile?.nombre?.split(' ')[0] || 'Usuario'})
               </button>
             ) : (
               <button
                 onClick={loginWithGoogle}
-                style={{ ...styles.logoutButton, color: 'white', border: '1px solid rgba(255,255,255,0.5)', borderRadius: '20px', padding: '6px 16px' }}
-                className="login-btn"
+                style={styles.navLinkButton}
+                className="nav-link-btn"
+                onMouseEnter={(e) => e.target.style.opacity = '1'}
+                onMouseLeave={(e) => e.target.style.opacity = '0.85'}
               >
                 Iniciar Sesión
               </button>
@@ -188,21 +193,22 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     minHeight: '100vh',
-    backgroundColor: 'var(--bg-color)'
+    backgroundColor: 'var(--bg-main)'
   },
   header: {
-    backgroundColor: 'var(--primary-color)',
-    color: 'white',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    backgroundColor: 'var(--bg-secondary)', // Now cards/header share the secondary dark bg
+    color: 'var(--text-main)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.3)', // Darker shadow
     position: 'sticky',
     top: 0,
     zIndex: 1000,
+    borderBottom: '1px solid rgba(255,255,255,0.05)'
   },
   headerContent: {
     maxWidth: '1200px',
     margin: '0 auto',
     padding: '0 20px',
-    height: '60px',
+    height: '70px', // Slightly taller for premium feel
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -214,7 +220,7 @@ const styles = {
     zIndex: 1010
   },
   logoImage: {
-    height: '40px',
+    height: '54px',
     width: 'auto',
     objectFit: 'contain'
   },
@@ -223,32 +229,35 @@ const styles = {
   },
 
   changeCityBtn: {
-    background: 'none',
-    border: '1px solid rgba(255,255,255,0.3)',
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.1)',
     borderRadius: '20px',
-    color: 'white',
-    padding: '4px 12px',
+    color: 'var(--text-main)',
+    padding: '6px 14px',
     fontSize: '0.85rem',
     cursor: 'pointer',
     margin: '0 5px',
     display: 'flex',
     alignItems: 'center',
-    gap: '4px',
-    opacity: 0.9,
+    gap: '6px',
     transition: 'all 0.2s',
   },
 
-  // ⭐ NUEVO ESTILO: Botón de Cerrar Sesión (Se ve como un enlace en el menú)
-  logoutButton: {
+  // ⭐ ESTILO GENÉRICO PARA BOTONES TIPO LINK (Nav)
+  navLinkButton: {
     background: 'none',
     border: 'none',
-    color: '#ffc107', // Color dorado/amarillo para destacar
-    padding: '4px 0',
+    color: 'white',
+    padding: '0',
     fontSize: '0.95rem',
-    fontWeight: '700',
+    fontWeight: '400',
     cursor: 'pointer',
     textAlign: 'center',
     transition: 'opacity 0.2s',
+    opacity: 0.85,
+    fontFamily: 'inherit',
+    borderBottom: '3px solid transparent',
+    paddingBottom: '4px'
   },
 
   linkWithBadge: {
@@ -258,8 +267,8 @@ const styles = {
     justifyContent: 'center' // Centra el contenido (texto + badge)
   },
   favoriteBadge: {
-    backgroundColor: '#fbbf24', // Amarillo dorado
-    color: 'var(--primary-color)',
+    backgroundColor: 'var(--primary-color)',
+    color: 'var(--text-inverse)',
     fontSize: '0.75rem',
     fontWeight: '800',
     padding: '2px 8px',
@@ -268,19 +277,19 @@ const styles = {
   },
 
   footer: {
-    backgroundColor: '#1f2937',
-    color: '#9ca3af',
-    padding: '30px 20px',
+    backgroundColor: 'var(--bg-secondary)',
+    color: 'var(--text-secondary)',
+    padding: '40px 20px',
     textAlign: 'center',
     marginTop: 'auto',
-    borderTop: '1px solid #374151'
+    borderTop: '1px solid rgba(255,255,255,0.05)'
   },
   footerLinks: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: '10px',
-    marginBottom: '15px',
+    gap: '15px',
+    marginBottom: '20px',
     fontSize: '0.85rem',
     flexWrap: 'wrap'
   },
@@ -289,17 +298,18 @@ const styles = {
     transition: 'color 0.2s',
   },
   footerLinkAnchor: {
-    color: '#9ca3af',
+    color: 'var(--text-secondary)',
     textDecoration: 'none',
     cursor: 'pointer',
     transition: 'color 0.2s',
     fontWeight: 'bold'
   },
   footerSeparator: {
-    color: '#4b5563'
+    color: 'var(--bg-tertiary)'
   },
   copyText: {
     fontSize: '0.8rem',
-    color: '#6b7280'
+    color: 'var(--text-secondary)',
+    opacity: 0.8
   }
 };
