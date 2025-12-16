@@ -22,9 +22,9 @@
 }
 
 .catalogo__header {
-  background-color: var(--white);
+  background-color: var(--bg-secondary);
   padding: 1.5rem 1.25rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .catalogo__title {
@@ -43,14 +43,14 @@
 
 /* Search Bar */
 .search-bar {
-  background-color: var(--white);
+  background-color: var(--bg-filter);
   padding: 1rem 1.25rem;
 }
 
 .search-bar__container {
   display: flex;
   align-items: center;
-  background-color: #f1f5f9;
+  background-color: var(--bg-input-search, #eff6ff);
   border-radius: var(--radius-lg);
   padding: 0.75rem 1rem;
   border: 1px solid transparent;
@@ -104,7 +104,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .filter-bar__trigger {
@@ -125,7 +125,7 @@
 }
 
 .filter-bar__trigger:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--bg-glass);
   border-color: var(--primary-color);
   color: var(--primary-color);
 }
@@ -263,7 +263,7 @@
 }
 
 .modal {
-  background-color: var(--white);
+  background-color: var(--bg-modal);
   width: 100%;
   max-width: 500px;
   height: 85vh;
@@ -353,7 +353,7 @@
   font-weight: 600;
   cursor: pointer;
   text-align: center;
-  background-color: var(--white);
+  background-color: var(--bg-secondary);
   color: var(--text-main);
   transition: all 0.2s;
 }
@@ -371,7 +371,7 @@
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
-  background-color: #f8fafc;
+  background-color: var(--bg-input);
   color: var(--text-secondary);
   border: 1px solid transparent;
   transition: all 0.2s;
@@ -457,14 +457,14 @@
   flex: 1;
   display: flex;
   align-items: center;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 0.5rem 0.75rem;
-  background-color: #f8fafc;
+  background-color: var(--bg-card-price);
 }
 
 .price-currency {
-  color: #64748b;
+  color: var(--text-secondary);
   font-weight: 600;
   margin-right: 0.25rem;
 }

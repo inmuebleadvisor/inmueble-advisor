@@ -47,7 +47,7 @@
         /* Hidden to the right */
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 1050;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-top: 1px solid var(--border-subtle);
     }
 
     .nav-menu.is-open {

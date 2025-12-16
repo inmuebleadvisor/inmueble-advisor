@@ -2,8 +2,9 @@
 @import './styles/cards.css';
 @import './styles/Header.css';
 
-/* --- DARK PREMIUM THEME VARIABLES --- */
+/* --- DARK PREMIUM THEME VARIABLES (DEFAULT) --- */
 :root {
+  color-scheme: dark;
   /* Colors */
   --bg-main: #0f172a;
   /* Dark Slate - Main Background */
@@ -36,11 +37,79 @@
   --radius-md: 16px;
   --radius-lg: 24px;
 
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-strong: rgba(255, 255, 255, 0.1);
+
+  /* Glass Effects */
+  --bg-glass: rgba(255, 255, 255, 0.05);
+
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
   --shadow-glow: 0 0 15px rgba(245, 158, 11, 0.15);
+  /* Component Specific */
+  --bg-modal: transparent;
+  --bg-input: #1e293b;
+  --bg-header: var(--bg-secondary);
+  --bg-search: var(--bg-secondary);
+  --bg-filter: var(--bg-tertiary);
+  --bg-card-price: transparent;
+
   /* Soft gold glow */
+}
+
+/* --- LIGHT THEME VARIABLES --- */
+[data-theme='light'] {
+  color-scheme: light;
+  /* Colors */
+  --bg-main: #f8fafc;
+  /* Lighter Slate for content */
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #cbd5e1;
+
+  --primary-color: #dcb23a;
+  /* Gold - User specified secondary but implies button color */
+  --primary-hover: #b45309;
+
+  --brand-blue: #00396a;
+  /* User specified Primary */
+
+  --text-main: #00396a;
+  /* Use Brand Blue for main text/headers? Or keep dark slate? Let's use Brand Blue as it's "Primary" */
+  --text-secondary: #475569;
+  --text-inverse: #ffffff;
+  /* White text on Gold/Blue */
+
+  --accent-blue: #00396a;
+  /* Slightly darker blue for contrast */
+
+  /* Borders */
+  --border-subtle: rgba(0, 0, 0, 0.05);
+  --border-strong: rgba(0, 0, 0, 0.1);
+
+  /* Glass Effects */
+  --bg-glass: rgba(0, 0, 0, 0.05);
+
+  /* Component Specific */
+  --bg-modal: #ffffff;
+  --bg-input: #ffffff;
+
+  --bg-header: #00396a;
+  /* User specified header bg */
+  --bg-search: #ffffff;
+  /* User specified: filter bar bg starts white */
+  --bg-filter: #ffffff;
+  /* User specified: filter bar bg starts white */
+  --bg-card-price: #eff6ff;
+  /* User specified card price bg */
+  --bg-input-search: #eff6ff;
+  /* New variable for search input specifically */
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-glow: 0 0 15px rgba(245, 158, 11, 0.25);
 }
 
 /* --- GLOBAL RESET & BASE STYLES --- */

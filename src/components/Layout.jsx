@@ -7,10 +7,13 @@ import { useUser } from '../context/UserContext';
 // Importamos el hook de Favoritos para el contador
 import { useFavorites } from '../context/FavoritesContext';
 import WhatsAppButton from './common/WhatsAppButton/WhatsAppButton';
+import ThemeToggle from './shared/ThemeToggle';
+import { useTheme } from '../context/ThemeContext';
 
 // URL del Logotipo Oficial
 // URL del Logotipo Oficial
-const LOGO_URL = "https://firebasestorage.googleapis.com/v0/b/inmueble-advisor-app.firebasestorage.app/o/Institucional%2FLogo%20blanco%20con%20amarillo.png?alt=media";
+const LOGO_DARK_URL = "https://firebasestorage.googleapis.com/v0/b/inmueble-advisor-app.firebasestorage.app/o/Institucional%2FLogo%20blanco%20con%20amarillo.png?alt=media";
+const LOGO_LIGHT_URL = "https://firebasestorage.googleapis.com/v0/b/inmueble-advisor-app.firebasestorage.app/o/Institucional%2FLogo%20InmuebleAdvisor%20en%20fondo%20Azul.png?alt=media";
 
 // --- ICONOS SVG ---
 const MenuIcons = {
@@ -21,6 +24,7 @@ const MenuIcons = {
 export default function Layout() {
   // ✅ Obtenemos logout, userProfile, user y userSelectedCity
   const { userProfile, user, logout, selectedCity, updateSelectedCity, loginWithGoogle } = useUser();
+  const { theme } = useTheme();
   // Obtenemos el ID de favoritos (para el badge en el paso anterior)
   const { favoritosIds } = useFavorites();
   const location = useLocation();
@@ -64,7 +68,11 @@ export default function Layout() {
 
           {/* LOGOTIPO */}
           <Link to="/" style={styles.logoContainer} onClick={() => setIsMenuOpen(false)}>
-            <img src={LOGO_URL} alt="Inmueble Advisor" style={styles.logoImage} />
+            <img
+              src={theme === 'light' ? LOGO_LIGHT_URL : LOGO_DARK_URL}
+              alt="Inmueble Advisor"
+              style={styles.logoImage}
+            />
           </Link>
 
           {/* ⭐ BOTÓN CAMBIAR CIUDAD (Movido al Header para visibilidad móvil) */}
@@ -174,6 +182,8 @@ export default function Layout() {
           ) : (
             <Link to="/soy-asesor" style={styles.footerLinkAnchor}>Quiero ser Asesor</Link>
           )}
+          <span style={styles.footerSeparator}>|</span>
+          <ThemeToggle />
         </div>
 
         <div style={styles.copyText}>
@@ -196,13 +206,13 @@ const styles = {
     backgroundColor: 'var(--bg-main)'
   },
   header: {
-    backgroundColor: 'var(--bg-secondary)', // Now cards/header share the secondary dark bg
+    backgroundColor: 'var(--bg-header)', // Use dynamic header bg
     color: 'var(--text-main)',
     boxShadow: '0 4px 12px rgba(0,0,0,0.3)', // Darker shadow
     position: 'sticky',
     top: 0,
     zIndex: 1000,
-    borderBottom: '1px solid rgba(255,255,255,0.05)'
+    borderBottom: '1px solid var(--border-subtle)'
   },
   headerContent: {
     maxWidth: '1200px',
@@ -229,10 +239,10 @@ const styles = {
   },
 
   changeCityBtn: {
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.1)',
+    background: 'var(--bg-glass)',
+    border: '1px solid var(--border-strong)',
     borderRadius: '20px',
-    color: 'var(--text-main)',
+    color: 'white',
     padding: '6px 14px',
     fontSize: '0.85rem',
     cursor: 'pointer',
@@ -282,7 +292,7 @@ const styles = {
     padding: '40px 20px',
     textAlign: 'center',
     marginTop: 'auto',
-    borderTop: '1px solid rgba(255,255,255,0.05)'
+    borderTop: '1px solid var(--border-subtle)'
   },
   footerLinks: {
     display: 'flex',

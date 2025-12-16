@@ -59,6 +59,11 @@
         0 2px 4px -1px rgba(245, 158, 11, 0.1);
 }
 
+[data-theme='light'] .btn-primary {
+    background: var(--primary-color);
+    box-shadow: none;
+}
+
 .btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.4),
@@ -78,9 +83,9 @@
 }
 
 .btn-secondary:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: var(--bg-glass);
     border-color: var(--text-main);
-    color: var(--white);
+    color: var(--text-main);
 }
 
 /* Ghost / Text Only */
