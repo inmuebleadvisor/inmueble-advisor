@@ -1,33 +1,56 @@
 @import './styles/buttons.css';
 @import './styles/cards.css';
 @import './styles/Header.css';
+/* Will be deprecated/merged into Layout.css eventually, but keeping for now */
+@import './styles/Layout.css';
+
+/* 
+   ==========================================================================
+   🎨 CONFIGURACIÓN GLOBAL DE COLORES (CENTRALIZADA)
+   ==========================================================================
+   Modifique estos valores para afectar toda la aplicación.
+*/
+:root {
+  /* 
+     Color Primario: Acciones principales, botones, destacados.
+     Nota: Se definen dos variantes para contraste visual.
+  */
+  --base-primary-light: #dcb23a;
+  /* Bronze/Dark Gold - Para MODO CLARO (Texto legible sobre blanco) */
+  --base-primary-dark: #f59e0b;
+  /* Bright Gold - Para MODO OSCURO (Brillante sobre fondo oscuro) */
+
+  /* Color de Acento/Marca: Usado en enlaces, info y headers */
+  --base-brand-blue: #0f172a;
+  /* Dark Slate/Black - Marca Secundaria */
+  --base-accent-blue: #0284c7;
+  /* Azul Brillante - Enlaces/Highlights */
+}
 
 /* --- DARK PREMIUM THEME VARIABLES (DEFAULT) --- */
 :root {
   color-scheme: dark;
-  /* Colors */
-  --bg-main: #0f172a;
-  /* Dark Slate - Main Background */
-  --bg-secondary: #1e293b;
-  /* Slightly lighter - Cards/Nav */
-  --bg-tertiary: #334155;
-  /* Inputs/Borders */
 
-  --primary-color: #f59e0b;
-  /* Gold/Amber - Primary Action/Highlight */
+  /* --- ASIGNACIÓN DE COLORES BASE --- */
+  --primary-color: var(--base-primary-dark);
   --primary-hover: #d97706;
+  /* Ligeramente más oscuro que el base dark */
 
   --text-main: #f8fafc;
-  /* White/Off-white */
-  --text-secondary: #94a3b8;
-  /* Muted Blue-Grey */
+  --text-secondary: #cbd5e1;
   --text-inverse: #0f172a;
-  /* Dark text for buttons */
 
   --accent-blue: #3b82f6;
-  /* For links or info states */
   --success: #10b981;
   --error: #ef4444;
+
+  /* Fondos */
+  --bg-main: #0f172a;
+  /* Dark Slate */
+  --bg-secondary: #1e293b;
+  /* Slightly lighter */
+  --bg-tertiary: #334155;
+  /* Inputs/Borders */
 
   /* Typography */
   --font-main: 'Outfit', 'Inter', system-ui, sans-serif;
@@ -38,8 +61,9 @@
   --radius-lg: 24px;
 
   /* Borders */
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --border-strong: rgba(255, 255, 255, 0.1);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  /* Increased visibility slightly */
+  --border-strong: rgba(255, 255, 255, 0.15);
 
   /* Glass Effects */
   --bg-glass: rgba(255, 255, 255, 0.05);
@@ -47,7 +71,9 @@
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+  /* Sombra Glow usa RGB manual para transparencia, se mantiene aproximado al primary dark */
   --shadow-glow: 0 0 15px rgba(245, 158, 11, 0.15);
+
   /* Component Specific */
   --bg-modal: transparent;
   --bg-input: #1e293b;
@@ -55,38 +81,31 @@
   --bg-search: var(--bg-secondary);
   --bg-filter: var(--bg-tertiary);
   --bg-card-price: transparent;
-
-  /* Soft gold glow */
 }
 
 /* --- LIGHT THEME VARIABLES --- */
 [data-theme='light'] {
   color-scheme: light;
-  /* Colors */
-  --bg-main: #f8fafc;
-  /* Lighter Slate for content */
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #cbd5e1;
 
-  --primary-color: #dcb23a;
-  /* Gold - User specified secondary but implies button color */
-  --primary-hover: #b45309;
+  /* --- ASIGNACIÓN DE COLORES BASE --- */
+  /* Usamos la versión "Dark Gold" para que el texto se lea bien sobre blanco */
+  --primary-color: var(--base-primary-light);
+  --primary-hover: #92400e;
 
-  --brand-blue: #00396a;
-  /* User specified Primary */
-
-  --text-main: #00396a;
-  /* Use Brand Blue for main text/headers? Or keep dark slate? Let's use Brand Blue as it's "Primary" */
+  --text-main: var(--base-brand-blue);
   --text-secondary: #475569;
   --text-inverse: #ffffff;
-  /* White text on Gold/Blue */
 
-  --accent-blue: #00396a;
-  /* Slightly darker blue for contrast */
+  --accent-blue: var(--base-accent-blue);
+
+  /* Fondos */
+  --bg-main: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e2e8f0;
 
   /* Borders */
-  --border-subtle: rgba(0, 0, 0, 0.05);
-  --border-strong: rgba(0, 0, 0, 0.1);
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.15);
 
   /* Glass Effects */
   --bg-glass: rgba(0, 0, 0, 0.05);
@@ -94,22 +113,17 @@
   /* Component Specific */
   --bg-modal: #ffffff;
   --bg-input: #ffffff;
-
-  --bg-header: #00396a;
-  /* User specified header bg */
+  --bg-header: #ffffff;
   --bg-search: #ffffff;
-  /* User specified: filter bar bg starts white */
   --bg-filter: #ffffff;
-  /* User specified: filter bar bg starts white */
   --bg-card-price: #eff6ff;
-  /* User specified card price bg */
-  --bg-input-search: #eff6ff;
-  /* New variable for search input specifically */
+  --bg-input-search: #f1f5f9;
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  --shadow-glow: 0 0 15px rgba(245, 158, 11, 0.25);
+  /* Sombra Glow ajustada */
+  --shadow-glow: 0 0 15px rgba(180, 83, 9, 0.25);
 }
 
 /* --- GLOBAL RESET & BASE STYLES --- */

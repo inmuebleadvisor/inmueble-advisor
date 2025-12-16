@@ -1,0 +1,223 @@
+/* src/styles/Layout.css */
+
+/* --- Layout Container --- */
+.layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--bg-main);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* --- Header --- */
+.header {
+    background-color: var(--bg-header);
+    color: var(--text-main);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid var(--border-subtle);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+[data-theme='dark'] .header {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.header__content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header__logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    z-index: 1010;
+}
+
+.header__logo-img {
+    height: 48px;
+    width: auto;
+    object-fit: contain;
+    transition: transform 0.2sease;
+}
+
+.header__logo-img:hover {
+    transform: scale(1.02);
+}
+
+/* --- Navigation --- */
+.nav {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+/* Nav Link generic style */
+.nav__link {
+    color: var(--text-main);
+    /* Default text color, overriden by specific logic if needed */
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 400;
+    opacity: 0.85;
+    transition: all 0.2s ease;
+    border-bottom: 3px solid transparent;
+    padding-bottom: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: inherit;
+}
+
+.nav__link:hover {
+    opacity: 1;
+    color: var(--primary-color);
+}
+
+.nav__link--active {
+    font-weight: 700;
+    border-bottom-color: var(--primary-color);
+    opacity: 1;
+    color: var(--primary-color);
+}
+
+/* Specific button styles within nav */
+.nav__btn-city {
+    background: var(--bg-glass);
+    border: 1px solid var(--border-strong);
+    border-radius: 20px;
+    color: var(--text-main);
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin: 0 5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.nav__btn-city:hover {
+    background-color: var(--bg-tertiary);
+    border-color: var(--primary-color);
+}
+
+.nav__badge {
+    background-color: var(--primary-color);
+    color: var(--text-inverse);
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 10px;
+    line-height: 1;
+    margin-left: 4px;
+}
+
+/* --- Footer --- */
+.footer {
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+    padding: 40px 20px;
+    text-align: center;
+    margin-top: auto;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.footer__links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+}
+
+.footer__link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.footer__link:hover {
+    color: var(--primary-color);
+}
+
+.footer__link--highlight {
+    font-weight: bold;
+}
+
+.footer__separator {
+    color: var(--bg-tertiary);
+}
+
+.footer__copy {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+/* --- Mobile Menu Toggle --- */
+.menu-toggle-btn {
+    display: none;
+    /* Desktop default */
+    background: none;
+    border: none;
+    color: var(--text-main);
+    cursor: pointer;
+    padding: 4px;
+    z-index: 1100;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .menu-toggle-btn {
+        display: block;
+    }
+
+    .nav {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        width: 100%;
+        height: calc(100vh - 70px);
+        background-color: var(--bg-secondary);
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding-top: 40px;
+        gap: 20px;
+        transform: translateX(100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1050;
+        border-top: 1px solid var(--border-subtle);
+    }
+
+    .nav.is-open {
+        transform: translateX(0);
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
+    }
+
+    .nav__link {
+        font-size: 1.2rem;
+        width: 100%;
+        justify-content: center;
+        padding: 12px 0;
+    }
+
+    .header__content {
+        padding: 0 16px;
+    }
+}

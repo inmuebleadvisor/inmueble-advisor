@@ -168,6 +168,8 @@ export const adaptModelo = (row) => {
     if (row.cajones) out.cajones = row.cajones;
     if (row.m2_const || row.m2) out.m2 = row.m2_const || row.m2;
     if (row.m2_terreno || row.terreno) out.terreno = row.m2_terreno || row.terreno;
+    if (row.frente) out.frente = row.frente;
+    if (row.fondo) out.fondo = row.fondo;
     if (row.amenidades) out.amenidades = row.amenidades;
 
     // 5. Acabados

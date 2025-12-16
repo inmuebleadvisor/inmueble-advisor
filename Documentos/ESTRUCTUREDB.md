@@ -75,6 +75,8 @@ Representa un tipo específico de unidad dentro de un desarrollo.
 | **tipoVivienda** | `string` | Simple | Categoría (ej. "Casas", "Departamentos"). |
 | **m2** | `number` | Simple | Metros cuadrados de construcción. |
 | **terreno** | `number` | Simple | Metros cuadrados de terreno. |
+| **frente** | `number` | Simple | Medida del frente del terreno (mts). |
+| **fondo** | `number` | Simple | Medida del fondo del terreno (mts). |
 | **recamaras** | `number` | Simple | Cantidad de recámaras. |
 | **banos** | `number` | Simple | Cantidad de baños completos. |
 | **niveles** | `number` | Simple | Número de pisos de la vivienda. |

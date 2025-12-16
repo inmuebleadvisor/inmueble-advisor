@@ -38,40 +38,30 @@ export default function Layout() {
   const toggleMenu = () => setIsMenuOpen(prev => !prev);
 
   // Helper de estilos para enlaces activos
-  const getLinkStyle = (path) => {
+  const getLinkClassName = (path) => {
     const isActive = path === '/'
       ? location.pathname === '/'
       : location.pathname.startsWith(path);
 
-    return {
-      color: 'white',
-      textDecoration: 'none',
-      fontWeight: isActive ? '700' : '400',
-      borderBottom: isActive ? '3px solid #fbbf24' : '3px solid transparent', // Línea dorada activa
-      paddingBottom: '4px',
-      opacity: isActive ? 1 : 0.85,
-      fontSize: '0.95rem',
-      transition: 'all 0.2s ease',
-      display: 'block'
-    };
+    return `nav__link ${isActive ? 'nav__link--active' : ''}`;
   };
 
   // Define si el usuario es un asesor O ADMIN (para ver dashboard ventas)
   const isAsesor = userProfile?.role === 'asesor' || userProfile?.role === 'admin';
 
   return (
-    <div style={styles.layoutContainer}>
+    <div className="layout">
 
       {/* --- HEADER --- */}
-      <header style={styles.header}>
-        <div style={styles.headerContent}>
+      <header className="header">
+        <div className="header__content">
 
           {/* LOGOTIPO */}
-          <Link to="/" style={styles.logoContainer} onClick={() => setIsMenuOpen(false)}>
+          <Link to="/" className="header__logo-link" onClick={() => setIsMenuOpen(false)}>
             <img
               src={theme === 'light' ? LOGO_LIGHT_URL : LOGO_DARK_URL}
               alt="Inmueble Advisor"
-              style={styles.logoImage}
+              className="header__logo-img"
             />
           </Link>
 
@@ -82,7 +72,7 @@ export default function Layout() {
                 updateSelectedCity(null); // Resetea para mostrar modal
                 setIsMenuOpen(false);
               }}
-              style={styles.changeCityBtn}
+              className="nav__btn-city"
             >
               📍 {selectedCity}
             </button>
@@ -94,42 +84,41 @@ export default function Layout() {
           </button>
 
           {/* MENÚ DE NAVEGACIÓN */}
-          <nav
-            className={`nav-menu ${isMenuOpen ? 'is-open' : ''}`}
-            style={styles.nav}
-          >
+          <nav className={`nav ${isMenuOpen ? 'is-open' : ''}`}>
             {/* 1. CATÁLOGO */}
-            <Link to="/catalogo" style={getLinkStyle('/catalogo')}>Catálogo</Link>
+            <Link to="/catalogo" className={getLinkClassName('/catalogo')}>Catálogo</Link>
 
             {/* 2. MAPA */}
-            <Link to="/mapa" style={getLinkStyle('/mapa')}>Mapa</Link>
+            <Link to="/mapa" className={getLinkClassName('/mapa')}>Mapa</Link>
 
             {/* 3. FAVORITOS */}
             <Link
               to="/favoritos"
-              style={getLinkStyle('/favoritos')}
+              className={getLinkClassName('/favoritos')}
             >
-              <span style={styles.linkWithBadge}>
-                Favoritos
-
-              </span>
+              Favoritos
+              {favoritosIds.length > 0 && (
+                <span className="nav__badge">
+                  {favoritosIds.length}
+                </span>
+              )}
             </Link>
 
             {/* 4. PERFILADO */}
-            <Link to="/onboarding-cliente" style={getLinkStyle('/onboarding-cliente')}>Perfilado</Link>
+            <Link to="/onboarding-cliente" className={getLinkClassName('/onboarding-cliente')}>Perfilado</Link>
 
             {/* 5. OPCIÓN CONDICIONAL: Mis Leads (Asesor) o Soy Asesor (Público/Cliente) */}
             {isAsesor ? (
               <Link
                 to="/account-asesor"
-                style={getLinkStyle('/account-asesor')}
+                className={getLinkClassName('/account-asesor')}
               >
                 Mis Leads
               </Link>
             ) : (
               <Link
                 to="/soy-asesor"
-                style={getLinkStyle('/soy-asesor')}
+                className={getLinkClassName('/soy-asesor')}
               >
                 Soy asesor
               </Link>
@@ -139,20 +128,14 @@ export default function Layout() {
             {user ? (
               <button
                 onClick={logout}
-                style={styles.navLinkButton}
-                className="nav-link-btn"
-                onMouseEnter={(e) => e.target.style.opacity = '1'}
-                onMouseLeave={(e) => e.target.style.opacity = '0.85'}
+                className="nav__link"
               >
                 Cerrar Sesión ({userProfile?.nombre?.split(' ')[0] || 'Usuario'})
               </button>
             ) : (
               <button
                 onClick={loginWithGoogle}
-                style={styles.navLinkButton}
-                className="nav-link-btn"
-                onMouseEnter={(e) => e.target.style.opacity = '1'}
-                onMouseLeave={(e) => e.target.style.opacity = '0.85'}
+                className="nav__link"
               >
                 Iniciar Sesión
               </button>
@@ -169,24 +152,24 @@ export default function Layout() {
       </main>
 
       {/* --- FOOTER --- */}
-      <footer style={styles.footer}>
-        <div style={styles.footerLinks}>
-          <span style={styles.footerLink}>Términos y Condiciones</span>
-          <span style={styles.footerSeparator}>|</span>
-          <span style={styles.footerLink}>Aviso de Privacidad</span>
-          <span style={styles.footerSeparator}>|</span>
+      <footer className="footer">
+        <div className="footer__links">
+          <span className="footer__link">Términos y Condiciones</span>
+          <span className="footer__separator">|</span>
+          <span className="footer__link">Aviso de Privacidad</span>
+          <span className="footer__separator">|</span>
 
           {/* Enlace de Asesor en footer dual */}
           {isAsesor ? (
-            <Link to="/account-asesor" style={styles.footerLinkAnchor}>Panel Asesor</Link>
+            <Link to="/account-asesor" className="footer__link footer__link--highlight">Panel Asesor</Link>
           ) : (
-            <Link to="/soy-asesor" style={styles.footerLinkAnchor}>Quiero ser Asesor</Link>
+            <Link to="/soy-asesor" className="footer__link footer__link--highlight">Quiero ser Asesor</Link>
           )}
-          <span style={styles.footerSeparator}>|</span>
+          <span className="footer__separator">|</span>
           <ThemeToggle />
         </div>
 
-        <div style={styles.copyText}>
+        <div className="footer__copy">
           © {new Date().getFullYear()} Inmueble Advisor. Tecnología inmobiliaria inteligente.
         </div>
       </footer>
@@ -196,130 +179,3 @@ export default function Layout() {
     </div>
   );
 }
-
-// --- ESTILOS CSS-IN-JS ---
-const styles = {
-  layoutContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: '100vh',
-    backgroundColor: 'var(--bg-main)'
-  },
-  header: {
-    backgroundColor: 'var(--bg-header)', // Use dynamic header bg
-    color: 'var(--text-main)',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.3)', // Darker shadow
-    position: 'sticky',
-    top: 0,
-    zIndex: 1000,
-    borderBottom: '1px solid var(--border-subtle)'
-  },
-  headerContent: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '0 20px',
-    height: '70px', // Slightly taller for premium feel
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  logoContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    textDecoration: 'none',
-    zIndex: 1010
-  },
-  logoImage: {
-    height: '54px',
-    width: 'auto',
-    objectFit: 'contain'
-  },
-  nav: {
-    // La clase .nav-menu en index.css maneja el responsive (flex row vs column)
-  },
-
-  changeCityBtn: {
-    background: 'var(--bg-glass)',
-    border: '1px solid var(--border-strong)',
-    borderRadius: '20px',
-    color: 'white',
-    padding: '6px 14px',
-    fontSize: '0.85rem',
-    cursor: 'pointer',
-    margin: '0 5px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    transition: 'all 0.2s',
-  },
-
-  // ⭐ ESTILO GENÉRICO PARA BOTONES TIPO LINK (Nav)
-  navLinkButton: {
-    background: 'none',
-    border: 'none',
-    color: 'white',
-    padding: '0',
-    fontSize: '0.95rem',
-    fontWeight: '400',
-    cursor: 'pointer',
-    textAlign: 'center',
-    transition: 'opacity 0.2s',
-    opacity: 0.85,
-    fontFamily: 'inherit',
-    borderBottom: '3px solid transparent',
-    paddingBottom: '4px'
-  },
-
-  linkWithBadge: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    justifyContent: 'center' // Centra el contenido (texto + badge)
-  },
-  favoriteBadge: {
-    backgroundColor: 'var(--primary-color)',
-    color: 'var(--text-inverse)',
-    fontSize: '0.75rem',
-    fontWeight: '800',
-    padding: '2px 8px',
-    borderRadius: '10px',
-    lineHeight: 1,
-  },
-
-  footer: {
-    backgroundColor: 'var(--bg-secondary)',
-    color: 'var(--text-secondary)',
-    padding: '40px 20px',
-    textAlign: 'center',
-    marginTop: 'auto',
-    borderTop: '1px solid var(--border-subtle)'
-  },
-  footerLinks: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: '15px',
-    marginBottom: '20px',
-    fontSize: '0.85rem',
-    flexWrap: 'wrap'
-  },
-  footerLink: {
-    cursor: 'pointer',
-    transition: 'color 0.2s',
-  },
-  footerLinkAnchor: {
-    color: 'var(--text-secondary)',
-    textDecoration: 'none',
-    cursor: 'pointer',
-    transition: 'color 0.2s',
-    fontWeight: 'bold'
-  },
-  footerSeparator: {
-    color: 'var(--bg-tertiary)'
-  },
-  copyText: {
-    fontSize: '0.8rem',
-    color: 'var(--text-secondary)',
-    opacity: 0.8
-  }
-};

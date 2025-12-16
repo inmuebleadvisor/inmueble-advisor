@@ -247,7 +247,7 @@ const styles = {
   inputSearch: { width: '100%', padding: '12px 15px', borderRadius: '12px', border: '1px solid #d1d5db', fontSize: '1rem', outline: 'none', backgroundColor: '#f9fafb', transition: 'all 0.2s' },
   listContainer: { flex: 1, overflowY: 'auto', padding: '15px 20px' },
   itemRow: { padding: '12px 15px', border: '1px solid', borderRadius: '12px', marginBottom: '10px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'transform 0.1s' },
-  noticeBar: { backgroundColor: '#fffbeb', color: '#b45309', fontSize: '0.75rem', padding: '8px', textAlign: 'center', borderTop: '1px solid #fcd34d' },
+  noticeBar: { backgroundColor: '#fffbeb', color: 'var(--primary-color)', fontSize: '0.75rem', padding: '8px', textAlign: 'center', borderTop: '1px solid var(--primary-color)' },
   footer: { padding: '20px', borderTop: '1px solid #f3f4f6', display: 'flex', gap: '15px', backgroundColor: 'white' },
   btnPrimary: { flex: 1, padding: '16px', backgroundColor: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' },
   btnSecondary: { padding: '16px 24px', backgroundColor: 'white', color: '#374151', border: '1px solid #d1d5db', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }

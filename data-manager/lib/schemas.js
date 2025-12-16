@@ -154,9 +154,12 @@ export const ModeloSchema = z.object({
     tipoVivienda: z.string().default('Casas'),
 
     // Specs
-    m2: z.preprocess(parseNumber, z.number().optional()),
-    terreno: z.preprocess(parseNumber, z.number().optional()),
-    recamaras: z.preprocess(parseNumber, z.number().optional()),
+    m2: z.preprocess(parseNumber, z.number().default(0)),
+    terreno: z.preprocess(parseNumber, z.number().default(0)),
+    frente: z.preprocess(parseNumber, z.number().optional()),
+    fondo: z.preprocess(parseNumber, z.number().optional()),
+
+    recamaras: z.preprocess(parseNumber, z.number().default(0)),
     banos: z.preprocess(parseNumber, z.number().optional()),
     niveles: z.preprocess(parseNumber, z.number().optional()),
     cajones: z.preprocess(parseNumber, z.number().optional()),

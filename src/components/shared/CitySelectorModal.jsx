@@ -16,6 +16,7 @@ const CitySelectorModal = () => {
         const fetchCiudades = async () => {
             try {
                 const lista = await obtenerCiudadesDisponibles();
+                console.log("🏙️ [CitySelector] Loaded Cities:", lista); // Log for debugging
                 setCiudades(lista);
                 if (lista.length > 0) {
                     setTempSelection(lista[0]); // Default first
@@ -40,7 +41,7 @@ const CitySelectorModal = () => {
 
     return (
         <div className="city-modal-overlay">
-            <div className="city-modal-content">
+            <div id="city-modal-content-override" className="city-modal-content">
                 <h2>Bienvenido a Inmueble Advisor</h2>
                 <p>Por favor, selecciona tu ciudad de interés para mostrarte las mejores opciones.</p>
 
@@ -49,9 +50,14 @@ const CitySelectorModal = () => {
                 ) : (
                     <div className="city-selector-container">
                         <select
+                            id="city-dropdown-override"
                             value={tempSelection || ''}
-                            onChange={(e) => setTempSelection(e.target.value)}
+                            onChange={(e) => {
+                                console.log("🏙️ [CitySelector] Selection changed:", e.target.value);
+                                setTempSelection(e.target.value);
+                            }}
                             className="city-dropdown"
+                            style={{ colorScheme: 'light', color: '#1e293b', backgroundColor: '#ffffff' }} // Inline override as failsafe
                         >
                             <option value="" disabled>Selecciona una ciudad</option>
                             {ciudades.map(c => (
