@@ -75,7 +75,7 @@ const styles = {
     },
     list: {
         listStyle: 'none',
-        padding: 0,
+
         margin: '0 0 25px 0',
         textAlign: 'left',
         backgroundColor: '#f8fafc',

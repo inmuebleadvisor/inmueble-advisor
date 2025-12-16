@@ -10,6 +10,7 @@ import WhatsAppButton from './common/WhatsAppButton/WhatsAppButton';
 import ThemeToggle from './shared/ThemeToggle';
 import { useTheme } from '../context/ThemeContext';
 
+
 // URL del Logotipo Oficial
 // URL del Logotipo Oficial
 const LOGO_DARK_URL = "https://firebasestorage.googleapis.com/v0/b/inmueble-advisor-app.firebasestorage.app/o/Institucional%2FLogo%20blanco%20con%20amarillo.png?alt=media";
@@ -51,6 +52,7 @@ export default function Layout() {
 
   return (
     <div className="layout">
+
 
       {/* --- HEADER --- */}
       <header className="header">

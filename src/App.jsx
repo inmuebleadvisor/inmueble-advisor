@@ -10,6 +10,8 @@ import { UserProvider } from './context/UserContext';
 import { CatalogProvider } from './context/CatalogContext';
 // ⭐ NUEVO: Contexto de Favoritos, necesario para la nueva funcionalidad
 import { FavoritesProvider } from './context/FavoritesContext';
+// ⭐ NUEVO: Configuración Global (Temas Estacionales)
+
 import { UI_OPCIONES } from './config/constants';
 
 // --- SEGURIDAD Y LAYOUT ---
@@ -42,6 +44,7 @@ function App() {
   // El orden de los Providers es estratégico. FavoritesProvider usa datos de User y Catalog.
   return (
     <UserProvider>
+
       <CatalogProvider>
         {/* ⭐ AÑADIMOS EL NUEVO PROVEEDOR AQUÍ */}
         <FavoritesProvider>
@@ -117,6 +120,7 @@ function App() {
           </BrowserRouter>
         </FavoritesProvider> {/* ⭐ CERRAMOS EL NUEVO PROVEEDOR */}
       </CatalogProvider>
+
     </UserProvider>
   );
 }

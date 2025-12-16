@@ -3,6 +3,9 @@ import '../styles/AdminDashboard.css';
 import { getAllDesarrollos, getAllLeads, getAllUsers, toggleAdvisorInventory, updateAdvisorMetrics } from '../services/admin.service';
 import { importData, parseCSV } from '../services/massImport.service';
 
+import { db } from '../firebase/config';
+
+
 const INITIAL_METRICS = {
     totalLeads: 0,
     totalUsers: 0,
@@ -30,6 +33,8 @@ const AdminDashboard = () => {
 
     // Debug Logs State
     const [debugLogs, setDebugLogs] = useState([]);
+
+
 
     // Initial Data Load
     useEffect(() => {
@@ -467,6 +472,9 @@ const AdminDashboard = () => {
                     </div>
                 </>
             )}
+
+
+            {/* --- CONTENT: TEMAS ESTACIONALES --- */}
 
 
             {/* --- CONTENT: MANTENIMIENTO --- */}
