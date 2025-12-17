@@ -75,7 +75,6 @@ export default function Perfil() {
 
         <div className="step-content">
           <h1 style={styles.title}>Bienvenido</h1>
-          <p style={styles.subtitle}>Selecciona tu perfil para comenzar:</p>
           <div style={styles.roleGrid}>
             <button onClick={() => handleRoleSelection('comprador')} style={styles.roleCard}>
               <div style={styles.roleIcon}>🏠</div>
@@ -106,12 +105,12 @@ export default function Perfil() {
 }
 
 const styles = {
-  container: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '85vh', width: '100%', padding: '20px', boxSizing: 'border-box' },
-  card: { backgroundColor: 'white', padding: '40px 30px', borderRadius: '25px', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', maxWidth: '500px', width: '100%', textAlign: 'center', position: 'relative', overflow: 'hidden', minHeight: '500px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }, // Adjusted justifyContent
+  container: { display: 'flex', justifyContent: 'center', alignItems: 'flex-start', height: '100%', width: '100%', padding: '20px', paddingTop: '10px', boxSizing: 'border-box' },
+  card: { backgroundColor: 'white', padding: '40px 30px', borderRadius: '25px', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', maxWidth: '500px', width: '100%', textAlign: 'center', position: 'relative', zIndex: 10, overflow: 'hidden', minHeight: '500px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }, // Adjusted justifyContent and Z-Index
   title: { color: 'var(--primary-color)', marginBottom: '10px', fontSize: '1.8rem', fontWeight: '800' },
   subtitle: { color: '#666', marginBottom: '30px', fontSize: '1rem', lineHeight: '1.5' },
   roleGrid: { display: 'flex', flexDirection: 'column', gap: '15px' },
-  roleCard: { display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px', backgroundColor: '#fff', border: '2px solid var(--primary-color)', borderRadius: '16px', cursor: 'pointer', transition: 'transform 0.2s, background-color 0.2s', textAlign: 'center' },
+  roleCard: { display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '12px', backgroundColor: '#fff', border: '2px solid var(--primary-color)', borderRadius: '16px', cursor: 'pointer', transition: 'transform 0.2s, background-color 0.2s', textAlign: 'center' },
   roleIcon: { fontSize: '2.5rem', marginBottom: '10px' },
   roleTitle: { margin: '0 0 5px 0', fontSize: '1.2rem', fontWeight: 'bold', color: '#333' },
   roleDesc: { margin: 0, fontSize: '0.9rem', color: '#666' },

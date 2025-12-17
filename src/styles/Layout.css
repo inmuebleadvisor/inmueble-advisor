@@ -224,3 +224,30 @@
         padding: 0 16px;
     }
 }
+
+/* --- Viewport Fit (Home Page - Decoupled) --- */
+.layout--viewport-fit {
+    height: 100dvh;
+    overflow: hidden;
+}
+
+/* Ensure the main content expands to fill the available space */
+.layout--viewport-fit .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* Optional: Reset padding if needed for full control by children */
+    /* padding: 0; */
+}
+
+/* Ensure seasonal footer sits at the bottom without taking up flow space in viewport-fit mode */
+.layout--viewport-fit .seasonal-theme__footer-wrapper {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    margin-top: 0;
+    z-index: 20;
+    /* Behind main content if possible, or just non-blocking */
+}

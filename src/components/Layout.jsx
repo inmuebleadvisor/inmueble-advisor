@@ -42,8 +42,11 @@ export default function Layout() {
   // Define si el usuario es un asesor O ADMIN (para ver dashboard ventas)
   const isAsesor = userProfile?.role === 'asesor' || userProfile?.role === 'admin';
 
+  // Detectar si estamos en la Home para ajustar el layout (100dvh, sin scroll)
+  const isHome = location.pathname === '/';
+
   return (
-    <div className="layout">
+    <div className={`layout ${isHome ? 'layout--viewport-fit' : ''}`}>
 
 
       {/* --- HEADER --- */}
@@ -146,28 +149,35 @@ export default function Layout() {
       </main>
 
       {/* --- FOOTER --- */}
+      {/* --- SEASONAL THEME (Visible en todas las páginas) --- */}
       <SeasonalTheme />
-      <footer className="footer">
-        <div className="footer__links">
-          <span className="footer__link">Términos y Condiciones</span>
-          <span className="footer__separator">|</span>
-          <span className="footer__link">Aviso de Privacidad</span>
-          <span className="footer__separator">|</span>
 
-          {/* Enlace de Asesor en footer dual */}
-          {isAsesor ? (
-            <Link to="/account-asesor" className="footer__link footer__link--highlight">Panel Asesor</Link>
-          ) : (
-            <Link to="/soy-asesor" className="footer__link footer__link--highlight">Quiero ser Asesor</Link>
-          )}
-          <span className="footer__separator">|</span>
-          <ThemeToggle />
-        </div>
+      {/* --- FOOTER (Oculto en Home si es viewport-fit) --- */}
+      {!isHome && (
+        <>
+          <footer className="footer">
+            <div className="footer__links">
+              <span className="footer__link">Términos y Condiciones</span>
+              <span className="footer__separator">|</span>
+              <span className="footer__link">Aviso de Privacidad</span>
+              <span className="footer__separator">|</span>
 
-        <div className="footer__copy">
-          © {new Date().getFullYear()} Inmueble Advisor. Tecnología inmobiliaria inteligente.
-        </div>
-      </footer>
+              {/* Enlace de Asesor en footer dual */}
+              {isAsesor ? (
+                <Link to="/account-asesor" className="footer__link footer__link--highlight">Panel Asesor</Link>
+              ) : (
+                <Link to="/soy-asesor" className="footer__link footer__link--highlight">Quiero ser Asesor</Link>
+              )}
+              <span className="footer__separator">|</span>
+              <ThemeToggle />
+            </div>
+
+            <div className="footer__copy">
+              © {new Date().getFullYear()} Inmueble Advisor. Tecnología inmobiliaria inteligente.
+            </div>
+          </footer>
+        </>
+      )}
 
       <WhatsAppButton />
 
