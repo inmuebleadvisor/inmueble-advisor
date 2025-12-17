@@ -1,26 +1,13 @@
 // src/components/Layout.jsx
-// ÚLTIMA MODIFICACION: 01/12/2025
+// AUDIO: Refactored to use centralized ThemeContext assets
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-// ✅ Importamos contexto y la función logout
 import { useUser } from '../context/UserContext';
-// Importamos el hook de Favoritos para el contador
 import { useFavorites } from '../context/FavoritesContext';
 import WhatsAppButton from './common/WhatsAppButton/WhatsAppButton';
 import ThemeToggle from './shared/ThemeToggle';
 import { useTheme } from '../context/ThemeContext';
 import SeasonalTheme from './SeasonalTheme';
-
-
-// URL del Logotipo Oficial
-// URL del Logotipo Oficial
-// URL del Logotipo Oficial
-const LOGO_DARK_URL = "https://firebasestorage.googleapis.com/v0/b/inmueble-advisor-app.firebasestorage.app/o/Institucional%2FLogo%20blanco%20con%20amarillo.png?alt=media";
-const LOGO_LIGHT_URL = "https://firebasestorage.googleapis.com/v0/b/inmueble-advisor-app.firebasestorage.app/o/Institucional%2FLogo%20InmuebleAdvisor%20en%20fondo%20Azul.png?alt=media";
-
-// URL del Logotipo Temático (Navidad)
-const SEASONAL_LOGO_DARK_URL = "https://firebasestorage.googleapis.com/v0/b/inmueble-advisor-app.firebasestorage.app/o/Institucional%2Ftematico%2FLogo%20Inmueble%20Advisor%20Navide%C3%B1o.png?alt=media";
-const SEASONAL_LOGO_LIGHT_URL = "https://firebasestorage.googleapis.com/v0/b/inmueble-advisor-app.firebasestorage.app/o/Institucional%2Ftematico%2FLogo%20Navide%C3%B1o%20Modo%20Claro.png?alt=media";
 
 // --- ICONOS SVG ---
 const MenuIcons = {
@@ -29,10 +16,9 @@ const MenuIcons = {
 };
 
 export default function Layout() {
-  // ✅ Obtenemos logout, userProfile, user y userSelectedCity
   const { userProfile, user, logout, selectedCity, updateSelectedCity, loginWithGoogle } = useUser();
-  const { theme, seasonalEnabled } = useTheme();
-  // Obtenemos el ID de favoritos (para el badge en el paso anterior)
+  // CONSUME NEW CONTEXT PROPS: currentAssets
+  const { currentAssets } = useTheme();
   const { favoritosIds } = useFavorites();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -56,14 +42,6 @@ export default function Layout() {
   // Define si el usuario es un asesor O ADMIN (para ver dashboard ventas)
   const isAsesor = userProfile?.role === 'asesor' || userProfile?.role === 'admin';
 
-  // Logic identifying correct logo
-  const getLogoSrc = () => {
-    if (seasonalEnabled) {
-      return theme === 'light' ? SEASONAL_LOGO_LIGHT_URL : SEASONAL_LOGO_DARK_URL;
-    }
-    return theme === 'light' ? LOGO_LIGHT_URL : LOGO_DARK_URL;
-  };
-
   return (
     <div className="layout">
 
@@ -75,7 +53,7 @@ export default function Layout() {
           {/* LOGOTIPO */}
           <Link to="/" className="header__logo-link" onClick={() => setIsMenuOpen(false)}>
             <img
-              src={getLogoSrc()}
+              src={currentAssets.logo}
               alt="Inmueble Advisor"
               className="header__logo-img"
             />

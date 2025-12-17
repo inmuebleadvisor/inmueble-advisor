@@ -29,7 +29,7 @@ const AdminDashboard = () => {
     const [desarrollos, setDesarrollos] = useState([]);
     const [metrics, setMetrics] = useState(INITIAL_METRICS);
 
-    const { seasonalEnabled, toggleSeasonal } = useTheme();
+    const { currentSeason } = useTheme();
 
     // Estado local para edición de métricas manuales { [uid]: { puntosEncuestas: 30, ... } }
     const [editableMetrics, setEditableMetrics] = useState({});
@@ -490,24 +490,19 @@ const AdminDashboard = () => {
                     <div className="admin-kpi-card" style={{ maxWidth: '400px', margin: '0' }}>
                         <div className="admin-kpi-card__title">Temática Estacional</div>
                         <div className="admin-kpi-card__sub" style={{ marginBottom: '10px' }}>
-                            Activa o desactiva la nieve y decoraciones navideñas en todo el sitio.
+                            Estado actual de la temática (Controlado por Fecha y Configuración).
                         </div>
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                            <div className={`admin-tag ${seasonalEnabled ? 'admin-tag--green' : 'admin-tag--red'}`} style={{ fontSize: '1rem', padding: '5px 15px' }}>
-                                {seasonalEnabled ? 'ENCENDIDO' : 'APAGADO'}
+                            <div className={`admin-tag ${currentSeason ? 'admin-tag--green' : 'admin-tag--blue'}`} style={{ fontSize: '1rem', padding: '5px 15px' }}>
+                                {currentSeason ? `ACTIVO: ${currentSeason.name}` : 'NINGUNA'}
                             </div>
 
-                            <button
-                                onClick={toggleSeasonal}
-                                className="admin-btn-save"
-                                style={{
-                                    backgroundColor: seasonalEnabled ? '#dc2626' : '#16a34a',
-                                    color: 'white'
-                                }}
-                            >
-                                {seasonalEnabled ? 'Apagar Temática' : 'Encender Temática'}
-                            </button>
+                            {/* 
+                                NOTE: The toggle functionality has been moved to configuration-based logic 
+                                (src/config/theme.config.js) to comply with architecture standards. 
+                                To change seasons, update the config file or date ranges.
+                            */}
                         </div>
                     </div>
                 </div>
