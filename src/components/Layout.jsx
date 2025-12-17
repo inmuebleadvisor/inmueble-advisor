@@ -94,11 +94,7 @@ export default function Layout() {
               className={getLinkClassName('/favoritos')}
             >
               Favoritos
-              {favoritosIds.length > 0 && (
-                <span className="nav__badge">
-                  {favoritosIds.length}
-                </span>
-              )}
+
             </Link>
 
             {/* 4. PERFILADO */}

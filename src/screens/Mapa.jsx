@@ -158,7 +158,7 @@ export default function Mapa() {
   if (loading) {
     return (
       <div className="main-content" style={{ ...styles.pageContainer, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: '#6b7280' }}>Cargando mapa...</p>
+        <p style={{ color: 'var(--text-secondary)' }}>Cargando mapa...</p>
       </div>
     );
   }
@@ -240,7 +240,7 @@ export default function Mapa() {
           position: 'absolute',
           bottom: '20px',
           left: '20px',
-          backgroundColor: 'white',
+          backgroundColor: 'var(--bg-secondary)',
           padding: '10px 15px',
           borderRadius: '8px',
           boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
@@ -249,11 +249,12 @@ export default function Mapa() {
           alignItems: 'center',
           gap: '10px',
           fontSize: '0.85rem',
-          fontWeight: '500'
+          fontWeight: '500',
+          color: 'var(--text-secondary)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ width: '12px', height: '12px', backgroundColor: '#8B0000', borderRadius: '50%', display: 'inline-block' }}></span>
-            <span>En rojo donde tienes modelos favoritos</span>
+            <span>En rojo los Favoritos.</span>
           </div>
         </div>
       </div>
@@ -279,9 +280,9 @@ const styles = {
   subtitle: { color: 'var(--text-main)', margin: '2px 0 0 0', fontSize: '0.9rem' },
   mapContainer: { flex: 1, width: '100%', position: 'relative', zIndex: 1 },
   popupContent: { textAlign: 'center', width: '160px' },
-  popupImage: { width: '100%', height: '80px', objectFit: 'cover', borderRadius: '8px', marginBottom: '8px', backgroundColor: '#eee' },
-  popupTitle: { margin: '0 0 4px 0', fontSize: '0.95rem', fontWeight: 'bold', color: '#333' },
+  popupImage: { width: '100%', height: '80px', objectFit: 'cover', borderRadius: '8px', marginBottom: '8px', backgroundColor: 'var(--bg-main)' },
+  popupTitle: { margin: '0 0 4px 0', fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--text-main)' },
   popupPrice: { margin: '0 0 4px 0', fontSize: '0.9rem', fontWeight: '800', color: 'var(--primary-color)' },
-  popupLocation: { margin: '0 0 8px 0', fontSize: '0.8rem', color: '#666' },
-  popupButton: { display: 'block', backgroundColor: '#111', color: 'white', padding: '8px', borderRadius: '6px', textDecoration: 'none', fontSize: '0.8rem', fontWeight: 'bold' },
+  popupLocation: { margin: '0 0 8px 0', fontSize: '0.8rem', color: 'var(--text-secondary)' },
+  popupButton: { display: 'block', backgroundColor: 'var(--base-brand-blue)', color: 'white', padding: '8px', borderRadius: '6px', textDecoration: 'none', fontSize: '0.8rem', fontWeight: 'bold' },
 };

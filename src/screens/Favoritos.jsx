@@ -112,8 +112,8 @@ export default function Favoritos() {
         return (
             <div className="main-content" style={styles.emptyContainer}>
                 <div style={styles.emptyIcon}>💔</div>
-                <h2 style={{ color: '#1e293b' }}>Tu lista está vacía</h2>
-                <p style={{ color: '#64748b', maxWidth: '400px', margin: '10px auto' }}>
+                <h2 style={{ color: 'var(--text-main)' }}>Tu lista está vacía</h2>
+                <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', margin: '10px auto' }}>
                     Explora nuestro catálogo y guarda las propiedades que te interesen para compararlas aquí.
                 </p>
                 <Link to="/catalogo" style={styles.btnPrimary}>Ir al Catálogo</Link>
@@ -221,20 +221,20 @@ export default function Favoritos() {
                                 {
                                     label: 'Costo por m²', // 3.4 Nuevo cálculo
                                     val: (m) => m.m2 > 0 ? formatoMoneda(m.precioNumerico / m.m2) : 'N/A',
-                                    style: { fontSize: '0.85rem', color: '#64748b' }
+                                    style: { fontSize: '0.85rem', color: 'var(--text-secondary)' }
                                 },
                                 { label: 'Recámaras', val: (m) => m.recamaras },
                                 { label: 'Baños', val: (m) => m.banos },
                                 { label: 'Niveles', val: (m) => m.niveles || 1 },
                                 { label: 'Entrega', val: (m) => m.esPreventa ? 'Pre-Venta' : 'Inmediata', highlight: true },
                             ].map((row, idx) => (
-                                <tr key={idx} style={{ backgroundColor: idx % 2 === 0 ? 'white' : '#f8fafc' }}>
+                                <tr key={idx} style={{ backgroundColor: idx % 2 === 0 ? 'var(--bg-secondary)' : 'var(--bg-main)' }}>
                                     <td style={styles.stickyCol}>{row.label}</td>
                                     {propiedadesAComparar.map(item => (
                                         <td key={item.id} style={{
                                             ...styles.td,
                                             fontWeight: row.highlight ? 'bold' : 'normal',
-                                            color: row.highlight ? 'var(--primary-color)' : '#334155',
+                                            color: row.highlight ? 'var(--primary-color)' : 'var(--text-secondary)',
                                             ...(row.style || {}) // Custom styles merging
                                         }}>
                                             {row.isLink ? (
@@ -350,7 +350,7 @@ export default function Favoritos() {
                                     <div style={{
                                         ...styles.checkbox,
                                         backgroundColor: isSelected ? 'var(--primary-color)' : 'white',
-                                        borderColor: isSelected ? 'var(--primary-color)' : '#cbd5e1'
+                                        borderColor: isSelected ? 'var(--primary-color)' : 'var(--border-subtle)'
                                     }}>
                                         {isSelected && <Icons.Check />}
                                     </div>
@@ -427,13 +427,13 @@ export default function Favoritos() {
 const styles = {
     pageContainer: { paddingBottom: '120px', fontFamily: "'Segoe UI', sans-serif", position: 'relative', zIndex: 2 },
     header: { marginBottom: '20px' },
-    pageTitle: { fontSize: '1.8rem', fontWeight: '800', color: '#0f172a', margin: '0 0 5px 0' },
-    subtitle: { color: '#64748b', fontSize: '1rem' },
+    pageTitle: { fontSize: '1.8rem', fontWeight: '800', color: 'var(--text-main)', margin: '0 0 5px 0' },
+    subtitle: { color: 'var(--text-secondary)', fontSize: '1rem' },
 
     // Group Sections
     groupSection: { marginBottom: '40px' },
-    groupHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px', paddingBottom: '10px', borderBottom: '1px solid #e2e8f0' },
-    groupTitle: { fontSize: '1.4rem', fontWeight: '700', color: '#334155', margin: 0 },
+    groupHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px', paddingBottom: '10px', borderBottom: '1px solid var(--border-subtle)' },
+    groupTitle: { fontSize: '1.4rem', fontWeight: '700', color: 'var(--text-main)', margin: 0 },
     viewDevBtn: { background: 'none', border: 'none', color: 'var(--primary-color)', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem' },
 
     // Estado Vacío
@@ -446,23 +446,23 @@ const styles = {
         grid: { gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '25px' }
     },
 
-    card: { backgroundColor: 'white', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', position: 'relative', transition: 'all 0.2s ease', border: '2px solid transparent' },
+    card: { backgroundColor: 'var(--bg-secondary)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', position: 'relative', transition: 'all 0.2s ease', border: '2px solid transparent' },
     checkbox: { position: 'absolute', top: '10px', left: '10px', width: '24px', height: '24px', borderRadius: '6px', border: '2px solid', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' },
-    cardImgWrapper: { height: '140px', position: 'relative', backgroundColor: '#e2e8f0' },
+    cardImgWrapper: { height: '140px', position: 'relative', backgroundColor: 'var(--bg-main)' },
     cardImg: { width: '100%', height: '100%', objectFit: 'cover' },
 
-    cardTrashBtn: { position: 'absolute', top: '10px', right: '10px', width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.9)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#ef4444', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' },
+    cardTrashBtn: { position: 'absolute', top: '10px', right: '10px', width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--bg-secondary)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#ef4444', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' },
 
     cardPopupBtn: { position: 'absolute', bottom: '10px', right: '10px', width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(15, 23, 42, 0.9)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', boxShadow: '0 2px 4px rgba(0,0,0,0.2)', transition: 'transform 0.2s' },
 
     cardBody: { padding: '12px' },
-    cardTitle: { fontSize: '1rem', fontWeight: '700', margin: '0 0 2px 0', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+    cardTitle: { fontSize: '1rem', fontWeight: '700', margin: '0 0 2px 0', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
     // cardDev eliminado porque ahora agrupamos
     cardPrice: { fontSize: '1.1rem', fontWeight: '800', color: 'var(--primary-color)' },
-    cardSpecs: { fontSize: '0.8rem', color: '#64748b', marginTop: '4px' },
+    cardSpecs: { fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' },
 
     // Barra Flotante
-    floatingBar: { position: 'fixed', bottom: '20px', left: '20px', right: '20px', maxWidth: '600px', margin: '0 auto', backgroundColor: '#1e293b', borderRadius: '50px', padding: '12px 24px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', color: 'white', transition: 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)', zIndex: 100 },
+    floatingBar: { position: 'fixed', bottom: '20px', left: '20px', right: '20px', maxWidth: '600px', margin: '0 auto', backgroundColor: 'var(--base-brand-blue)', borderRadius: '50px', padding: '12px 24px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', color: 'white', transition: 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)', zIndex: 100 },
     floatingContent: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
     btnGhost: { background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontWeight: '600' },
     btnCompare: { backgroundColor: 'var(--primary-color)', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '30px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' },
@@ -472,23 +472,23 @@ const styles = {
     compareHeader: { marginBottom: '20px' },
     backLink: { background: 'none', border: 'none', color: 'var(--primary-color)', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem', marginBottom: '10px', padding: 0 },
 
-    tableWrapper: { overflowX: 'auto', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', backgroundColor: 'white' },
+    tableWrapper: { overflowX: 'auto', borderRadius: '12px', border: '1px solid var(--border-subtle)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', backgroundColor: 'var(--bg-secondary)' },
     table: { width: '100%', borderCollapse: 'separate', borderSpacing: 0, minWidth: '600px' },
 
     // Columnas Sticky (La primera columna se queda fija)
-    stickyColHeader: { position: 'sticky', left: 0, backgroundColor: '#f8fafc', zIndex: 20, padding: '15px', textAlign: 'left', borderBottom: '1px solid #e2e8f0', width: '120px', color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' },
-    stickyCol: { position: 'sticky', left: 0, backgroundColor: 'white', zIndex: 10, padding: '15px', textAlign: 'left', borderBottom: '1px solid #f1f5f9', fontWeight: '600', color: '#475569', fontSize: '0.9rem', borderRight: '1px solid #f1f5f9' },
+    stickyColHeader: { position: 'sticky', left: 0, backgroundColor: 'var(--bg-main)', zIndex: 20, padding: '15px', textAlign: 'left', borderBottom: '1px solid var(--border-subtle)', width: '120px', color: 'var(--text-secondary)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' },
+    stickyCol: { position: 'sticky', left: 0, backgroundColor: 'var(--bg-secondary)', zIndex: 10, padding: '15px', textAlign: 'left', borderBottom: '1px solid var(--border-subtle)', fontWeight: '600', color: 'var(--text-secondary)', fontSize: '0.9rem', borderRight: '1px solid var(--border-subtle)' },
 
-    thModel: { padding: '15px', borderBottom: '1px solid #e2e8f0', backgroundColor: '#fff', minWidth: '180px', verticalAlign: 'top' },
+    thModel: { padding: '15px', borderBottom: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-secondary)', minWidth: '180px', verticalAlign: 'top' },
     thContent: { display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' },
     thImgWrapper: { width: '100%', height: '100px', borderRadius: '8px', overflow: 'hidden', marginBottom: '10px', position: 'relative' },
     thImg: { width: '100%', height: '100%', objectFit: 'cover' },
     removeBtnTable: { position: 'absolute', top: '5px', right: '5px', width: '24px', height: '24px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
-    thTitle: { fontWeight: '700', fontSize: '1rem', color: '#1e293b', lineHeight: '1.2' },
+    thTitle: { fontWeight: '700', fontSize: '1rem', color: 'var(--text-main)', lineHeight: '1.2' },
     thPrice: { color: 'var(--primary-color)', fontWeight: '800', fontSize: '1.1rem', marginTop: '4px' },
 
-    td: { padding: '15px', textAlign: 'center', borderBottom: '1px solid #f1f5f9', color: '#334155', fontSize: '0.95rem' },
-    btnAction: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', backgroundColor: '#0f172a', color: 'white', textAlign: 'center', padding: '10px', borderRadius: '8px', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '600', border: 'none', cursor: 'pointer' },
+    td: { padding: '15px', textAlign: 'center', borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-secondary)', fontSize: '0.95rem' },
+    btnAction: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', backgroundColor: 'var(--base-brand-blue)', color: 'white', textAlign: 'center', padding: '10px', borderRadius: '8px', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '600', border: 'none', cursor: 'pointer' },
     linkButton: { background: 'none', border: 'none', color: 'var(--primary-color)', textDecoration: 'underline', cursor: 'pointer', fontWeight: '600', fontSize: 'inherit' },
-    tinyLink: { display: 'block', fontSize: '0.75rem', color: '#94a3b8', marginTop: '8px', textDecoration: 'none' }
+    tinyLink: { display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '8px', textDecoration: 'none' }
 };
