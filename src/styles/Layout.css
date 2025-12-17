@@ -132,6 +132,9 @@
     text-align: center;
     margin-top: auto;
     border-top: 1px solid var(--border-subtle);
+    /* Stack above snow effect (z-index 1) */
+    position: relative;
+    z-index: 2;
 }
 
 .footer__links {
