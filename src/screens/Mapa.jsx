@@ -273,7 +273,7 @@ export default function Mapa() {
 
 // Cleaned up styles - removed filter/modal specific styles
 const styles = {
-  pageContainer: { display: 'flex', flexDirection: 'column', height: 'calc(100vh - 60px)', fontFamily: "'Segoe UI', sans-serif", overflow: 'hidden' },
+  pageContainer: { display: 'flex', flexDirection: 'column', height: 'calc(100vh - 60px)', fontFamily: "'Segoe UI', sans-serif", overflow: 'hidden', position: 'relative', zIndex: 2 },
   header: { backgroundColor: 'var(--bg-main)', padding: '15px 20px 5px 20px' },
   title: { color: 'var(--text-main)', margin: 0, fontSize: '1.4rem', fontWeight: '800' },
   subtitle: { color: 'var(--text-main)', margin: '2px 0 0 0', fontSize: '0.9rem' },

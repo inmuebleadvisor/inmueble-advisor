@@ -425,7 +425,7 @@ export default function Favoritos() {
 
 // --- ESTILOS CSS-IN-JS MEJORADOS ---
 const styles = {
-    pageContainer: { paddingBottom: '120px', fontFamily: "'Segoe UI', sans-serif" },
+    pageContainer: { paddingBottom: '120px', fontFamily: "'Segoe UI', sans-serif", position: 'relative', zIndex: 2 },
     header: { marginBottom: '20px' },
     pageTitle: { fontSize: '1.8rem', fontWeight: '800', color: '#0f172a', margin: '0 0 5px 0' },
     subtitle: { color: '#64748b', fontSize: '1rem' },

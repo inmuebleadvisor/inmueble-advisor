@@ -16,9 +16,13 @@
 /* Base Layout */
 .catalogo {
   min-height: 100vh;
-  background-color: var(--bg-color);
+  /* background-color: var(--bg-color); Removed to let snow show through from body */
+  background-color: transparent;
   font-family: var(--font-family);
   padding-bottom: 100px;
+  position: relative;
+  z-index: 2;
+  /* Sit ABOVE the snow (z=1) */
 }
 
 .catalogo__header {

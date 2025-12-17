@@ -15,8 +15,11 @@ import FilterModal from '../components/shared/FilterModal';
 // Styles
 import '../styles/Catalogo.css';
 
+import { useTheme } from '../context/ThemeContext';
+
 export default function Catalogo() {
   const { userProfile } = useUser();
+  const { seasonalEnabled } = useTheme(); // Consume theme context
   const { modelos: dataMaestra, amenidades: topAmenidades, loadingCatalog: loading, desarrollos } = useCatalog();
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -50,7 +53,11 @@ export default function Catalogo() {
 
       <header className="catalogo__header">
         <h1 className="catalogo__title">
-          {userProfile?.nombre ? `Hola, ${userProfile.nombre}` : 'Catálogo'}
+          {/* Seasonal Theme: Revert to "Hola," after holidays or if disabled */}
+          {seasonalEnabled
+            ? (userProfile?.nombre ? `Felices fiestas, ${userProfile.nombre}` : 'Catálogo')
+            : (userProfile?.nombre ? `Hola, ${userProfile.nombre}` : 'Catálogo')
+          }
         </h1>
         <p className="catalogo__subtitle">Encuentra tu hogar ideal</p>
       </header>

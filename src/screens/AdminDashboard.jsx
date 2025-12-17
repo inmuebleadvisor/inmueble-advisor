@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import '../styles/AdminDashboard.css';
 import { getAllDesarrollos, getAllLeads, getAllUsers, toggleAdvisorInventory, updateAdvisorMetrics } from '../services/admin.service';
 import { importData, parseCSV } from '../services/massImport.service';
+import { useTheme } from '../context/ThemeContext';
 
 import { db } from '../firebase/config';
 
@@ -27,6 +28,8 @@ const AdminDashboard = () => {
     const [leads, setLeads] = useState([]);
     const [desarrollos, setDesarrollos] = useState([]);
     const [metrics, setMetrics] = useState(INITIAL_METRICS);
+
+    const { seasonalEnabled, toggleSeasonal } = useTheme();
 
     // Estado local para edición de métricas manuales { [uid]: { puntosEncuestas: 30, ... } }
     const [editableMetrics, setEditableMetrics] = useState({});
@@ -245,7 +248,12 @@ const AdminDashboard = () => {
                 >
                     Propiedades e Inventario
                 </button>
-
+                <button
+                    className={`admin-dashboard__tab ${activeTab === 'config' ? 'admin-dashboard__tab--active' : ''}`}
+                    onClick={() => setActiveTab('config')}
+                >
+                    Configuración
+                </button>
             </div>
 
             {/* --- CONTENT: GENERAL --- */}
@@ -474,10 +482,36 @@ const AdminDashboard = () => {
             )}
 
 
-            {/* --- CONTENT: TEMAS ESTACIONALES --- */}
+            {/* --- CONTENT: CONFIGURACIÓN --- */}
+            {activeTab === 'config' && (
+                <div className="admin-section">
+                    <h3 className="admin-section__title">Configuración del Sistema</h3>
 
+                    <div className="admin-kpi-card" style={{ maxWidth: '400px', margin: '0' }}>
+                        <div className="admin-kpi-card__title">Temática Estacional</div>
+                        <div className="admin-kpi-card__sub" style={{ marginBottom: '10px' }}>
+                            Activa o desactiva la nieve y decoraciones navideñas en todo el sitio.
+                        </div>
 
-            {/* --- CONTENT: MANTENIMIENTO --- */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                            <div className={`admin-tag ${seasonalEnabled ? 'admin-tag--green' : 'admin-tag--red'}`} style={{ fontSize: '1rem', padding: '5px 15px' }}>
+                                {seasonalEnabled ? 'ENCENDIDO' : 'APAGADO'}
+                            </div>
+
+                            <button
+                                onClick={toggleSeasonal}
+                                className="admin-btn-save"
+                                style={{
+                                    backgroundColor: seasonalEnabled ? '#dc2626' : '#16a34a',
+                                    color: 'white'
+                                }}
+                            >
+                                {seasonalEnabled ? 'Apagar Temática' : 'Encender Temática'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
         </div >
     );

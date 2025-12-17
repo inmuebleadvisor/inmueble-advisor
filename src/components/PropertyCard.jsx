@@ -25,6 +25,7 @@ const calcularEscrituracion = (precio) => formatoMoneda(precio * (FINANZAS?.PORC
 
 export default function PropertyCard({ item, showDevName = true, style }) {
   const { trackBehavior } = useUser();
+
   const [showDelightbox, setShowDelightbox] = useState(false);
   const [showHighlightsModal, setShowHighlightsModal] = useState(false);
   const [initialImageIndex, setInitialImageIndex] = useState(0);
