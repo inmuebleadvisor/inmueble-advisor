@@ -59,7 +59,7 @@ export default function Perfil() {
         </h1>
 
         <p className="hero-subtitle">
-          Encuentra la propiedad perfecta <span className="desktop-only">con la mejor asesoría financiera y ubicación estratégica.</span>
+          Encuentra la propiedad perfecta para ti <span className="desktop-only">con la mejor asesoría financiera y ubicación estratégica.</span>
         </p>
 
         <div className="hero-actions">

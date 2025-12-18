@@ -99,7 +99,7 @@ export default function OnboardingCliente() {
             trackBehavior('step_completed', { step_number: step });
 
             // Micro-Feedback Visual (Sin clicks extra)
-            const mensajes = ["¡Excelente comienzo!", "¡Ya casi terminamos!", ""];
+            const mensajes = ["Paso 2 de 3", "", ""];
             setMicroFeedback(mensajes[step - 1]);
             setTimeout(() => setMicroFeedback(''), 2000);
 

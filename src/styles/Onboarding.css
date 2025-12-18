@@ -1,20 +1,29 @@
 /* src/styles/Onboarding.css */
+/* src/styles/Onboarding.css */
 /* Modular styles for Buyer Onboarding */
 
 .onboarding-container {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    /* Consistent with Perfil.css */
+    justify-content: flex-start;
+    /* Align to top */
     align-items: center;
-    min-height: 85vh;
+    /* Center horizontally */
     width: 100%;
+    height: 100%;
+    /* Fill the main-content completely */
     padding: 20px;
-    background-color: var(--bg-main);
+    /* Provides the 20px gap from header */
+    background-color: transparent;
+    /* Changed back to transparent for snow */
     font-family: var(--font-main);
 }
 
 .onboarding-card {
     background-color: var(--bg-secondary);
-    padding: 40px 30px;
+    padding: 30px 30px;
+    /* Balanced padding */
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
     max-width: 500px;
@@ -22,11 +31,12 @@
     text-align: center;
     position: relative;
     overflow: hidden;
-    min-height: 550px;
+    /* Flexible height for viewport fit */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     border: 1px solid var(--border-subtle);
+    z-index: 50;
 }
 
 .progress-bar-container {

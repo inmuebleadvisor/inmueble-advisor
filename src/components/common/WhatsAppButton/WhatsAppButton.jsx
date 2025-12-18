@@ -13,6 +13,9 @@ const WhatsAppButton = () => {
     const location = useLocation();
     const { getModeloById, getDesarrolloById } = useCatalog();
 
+    // Ocultar en Home
+    if (location.pathname === '/') return null;
+
     // Número de teléfono destino (sin signos, solo dígitos)
     const PHONE_NUMBER = '524491987425';
 

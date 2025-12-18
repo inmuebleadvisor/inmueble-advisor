@@ -48,7 +48,8 @@
 .hero-subtitle {
     font-size: 1.1rem;
     color: var(--text-secondary);
-    margin-bottom: 3rem;
+    margin-bottom: 20px;
+    /* Mobile spacing */
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
@@ -75,6 +76,11 @@
 
     .desktop-only {
         display: inline;
+    }
+
+    .hero-subtitle {
+        margin-bottom: 3rem;
+        /* Restore desktop spacing */
     }
 }
 
@@ -111,7 +117,8 @@
     padding: 16px 32px;
     border-radius: 50px;
     border: 2px solid var(--border-strong);
-    font-size: 1.1rem;
+    font-size: 1rem;
+    /* Smaller font as requested */
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;

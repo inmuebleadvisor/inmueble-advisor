@@ -42,11 +42,11 @@ export default function Layout() {
   // Define si el usuario es un asesor O ADMIN (para ver dashboard ventas)
   const isAsesor = userProfile?.role === 'asesor' || userProfile?.role === 'admin';
 
-  // Detectar si estamos en la Home para ajustar el layout (100dvh, sin scroll)
-  const isHome = location.pathname === '/';
+  // Detectar si estamos en rutas que requieren Viewport Fit (100dvh, sin scroll, sin footer)
+  const isViewportFit = location.pathname === '/' || location.pathname === '/onboarding-cliente';
 
   return (
-    <div className={`layout ${isHome ? 'layout--viewport-fit' : ''}`}>
+    <div className={`layout ${isViewportFit ? 'layout--viewport-fit' : ''}`}>
 
 
       {/* --- HEADER --- */}
@@ -148,8 +148,8 @@ export default function Layout() {
       {/* --- SEASONAL THEME (Visible en todas las páginas) --- */}
       <SeasonalTheme />
 
-      {/* --- FOOTER (Oculto en Home si es viewport-fit) --- */}
-      {!isHome && (
+      {/* --- FOOTER (Oculto en rutas Viewport Fit) --- */}
+      {!isViewportFit && (
         <>
           <footer className="footer">
             <div className="footer__links">

@@ -42,7 +42,7 @@ describe('Perfil Screen (Buyer Landing)', () => {
         expect(screen.getByText(/para tu futuro/i)).toBeInTheDocument();
 
         // Check Subtitle parts
-        expect(screen.getByText(/Encuentra la propiedad perfecta/i)).toBeInTheDocument();
+        expect(screen.getByText(/Encuentra la propiedad perfecta para ti/i)).toBeInTheDocument();
         expect(screen.getByText(/con la mejor asesoría/i)).toBeInTheDocument();
     });
 
