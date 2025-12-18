@@ -146,7 +146,10 @@ const mapModelo = (docSnapshot) => {
     infoComercial: data.infoComercial || {},
 
     // 7. Visibilidad
-    activo: data.activo !== undefined ? data.activo !== false : (data.ActivoModelo !== false)
+    activo: data.activo !== undefined ? data.activo !== false : (data.ActivoModelo !== false),
+
+    // 8. Media Adicional
+    plantas: (data.media && Array.isArray(data.media.plantasArquitectonicas)) ? data.media.plantasArquitectonicas : []
   };
 };
 

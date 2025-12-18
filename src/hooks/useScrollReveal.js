@@ -1,56 +1,65 @@
 /**
  * @file useScrollReveal.js
- * @description Custom hook to integrate ScrollReveal.js animations into components.
- * Follows the Singleton pattern for the ScrollReveal instance but applies reveals to specific selectors.
+ * @description Custom hook to handle scroll animations using native IntersectionObserver.
+ * Replaces ScrollReveal.js to avoid conflicts with body scroll locking and layout shifts.
  */
 import { useEffect } from 'react';
-import ScrollReveal from 'scrollreveal';
 
 /**
  * useScrollReveal Hook
  * 
- * Applies ScrollReveal animations to elements matching the provided selector.
+ * Observes elements matching the selector and applies a visible class when they enter the viewport.
  * 
- * @param {string} selector - CSS selector of the elements to animate (e.g., '.card').
- * @param {Object} [config={}] - Optional configuration override for ScrollReveal.
- * @param {Array} [dependencies=[]] - Dependency array to re-run the animation (e.g., when data changes).
- * 
- * @example
- * useScrollReveal('.my-card', { interval: 200 }, [items]);
+ * @param {string} selector - CSS selector of the elements to animate (e.g., '.catalogo__grid .card').
+ * @param {Object} [config={}] - Configuration options (interval, etc. - mostly handled in CSS now).
+ * @param {Array} [dependencies=[]] - Dependency array to re-run the observation.
  */
 export const useScrollReveal = (selector, config = {}, dependencies = []) => {
     useEffect(() => {
-        // Safety check for server-side rendering or non-browser environments
+        // Safety check
         if (typeof window === 'undefined' || !selector) return;
 
-        // Default configuration aligning with "Premium" feel (smooth, bottom-up)
-        const defaultConfig = {
-            distance: '50px',
-            duration: 1000,
-            easing: 'cubic-bezier(0.5, 0, 0, 1)',
-            origin: 'bottom',
-            interval: 100, // Stagger effect
-            cleanup: true, // Custom flag, though SR handles it differently
-            ...config
+        const elements = document.querySelectorAll(selector);
+        if (elements.length === 0) return;
+
+        const observerOptions = {
+            root: null, // viewport
+            rootMargin: '0px',
+            threshold: 0.1 // Trigger when 10% is visible
         };
 
-        try {
-            const sr = ScrollReveal();
-            // Clean previous styles if re-running (important for filtering)
-            sr.clean(selector);
-            sr.reveal(selector, defaultConfig);
-        } catch (error) {
-            console.error('ScrollReveal Error:', error);
-        }
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    const el = entry.target;
 
-        // Cleanup function
-        return () => {
-            try {
-                const sr = ScrollReveal();
-                sr.clean(selector);
-            } catch (e) {
-                // Ignore cleanup errors
+                    // Add visibility class
+                    el.classList.add('sr-visible');
+
+                    // Unobserve after revealing (trigger once)
+                    observer.unobserve(el);
+                }
+            });
+        }, observerOptions);
+
+        elements.forEach((el, index) => {
+            // Optional: Stagger effect via inline style delay
+            if (config.interval) {
+                // Only apply delay if it's the initial load or a batch update
+                // Use a modest delay to prevent long waits on long lists
+                // We restart delay count for every batch
+                const delay = (index % 10) * (config.interval / 1000); // Limit stagger to chunks of 10
+                el.style.transitionDelay = `${delay}s`;
             }
+            // Ensure initial state class is set (handled in CSS usually, but we can guard here)
+            el.classList.add('sr-hidden');
+            observer.observe(el);
+        });
+
+        return () => {
+            elements.forEach(el => observer.unobserve(el));
+            observer.disconnect();
         };
+
     }, [selector, JSON.stringify(config), ...dependencies]);
 };

@@ -7,11 +7,14 @@ import FinanciamientoWidget from './FinanciamientoWidget';
 import DevelopmentInfoSection from './DevelopmentInfoSection';
 import PropertyCard from './PropertyCard';
 import FavoriteBtn from './FavoriteBtn';
+import Delightbox from './common/Delightbox';
+import '../styles/ModelDetailsContent.css'; // BEM Styles relocated
 
-// Icons defined locally since they are small
+// Icons defined locally since they are small UI helpers
 const Icons = {
     Back: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>,
-    Check: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    Check: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>,
+    Calendar: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
 };
 
 const formatoMoneda = (val) => {
@@ -23,9 +26,30 @@ export default function ModelDetailsContent({
     modelo,
     desarrollo,
     modelosHermanos = [],
-    onBack, // Optional: if provided, shows back button (e.g., for full screen). If in modal, might not need it or handled differently.
-    isModal = false // To adjust styles for modal view
+    onBack,
+    isModal = false
 }) {
+    // State for floor plans lightbox
+    const [isFloorPlanOpen, setIsFloorPlanOpen] = React.useState(false);
+    const [floorPlanIndex, setFloorPlanIndex] = React.useState(0);
+
+    const [showFab, setShowFab] = React.useState(false);
+    const headerRef = React.useRef(null);
+
+    React.useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setShowFab(!entry.isIntersecting);
+            },
+            { root: null, threshold: 0, rootMargin: "-100px 0px 0px 0px" }
+        );
+
+        if (headerRef.current) observer.observe(headerRef.current);
+        return () => {
+            if (headerRef.current) observer.unobserve(headerRef.current);
+        };
+    }, []);
+
     const galeriaImagenes = useMemo(() => {
         if (!modelo) return [];
         const items = (modelo.imagenes || []).map(url => ({ url, type: 'image' }));
@@ -42,65 +66,66 @@ export default function ModelDetailsContent({
     if (!modelo) return null;
 
     return (
-        <div style={isModal ? styles.modalContainer : styles.pageContainer}>
+        <div className={`model-details ${isModal ? 'model-details--modal' : ''}`}>
 
-            {/* --- HEADER: CARRUSEL --- */}
-            <header style={styles.carouselWrapper}>
+            {/* --- HEADER --- */}
+            <header ref={headerRef} className="model-details__header">
                 <Carousel items={galeriaImagenes} />
 
-                {/* Only show floating back button if handler provided and NOT in modal (modals usually have their own close) */}
                 {!isModal && onBack && (
-                    <button onClick={onBack} style={styles.floatingBackButton} aria-label="Volver">
+                    <button onClick={onBack} className="model-details__back-btn" aria-label="Volver">
                         <Icons.Back />
                     </button>
                 )}
 
-                <span style={{ ...styles.statusBadge, backgroundColor: modelo.esPreventa ? '#f59e0b' : '#10b981' }}>
+                <span className="model-details__status-badge" style={{ backgroundColor: modelo.esPreventa ? '#f59e0b' : '#10b981' }}>
                     {modelo.esPreventa ? 'PRE-VENTA' : 'ENTREGA INMEDIATA'}
                 </span>
-                <div style={styles.headerGradient}></div>
+                <div className="model-details__header-gradient"></div>
             </header>
 
-            <main style={styles.contentBody}>
+            <main className="model-details__content">
 
-                {/* ================================================================== */}
-                {/* SECCIÓN 1: DATOS DEL MODELO (Lo que estás comprando)               */}
-                {/* ================================================================== */}
-                <section style={styles.sectionBlock}>
-                    <div style={styles.titleSectionContainer}>
-                        <div style={styles.titleSectionLeft}>
-                            <h1 style={styles.modelTitle}>
+                {/* --- SECCIÓN 1: DATOS --- */}
+                <section className="model-details__section">
+                    <div className="model-details__title-card">
+                        <div className="model-details__title-left">
+                            <h1 className="model-details__name">
                                 {modelo.tipoVivienda ? `${modelo.tipoVivienda} ` : ''}
                                 {modelo.nombre_modelo}
                             </h1>
-                            <div style={styles.priceContainer}>
-                                <span style={styles.priceLabel}>Precio de Lista</span>
-                                <span style={styles.priceValue}>{formatoMoneda(modelo.precioNumerico)}</span>
+                            <div className="model-details__price-box">
+                                <span className="model-details__price-label">Precio de Lista</span>
+                                <span className="model-details__price-val">{formatoMoneda(modelo.precioNumerico)}</span>
                                 {modelo.precios?.mantenimientoMensual > 0 && (
-                                    <span style={styles.maintenanceLabel}>+ {formatoMoneda(modelo.precios.mantenimientoMensual)} mant. mensual</span>
+                                    <span className="model-details__price-maintenance">+ {formatoMoneda(modelo.precios.mantenimientoMensual)} mant. mensual</span>
                                 )}
 
-                                {/* ⭐ HIGHLIGHTS INLINE ⭐ */}
                                 {modelo.highlights && modelo.highlights.length > 0 && (
-                                    <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <div className="model-details__highlights">
                                         {modelo.highlights.map((highlight, index) => (
-                                            <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                                                <div style={{
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    width: '20px', height: '20px', borderRadius: '50%',
-                                                    backgroundColor: 'rgba(245, 158, 11, 0.15)', color: 'var(--primary-color)'
-                                                }}>
+                                            <div key={index} className="model-details__highlight-item">
+                                                <div className="model-details__check-icon">
                                                     <Icons.Check />
                                                 </div>
-                                                <span style={{ fontWeight: '500' }}>{highlight}</span>
+                                                <span className="model-details__highlight-text">{highlight}</span>
                                             </div>
                                         ))}
                                     </div>
                                 )}
                             </div>
+
+                            <button
+                                className="model-details__cta-primary"
+                                onClick={() => alert("Función de Agendar Cita: Se abrirá el formulario o WhatsApp.")}
+                            >
+                                <Icons.Calendar />
+                                <span>Agendar Cita</span>
+                            </button>
                         </div>
-                        <div style={styles.favoriteWrapper}>
-                            <FavoriteBtn modeloId={modelo.id} style={styles.favoriteButtonOverride} />
+
+                        <div className="model-details__fav-wrapper">
+                            <FavoriteBtn modeloId={modelo.id} className="model-details__fav-btn-override" />
                         </div>
                     </div>
 
@@ -112,55 +137,88 @@ export default function ModelDetailsContent({
                         terreno={modelo.terreno}
                     />
 
-                    <hr style={styles.divider} />
+                    <hr className="model-details__divider" />
 
-                    <h3 style={styles.sectionTitle}>Descripción del Modelo</h3>
-                    <p style={styles.descriptionText}>
+                    <h3 className="model-details__section-title">Descripción del Modelo</h3>
+                    <p className="model-details__description">
                         {modelo.descripcion || `Conoce el modelo ${modelo.nombre_modelo}, diseñado para tu comodidad.`}
                     </p>
                     {modelo.amenidades && modelo.amenidades.length > 0 && (
                         <div style={{ marginTop: '20px' }}>
-                            <h4 style={{ fontSize: '0.9rem', color: '#6b7280', marginBottom: '10px' }}>Amenidades Exclusivas:</h4>
+                            <h4 className="model-details__amenities-title">Amenidades Exclusivas:</h4>
                             <AmenidadesList amenidades={modelo.amenidades} />
                         </div>
                     )}
                 </section>
 
-                {/* ================================================================== */}
-                {/* SECCIÓN 2: FINANCIAMIENTO                                          */}
-                {/* ================================================================== */}
-                <section style={{ ...styles.sectionBlock, marginTop: '40px' }}>
-                    <h3 style={styles.sectionTitle}>Calcula tu Hipoteca</h3>
-                    <p style={{ marginBottom: '15px', color: '#64748b', fontSize: '0.9rem' }}>
+                {/* --- SECCIÓN 1.5: PLANOS --- */}
+                {modelo.plantas && modelo.plantas.length > 0 && (
+                    <section className="model-details__section">
+                        <h3 className="model-details__section-title">Distribución y Planos</h3>
+                        <p className="model-details__description" style={{ marginBottom: '20px' }}>
+                            Consulta la distribución arquitectónica de {modelo.nombre_modelo}.
+                        </p>
+
+                        <div className="model-details__floor-plans-grid">
+                            {modelo.plantas.map((url, index) => (
+                                <button
+                                    key={index}
+                                    className="model-details__floor-plan-card"
+                                    onClick={() => {
+                                        setFloorPlanIndex(index);
+                                        setIsFloorPlanOpen(true);
+                                    }}
+                                >
+                                    <div className="model-details__floor-plan-wrapper">
+                                        <img
+                                            src={url}
+                                            alt={`Planta ${index + 1}`}
+                                            className="model-details__floor-plan-img"
+                                            loading="lazy"
+                                        />
+                                        <div className="model-details__magnify-overlay">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+                                        </div>
+                                    </div>
+                                    <span className="model-details__floor-plan-label">Planta {index + 1}</span>
+                                </button>
+                            ))}
+                        </div>
+
+                        <Delightbox
+                            isOpen={isFloorPlanOpen}
+                            images={modelo.plantas}
+                            initialIndex={floorPlanIndex}
+                            onClose={() => setIsFloorPlanOpen(false)}
+                        />
+                    </section>
+                )}
+
+                {/* --- SECCIÓN 2: FINANCIAMIENTO --- */}
+                <section className="model-details__section model-details__section--border-top">
+                    <h3 className="model-details__section-title">Calcula tu Hipoteca</h3>
+                    <p className="model-details__mortgage-intro">
                         Estimación de mensualidad para <strong>{modelo.nombre_modelo}</strong>:
                     </p>
                     <FinanciamientoWidget precio={modelo.precioNumerico} />
                 </section>
 
-                {/* ================================================================== */}
-                {/* SECCIÓN 3: CONTEXTO DEL DESARROLLO (El Entorno)                    */}
-                {/* ================================================================== */}
+                {/* --- SECCIÓN 3: CONTEXTO --- */}
                 {desarrollo && (
-                    <section style={{ ...styles.sectionBlock, marginTop: '40px', borderTop: '1px solid #e5e7eb', paddingTop: '30px' }}>
-                        <div style={styles.contextHeader}>
-                            <span style={styles.contextLabel}>Ubicado en el desarrollo:</span>
-                            <h2 style={styles.contextTitle}>{desarrollo.nombre}</h2>
+                    <section className="model-details__section model-details__section--border-top">
+                        <div className="model-details__context-header">
+                            <span className="model-details__context-label">Ubicado en el desarrollo:</span>
+                            <h2 className="model-details__context-title">{desarrollo.nombre}</h2>
                         </div>
                         <DevelopmentInfoSection desarrollo={desarrollo} />
                     </section>
                 )}
 
-                {/* ================================================================== */}
-                {/* SECCIÓN 4: CROSS-SELLING (Otros modelos)                           */}
-                {/* ================================================================== */}
-                {/* We hide cross-selling in modal to avoid navigation confusion or recursive modals for now, unless requested. 
-            User said "popup... to remember details", usually just the item itself. 
-            But letting user navigate inside modal is cool. I'll leave it but maybe simpler?
-            For now, keep it. */}
+                {/* --- SECCIÓN 4: CROSS-SELLING --- */}
                 {modelosHermanos.length > 0 && (
-                    <section style={styles.modelsSection}>
-                        <h3 style={styles.sectionTitle}>Otras opciones en {desarrollo ? desarrollo.nombre : 'este desarrollo'}</h3>
-                        <div style={styles.modelsGrid}>
+                    <section className="model-details__models-section">
+                        <h3 className="model-details__section-title">Otras opciones en {desarrollo ? desarrollo.nombre : 'este desarrollo'}</h3>
+                        <div className="model-details__models-grid">
                             {modelosHermanos.map((hermano) => (
                                 <PropertyCard
                                     key={hermano.id}
@@ -173,47 +231,31 @@ export default function ModelDetailsContent({
                 )}
 
             </main>
-        </div>
+
+            {/* FLOATING ACTION BUTTON (Sticky Bottom) - Shows only after scroll */}
+            {showFab && (
+                <>
+                    <button
+                        className="model-details__cta-fab"
+                        onClick={() => alert("Función de Agendar Cita: Se abrirá el formulario o WhatsApp.")}
+                        aria-label="Agendar Cita"
+                    >
+                        <Icons.Calendar />
+                        <span style={{ marginLeft: '8px' }}>Agendar Visita</span>
+                    </button>
+
+                    {/* Override global WhatsApp button visibility */}
+                    <style>{`
+                        .whatsapp-btn {
+                            opacity: 0 !important;
+                            pointer-events: none !important;
+                            transform: scale(0.8) !important;
+                        }
+                    `}</style>
+                </>
+            )}
+        </div >
     );
 }
 
-// Estilos
-// Estilos
-const styles = {
-    pageContainer: { backgroundColor: 'var(--bg-main)', minHeight: '100%', paddingBottom: '60px', fontFamily: "'Outfit', sans-serif" },
-    modalContainer: { backgroundColor: 'var(--bg-main)', minHeight: 'auto', paddingBottom: '40px', fontFamily: "'Outfit', sans-serif" },
-    carouselWrapper: { position: 'relative', width: '100%', height: '350px', backgroundColor: 'var(--bg-tertiary)' }, // Taller header
-    headerGradient: { position: 'absolute', bottom: 0, left: 0, width: '100%', height: '120px', background: 'linear-gradient(to top, var(--bg-main), rgba(15, 23, 42, 0))', pointerEvents: 'none', zIndex: 5 },
 
-    floatingBackButton: { position: 'absolute', top: '20px', left: '20px', backgroundColor: 'rgba(30, 41, 59, 0.8)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', zIndex: 10, color: 'white', backdropFilter: 'blur(4px)' },
-    statusBadge: { position: 'absolute', top: '20px', right: '20px', color: 'var(--text-inverse)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '800', zIndex: 10, boxShadow: '0 2px 6px rgba(0,0,0,0.3)' },
-
-    contentBody: { padding: '0 24px', position: 'relative', zIndex: 6, marginTop: '-30px' },
-    sectionBlock: { marginBottom: '30px', display: 'block' },
-
-    // Glassmorphic title container
-    titleSectionContainer: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '30px', backgroundColor: 'rgba(30, 41, 59, 0.7)', backdropFilter: 'blur(10px)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 4px 6px rgba(0,0,0,0.2)' },
-    titleSectionLeft: { flex: 1 },
-    modelTitle: { fontSize: '1.8rem', fontWeight: '800', color: 'var(--text-main)', margin: '0 0 8px 0', lineHeight: '1.2' },
-
-    priceContainer: { display: 'flex', flexDirection: 'column' },
-    priceLabel: { fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '700' },
-    priceValue: { fontSize: '1.8rem', fontWeight: '800', color: 'var(--primary-color)' },
-    maintenanceLabel: { fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px', fontStyle: 'italic' },
-
-    highlightsButton: { marginTop: '12px', display: 'flex', alignItems: 'center', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--primary-color)', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', maxWidth: 'fit-content', boxShadow: '0 2px 4px rgba(0,0,0,0.2)', transition: 'transform 0.2s', color: 'var(--primary-color)' },
-
-    favoriteWrapper: { flexShrink: 0, marginLeft: '15px', marginTop: '5px' },
-    favoriteButtonOverride: { backgroundColor: 'var(--bg-secondary)', border: '1px solid rgba(255,255,255,0.1)' },
-
-    divider: { border: 'none', borderTop: '1px solid rgba(255,255,255,0.1)', margin: '30px 0' },
-    sectionTitle: { fontSize: '1.4rem', fontWeight: '700', marginBottom: '15px', color: 'var(--text-main)' },
-    descriptionText: { color: 'var(--text-secondary)', lineHeight: '1.7', fontSize: '1rem' },
-
-    contextHeader: { marginBottom: '20px', paddingLeft: '15px', borderLeft: '4px solid var(--primary-color)' },
-    contextLabel: { fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' },
-    contextTitle: { fontSize: '1.6rem', fontWeight: '800', color: 'var(--text-main)', margin: 0 },
-
-    modelsSection: { backgroundColor: 'var(--bg-secondary)', margin: '40px -24px 0', padding: '40px 24px', borderTop: '1px solid rgba(255,255,255,0.05)' },
-    modelsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px', marginTop: '24px' }
-};

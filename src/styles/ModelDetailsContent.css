@@ -1,0 +1,390 @@
+/* src/styles/ModelDetailsContent.css */
+
+/* Variables are inherited from global root, e.g. --primary-color, --bg-main */
+
+.model-details {
+    background-color: var(--bg-main);
+    min-height: 100%;
+    padding-bottom: 60px;
+    font-family: 'Outfit', sans-serif;
+}
+
+.model-details--modal {
+    min-height: auto;
+    padding-bottom: 40px;
+}
+
+/* --- Header & Carousel --- */
+.model-details__header {
+    position: relative;
+    width: 100%;
+    height: 350px;
+    background-color: var(--bg-tertiary);
+    z-index: 50;
+}
+
+.model-details__header-gradient {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 120px;
+    background: linear-gradient(to top, var(--bg-main), rgba(15, 23, 42, 0));
+    pointer-events: none;
+    z-index: 55;
+}
+
+.model-details__back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    z-index: 70;
+    color: white;
+    backdrop-filter: blur(4px);
+    transition: transform 0.2s;
+}
+
+.model-details__back-btn:hover {
+    transform: scale(1.05);
+}
+
+.model-details__status-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: var(--text-inverse);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    z-index: 70;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Main Content --- */
+.model-details__content {
+    padding: 0 24px;
+    position: relative;
+    z-index: 60;
+    margin-top: -30px;
+}
+
+.model-details__section {
+    margin-bottom: 30px;
+    display: block;
+}
+
+.model-details__section--border-top {
+    margin-top: 40px;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 30px;
+}
+
+.model-details__divider {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 30px 0;
+}
+
+.model-details__section-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: var(--text-main);
+}
+
+.model-details__description {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-size: 1rem;
+}
+
+.model-details__amenities-title {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-bottom: 10px;
+}
+
+/* --- Title Card Glassmorphism --- */
+.model-details__title-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    background-color: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.model-details__title-left {
+    flex: 1;
+}
+
+.model-details__name {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0 0 8px 0;
+    line-height: 1.2;
+}
+
+.model-details__price-box {
+    display: flex;
+    flex-direction: column;
+}
+
+.model-details__price-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+.model-details__price-val {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--primary-color);
+}
+
+.model-details__price-maintenance {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    font-style: italic;
+}
+
+.model-details__fav-wrapper {
+    flex-shrink: 0;
+    margin-left: 15px;
+    margin-top: 5px;
+}
+
+.model-details__fav-btn-override {
+    background-color: var(--bg-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* --- Highlights --- */
+.model-details__highlights {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.model-details__highlight-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.model-details__check-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: rgba(245, 158, 11, 0.15);
+    color: var(--primary-color);
+}
+
+.model-details__highlight-text {
+    font-weight: 500;
+}
+
+/* --- CTAs --- */
+.model-details__cta-primary {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-color: var(--primary-color);
+    color: var(--text-inverse);
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.model-details__cta-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.5);
+}
+
+/* FAB - Dynamic Replacement */
+@keyframes fabEnter {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.model-details__cta-fab {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 99999;
+    background-color: var(--primary-color);
+    color: var(--text-inverse);
+    border: none;
+    border-radius: 50px;
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    animation: fabEnter 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* --- Floor Plans --- */
+.model-details__floor-plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.model-details__floor-plan-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--bg-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 10px;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+    text-align: center;
+}
+
+.model-details__floor-plan-card:hover {
+    transform: translateY(-4px);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.model-details__floor-plan-wrapper {
+    width: 100%;
+    aspect-ratio: 1/1;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+.model-details__floor-plan-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 5px;
+}
+
+.model-details__magnify-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.model-details__floor-plan-card:hover .model-details__magnify-overlay {
+    opacity: 1;
+}
+
+.model-details__floor-plan-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* --- Context & Development --- */
+.model-details__context-header {
+    margin-bottom: 20px;
+    padding-left: 15px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.model-details__context-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.model-details__context-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0;
+}
+
+/* --- Mortgage --- */
+.model-details__mortgage-intro {
+    margin-bottom: 15px;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+/* --- Models (Cross-selling) --- */
+.model-details__models-section {
+    background-color: var(--bg-secondary);
+    margin: 40px -24px 0;
+    padding: 40px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.model-details__models-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 24px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .model-details__cta-fab {
+        bottom: 20px;
+        right: 20px;
+        padding: 12px 24px;
+        font-size: 0.9rem;
+    }
+}

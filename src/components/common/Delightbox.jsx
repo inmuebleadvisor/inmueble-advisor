@@ -11,14 +11,51 @@ export default function Delightbox({ isOpen, images = [], initialIndex = 0, onCl
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
     const [isAnimating, setIsAnimating] = useState(false);
 
+    // Normalize images to be objects (since we might pass strings or objects)
+    // Defined BEFORE callbacks to avoid TDZ/Scope issues
+    const items = React.useMemo(() => (images || []).map(img => {
+        if (typeof img === 'string') return { url: img, type: 'image' };
+        return img;
+    }), [images]);
+
     useEffect(() => {
         if (isOpen) {
             setCurrentIndex(initialIndex);
-            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+
+            // 1. SAVE POSITION
+            const savedScroll = window.scrollY || document.documentElement.scrollTop;
+            console.log(`[SCROLL DEBUG] Open Delightbox. Saving position: ${savedScroll}px`);
+
+            // Store in a safe place (ref not available in effect scope easily without modifying component state generally, 
+            // but we can use a closure variable or a session storage for robustness across re-renders if needed,
+            // however, for a simple effect cleanup, the closure might be tricky if the effect re-runs.
+            // Let's use a mutable ref approach or a simple property on the window if we must, 
+            // but actually, the cleanup function captures the scope variables.
+            // Wait, if I define 'savedScroll' here, can I access it in cleanup? No, cleanup assumes fresh scope if dependencies change.
+            // BETTER: Use a ref outside.
+
+            document.body.style.overflow = 'hidden';
+            window.__tempScrollPosition = savedScroll; // Fallback super-global for guaranteed persistence
+
         } else {
-            document.body.style.overflow = 'auto';
+            document.body.style.overflow = '';
         }
-        return () => { document.body.style.overflow = 'auto'; };
+
+        return () => {
+            // 2. RESTORE POSITION
+            document.body.style.overflow = '';
+            const targetScroll = window.__tempScrollPosition || 0;
+            console.log(`[SCROLL DEBUG] Close Delightbox. Restoring to: ${targetScroll}px`);
+
+            // Restore immediately
+            window.scrollTo(0, targetScroll);
+
+            // Double check with a slight delay (sometimes browser layout shifts happen)
+            setTimeout(() => {
+                console.log(`[SCROLL DEBUG] Re-applying scroll to: ${targetScroll}px`);
+                window.scrollTo(0, targetScroll);
+            }, 50);
+        };
     }, [isOpen, initialIndex]);
 
     const handleNext = useCallback((e) => {
@@ -27,7 +64,7 @@ export default function Delightbox({ isOpen, images = [], initialIndex = 0, onCl
         setIsAnimating(true);
         setCurrentIndex((prev) => (prev + 1) % items.length);
         setTimeout(() => setIsAnimating(false), 300);
-    }, [images]);
+    }, [items]);
 
     const handlePrev = useCallback((e) => {
         e?.stopPropagation();
@@ -35,7 +72,7 @@ export default function Delightbox({ isOpen, images = [], initialIndex = 0, onCl
         setIsAnimating(true);
         setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
         setTimeout(() => setIsAnimating(false), 300);
-    }, [images]);
+    }, [items]);
 
     const handleKeyDown = useCallback((e) => {
         if (!isOpen) return;
@@ -84,11 +121,7 @@ export default function Delightbox({ isOpen, images = [], initialIndex = 0, onCl
 
     if (!isOpen || images.length === 0) return null;
 
-    // Normalize images to be objects (since we might pass strings or objects)
-    const items = images.map(img => {
-        if (typeof img === 'string') return { url: img, type: 'image' };
-        return img;
-    });
+    if (!isOpen || images.length === 0) return null;
 
     const currentItem = items[currentIndex];
 
