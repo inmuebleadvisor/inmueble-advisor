@@ -1,5 +1,6 @@
 // src/components/catalogo/FilterModal.jsx
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Icons } from '../Icons';
 import { formatoMoneda } from '../../utils/formatters';
 import { UI_OPCIONES } from '../../config/constants';
@@ -14,6 +15,7 @@ export default function FilterModal({
     topAmenidades,
     resultadosCount
 }) {
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (isOpen) {
@@ -207,29 +209,37 @@ export default function FilterModal({
                     </div>
 
 
-                    <div className="filter-section">
-                        {/* Show No Price Toggle */}
-                        <div className="filter-toggle-row">
-                            <label className="filter-toggle-label" htmlFor="showNoPrice">
-                                Mostrar Propiedades Sin Precio
-                                <span className="filter-toggle-subtext"> (Precios por Confirmar)</span>
-                            </label>
-                            <input
-                                id="showNoPrice"
-                                type="checkbox"
-                                checked={filtros.showNoPrice || false}
-                                onChange={(e) => handleFilterChange('showNoPrice', e.target.checked)}
-                                className="filter-checkbox"
-                            />
-                        </div>
+                </div>
+
+
+
+                <div className="modal__footer" style={{ flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', width: '100%', gap: '1rem', alignItems: 'center' }}>
+                        <button className="modal__clear-btn" onClick={limpiarTodo}>Limpiar</button>
+                        <button className="modal__apply-btn" onClick={onClose}>
+                            Ver {resultadosCount} resultados
+                        </button>
                     </div>
 
-                </div >
-
-                <div className="modal__footer">
-                    <button className="modal__clear-btn" onClick={limpiarTodo}>Limpiar</button>
-                    <button className="modal__apply-btn" onClick={onClose}>
-                        Ver {resultadosCount} resultados
+                    <button
+                        onClick={() => {
+                            onClose();
+                            navigate('/onboarding-cliente');
+                        }}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--primary-color)',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            fontSize: '0.95rem',
+                            textDecoration: 'none',
+                            width: '100%',
+                            textAlign: 'center',
+                            marginTop: '5px'
+                        }}
+                    >
+                        Calcular mi monto máximo
                     </button>
                 </div>
             </div >

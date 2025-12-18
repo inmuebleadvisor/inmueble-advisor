@@ -97,8 +97,7 @@ export default function Layout() {
 
             </Link>
 
-            {/* 4. PERFILADO */}
-            <Link to="/onboarding-cliente" className={getLinkClassName('/onboarding-cliente')}>Perfilado</Link>
+
 
             {/* 5. OPCIÓN CONDICIONAL: Mis Leads (Asesor) o Soy Asesor (Público/Cliente) */}
             {isAsesor ? (

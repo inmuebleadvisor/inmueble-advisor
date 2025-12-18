@@ -1,7 +1,7 @@
 // src/screens/Perfil.jsx
 // ÚLTIMA MODIFICACION: 17/12/2025 - Refactor Buyer First
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams, Navigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import '../styles/Perfil.css'; // Importamos estilos dedicados
 
@@ -22,13 +22,16 @@ export default function Perfil() {
     }
   }, [searchParams, loginWithGoogle]);
 
-  // EFECTO: Redirección si ya tiene onboarding completo
-  useEffect(() => {
-    if (!loadingUser && user && userProfile?.onboardingCompleto) {
-      const origin = location.state?.from?.pathname || '/catalogo';
-      navigate(origin, { replace: true });
-    }
-  }, [user, userProfile, loadingUser, navigate, location]);
+  // LÓGICA DE REDIRECCIÓN (Evita FOUC - Flash of Unauthenticated Content)
+  // Si el usuario ya está logueado y tiene onboarding, no mostramos NADA de la home,
+  // redirigimos inmediatamente.
+  if (!loadingUser && user && userProfile?.onboardingCompleto) {
+    const origin = location.state?.from?.pathname || '/catalogo';
+    return <Navigate to={origin} replace />;
+  }
+
+  // Si estamos cargando estado de usuario, mostramos null o spinner
+  if (loadingUser) return null;
 
   const handleStartOnboarding = () => {
     // Redirección directa al perfilado de comprador
