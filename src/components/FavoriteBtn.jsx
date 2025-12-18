@@ -6,10 +6,10 @@ import { useUser } from '../context/UserContext'; // ✅ Importamos para acceder
 
 // Componente visual del ícono (Sin cambios lógicos, solo visuales)
 const HeartIcon = ({ filled }) => (
-  <svg 
-    width="24" height="24" viewBox="0 0 24 24" 
-    fill={filled ? "#ef4444" : "none"} 
-    stroke={filled ? "#ef4444" : "currentColor"} 
+  <svg
+    width="24" height="24" viewBox="0 0 24 24"
+    fill={filled ? "#ef4444" : "none"}
+    stroke={filled ? "#ef4444" : "var(--base-brand-blue)"}
     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
     style={{ transition: 'all 0.3s ease', transform: filled ? 'scale(1.1)' : 'scale(1)' }}
   >
@@ -21,7 +21,7 @@ export default function FavoriteBtn({ modeloId, style }) {
   // 1. Hooks: Necesitamos herramientas de ambos mundos (Datos y Usuario)
   const { isFavorite, toggleFavorite } = useFavorites();
   const { user, loginWithGoogle } = useUser();
-  
+
   // 2. Estado Local: Para feedback inmediato (loading spinner o deshabilitado)
   const [isLoading, setIsLoading] = useState(false);
 
@@ -30,7 +30,7 @@ export default function FavoriteBtn({ modeloId, style }) {
   // 3. Lógica Inteligente del Click
   const handleClick = async (e) => {
     // Importante: Detenemos la propagación para que no se abra la ficha de la propiedad al dar clic al corazón
-    e.preventDefault(); 
+    e.preventDefault();
     e.stopPropagation();
 
     if (isLoading) return; // Evitamos doble clic accidental
@@ -41,11 +41,11 @@ export default function FavoriteBtn({ modeloId, style }) {
         setIsLoading(true); // Bloqueamos botón
         // Lanzamos el Popup de Google
         const usuarioLogueado = await loginWithGoogle();
-        
+
         // Si el usuario completó el proceso (no cerró la ventana)
         if (usuarioLogueado) {
-           // ✨ Magia de UX: Ejecutamos la acción original automáticamente
-           await toggleFavorite(modeloId);
+          // ✨ Magia de UX: Ejecutamos la acción original automáticamente
+          await toggleFavorite(modeloId);
         }
       } catch (error) {
         console.log("El usuario canceló el login o hubo un error:", error);
@@ -64,17 +64,17 @@ export default function FavoriteBtn({ modeloId, style }) {
   };
 
   return (
-    <button 
+    <button
       onClick={handleClick}
       disabled={isLoading}
       style={{
         background: 'rgba(255,255,255,0.95)', // Fondo blanco casi sólido para resaltar sobre fotos
         border: 'none',
         borderRadius: '50%',
-        width: '40px', 
+        width: '40px',
         height: '40px',
-        display: 'flex', 
-        alignItems: 'center', 
+        display: 'flex',
+        alignItems: 'center',
         justifyContent: 'center',
         cursor: isLoading ? 'wait' : 'pointer', // Cursor de espera si está logueando
         boxShadow: '0 3px 8px rgba(0,0,0,0.15)', // Sombra suave para elevación
