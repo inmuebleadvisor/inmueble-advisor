@@ -22,7 +22,18 @@
   padding-bottom: 100px;
   position: relative;
   z-index: 2;
-  /* Sit ABOVE the snow (z=1) */
+  width: 100%;
+  overflow-x: hidden;
+  /* Prevent horizontal scroll from children */
+}
+
+/* ... existing content ... */
+.catalogo__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  /* Reduced from 300px to avoid overflow on small screens */
+  gap: 1.5rem;
+  padding: 1.5rem 1.25rem;
 }
 
 .catalogo__header {
@@ -100,7 +111,11 @@
 .filter-bar {
   position: sticky;
   top: 0;
-  z-index: 900;
+  top: 0;
+  z-index: 2;
+  /* Sit ABOVE the snow (z=1) */
+  width: 100%;
+  overflow-x: hidden;
   background-color: var(--bg-main);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -216,21 +231,26 @@
 /* Grid Results */
 .catalogo__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
   padding: 1.5rem 1.25rem;
 }
 
 @media (max-width: 768px) {
   .catalogo__grid {
-    padding: 1.5rem 0.25rem;
+    padding: 1rem 5px;
+    /* Exact 5px side margin as requested */
+    gap: 1rem;
+    /* Reduce gap slightly for mobile density */
+    grid-template-columns: 1fr;
+    /* Force single column on mobile to control exact margins via padding */
   }
 }
 
 .catalogo__empty {
   grid-column: 1 / -1;
   text-align: center;
-  padding: 4rem 1rem;
+  padding: 2rem 1rem;
   color: var(--text-secondary);
 }
 
@@ -258,7 +278,9 @@
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.6);
-  z-index: 3000;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 9999;
+  /* Ensure it is above everything */
   display: flex;
   justify-content: center;
   align-items: flex-end;
@@ -267,7 +289,9 @@
 }
 
 .modal {
-  background-color: var(--bg-modal);
+  background-color: var(--bg-secondary);
+  /* Use solid card bg instead of potentially transparent modal bg */
+  /* or use a specific solid color if needed, but --bg-card is usually solid in this theme */
   width: 100%;
   max-width: 500px;
   height: 85vh;

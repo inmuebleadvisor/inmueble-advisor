@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 
 const Icons = {
     Close: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
@@ -91,7 +92,7 @@ export default function Delightbox({ isOpen, images = [], initialIndex = 0, onCl
 
     const currentItem = items[currentIndex];
 
-    return (
+    return ReactDOM.createPortal(
         <div style={styles.overlay} onClick={onClose} className="delightbox-overlay">
             <div style={styles.backdrop}></div>
 
@@ -134,8 +135,9 @@ export default function Delightbox({ isOpen, images = [], initialIndex = 0, onCl
                             alt={`Imagen ${currentIndex + 1}`}
                             style={{
                                 ...styles.image,
-                                opacity: isAnimating ? 0.5 : 1, // Simple fade during splice switch
+                                opacity: isAnimating ? 0.5 : 1,
                                 transform: isAnimating ? 'scale(0.98)' : 'scale(1)',
+                                pointerEvents: 'auto' // Re-enable clicks on image itself
                             }}
                             className="delightbox-image"
                         />
@@ -163,7 +165,8 @@ export default function Delightbox({ isOpen, images = [], initialIndex = 0, onCl
                 .delightbox-image { transition: all 0.3s ease; }
                 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
             `}</style>
-        </div>
+        </div>,
+        document.body
     );
 }
 
@@ -173,8 +176,8 @@ const styles = {
         top: 0,
         left: 0,
         width: '100vw',
-        height: '100vh',
-        zIndex: 9999, // Super high z-index
+        height: '100dvh', /* Use dvh for mobile browsers */
+        zIndex: 9999,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -216,20 +219,25 @@ const styles = {
         padding: '20px',
     },
     imageContainer: {
-        position: 'relative',
-        maxWidth: '90%',
-        maxHeight: '90%',
+        width: '100%',
+        height: '100%', /* Ensure container takes full available space to center content */
+        maxWidth: '100%',
+        maxHeight: '100%',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
+        pointerEvents: 'none' /* Let clicks pass through empty space to wrapper */
     },
     image: {
         maxWidth: '100%',
-        maxHeight: '85vh',
+        maxHeight: '80dvh', /* Prevent touching edges on mobile */
+        width: 'auto',
+        height: 'auto',
         objectFit: 'contain',
         borderRadius: '4px',
         boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+        display: 'block' /* Remove inline gap */
     },
     navButton: {
         position: 'absolute',

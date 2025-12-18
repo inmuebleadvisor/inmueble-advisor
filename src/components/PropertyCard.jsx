@@ -178,7 +178,7 @@ export default function PropertyCard({ item, showDevName = true, style }) {
 // --- ESTILOS ---
 const styles = {
   // .card class handles main container bg/border/shadow/radius
-  carouselContainer: { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', width: '100%', height: '220px', position: 'relative', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' },
+  carouselContainer: { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', width: '100%', height: '220px', position: 'relative', backgroundColor: 'var(--bg-tertiary)', overflow: 'hidden' },
   carouselSlide: { minWidth: '100%', height: '100%', scrollSnapAlign: 'center', position: 'relative' },
   image: { width: '100%', height: '100%', objectFit: 'cover' },
   swipeHint: { position: 'absolute', top: '12px', left: '12px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', zIndex: 10 },
@@ -188,7 +188,7 @@ const styles = {
   overlayDevName: { color: 'var(--primary-color)', fontSize: '0.9rem', fontWeight: '700', margin: 0, lineHeight: '1.2', textShadow: '0 2px 4px rgba(0,0,0,0.5)' },
   overlayModelName: { color: 'white', fontSize: '1.4rem', margin: '4px 0 0 0', fontWeight: '800' },
 
-  cardBody: { padding: '16px 0 0 0', display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 },
+  cardBody: { padding: '16px 16px', display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 },
   inlineTitle: { margin: 0, fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-main)' },
   locationRow: { color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'flex', alignItems: 'center' },
   featuresRow: { display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: '500', marginTop: 'auto' },

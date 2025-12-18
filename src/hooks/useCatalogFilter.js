@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { UI_OPCIONES } from '../config/constants';
-import { filterCatalog } from '../services/catalog.service';
+import { filterCatalog, findClosestByPrice } from '../services/catalog.service';
 
 export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
     const { userProfile } = useUser();
@@ -112,6 +112,20 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
         return filterCatalog(dataMaestra, desarrollos, filtros, searchTerm);
     }, [dataMaestra, desarrollos, filtros, searchTerm, loading]);
 
+    // 4. "No Results" Suggestions Logic
+    // If no results, find closest by price.
+    const suggestions = useMemo(() => {
+        if (loading) return [];
+        // Only calculate if main results are empty and we have data
+        if (modelosFiltrados.length === 0 && dataMaestra && dataMaestra.length > 0) {
+            // Only suggest if filtering is active (to avoid suggesting on initial load if empty for other reasons)
+            if (hayFiltrosActivos) {
+                return findClosestByPrice(dataMaestra, filtros);
+            }
+        }
+        return [];
+    }, [modelosFiltrados.length, dataMaestra, filtros, hayFiltrosActivos, loading]);
+
     const limpiarTodo = () => {
         setSearchTerm('');
         const emptyFilters = {
@@ -134,6 +148,7 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
         setSearchTerm,
         hayFiltrosActivos,
         modelosFiltrados,
+        suggestions,
         limpiarTodo
     };
 };

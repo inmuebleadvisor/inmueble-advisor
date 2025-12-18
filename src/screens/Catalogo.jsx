@@ -32,6 +32,7 @@ export default function Catalogo() {
     setSearchTerm,
     hayFiltrosActivos,
     modelosFiltrados,
+    suggestions,
     limpiarTodo
   } = useCatalogFilter(dataMaestra, desarrollos, loading);
 
@@ -95,9 +96,25 @@ export default function Catalogo() {
 
         {modelosFiltrados.length === 0 && (
           <div className="catalogo__empty">
-            <h3>No encontramos resultados</h3>
-            <p>Intenta con otros términos o limpia los filtros.</p>
-            <button onClick={limpiarTodo} className="catalogo__retry-btn">Ver Todo</button>
+            <h3>No encontramos resultados exactos</h3>
+            <p>Intenta ajustar tus filtros o explora estas opciones cercanas a tu presupuesto:</p>
+
+            {suggestions && suggestions.length > 0 && (
+              <div className="catalogo__suggestions">
+
+                <div className="catalogo__grid" style={{ marginTop: '1rem', padding: 0, gap: '1rem' }}>
+                  {suggestions.map((item) => (
+                    <PropertyCard
+                      key={`sugg-${item.id}`}
+                      item={item}
+                      showDevName={true}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <button onClick={limpiarTodo} className="catalogo__retry-btn" style={{ marginTop: '2rem' }}>Ver Todo el Catálogo</button>
           </div>
         )}
       </section>

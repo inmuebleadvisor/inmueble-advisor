@@ -2,7 +2,7 @@
 .card {
     background-color: var(--bg-secondary);
     border-radius: var(--radius-md);
-    padding: 1.5rem;
+    padding: 0;
     box-shadow: var(--shadow-md);
     border: 1px solid var(--border-subtle);
     /* Subtle border for definition */
@@ -40,6 +40,7 @@
 
 /* Card Body */
 .card-body {
+    padding: 1.5rem;
     color: var(--text-secondary);
     font-size: 0.95rem;
 }

@@ -516,3 +516,89 @@ export const filterCatalog = (dataMaestra, desarrollos, filters, searchTerm) => 
     return true;
   });
 };
+
+/**
+ * Finds models closest to a target price.
+ * @param {Array} allModels - Full list of models to search within.
+ * @param {Object} filters - Current active filters.
+ * @param {number} limit - Number of suggestions to return.
+ * @returns {Array} - List of suggested models.
+ */
+export const findClosestByPrice = (allModels, filters, limit = 3) => {
+  if (!allModels || allModels.length === 0) return [];
+
+  // 1. Determine Target Price
+  // If user set a range: use average. If only max: use max. If no price filter: use average of dataset (or median).
+  // Strategy: Try to respect the "intention".
+  let targetPrice = 0;
+
+  if (filters.precioMax < 20000000 && filters.precioMax > 0) {
+    if (filters.precioMin > 0) {
+      targetPrice = (filters.precioMin + filters.precioMax) / 2;
+    } else {
+      targetPrice = filters.precioMax;
+    }
+  }
+
+  // If targetPrice is still 0 (e.g. user filtered by rooms but not price), use median or a reasonable default?
+  // User request says: "Mostrarle los más cercano en precio a lo que está pidiendo".
+  // If they didn't ask for a price, maybe we shouldn't guess price proximity?
+  // But usually there's *some* context (like a user profile budget).
+  // Let's assume if targetPrice is 0 here, we might want to skip price suggestions OR use the Profile Budget if available (already handled in hook default filters).
+  // If filters.precioMax is default (Max), targetPrice will be Max. We probably want something closer to reality.
+  // Let's stick to: if no explicit filter, we don't suggest by price. 
+  // Wait, if no results for "3 rooms" but price is "Any", finding "closest to Any price" is meaningless.
+  // In that case, maybe suggest "Similar rooms" but in different city?
+  // The requirement specifically says: "Mostrarle los más cercano en precio".
+  // So we will assume price is the pivot.
+
+  // 2. Filter Candidates (Must be in same City/Context if possible)
+  // We should NOT suggest properties in Cancun if I'm looking in Merida.
+  // We DO relax: Zone, Rooms, Status, Type.
+
+  // We need to infer the current "City Scope" from the full dataset if not explicitly filtered?
+  // Actually, 'allModels' usually comes pre-filtered by City if the user selected one in Context.
+  // But let's double check if we have city access here. 
+  // 'allModels' passed here should be the "Master List" (already city-filtered if the app works that way, or full DB).
+  // In `useCatalogFilter`, `dataMaestra` is passed. `dataMaestra` depends on `cacheModelos` which DOES depend on `ciudadFilter` in `obtenerDatosUnificados`.
+  // So `allModels` is ALREADY scoped to the City. Great.
+
+  const candidates = allModels.filter(m => {
+    // Basic validity
+    if (!m.activo) return false;
+    // Must have a price to calculate distance
+    const p = m.precioNumerico || 0;
+    return p > 0;
+  });
+
+  if (candidates.length === 0) return [];
+
+  // If we didn't get a specific target Price from filters (e.g. range was default 0-Infinity),
+  // we might want to take the median of candidates to show "Popular" ones?
+  // Or just return the cheapest?
+  // Let's use the 'presupuesto' from filters if valid, otherwise median.
+  // Actually, `useCatalogFilter` defaults `precioMax` to `UI_OPCIONES.FILTRO_PRECIO_MAX` (e.g. 20M+).
+  // If filter is Default Max, we shouldn't use 20M as target.
+  // Let's check against a threshold to see if it's "User defined".
+  const IS_DEFAULT_MAX = filters.precioMax >= 15000000; // Threshold
+
+  if (targetPrice === 0 || (filters.precioMin === 0 && IS_DEFAULT_MAX)) {
+    // User didn't specify price.
+    // Strategy: Return random or "Featured"?
+    // Requirement: "closest to price they are asking".
+    // If they didn't ask, we can't show closest.
+    // But maybe they have a Profile Budget? The hook sets `precioMax` from profile if available.
+    // So if it's not default, we use it.
+    // If it IS default, we return 3 random (or top) properties as fallback?
+    // "Suggestions" implies smarts. Let's return the most affordable ones (often best hook).
+    // OR let's sorting by price ascending.
+    return candidates.sort((a, b) => (a.precioNumerico || 0) - (b.precioNumerico || 0)).slice(0, limit);
+  }
+
+  // 3. Sort by Distance to Target Price
+  return candidates.sort((a, b) => {
+    const distA = Math.abs((a.precioNumerico || 0) - targetPrice);
+    const distB = Math.abs((b.precioNumerico || 0) - targetPrice);
+    return distA - distB;
+  }).slice(0, limit);
+};
