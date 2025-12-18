@@ -11,7 +11,7 @@ const HeartIcon = ({ filled }) => (
     fill={filled ? "#ef4444" : "none"}
     stroke={filled ? "#ef4444" : "var(--base-brand-blue)"}
     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    style={{ transition: 'all 0.3s ease', transform: filled ? 'scale(1.1)' : 'scale(1)' }}
+    style={{ transition: 'all 0.3s ease', transform: filled ? 'scale(1.1)' : 'scale(0.8)' }}
   >
     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
   </svg>
