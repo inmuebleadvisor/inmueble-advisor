@@ -16,8 +16,9 @@ import SearchBar from '../components/shared/SearchBar';
 import FilterBar from '../components/shared/FilterBar';
 import FilterModal from '../components/shared/FilterModal';
 
-// Styles (Imported to ensure shared components look correct)
+// Styles
 import '../styles/Catalogo.css';
+import '../styles/Mapa.css';
 
 const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
 
@@ -82,11 +83,10 @@ const ControlZoom = ({ marcadores }) => {
 export default function Mapa() {
   const { trackBehavior } = useUser();
   const { modelos: dataMaestra, desarrollos: dataDesarrollos, amenidades: topAmenidades, loadingCatalog: loading } = useCatalog();
-  const { favoritasIds, isFavorite } = useFavorites(); // Integracion de favoritos
+  const { favoritasIds, isFavorite } = useFavorites();
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Use Shared Logic
   const {
     filtros,
     setFiltros,
@@ -97,23 +97,17 @@ export default function Mapa() {
     limpiarTodo
   } = useCatalogFilter(dataMaestra, dataDesarrollos, loading);
 
-  // 3. LÓGICA DE AGRUPACIÓN (De Modelos Filtrados -> Desarrollos)
   const marcadoresVisibles = useMemo(() => {
     if (loading) return [];
     if (!dataDesarrollos || dataDesarrollos.length === 0) return [];
     if (!modelosFiltrados) return [];
 
-    // Conjunto de IDs de desarrollo que tienen modelos que pasaron el filtro
     const idsDesarrollosVisibles = new Set(modelosFiltrados.map(m => String(m.idDesarrollo)));
 
     return dataDesarrollos.map(dev => {
-      // 1. Validar que el desarrollo tenga modelos visibles
       if (!idsDesarrollosVisibles.has(String(dev.id))) return null;
-
-      // 2. Validar Ubicación
       if (!dev.ubicacion?.latitud || !dev.ubicacion?.longitud) return null;
 
-      // Generación de Etiqueta de Precio (Basado solo en los modelos filtrados)
       const modelosHijosFiltrados = modelosFiltrados.filter(m => String(m.idDesarrollo) === String(dev.id));
 
       let etiqueta = "$ Consultar";
@@ -130,13 +124,8 @@ export default function Mapa() {
 
         etiqueta = formatCompact(min);
         if (min !== max) etiqueta = `${formatCompact(min)} - ${formatCompact(max)}`;
-      } else if (dev.precioDesde) {
-        // Fallback por si acaso, aunque no deberia pasar si filtramos por modelos
-        etiqueta = `$${(dev.precioDesde / 1000000).toFixed(1)}M`;
       }
 
-      // Determinamos si el desarrollo tiene algun modelo favorito
-      // Revisamos TODOS los modelos del desarrollo, no solo los filtrados
       const todosModelosDelDesarrollo = dataMaestra.filter(m => String(m.idDesarrollo) === String(dev.id));
       const tieneFavorito = todosModelosDelDesarrollo.some(m => isFavorite(m.id));
 
@@ -157,22 +146,19 @@ export default function Mapa() {
 
   if (loading) {
     return (
-      <div className="main-content" style={{ ...styles.pageContainer, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="map-view map-view--loading" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: 'var(--text-secondary)' }}>Cargando mapa...</p>
       </div>
     );
   }
 
   return (
-    <div className="main-content" style={styles.pageContainer}>
-
-      {/* Replaced Header with Shared Components */}
-      {/* Replaced Header with Shared Components */}
-      <div style={{ padding: '0', backgroundColor: 'var(--bg-main)', borderBottom: '1px solid var(--border-subtle)' }}>
-        <header style={styles.header}>
-          <div style={styles.headerContent}>
-            <h1 style={styles.title}>Mapa Interactivo</h1>
-            <p style={styles.subtitle}>{marcadoresVisibles.length} desarrollos encontrados</p>
+    <div className="map-view">
+      <div className="map-view__controls">
+        <header className="map-view__header">
+          <div className="map-view__header-content">
+            <h1 className="map-view__title">Mapa Interactivo</h1>
+            <p className="map-view__subtitle">{marcadoresVisibles.length} desarrollos encontrados</p>
           </div>
         </header>
 
@@ -189,7 +175,7 @@ export default function Mapa() {
         />
       </div>
 
-      <div style={styles.mapContainer}>
+      <div className="map-view__container">
         <MapContainer
           center={centroMapa}
           zoom={12}
@@ -213,19 +199,19 @@ export default function Mapa() {
               }}
             >
               <Popup className="custom-popup">
-                <div style={styles.popupContent}>
+                <div className="map-popup__content">
                   <img
                     src={dev.portada || FALLBACK_IMG}
                     alt={dev.nombre}
-                    style={styles.popupImage}
+                    className="map-popup__image"
                     onError={(e) => e.target.src = FALLBACK_IMG}
                   />
-                  <h4 style={styles.popupTitle}>{dev.nombre}</h4>
-                  <p style={styles.popupPrice}>{dev.etiquetaPrecio}</p>
-                  <p style={styles.popupLocation}>{dev.zona || 'Aguascalientes'}</p>
+                  <h4 className="map-popup__title">{dev.nombre}</h4>
+                  <p className="map-popup__price">{dev.etiquetaPrecio}</p>
+                  <p className="map-popup__location">{dev.zona || 'Aguascalientes'}</p>
                   <Link
                     to={`/desarrollo/${dev.id}`}
-                    style={styles.popupButton}
+                    className="map-popup__button"
                   >
                     Ver Desarrollo
                   </Link>
@@ -235,25 +221,9 @@ export default function Mapa() {
           ))}
         </MapContainer>
 
-        {/* Leyenda del Mapa */}
-        <div style={{
-          position: 'absolute',
-          bottom: '20px',
-          left: '20px',
-          backgroundColor: 'var(--bg-secondary)',
-          padding: '10px 15px',
-          borderRadius: '8px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-          zIndex: 1000,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          fontSize: '0.85rem',
-          fontWeight: '500',
-          color: 'var(--text-secondary)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '12px', height: '12px', backgroundColor: '#8B0000', borderRadius: '50%', display: 'inline-block' }}></span>
+        <div className="map-view__legend">
+          <div className="map-view__legend-item">
+            <span className="map-view__legend-color map-view__legend-color--favorite"></span>
             <span>En rojo los Favoritos.</span>
           </div>
         </div>
@@ -271,18 +241,3 @@ export default function Mapa() {
     </div>
   );
 }
-
-// Cleaned up styles - removed filter/modal specific styles
-const styles = {
-  pageContainer: { display: 'flex', flexDirection: 'column', height: 'calc(100vh - 60px)', fontFamily: "'Segoe UI', sans-serif", overflow: 'hidden', position: 'relative', zIndex: 2 },
-  header: { backgroundColor: 'var(--bg-main)', padding: '15px 20px 5px 20px' },
-  title: { color: 'var(--text-main)', margin: 0, fontSize: '1.4rem', fontWeight: '800' },
-  subtitle: { color: 'var(--text-main)', margin: '2px 0 0 0', fontSize: '0.9rem' },
-  mapContainer: { flex: 1, width: '100%', position: 'relative', zIndex: 1 },
-  popupContent: { textAlign: 'center', width: '160px' },
-  popupImage: { width: '100%', height: '80px', objectFit: 'cover', borderRadius: '8px', marginBottom: '8px', backgroundColor: 'var(--bg-main)' },
-  popupTitle: { margin: '0 0 4px 0', fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--text-main)' },
-  popupPrice: { margin: '0 0 4px 0', fontSize: '0.9rem', fontWeight: '800', color: 'var(--primary-color)' },
-  popupLocation: { margin: '0 0 8px 0', fontSize: '0.8rem', color: 'var(--text-secondary)' },
-  popupButton: { display: 'block', backgroundColor: 'var(--base-brand-blue)', color: 'white', padding: '8px', borderRadius: '6px', textDecoration: 'none', fontSize: '0.8rem', fontWeight: 'bold' },
-};
