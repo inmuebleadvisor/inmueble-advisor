@@ -1,0 +1,160 @@
+/* src/styles/Perfil.css */
+/* Styles based strictly on GuiadeEstilos.md variables */
+
+.hero-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    /* Align to top */
+    min-height: 80vh;
+    width: 100%;
+    padding: 20px 20px 40px 20px;
+    /* 20px from header (top) */
+    text-align: center;
+    background-color: transparent;
+    animation: fadeIn 0.6s ease-out;
+    position: relative;
+    z-index: 10;
+    /* Ensure container is above background effects if needed */
+}
+
+.hero-content {
+    max-width: 800px;
+    width: 100%;
+    padding: 40px;
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-subtle);
+    position: relative;
+    /* Create stacking context */
+    z-index: 50;
+    /* High z-index to sit above falling snow */
+}
+
+.hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.highlight-text {
+    color: var(--primary-color);
+}
+
+.hero-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 3rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hero-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    width: 100%;
+}
+
+/* Visibility Utilities */
+.desktop-only {
+    display: none;
+}
+
+@media (min-width: 640px) {
+    .hero-actions {
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    .desktop-only {
+        display: inline;
+    }
+}
+
+.btn-cta-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--primary-color);
+    color: var(--text-inverse);
+    padding: 16px 32px;
+    border-radius: 50px;
+    border: none;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+    box-shadow: var(--shadow-glow);
+    width: 100%;
+    max-width: 350px;
+}
+
+.btn-cta-primary:hover {
+    transform: translateY(-2px);
+    background-color: var(--primary-hover);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-cta-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    color: var(--text-main);
+    padding: 16px 32px;
+    border-radius: 50px;
+    border: 2px solid var(--border-strong);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    max-width: 350px;
+}
+
+.btn-cta-secondary:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background-color: var(--bg-tertiary);
+}
+
+.login-link-container {
+    margin-top: 2rem;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 1.5rem;
+    width: 100%;
+}
+
+.btn-text-link {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+
+.btn-text-link:hover {
+    color: var(--primary-color);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

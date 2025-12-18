@@ -1,20 +1,22 @@
 // src/screens/OnboardingCliente.jsx
+// ÚLTIMA MODIFICACION: 17/12/2025 - Refactor Buyer First (Numeric Inputs + Micro-interactions)
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { obtenerDatosUnificados } from '../services/catalog.service';
-import { FINANZAS, IMAGES } from '../config/constants';
+import { FINANZAS } from '../config/constants';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import '../styles/Onboarding.css'; // Importamos estilos dedicados
 
-// Clave para guardar el progreso en el navegador (Persistencia ante recargas)
 const STORAGE_KEY = 'inmueble_advisor_onboarding_cliente_temp';
 
 export default function OnboardingCliente() {
     const navigate = useNavigate();
-    const { loginWithGoogle, trackBehavior, user, loadingUser, userProfile } = useUser();
+    const { loginWithGoogle, trackBehavior, user, loadingUser } = useUser();
 
-    // --- 1. ESTADOS CON RECUPERACIÓN (Persistencia) ---
+    // --- 1. ESTADOS (Persistencia) ---
     const getSavedState = (key, def) => {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
@@ -26,24 +28,27 @@ export default function OnboardingCliente() {
         return def;
     };
 
-    // Step comienza en 1 porque el 0 es la selección de rol en Perfil.jsx
     const [step, setStep] = useState(() => getSavedState('step', 1));
-    // Total steps relativo a este flujo (1, 2, 3) -> Total 3 pasos en este wizard
     const totalSteps = 3;
-
     const [isSaving, setIsSaving] = useState(false);
 
+    // Datos del formulario
     const [capitalInicial, setCapitalInicial] = useState(() => getSavedState('capitalInicial', 250000));
     const [mensualidad, setMensualidad] = useState(() => getSavedState('mensualidad', 15000));
     const [recamaras, setRecamaras] = useState(() => getSavedState('recamaras', null));
     const [entregaInmediata, setEntregaInmediata] = useState(() => getSavedState('entregaInmediata', null));
 
+    // Estados derivados
     const [dataMaestra, setDataMaestra] = useState([]);
     const [presupuestoMaximo, setPresupuestoMaximo] = useState(0);
     const [notaDinamica, setNotaDinamica] = useState('');
     const [esAlerta, setEsAlerta] = useState(false);
 
-    // --- 2. EFECTO DE GUARDADO AUTOMÁTICO ---
+    // Micro-interacciones
+    const [microFeedback, setMicroFeedback] = useState('');
+    const [showLoginModal, setShowLoginModal] = useState(false); // Modal Pre-Login
+
+    // --- 2. EFECTOS ---
     useEffect(() => {
         const estadoAGuardar = { step, capitalInicial, mensualidad, recamaras, entregaInmediata };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(estadoAGuardar));
@@ -51,19 +56,12 @@ export default function OnboardingCliente() {
 
     const formatoMoneda = (val) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
 
-    // --- 3. LÓGICA DE REDIRECCIÓN INTELIGENTE (Similar a Perfil, pero ajustada) ---
-
-
-    // Carga de Datos Catálogo
+    // Carga de Datos
     useEffect(() => {
-        const cargar = async () => {
-            const datos = await obtenerDatosUnificados();
-            setDataMaestra(datos);
-        };
-        cargar();
+        obtenerDatosUnificados().then(setDataMaestra);
     }, []);
 
-    // Lógica Financiera
+    // Cálculo Financiero
     useEffect(() => {
         const { PORCENTAJE_GASTOS_NOTARIALES, PORCENTAJE_ENGANCHE_MINIMO, FACTOR_MENSUALIDAD_POR_MILLON } = FINANZAS;
         const maxCreditoBanco = (mensualidad / FACTOR_MENSUALIDAD_POR_MILLON) * 1000000;
@@ -73,24 +71,17 @@ export default function OnboardingCliente() {
 
         setPresupuestoMaximo(capacidadReal);
 
-        if (capacidadReal > 0) {
-            const costoTotalInicial = capacidadReal * (PORCENTAJE_ENGANCHE_MINIMO + PORCENTAJE_GASTOS_NOTARIALES);
-            const remanente = Math.max(0, capitalInicial - costoTotalInicial);
-            const pctEnganche = (PORCENTAJE_ENGANCHE_MINIMO * 100).toFixed(0);
-            const pctNotaria = (PORCENTAJE_GASTOS_NOTARIALES * 100).toFixed(0);
-            const mensajeBase = `Incluye gastos notariales (${pctNotaria}%) y enganche (${pctEnganche}%).`;
-
-            if (limitePorEfectivo < (limitePorCapacidadTotal - 50000)) {
-                setNotaDinamica(mensajeBase + " (Tu efectivo limita tu compra, podrías pagar más mensualidad si tuvieras más ahorro).");
-                setEsAlerta(true);
-            } else {
-                setNotaDinamica(mensajeBase);
-                setEsAlerta(false);
-            }
+        // Lógica de alerta (simplificada para legibilidad)
+        if (capacidadReal > 0 && limitePorEfectivo < (limitePorCapacidadTotal - 50000)) {
+            setNotaDinamica("Tu efectivo inicial limita tu monto máximo.");
+            setEsAlerta(true);
+        } else {
+            setNotaDinamica("Incluye gastos notariales y enganche.");
+            setEsAlerta(false);
         }
     }, [capitalInicial, mensualidad]);
 
-    // Conteo
+    // Opciones encontradas
     const opcionesEncontradas = useMemo(() => {
         if (presupuestoMaximo === 0 || dataMaestra.length === 0) return 0;
         return dataMaestra.filter(item => {
@@ -103,10 +94,15 @@ export default function OnboardingCliente() {
     }, [presupuestoMaximo, recamaras, entregaInmediata, dataMaestra]);
 
     // --- HANDLERS ---
-
     const nextStep = () => {
         if (step < totalSteps) {
             trackBehavior('step_completed', { step_number: step });
+
+            // Micro-Feedback Visual (Sin clicks extra)
+            const mensajes = ["¡Excelente comienzo!", "¡Ya casi terminamos!", ""];
+            setMicroFeedback(mensajes[step - 1]);
+            setTimeout(() => setMicroFeedback(''), 2000);
+
             setStep(step + 1);
         }
     };
@@ -115,23 +111,30 @@ export default function OnboardingCliente() {
         if (step > 1) {
             setStep(step - 1);
         } else {
-            // Si estamos en el primer paso del onboarding y damos atrás, volvemos al perfil
             navigate('/');
         }
     };
 
+    // Disparador del Modal de Confirmación
+    const handlePreFinalizar = () => {
+        if (!user) {
+            setShowLoginModal(true);
+        } else {
+            handleFinalizar(); // Si ya está logueado, pasa directo
+        }
+    };
+
+    // Acción Real de Finalización (Login + Save)
     const handleFinalizar = async () => {
         setIsSaving(true);
+        setShowLoginModal(false);
         try {
             let firebaseUser = user;
-
             if (!firebaseUser) {
-                // Login con Google
                 firebaseUser = await loginWithGoogle('cliente');
             }
 
             if (firebaseUser) {
-                // Guardado de datos
                 const updates = {
                     uid: firebaseUser.uid,
                     email: firebaseUser.email,
@@ -148,12 +151,6 @@ export default function OnboardingCliente() {
 
                 await setDoc(doc(db, "users", firebaseUser.uid), updates, { merge: true });
 
-                trackBehavior('onboarding_completed', {
-                    presupuesto: presupuestoMaximo,
-                    opciones_vistas: opcionesEncontradas
-                });
-
-                // Redirección explícita
                 const statusParam = entregaInmediata === true ? 'inmediata' : (entregaInmediata === false ? 'preventa' : 'all');
                 const maxPrice = presupuestoMaximo > 0 ? Math.round(presupuestoMaximo) : '';
                 const rooms = recamaras || '';
@@ -162,9 +159,9 @@ export default function OnboardingCliente() {
                 navigate(`/catalogo?maxPrice=${maxPrice}&rooms=${rooms}&status=${statusParam}`, { replace: true });
             }
         } catch (error) {
-            console.error("Error en finalización:", error);
+            console.error(error);
             if (error.code !== 'auth/popup-closed-by-user') {
-                alert("Hubo un problema al conectar. Intenta de nuevo.");
+                alert("Hubo un problema al conectar.");
             }
         } finally {
             if (!user) setIsSaving(false);
@@ -177,56 +174,81 @@ export default function OnboardingCliente() {
     };
 
     return (
-        <div style={styles.container}>
-            {/* Reutilizando estilos en línea por consistencia con Perfil.jsx inicial, idealmente mover a CSS */}
-            <style>{`
-          @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-          .step-content { animation: slideIn 0.4s ease-out forwards; width: 100%; }
-          input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-          input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: var(--primary-color); cursor: pointer; margin-top: -10px; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
-          input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #e0e0e0; border-radius: 3px; }
-      `}</style>
+        <div className="onboarding-container">
+            <div className="onboarding-card">
 
-            <div style={styles.card}>
-                <div style={styles.progressBarContainer}>
-                    {/* Calculamos progreso basado en 3 pasos */}
-                    <div style={{ ...styles.progressBarFill, width: `${(step / totalSteps) * 100}%` }}></div>
+                {/* Barra de Progreso */}
+                <div className="progress-bar-container">
+                    <div className="progress-bar-fill" style={{ width: `${(step / totalSteps) * 100}%` }}></div>
+                </div>
+
+                {/* Feedback "Microporras" */}
+                <div className={`micro-feedback ${microFeedback ? 'visible' : ''}`}>
+                    {microFeedback}
                 </div>
 
                 <div className="step-content" key={step}>
 
                     {step === 1 && (
                         <>
-                            <h1 style={styles.title}>Dime qué buscas</h1>
-                            <p style={styles.subtitle}>Filtraremos las mejores opciones para ti.</p>
-                            <label style={styles.label}>Recámaras mínimas:</label>
-                            <div style={styles.optionsContainer}>
+                            <h1 className="onboarding-title">Dime qué buscas</h1>
+                            <p className="onboarding-subtitle">Filtraremos las mejores opciones para ti.</p>
+
+                            <label className="input-label">Recámaras mínimas:</label>
+                            <div className="options-container">
                                 {[1, 2, 3, 4].map((num) => (
-                                    <button key={num} onClick={() => setRecamaras(num)} style={{ ...styles.circleBtn, backgroundColor: recamaras === num ? 'var(--primary-color)' : '#f0f0f0', color: recamaras === num ? 'white' : '#555', transform: recamaras === num ? 'scale(1.1)' : 'scale(1)' }}>{num === 4 ? '4+' : num}</button>
+                                    <button
+                                        key={num}
+                                        onClick={() => setRecamaras(num)}
+                                        className={`circle-btn ${recamaras === num ? 'active' : ''}`}
+                                    >
+                                        {num === 4 ? '4+' : num}
+                                    </button>
                                 ))}
                             </div>
-                            <label style={{ ...styles.label, marginTop: '20px' }}>Tiempo de entrega:</label>
-                            <div style={styles.deliveryContainer}>
-                                <button onClick={() => setEntregaInmediata(true)} style={{ ...styles.deliveryBtn, backgroundColor: entregaInmediata === true ? 'var(--primary-color)' : 'white', color: entregaInmediata === true ? 'white' : '#555', borderColor: entregaInmediata === true ? 'var(--primary-color)' : '#eee' }}>Entrega inmediata</button>
-                                <button onClick={() => setEntregaInmediata(false)} style={{ ...styles.deliveryBtn, backgroundColor: entregaInmediata === false ? 'var(--primary-color)' : 'white', color: entregaInmediata === false ? 'white' : '#555', borderColor: entregaInmediata === false ? 'var(--primary-color)' : '#eee' }}>Pre-venta</button>
+
+                            <label className="input-label" style={{ marginTop: '20px' }}>Tiempo de entrega:</label>
+                            <div className="delivery-container">
+                                <button onClick={() => setEntregaInmediata(true)} className={`delivery-btn ${entregaInmediata === true ? 'active' : ''}`}>Entrega inmediata</button>
+                                <button onClick={() => setEntregaInmediata(false)} className={`delivery-btn ${entregaInmediata === false ? 'active' : ''}`}>Pre-venta</button>
                             </div>
                         </>
                     )}
 
                     {step === 2 && (
                         <>
-                            <h1 style={styles.title}>Hablemos de números</h1>
-                            <p style={styles.subtitle}>Sin compromiso. Ajusta los valores para ver tu capacidad real.</p>
-                            <div style={styles.calculatorBox}>
-                                <div style={styles.calcInputGroup}>
-                                    <label style={styles.labelSmall}>Ahorros disponibles (Enganche + Gastos):</label>
-                                    <div style={styles.sliderValue}>{formatoMoneda(capitalInicial)}</div>
-                                    <input type="range" min="50000" max="3000000" step="10000" value={capitalInicial} onChange={(e) => setCapitalInicial(Number(e.target.value))} />
+                            <h1 className="onboarding-title">Hablemos de números</h1>
+                            <p className="onboarding-subtitle">Ajusta los valores para ver tu capacidad real.</p>
+
+                            <div className="calculator-box">
+                                <div className="calc-input-group">
+                                    <label className="input-label">Ahorros disponibles:</label>
+                                    <input
+                                        type="number"
+                                        className="numeric-input-field"
+                                        value={capitalInicial}
+                                        onChange={(e) => setCapitalInicial(Number(e.target.value))}
+                                    />
+                                    <input
+                                        type="range" min="50000" max="3000000" step="10000"
+                                        value={capitalInicial}
+                                        onChange={(e) => setCapitalInicial(Number(e.target.value))}
+                                    />
                                 </div>
-                                <div style={styles.calcInputGroup}>
-                                    <label style={styles.labelSmall}>Mensualidad cómoda:</label>
-                                    <div style={styles.sliderValue}>{formatoMoneda(mensualidad)}</div>
-                                    <input type="range" min="5000" max="150000" step="1000" value={mensualidad} onChange={(e) => setMensualidad(Number(e.target.value))} />
+
+                                <div className="calc-input-group">
+                                    <label className="input-label">Mensualidad cómoda:</label>
+                                    <input
+                                        type="number"
+                                        className="numeric-input-field"
+                                        value={mensualidad}
+                                        onChange={(e) => setMensualidad(Number(e.target.value))}
+                                    />
+                                    <input
+                                        type="range" min="5000" max="150000" step="1000"
+                                        value={mensualidad}
+                                        onChange={(e) => setMensualidad(Number(e.target.value))}
+                                    />
                                 </div>
                             </div>
                         </>
@@ -234,65 +256,53 @@ export default function OnboardingCliente() {
 
                     {step === 3 && (
                         <>
-                            <h1 style={styles.title}>¡Listo!</h1>
-                            <p style={styles.subtitle}>Basado en tus finanzas, este es el valor máximo de propiedad que te recomendamos:</p>
-                            <div style={styles.finalResultBox}>
-                                <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Tu Presupuesto Máximo:</span>
-                                <div style={styles.finalAmount}>{formatoMoneda(presupuestoMaximo)}</div>
-                                <div style={{ ...styles.resultNote, color: esAlerta ? '#fff9c4' : 'white', fontWeight: '500' }}>{notaDinamica}</div>
+                            <h1 className="onboarding-title">¡Listo!</h1>
+                            <p className="onboarding-subtitle">Este es el valor de propiedad recomendado:</p>
+
+                            <div className="final-result-box">
+                                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', margin: '10px 0' }}>
+                                    {formatoMoneda(presupuestoMaximo)}
+                                </div>
+                                <div style={{ fontSize: '0.95rem', opacity: 0.9 }}>{notaDinamica}</div>
                             </div>
-                            <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '20px' }}>
-                                {dataMaestra.length > 0 ? (
-                                    opcionesEncontradas > 0
-                                        ? `Hemos analizado el mercado y encontramos ${opcionesEncontradas} opciones para ti.`
-                                        : "Con estos parámetros, el mercado está limitado. Ajusta tus filtros para encontrar más opciones."
-                                ) : "Cargando datos del mercado..."}
+
+                            <p style={{ marginTop: '20px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                                {opcionesEncontradas > 0
+                                    ? `Encontramos ${opcionesEncontradas} opciones para ti.`
+                                    : "El mercado está limitado con estos filtros."}
                             </p>
                         </>
                     )}
                 </div>
 
-                <div style={styles.navContainer}>
-                    <button onClick={prevStep} style={styles.secondaryButton}>Atrás</button>
+                <div className="nav-container">
+                    <button onClick={prevStep} className="btn-secondary">Atrás</button>
                     <button
-                        onClick={step < totalSteps ? nextStep : handleFinalizar}
+                        onClick={step < totalSteps ? nextStep : handlePreFinalizar}
                         disabled={!isStepValid() || isSaving}
-                        style={{
-                            ...styles.primaryButton,
-                            opacity: (!isStepValid() || isSaving) ? 0.5 : 1,
-                            backgroundColor: step === totalSteps ? '#28a745' : 'var(--primary-color)'
-                        }}
+                        className="btn-primary"
                     >
-                        {step === totalSteps
-                            ? (isSaving ? 'Procesando...' : 'Ver Propiedades')
-                            : 'Siguiente 👉'}
+                        {step === totalSteps ? (isSaving ? 'Procesando...' : 'Ver Propiedades') : 'Siguiente'}
                     </button>
                 </div>
+
+                {/* MODAL PRE-LOGIN */}
+                {showLoginModal && (
+                    <div className="modal-overlay">
+                        <div className="modal-content">
+                            <h3>🔐 Datos Seguros</h3>
+                            <p style={{ marginBottom: '20px', color: 'var(--text-secondary)' }}>
+                                Para guardar tu perfil y buscarte las mejores opciones, necesitamos crear una cuenta segura.
+                            </p>
+                            <div className="modal-actions">
+                                <button onClick={() => setShowLoginModal(false)} className="btn-secondary">Cancelar</button>
+                                <button onClick={handleFinalizar} className="btn-primary">Continuar con Google</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
             </div>
         </div>
     );
 }
-
-const styles = {
-    container: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '85vh', width: '100%', padding: '20px', boxSizing: 'border-box' },
-    card: { backgroundColor: 'white', padding: '40px 30px', borderRadius: '25px', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', maxWidth: '500px', width: '100%', textAlign: 'center', position: 'relative', overflow: 'hidden', minHeight: '500px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' },
-    progressBarContainer: { position: 'absolute', top: 0, left: 0, width: '100%', height: '6px', backgroundColor: '#f0f0f0' },
-    progressBarFill: { height: '100%', backgroundColor: 'var(--primary-color)', transition: 'width 0.5s ease' },
-    title: { color: 'var(--primary-color)', marginBottom: '10px', fontSize: '1.8rem', fontWeight: '800' },
-    subtitle: { color: '#666', marginBottom: '30px', fontSize: '1rem', lineHeight: '1.5' },
-    label: { display: 'block', fontWeight: 'bold', color: '#333', marginBottom: '10px', textAlign: 'left' },
-    optionsContainer: { display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '10px' },
-    circleBtn: { width: '55px', height: '55px', borderRadius: '50%', border: 'none', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.3s ease' },
-    deliveryContainer: { display: 'flex', gap: '10px' },
-    deliveryBtn: { flex: 1, padding: '15px 5px', borderRadius: '15px', border: '2px solid', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold', transition: 'all 0.3s ease' },
-    calculatorBox: { backgroundColor: '#f9fcff', borderRadius: '20px', padding: '20px', border: '1px solid #eef' },
-    calcInputGroup: { marginBottom: '25px', textAlign: 'left' },
-    labelSmall: { fontSize: '0.9rem', color: '#555', fontWeight: '600', display: 'block', marginBottom: '5px' },
-    sliderValue: { fontSize: '1.4rem', fontWeight: 'bold', color: 'var(--primary-color)', marginBottom: '5px' },
-    finalResultBox: { backgroundColor: 'var(--primary-color)', color: 'white', padding: '30px', borderRadius: '20px', boxShadow: '0 10px 25px rgba(0,57,106,0.25)', animation: 'pulse 2s infinite' },
-    finalAmount: { fontSize: '2.5rem', fontWeight: 'bold', margin: '10px 0' },
-    resultNote: { fontSize: '0.95rem', lineHeight: '1.5', padding: '0 10px' },
-    navContainer: { display: 'flex', gap: '15px', marginTop: '30px' },
-    primaryButton: { flex: 2, backgroundColor: 'var(--primary-color)', color: 'white', border: 'none', padding: '18px', fontSize: '1.1rem', borderRadius: '50px', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' },
-    secondaryButton: { flex: 1, backgroundColor: 'transparent', color: '#888', border: '2px solid #eee', padding: '18px', fontSize: '1rem', borderRadius: '50px', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s' }
-};
