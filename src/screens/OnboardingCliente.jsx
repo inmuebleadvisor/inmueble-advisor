@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { obtenerDatosUnificados } from '../services/catalog.service';
+import { catalogService } from '../services/serviceProvider';
 import { FINANZAS } from '../config/constants';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -58,7 +58,7 @@ export default function OnboardingCliente() {
 
     // Carga de Datos
     useEffect(() => {
-        obtenerDatosUnificados().then(setDataMaestra);
+        catalogService.obtenerDatosUnificados().then(setDataMaestra);
     }, []);
 
     // Cálculo Financiero

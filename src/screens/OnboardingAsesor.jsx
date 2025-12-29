@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { obtenerInventarioDesarrollos } from '../services/catalog.service';
+import { catalogService } from '../services/serviceProvider';
 
 const CheckIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>;
 
@@ -39,7 +39,7 @@ export default function OnboardingAsesor() {
     const cargar = async () => {
       setLoadingData(true);
       try {
-        const data = await obtenerInventarioDesarrollos();
+        const data = await catalogService.obtenerInventarioDesarrollos();
         setInventarioDB(data);
       } catch (error) {
         console.error("Error al cargar inventario:", error);

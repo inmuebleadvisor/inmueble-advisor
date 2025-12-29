@@ -2,13 +2,7 @@
 // ÚLTIMA MODIFICACION: 02/12/2025
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import {
-  obtenerDatosUnificados,
-  obtenerInventarioDesarrollos,
-  obtenerTopAmenidades
-} from '../services/catalog.service';
-import { getPlatformSettings } from '../services/config.service';
-
+import { catalogService, configService } from '../services/serviceProvider';
 import { useUser } from './UserContext'; // Importamos UserContext
 
 const CatalogContext = createContext();
@@ -44,9 +38,9 @@ export const CatalogProvider = ({ children }) => {
           console.log("⏳ Esperando selección de ciudad (Carga de modelos pausada)...");
           // Aún cargamos configuración y desarrollos (ligero) para el sistema
           const [desarrollosData, amenidadesData, settings] = await Promise.all([
-            obtenerInventarioDesarrollos(),
-            obtenerTopAmenidades(),
-            getPlatformSettings()
+            catalogService.obtenerInventarioDesarrollos(),
+            catalogService.obtenerTopAmenidades(),
+            configService.getPlatformSettings()
           ]);
           desarrollosResult = desarrollosData;
           amenidadesResult = amenidadesData;
@@ -54,10 +48,10 @@ export const CatalogProvider = ({ children }) => {
         } else {
           console.log("🔄 Iniciando carga de catálogo filtrado (Ciudad: " + selectedCity + ")...");
           const [modelosData, desarrollosData, amenidadesData, settings] = await Promise.all([
-            obtenerDatosUnificados(selectedCity),
-            obtenerInventarioDesarrollos(),
-            obtenerTopAmenidades(),
-            getPlatformSettings()
+            catalogService.obtenerDatosUnificados(selectedCity),
+            catalogService.obtenerInventarioDesarrollos(),
+            catalogService.obtenerTopAmenidades(),
+            configService.getPlatformSettings()
           ]);
           modelosResult = modelosData;
           desarrollosResult = desarrollosData;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { obtenerCiudadesDisponibles } from '../../services/catalog.service';
+import { catalogService } from '../../services/serviceProvider';
 import { useUser } from '../../context/UserContext';
 import './CitySelectorModal.css'; // Asumimos estilos básicos o reutilizamos modal existente
 
@@ -15,7 +15,7 @@ const CitySelectorModal = () => {
     useEffect(() => {
         const fetchCiudades = async () => {
             try {
-                const lista = await obtenerCiudadesDisponibles();
+                const lista = await catalogService.obtenerCiudadesDisponibles();
                 console.log("🏙️ [CitySelector] Loaded Cities:", lista); // Log for debugging
                 setCiudades(lista);
                 if (lista.length > 0) {

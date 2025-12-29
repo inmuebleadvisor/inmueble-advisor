@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useUser } from '../context/UserContext';
 // ✅ Importaciones modulares y STATUS para consistencia
-import { hidratarInventarioAsesor, obtenerInventarioDesarrollos } from '../services/catalog.service';
+import { catalogService } from '../services/serviceProvider';
 import { obtenerLeadsAsignados } from '../services/crm.service'; // Mantenemos para carga inicial/manual si es necesario
 import { calcularEstadisticasAsesor } from '../services/analytics.service';
 import { generarLeadAutomatico } from '../services/leadAssignmentService';
@@ -95,7 +95,7 @@ export default function AccountAsesor() {
     const cargarInventario = async () => {
       if (userProfile?.inventario) {
         try {
-          const dataInv = await hidratarInventarioAsesor(userProfile.inventario);
+          const dataInv = await catalogService.hidratarInventarioAsesor(userProfile.inventario);
           setInventario(dataInv);
         } catch (err) {
           console.error("Error cargando inventario:", err);
@@ -163,7 +163,7 @@ export default function AccountAsesor() {
     setShowInvModal(true);
     if (allDevelopments.length === 0) {
       // Cargar catálogo completo
-      const data = await obtenerInventarioDesarrollos();
+      const data = await catalogService.obtenerInventarioDesarrollos();
       setAllDevelopments(data);
     }
   };

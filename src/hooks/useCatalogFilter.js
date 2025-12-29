@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { UI_OPCIONES } from '../config/constants';
-import { filterCatalog, findClosestByPrice } from '../services/catalog.service';
+import { CatalogService } from '../services/catalog.service';
 
 export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
     const { userProfile } = useUser();
@@ -109,7 +109,7 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
     // 3. Motor de Filtrado (Delegado al servicio)
     const modelosFiltrados = useMemo(() => {
         if (loading) return [];
-        return filterCatalog(dataMaestra, desarrollos, filtros, searchTerm);
+        return CatalogService.filterCatalog(dataMaestra, desarrollos, filtros, searchTerm);
     }, [dataMaestra, desarrollos, filtros, searchTerm, loading]);
 
     // 4. "No Results" Suggestions Logic
@@ -120,7 +120,7 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
         if (modelosFiltrados.length === 0 && dataMaestra && dataMaestra.length > 0) {
             // Only suggest if filtering is active (to avoid suggesting on initial load if empty for other reasons)
             if (hayFiltrosActivos) {
-                return findClosestByPrice(dataMaestra, filtros);
+                return CatalogService.findClosestByPrice(dataMaestra, filtros);
             }
         }
         return [];

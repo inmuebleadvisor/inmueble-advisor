@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { obtenerInformacionDesarrollo } from '../services/catalog.service';
+import { catalogService } from '../services/serviceProvider';
 import { useCatalog } from '../context/CatalogContext';
 
 import DevelopmentDetailsContent from '../components/DevelopmentDetailsContent';
@@ -27,7 +27,7 @@ export default function DetalleDesarrollo() {
     const cargarDesarrollo = async () => {
       setLoading(true);
       try {
-        const data = await obtenerInformacionDesarrollo(id);
+        const data = await catalogService.obtenerInformacionDesarrollo(id);
         setDesarrollo(data);
 
         if (data) {
