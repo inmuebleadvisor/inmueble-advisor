@@ -46,16 +46,16 @@ export default function DetalleDesarrollo() {
 
   if (loadingCatalog || loading) {
     return (
-      <div className="main-content" style={{ ...styles.pageContainer, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: '#6b7280' }}>Cargando desarrollo...</p>
+      <div className="dev-details dev-details--loading" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: 'var(--text-secondary)' }}>Cargando desarrollo...</p>
       </div>
     );
   }
 
   if (!desarrollo) {
     return (
-      <div style={styles.errorContainer}>
-        <h2>Desarrollo no encontrado</h2>
+      <div className="dev-details dev-details--error" style={{ padding: '40px', textAlign: 'center', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <h2 style={{ color: 'var(--text-main)' }}>Desarrollo no encontrado</h2>
         <button onClick={() => navigate('/catalogo')} className="btn btn-secondary">Volver al Catálogo</button>
       </div>
     );
@@ -68,9 +68,4 @@ export default function DetalleDesarrollo() {
     />
   );
 }
-
-const styles = {
-  pageContainer: { backgroundColor: 'white', minHeight: '100vh', paddingBottom: '40px', fontFamily: "'Segoe UI', sans-serif" },
-  errorContainer: { padding: '40px', textAlign: 'center', color: '#374151', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' },
-};
 

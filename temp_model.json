@@ -1,0 +1,2620 @@
+[
+  {
+    "id": "5179-sandalo",
+    "descripcion": "Los departamentos pueden tener pequeñas variaciones dependiendo del piso y modelo.",
+    "tipoVivienda": "Departamento",
+    "banos": 1.5,
+    "cajones": 1,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 57.2,
+    "nombreModelo": "Sandalo",
+    "idDesarrollo": "5179",
+    "recamaras": 1,
+    "amenidades": [
+      "Equipado con: Cocina, Closet, Canceles de baño, Minisplit y Balcón"
+    ],
+    "niveles": 1,
+    "terreno": 0,
+    "activo": true,
+    "media": {
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/paralela-departamento-sandalo-en-venta-en-culiacan/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/paralela-departamento-sandalo-en-venta-en-culiacan/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/paralela-departamento-sandalo-en-venta-en-culiacan/render-3.webp"
+      ],
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/paralela-departamento-sandalo-en-venta-en-culiacan/plantas/planta-1.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 1430,
+      "inicial": 0,
+      "metroCuadrado": 34615.38,
+      "base": 1980000,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 269000000
+    },
+    "highlights": [
+      "Modelo con el precio más bajo de la zona Norte"
+    ]
+  },
+  {
+    "id": "5179-vetiver-1",
+    "descripcion": "Los departamentos pueden tener pequeñas variaciones dependiendo del piso y modelo.",
+    "tipoVivienda": "Departamento",
+    "banos": 2.5,
+    "cajones": 1,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 82.22,
+    "nombreModelo": "Vetiver 1",
+    "idDesarrollo": "5179",
+    "recamaras": 2,
+    "amenidades": [
+      "Equipado con: Cocina, Closet, Canceles de baño, Minisplit y Balcón"
+    ],
+    "niveles": 1,
+    "terreno": 0,
+    "activo": true,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/paralela-departamento-vetiver-1-en-venta-en-culiacan/plantas/planta-1.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/paralela-departamento-vetiver-1-en-venta-en-culiacan/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/paralela-departamento-vetiver-1-en-venta-en-culiacan/render-1.webp",
+        "https://www.facebook.com/share/r/1GQUivadZF/",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/paralela-departamento-vetiver-1-en-venta-en-culiacan/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/paralela-departamento-vetiver-1-en-venta-en-culiacan/render-5.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 2056,
+      "inicial": 0,
+      "metroCuadrado": 41014.97,
+      "base": 3372251,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 272000000
+    }
+  },
+  {
+    "id": "5179-vetiver-2",
+    "descripcion": "Los departamentos pueden tener pequeñas variaciones dependiendo del piso y modelo.",
+    "tipoVivienda": "Departamento",
+    "banos": 2.5,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 86.78,
+    "nombreModelo": "Vetiver 2",
+    "idDesarrollo": "5179",
+    "recamaras": 2,
+    "amenidades": [
+      "Equipado con: Cocina, Closet, Canceles de baño, Minisplit y Balcón"
+    ],
+    "niveles": 1,
+    "terreno": 0,
+    "activo": true,
+    "highlights": [],
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/paralela-departamento-vetiver-2-en-venta-en-culiacan/plantas/planta-1.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/paralela-departamento-vetiver-2-en-venta-en-culiacan/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/paralela-departamento-vetiver-2-en-venta-en-culiacan/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/paralela-departamento-vetiver-2-en-venta-en-culiacan/render-2.webp",
+        "https://www.facebook.com/share/r/1GQUivadZF/",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/paralela-departamento-vetiver-2-en-venta-en-culiacan/render-5.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 2170,
+      "inicial": 0,
+      "metroCuadrado": 39714.01,
+      "base": 3446382,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 272000000
+    }
+  },
+  {
+    "id": "5180-204",
+    "descripcion": "Los departamentos pueden tener pequeñas variaciones dependiendo del piso y modelo.",
+    "tipoVivienda": "Departamento",
+    "banos": 2,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 117,
+    "nombreModelo": "204",
+    "idDesarrollo": "5180",
+    "recamaras": 2,
+    "amenidades": [
+      "Equipado con: Cocina y Minisplit"
+    ],
+    "niveles": 1,
+    "acabados": {
+      "cocina": "Cocina integral, parrilla eléctrica y barra de granito San Gabriel. Baños completamente equipados con cristales templados y muebles con cubierta de mármol Santo Tomas"
+    },
+    "terreno": 0,
+    "activo": false,
+    "media": {
+      "gallery": [],
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/panorama-departamento-204-en-venta-en-culiacan/plantas/planta-1.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "inicial": 0,
+      "metroCuadrado": 36538.46,
+      "base": 4275000,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 273000000
+    }
+  },
+  {
+    "id": "5180-205",
+    "descripcion": "Los departamentos pueden tener pequeñas variaciones dependiendo del piso y modelo.",
+    "tipoVivienda": "Departamento",
+    "banos": 2,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 162.02,
+    "nombreModelo": "205",
+    "idDesarrollo": "5180",
+    "recamaras": 2,
+    "amenidades": [
+      "Equipado con: Cocina y Minisplit"
+    ],
+    "niveles": 1,
+    "acabados": {
+      "cocina": "Cocina integral, parrilla eléctrica y barra de granito San Gabriel. Baños completamente equipados con cristales templados y muebles con cubierta de mármol Santo Tomas"
+    },
+    "terreno": 0,
+    "activo": false,
+    "media": {
+      "gallery": [],
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/panorama-departamento-205-en-venta-en-culiacan/plantas/planta-1.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "inicial": 0,
+      "metroCuadrado": 26385.63,
+      "base": 4275000,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 274000000
+    }
+  },
+  {
+    "id": "5180-pent-house-605",
+    "descripcion": "Los departamentos pueden tener pequeñas variaciones dependiendo del piso y modelo.",
+    "tipoVivienda": "Departamento",
+    "banos": 2.5,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 162.02,
+    "nombreModelo": "Pent-house 605",
+    "idDesarrollo": "5180",
+    "recamaras": 2,
+    "amenidades": [
+      "Equipado con: Cocina y Minisplit",
+      "Área de lavado",
+      "Terraza",
+      "Roof-Top"
+    ],
+    "niveles": 1,
+    "acabados": {
+      "cocina": "Cocina integral, parrilla eléctrica y barra de granito San Gabriel. Baños completamente equipados con cristales templados y muebles con cubierta de mármol Santo Tomas"
+    },
+    "terreno": 0,
+    "activo": false,
+    "media": {
+      "gallery": [],
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/panorama-departamento-pent-house-605-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/panorama-departamento-pent-house-605-en-venta-en-culiacan/plantas/planta-2.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "inicial": 0,
+      "metroCuadrado": 38606.34,
+      "base": 6255000,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 274000000
+    }
+  },
+  {
+    "id": "5181-lirio",
+    "descripcion": "Vive en un entorno donde la naturaleza y la tranquilidad se unen. Este modelo de 2 niveles toma inspiración en la elegante flor que simboliza la pureza y la renovación. Con un balcón en la fachada que adorna la recámara principal, este hogar te invita a experimentar la frescura de la vida en cada rincón.",
+    "banos": 2.5,
+    "cajones": 2,
+    "fondo": 17,
+    "frente": 6.7,
+    "m2": 169,
+    "nombreModelo": "Lirio",
+    "idDesarrollo": "5181",
+    "recamaras": 3,
+    "amenidades": [
+      "Balcón con fachada",
+      "Pasillo lateral",
+      "Sala de tv",
+      "Walk in closet en recamara Principal",
+      "Baño completo en recamara princial"
+    ],
+    "niveles": 2,
+    "terreno": 113.9,
+    "activo": true,
+    "tipoVivienda": "Casa",
+    "media": {
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/provenza-casas-lirio-en-venta-en-culiacan/render-1.webp"
+      ],
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/provenza-casa-lirio-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/provenza-casa-lirio-en-venta-en-culiacan/plantas/planta-2.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "inicial": 0,
+      "metroCuadrado": 23017.75,
+      "base": 3890000,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 276000000
+    }
+  },
+  {
+    "id": "5181-malva",
+    "descripcion": "Sumérgete en la armonía de este modelo de 2 niveles, inspirada en la flor que simboliza la tranquilidad y la creatividad, encontrarás un hogar donde tus ideas puedan florecer y tus momentos sean coloreados con la serenidad que buscas.",
+    "banos": 3.5,
+    "cajones": 2,
+    "fondo": 17.5,
+    "frente": 7.5,
+    "m2": 185,
+    "nombreModelo": "Malva",
+    "idDesarrollo": "5181",
+    "recamaras": 3,
+    "amenidades": [
+      "Balcón con fachada",
+      "Pasillo lateral",
+      "Walk in closet en recamara Principal",
+      "Baño completo en recamara princial",
+      "Área de lavado en segunda planta"
+    ],
+    "niveles": 2,
+    "terreno": 131.25,
+    "activo": true,
+    "tipoVivienda": "Casa",
+    "media": {
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/provenza-casas-malva-en-venta-en-culiacan/render-1.webp"
+      ],
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/provenza-casa-malva-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/provenza-casa-malva-en-venta-en-culiacan/plantas/planta-2.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "inicial": 0,
+      "metroCuadrado": 24054.05,
+      "base": 4450000,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 276000000
+    },
+    "highlights": [
+      "Modelo con más m² de construcción de la zona Este",
+      "Modelo con más terreno de la zona Este"
+    ]
+  },
+  {
+    "id": "5181-rosa",
+    "descripcion": "Encuentra el equilibrio y la dulzura en cada rincón de tu hogar. Este modelo de dos niveles toma su nombre y su inspiración por su belleza y elegancia.",
+    "banos": 2.5,
+    "cajones": 2,
+    "fondo": 17,
+    "frente": 6.7,
+    "m2": 155,
+    "nombreModelo": "Rosa",
+    "idDesarrollo": "5181",
+    "recamaras": 3,
+    "amenidades": [
+      "Balcón con fachada",
+      "Pasillo lateral",
+      "Sala de tv",
+      "Walk in closet en recamara Principal",
+      "Baño completo en recamara princial"
+    ],
+    "niveles": 2,
+    "terreno": 113.9,
+    "activo": true,
+    "highlights": [
+      "Modelo con el precio más bajo de la zona Este",
+      "Modelo con el precio más bajo por m² de la zona Este"
+    ],
+    "tipoVivienda": "Casa",
+    "media": {
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/provenza-casas-rosa-en-venta-en-culiacan/render-1.webp"
+      ],
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/provenza-casa-rosa-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/provenza-casa-rosa-en-venta-en-culiacan/plantas/planta-2.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "inicial": 0,
+      "metroCuadrado": 21612.9,
+      "base": 3350000,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 275000000
+    }
+  },
+  {
+    "id": "5182-aura-(3ra-etapa)",
+    "banos": 1.5,
+    "cajones": 2,
+    "fondo": 17,
+    "frente": 5,
+    "m2": 85,
+    "nombreModelo": "Aura (3ra Etapa)",
+    "idDesarrollo": "5182",
+    "recamaras": 3,
+    "amenidades": [],
+    "niveles": 2,
+    "terreno": 85,
+    "activo": true,
+    "tipoVivienda": "Casa",
+    "media": {
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-aura-3ra-etapa-en-venta-en-culiacan/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-aura-3ra-etapa-en-venta-en-culiacan/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-aura-3ra-etapa-en-venta-en-culiacan/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-aura-3ra-etapa-en-venta-en-culiacan/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-aura-3ra-etapa-en-venta-en-culiacan/render-5.webp"
+      ],
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casa-aura-3ra-etapa-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casa-aura-3ra-etapa-en-venta-en-culiacan/plantas/planta-2.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "inicial": 0,
+      "metroCuadrado": 27507.04,
+      "base": 2338098,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 279000000
+    }
+  },
+  {
+    "id": "5182-estrella-(2da-etapa)",
+    "banos": 2.5,
+    "cajones": 2,
+    "fondo": 17,
+    "frente": 6.8,
+    "m2": 118,
+    "nombreModelo": "Estrella (2da etapa)",
+    "idDesarrollo": "5182",
+    "recamaras": 3,
+    "amenidades": [
+      "Patio exterior",
+      "Área de lavado"
+    ],
+    "niveles": 2,
+    "acabados": {
+      "pisos": "Interiores (Planta baja y alta): Cerámico de 60 x 60 cm, tono claro con veta y zoclo del mismo material. Escalera: Cerámico con apariencia de madera y zoclo del mismo material. Regaderas (Área húmeda): Antiderrapante cerámico con apariencia de madera."
+    },
+    "terreno": 115.6,
+    "activo": true,
+    "tipoVivienda": "Casa",
+    "media": {
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-estrella-2da-etapa-en-venta-en-culiacan/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-estrella-2da-etapa-en-venta-en-culiacan/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-estrella-2da-etapa-en-venta-en-culiacan/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-estrella-2da-etapa-en-venta-en-culiacan/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-estrella-2da-etapa-en-venta-en-culiacan/render-5.webp"
+      ],
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casa-estrella-2da-etapa-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casa-estrella-2da-etapa-en-venta-en-culiacan/plantas/planta-2.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "inicial": 0,
+      "metroCuadrado": 19364.41,
+      "base": 2285000,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 277000000
+    },
+    "highlights": []
+  },
+  {
+    "id": "5182-luna-(2da-etapa)",
+    "banos": 2.5,
+    "cajones": 2,
+    "fondo": 17,
+    "frente": 6.8,
+    "m2": 136,
+    "nombreModelo": "Luna (2da etapa)",
+    "idDesarrollo": "5182",
+    "recamaras": 3,
+    "amenidades": [
+      "Patio exterior",
+      "Área de lavado"
+    ],
+    "niveles": 2,
+    "acabados": {
+      "pisos": "Interiores (Planta baja y alta): Cerámico de 60 x 60 cm, tono claro con veta y zoclo del mismo material. Escalera: Cerámico con apariencia de madera y zoclo del mismo material. Regaderas (Área húmeda): Antiderrapante cerámico con apariencia de madera."
+    },
+    "terreno": 115.6,
+    "activo": true,
+    "tipoVivienda": "Casa",
+    "media": {
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-luna-2da-etapa-en-venta-en-culiacan/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-luna-2da-etapa-en-venta-en-culiacan/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-luna-2da-etapa-en-venta-en-culiacan/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-luna-2da-etapa-en-venta-en-culiacan/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-luna-2da-etapa-en-venta-en-culiacan/render-5.webp"
+      ],
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casa-luna-2da-etapa-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casa-luna-2da-etapa-en-venta-en-culiacan/plantas/planta-2.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "inicial": 0,
+      "metroCuadrado": 18419.12,
+      "base": 2505000,
+      "moneda": "MNX"
+    },
+    "highlights": [
+      "Modelo con el precio más bajo por m² de Culiacán",
+      "Modelo con el precio más bajo por m² de la zona Sur"
+    ],
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 278000000
+    }
+  },
+  {
+    "id": "5182-luna-(3ra-etapa)",
+    "banos": 2.5,
+    "cajones": 2,
+    "fondo": 17,
+    "frente": 6,
+    "m2": 136,
+    "nombreModelo": "Luna (3ra etapa)",
+    "idDesarrollo": "5182",
+    "recamaras": 3,
+    "amenidades": [
+      "Patio exterior",
+      "Área de lavado"
+    ],
+    "niveles": 2,
+    "acabados": {
+      "pisos": "Interiores (Planta baja y alta): Cerámico de 60 x 60 cm, tono claro con veta y zoclo del mismo material. Escalera: Cerámico con apariencia de madera y zoclo del mismo material. Regaderas (Área húmeda): Antiderrapante cerámico con apariencia de madera."
+    },
+    "terreno": 102,
+    "activo": true,
+    "tipoVivienda": "Casa",
+    "media": {
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-luna-3ra-etapa-en-venta-en-culiacan/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-luna-3ra-etapa-en-venta-en-culiacan/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-luna-3ra-etapa-en-venta-en-culiacan/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-luna-3ra-etapa-en-venta-en-culiacan/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-luna-3ra-etapa-en-venta-en-culiacan/render-5.webp"
+      ],
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casa-luna-3ra-etapa-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casa-luna-3ra-etapa-en-venta-en-culiacan/plantas/planta-2.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "inicial": 0,
+      "metroCuadrado": 21904.41,
+      "base": 2979000,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 279000000
+    }
+  },
+  {
+    "id": "5182-nova-(3ra-etapa)",
+    "banos": 2.5,
+    "cajones": 2,
+    "fondo": 17,
+    "frente": 5,
+    "m2": 118.56,
+    "nombreModelo": "Nova (3ra etapa)",
+    "idDesarrollo": "5182",
+    "recamaras": 3,
+    "amenidades": [
+      "Patio exterior",
+      "Área de lavado"
+    ],
+    "niveles": 2,
+    "acabados": {
+      "pisos": "Interiores (Planta baja y alta): Cerámico de 60 x 60 cm, tono claro con veta y zoclo del mismo material. Escalera: Cerámico con apariencia de madera y zoclo del mismo material. Regaderas (Área húmeda): Antiderrapante cerámico con apariencia de madera."
+    },
+    "terreno": 85,
+    "activo": true,
+    "tipoVivienda": "Casa",
+    "media": {
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-nova-3ra-etapa-en-venta-en-culiacan/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-nova-3ra-etapa-en-venta-en-culiacan/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-nova-3ra-etapa-en-venta-en-culiacan/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-nova-3ra-etapa-en-venta-en-culiacan/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casas-nova-3ra-etapa-en-venta-en-culiacan/render-5.webp"
+      ],
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casa-nova-3ra-etapa-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/punto-sur-casa-nova-3ra-etapa-en-venta-en-culiacan/plantas/planta-2.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "inicial": 0,
+      "metroCuadrado": 23103.07,
+      "base": 2739100,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 279000000
+    }
+  },
+  {
+    "id": "5183-bonanza-loft",
+    "tipoVivienda": "Departamento",
+    "banos": 2,
+    "cajones": 1,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 66,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/bonanza-departamento-bonanza-loft-en-venta-en-culiacan/plantas/planta-1.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/bonanza-departamento-bonanza-loft-en-venta-en-culiacan/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/bonanza-departamento-bonanza-loft-en-venta-en-culiacan/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/bonanza-departamento-bonanza-loft-en-venta-en-culiacan/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/bonanza-departamento-bonanza-loft-en-venta-en-culiacan/render-4.webp"
+      ]
+    },
+    "nombreModelo": "Bonanza Loft",
+    "idDesarrollo": "5183",
+    "recamaras": 2,
+    "amenidades": [],
+    "niveles": 1,
+    "terreno": 0,
+    "activo": true,
+    "precios": {
+      "mantenimientoMensual": 0,
+      "inicial": 0,
+      "metroCuadrado": 39363.64,
+      "base": 2598000,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 280000000
+    }
+  },
+  {
+    "id": "5184-alba",
+    "tipoVivienda": "Casa",
+    "banos": 1.5,
+    "cajones": 2,
+    "fondo": 16,
+    "frente": 6,
+    "m2": 92,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-alba-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-alba-en-venta-en-culiacan/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-alba-en-venta-en-culiacan/render-1.webp"
+      ]
+    },
+    "nombreModelo": "Alba",
+    "idDesarrollo": "5184",
+    "recamaras": 3,
+    "amenidades": [
+      "Patio exterior",
+      "Área de lavado"
+    ],
+    "niveles": 2,
+    "acabados": {
+      "pisos": "Interiores (Planta baja y alta): Cerámico de 60 x 60 cm, tono claro con veta y zoclo del mismo material. Escalera: Cerámico con apariencia de madera y zoclo del mismo material. Regaderas (Área húmeda): Antiderrapante cerámico con apariencia de madera."
+    },
+    "terreno": 96,
+    "activo": true,
+    "highlights": [
+      "Modelo con más terreno de la zona Norte"
+    ],
+    "precios": {
+      "mantenimientoMensual": 0,
+      "inicial": 0,
+      "metroCuadrado": 26559.27,
+      "base": 2443453,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 281000000
+    }
+  },
+  {
+    "id": "5184-estrella",
+    "tipoVivienda": "Casa",
+    "banos": 2.5,
+    "cajones": 2,
+    "fondo": 16,
+    "frente": 6,
+    "m2": 118,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-estrella-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-estrella-en-venta-en-culiacan/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-estrella-en-venta-en-culiacan/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-estrella-en-venta-en-culiacan/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-estrella-en-venta-en-culiacan/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-estrella-en-venta-en-culiacan/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-estrella-en-venta-en-culiacan/render-5.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-estrella-en-venta-en-culiacan/render-6.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-estrella-en-venta-en-culiacan/render-7.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-estrella-en-venta-en-culiacan/render-8.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-estrella-en-venta-en-culiacan/render-9.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-estrella-en-venta-en-culiacan/render-10.webp"
+      ]
+    },
+    "nombreModelo": "Estrella",
+    "idDesarrollo": "5184",
+    "recamaras": 3,
+    "amenidades": [
+      "Patio exterior",
+      "Área de lavado"
+    ],
+    "niveles": 2,
+    "acabados": {
+      "pisos": "Interiores (Planta baja y alta): Cerámico de 60 x 60 cm, tono claro con veta y zoclo del mismo material. Escalera: Cerámico con apariencia de madera y zoclo del mismo material. Regaderas (Área húmeda): Antiderrapante cerámico con apariencia de madera."
+    },
+    "terreno": 96,
+    "activo": true,
+    "precios": {
+      "mantenimientoMensual": 0,
+      "inicial": 0,
+      "metroCuadrado": 24605.47,
+      "base": 2903446,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 280000000
+    }
+  },
+  {
+    "id": "5184-luna",
+    "tipoVivienda": "Casa",
+    "banos": 2.5,
+    "cajones": 2,
+    "fondo": 16,
+    "frente": 6,
+    "m2": 136,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-luna-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-luna-en-venta-en-culiacan/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-luna-en-venta-en-culiacan/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-luna-en-venta-en-culiacan/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-luna-en-venta-en-culiacan/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-luna-en-venta-en-culiacan/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-luna-en-venta-en-culiacan/render-5.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-luna-en-venta-en-culiacan/render-6.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-luna-en-venta-en-culiacan/render-7.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-luna-en-venta-en-culiacan/render-8.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-luna-en-venta-en-culiacan/render-9.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/la-rioja-casa-luna-en-venta-en-culiacan/render-10.webp"
+      ]
+    },
+    "nombreModelo": "Luna",
+    "idDesarrollo": "5184",
+    "recamaras": 3,
+    "amenidades": [
+      "Patio exterior",
+      "Área de lavado"
+    ],
+    "niveles": 2,
+    "acabados": {
+      "pisos": "Interiores (Planta baja y alta): Cerámico de 60 x 60 cm, tono claro con veta y zoclo del mismo material. Escalera: Cerámico con apariencia de madera y zoclo del mismo material. Regaderas (Área húmeda): Antiderrapante cerámico con apariencia de madera."
+    },
+    "terreno": 96,
+    "activo": true,
+    "highlights": [
+      "Modelo con el precio más bajo por m² de la zona Norte",
+      "Modelo con más m² de construcción de la zona Norte"
+    ],
+    "precios": {
+      "mantenimientoMensual": 0,
+      "inicial": 0,
+      "metroCuadrado": 23218.68,
+      "base": 3157740,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 280000000
+    }
+  },
+  {
+    "id": "5185-guadalupe",
+    "tipoVivienda": "Departamento",
+    "banos": 2,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 65.33,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/guadalupe-loft-203-departamento-guadalupe-en-venta-en-culiacan/plantas/planta-1.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/guadalupe-loft-203-departamento-guadalupe-en-venta-en-culiacan/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/guadalupe-loft-203-departamento-guadalupe-en-venta-en-culiacan/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/guadalupe-loft-203-departamento-guadalupe-en-venta-en-culiacan/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/guadalupe-loft-203-departamento-guadalupe-en-venta-en-culiacan/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/guadalupe-loft-203-departamento-guadalupe-en-venta-en-culiacan/render-5.webp"
+      ]
+    },
+    "nombreModelo": "Guadalupe",
+    "idDesarrollo": "5185",
+    "recamaras": 2,
+    "amenidades": [],
+    "niveles": 1,
+    "acabados": {
+      "pisos": "Interiores de cerámico de 59x59 cm. en tono claro con veta. En área de regadera cerámico antiderrapante con apariencia de madera."
+    },
+    "terreno": 0,
+    "activo": true,
+    "highlights": [
+      "Modelo con el precio más bajo de la zona Centro"
+    ],
+    "precios": {
+      "mantenimientoMensual": 0,
+      "inicial": 0,
+      "metroCuadrado": 47459.05,
+      "base": 3100500,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 281000000
+    }
+  },
+  {
+    "id": "5186-diamante",
+    "tipoVivienda": "Departamento",
+    "banos": 2,
+    "cajones": 1,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 66,
+    "nombreModelo": "Diamante",
+    "idDesarrollo": "5186",
+    "recamaras": 2,
+    "amenidades": [],
+    "niveles": 1,
+    "acabados": {
+      "pisos": "Interiores de cerámico de 60x60 cm. en tono claro con veta. En área de regadera cerámico antiderrapante con apariencia de madera."
+    },
+    "terreno": 0,
+    "activo": true,
+    "media": {
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/alto-sur-departamento-diamante-en-venta-en-culiacan/render-1.webp"
+      ],
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/alto-sur-departamento-diamante-en-venta-en-culiacan/plantas/planta-1.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "inicial": 0,
+      "metroCuadrado": 33975.3,
+      "base": 2242370,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 282000000
+    },
+    "highlights": []
+  },
+  {
+    "id": "5186-jade",
+    "tipoVivienda": "Departamento",
+    "banos": 2,
+    "cajones": 1,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 65,
+    "nombreModelo": "Jade",
+    "idDesarrollo": "5186",
+    "recamaras": 2,
+    "amenidades": [],
+    "niveles": 1,
+    "acabados": {
+      "pisos": "Interiores de cerámico de 60x60 cm. en tono claro con veta. En área de regadera cerámico antiderrapante con apariencia de madera."
+    },
+    "terreno": 0,
+    "activo": true,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/alto-sur-departamento-jade-en-venta-en-culiacan/plantas/planta-1.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/alto-sur-departamento-jade-en-venta-en-culiacan/render-1.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "inicial": 0,
+      "metroCuadrado": 34498,
+      "base": 2242370,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 282000000
+    }
+  },
+  {
+    "id": "5187-franklin",
+    "tipoVivienda": "Departamento",
+    "banos": 2,
+    "cajones": 1,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 169.73,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/lumeria-residencial-departamento-franklin-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/lumeria-residencial-departamento-franklin-en-venta-en-culiacan/plantas/planta-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/lumeria-residencial-departamento-franklin-en-venta-en-culiacan/plantas/planta-3.webp"
+      ],
+      "recorridoVirtual": "https://tour.vieweet.com/viewer/FCCAZMWW?type=pano&fbclid=IwY2xjawOwRCZleHRuA2FlbQIxMABicmlkETFPS0dyRzEwdUI4WWZNVDlHc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHrx9KI4IPvFDxtuyKHW7vLmc7-xmbhy_2HP5N75lcxVDQr1Wu4DoXaQU0p_p_aem_Lodf3hfn0BzYFldSltpDoA",
+      "gallery": []
+    },
+    "nombreModelo": "Franklin",
+    "idDesarrollo": "5187",
+    "recamaras": 2,
+    "amenidades": [],
+    "niveles": 3,
+    "terreno": 176.96,
+    "activo": true,
+    "highlights": [
+      "Modelo con el precio más bajo por m² de la zona Centro",
+      "Modelo con más m² de construcción de la zona Centro",
+      "Modelo con más terreno de Culiacán",
+      "Modelo con más terreno de la zona Centro"
+    ],
+    "precios": {
+      "mantenimientoMensual": 0,
+      "inicial": 0,
+      "metroCuadrado": 29281.8,
+      "base": 4970000,
+      "moneda": "MNX"
+    },
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 283000000
+    }
+  },
+  {
+    "id": "5188-coral",
+    "descripcion": "Modelo con diseño que combina amplitud y elegancia en cada detalle, cocina con acabados de granito, pisos de mármol travertino y baños revestidos de mármol Fiorito, todo complementado con una altura de 3 metros por nivel que aporta frescura y sofisticación.",
+    "tipoVivienda": "Casa",
+    "banos": 2.5,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 200,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-jose-residencial-casa-coral-en-venta-en-san-jose-del-cabo/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-jose-residencial-casa-coral-en-venta-en-san-jose-del-cabo/plantas/planta-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-jose-residencial-casa-coral-en-venta-en-san-jose-del-cabo/plantas/planta-3.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-jose-residencial-casa-coral-en-venta-en-san-jose-del-cabo/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-jose-residencial-casa-coral-en-venta-en-san-jose-del-cabo/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-jose-residencial-casa-coral-en-venta-en-san-jose-del-cabo/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-jose-residencial-casa-coral-en-venta-en-san-jose-del-cabo/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-jose-residencial-casa-coral-en-venta-en-san-jose-del-cabo/render-5.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-jose-residencial-casa-coral-en-venta-en-san-jose-del-cabo/render-6.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-jose-residencial-casa-coral-en-venta-en-san-jose-del-cabo/render-7.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 35145,
+      "base": 7029000
+    },
+    "nombreModelo": "Coral",
+    "idDesarrollo": "5188",
+    "recamaras": 3,
+    "amenidades": [
+      "Equipada con Cocina y closets",
+      "Interior de Marmol",
+      "Canceles de baño de cristal templado (9mm)",
+      "Aires acondicionados",
+      "Deck decorativo imitación madera en fachada",
+      "Rooftop",
+      "Cochera semitechada"
+    ],
+    "niveles": 2,
+    "acabados": {
+      "pisos": "Pisos de mármol Travertino",
+      "cocina": "Cocina con acabados de granito"
+    },
+    "terreno": 152,
+    "activo": true,
+    "highlights": [
+      "Modelo con el precio más bajo de San José del Cabo",
+      "Modelo con el precio más bajo de la zona San José del Cabo",
+      "Modelo con el precio más bajo por m² de San José del Cabo",
+      "Modelo con el precio más bajo por m² de la zona San José del Cabo",
+      "Modelo con más m² de construcción de San José del Cabo",
+      "Modelo con más m² de construcción de la zona San José del Cabo",
+      "Modelo con más terreno de San José del Cabo",
+      "Modelo con más terreno de la zona San José del Cabo"
+    ],
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 283000000
+    }
+  },
+  {
+    "id": "5189-3-recamaras",
+    "tipoVivienda": "Departamento",
+    "banos": 0,
+    "cajones": 0,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 138,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/torres-san-jose-departamento-3-recamaras-en-venta-en-san-jose-del-cabo/plantas/planta-1.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/torres-san-jose-departamento-3-recamaras-en-venta-en-san-jose-del-cabo/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/torres-san-jose-departamento-3-recamaras-en-venta-en-san-jose-del-cabo/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/torres-san-jose-departamento-3-recamaras-en-venta-en-san-jose-del-cabo/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/torres-san-jose-departamento-3-recamaras-en-venta-en-san-jose-del-cabo/render-4.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 0,
+      "base": 0
+    },
+    "nombreModelo": "3 Recámaras",
+    "idDesarrollo": "5189",
+    "recamaras": 0,
+    "amenidades": [],
+    "niveles": 0,
+    "acabados": {
+      "cocina": "Cocina integral con barra de granito, Micro Campana y Parrilla eléctrica con 5 quemadores."
+    },
+    "terreno": 0,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 284000000
+    }
+  },
+  {
+    "id": "5189-pent-house",
+    "tipoVivienda": "Departamento",
+    "banos": 3,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 146.58,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/torres-san-jose-departamento-pent-house-en-venta-en-san-jose-del-cabo/plantas/planta-1.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/torres-san-jose-departamento-pent-house-en-venta-en-san-jose-del-cabo/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/torres-san-jose-departamento-pent-house-en-venta-en-san-jose-del-cabo/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/torres-san-jose-departamento-pent-house-en-venta-en-san-jose-del-cabo/render-3.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 57306.59,
+      "base": 8400000
+    },
+    "nombreModelo": "Pent House",
+    "idDesarrollo": "5189",
+    "recamaras": 3,
+    "amenidades": [
+      "EQUIPADO CON: Cocina integral con barra de granito, Aires acondicionados en todos los espacios, Closets y Canceles de vidrio templado en baños",
+      "3 Balcones",
+      "Parrilla eléctrica con 5 quemadores",
+      "Piso de mármol travertino"
+    ],
+    "niveles": 1,
+    "acabados": {
+      "pisos": "Pisos de mármol Travertino",
+      "cocina": "Cocina integral con barra de granito, Micro Campana y Parrilla eléctrica con 5 quemadores."
+    },
+    "terreno": 0,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 284000000
+    }
+  },
+  {
+    "id": "5190-san-francisco",
+    "tipoVivienda": "Casa",
+    "banos": 2,
+    "cajones": 1,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 88.78,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-san-francisco-en-venta-en-la-paz/plantas/planta-1.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-san-francisco-en-venta-en-la-paz/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-san-francisco-en-venta-en-la-paz/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-san-francisco-en-venta-en-la-paz/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-san-francisco-en-venta-en-la-paz/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-san-francisco-en-venta-en-la-paz/render-5.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-san-francisco-en-venta-en-la-paz/render-6.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 36476.68,
+      "base": 3238400
+    },
+    "nombreModelo": "San francisco",
+    "idDesarrollo": "5190",
+    "recamaras": 2,
+    "amenidades": [],
+    "niveles": 1,
+    "acabados": {
+      "pisos": "Piso Cerámico 60x60 cms. Mármol Florito en área de regaderas."
+    },
+    "terreno": 0,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 285000000
+    }
+  },
+  {
+    "id": "5190-san-juan",
+    "tipoVivienda": "Casa",
+    "banos": 3,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 139.77,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-san-juan-en-venta-en-la-paz/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-san-juan-en-venta-en-la-paz/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-san-juan-en-venta-en-la-paz/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-san-juan-en-venta-en-la-paz/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-san-juan-en-venta-en-la-paz/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-san-juan-en-venta-en-la-paz/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-san-juan-en-venta-en-la-paz/render-5.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-san-juan-en-venta-en-la-paz/render-6.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-san-juan-en-venta-en-la-paz/render-7.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 28938.26,
+      "base": 4044700
+    },
+    "nombreModelo": "San Juan",
+    "idDesarrollo": "5190",
+    "recamaras": 3,
+    "amenidades": [],
+    "niveles": 2,
+    "acabados": {
+      "pisos": "Piso Cerámico 60x60 cms. Mármol Florito en área de regaderas."
+    },
+    "terreno": 136,
+    "activo": true,
+    "highlights": [
+      "Modelo con el precio más bajo por m² de La Paz",
+      "Modelo con el precio más bajo por m² de la zona La Paz",
+      "Modelo con más m² de construcción de La Paz",
+      "Modelo con más m² de construcción de la zona La Paz"
+    ],
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 285000000
+    }
+  },
+  {
+    "id": "5190-santa-maria",
+    "tipoVivienda": "Casa",
+    "banos": 3,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 127.87,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-santa-maria-en-venta-en-la-paz/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-santa-maria-en-venta-en-la-paz/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-santa-maria-en-venta-en-la-paz/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-santa-maria-en-venta-en-la-paz/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-santa-maria-en-venta-en-la-paz/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-santa-maria-en-venta-en-la-paz/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-santa-maria-en-venta-en-la-paz/render-5.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-santa-maria-en-venta-en-la-paz/render-6.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/santa-julia-casa-santa-maria-en-venta-en-la-paz/render-7.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 34840.07,
+      "base": 4455000
+    },
+    "nombreModelo": "Santa María",
+    "idDesarrollo": "5190",
+    "recamaras": 3,
+    "amenidades": [],
+    "niveles": 2,
+    "acabados": {
+      "pisos": "Piso Cerámico 60x60 cms. Mármol Florito en área de regaderas."
+    },
+    "terreno": 150,
+    "activo": true,
+    "highlights": [
+      "Modelo con más terreno de La Paz",
+      "Modelo con más terreno de la zona La Paz"
+    ],
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 285000000
+    }
+  },
+  {
+    "id": "5191-agave",
+    "tipoVivienda": "Casa",
+    "banos": 3.5,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 296.39,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-agave-en-venta-en-cabo-san-lucas/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-agave-en-venta-en-cabo-san-lucas/plantas/planta-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-agave-en-venta-en-cabo-san-lucas/plantas/planta-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-agave-en-venta-en-cabo-san-lucas/plantas/planta-4.webp"
+      ],
+      "recorridoVirtual": "https://my.matterport.com/show/?m=n5ZLSxiJ2Wf",
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-agave-en-venta-en-cabo-san-lucas/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-agave-en-venta-en-cabo-san-lucas/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-agave-en-venta-en-cabo-san-lucas/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-agave-en-venta-en-cabo-san-lucas/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-agave-en-venta-en-cabo-san-lucas/render-5.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-agave-en-venta-en-cabo-san-lucas/render-6.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-agave-en-venta-en-cabo-san-lucas/render-7.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "Dlls",
+      "inicial": 0,
+      "metroCuadrado": 2614.8,
+      "base": 775000
+    },
+    "nombreModelo": "Agave",
+    "idDesarrollo": "5191",
+    "recamaras": 3,
+    "amenidades": [
+      "12 m2 de frente",
+      "66.64 m2 de Roof frontal",
+      "71.89 m2 de Roof posterior",
+      "Equipado con: Minisplits, Portón eléctrico",
+      "Parrilla, Campana, Canceles de baño templados y Cava de vinos"
+    ],
+    "niveles": 3,
+    "terreno": 288,
+    "activo": true,
+    "highlights": [
+      "Modelo con más terreno de Cabo San Lucas",
+      "Modelo con más terreno de la zona Cabo San Lucas"
+    ],
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 287000000
+    }
+  },
+  {
+    "id": "5191-biznaga",
+    "tipoVivienda": "Casa",
+    "banos": 3.5,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 235.25,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-biznaga-en-venta-en-cabo-san-lucas/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-biznaga-en-venta-en-cabo-san-lucas/plantas/planta-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-biznaga-en-venta-en-cabo-san-lucas/plantas/planta-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-biznaga-en-venta-en-cabo-san-lucas/plantas/planta-4.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-biznaga-en-venta-en-cabo-san-lucas/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-biznaga-en-venta-en-cabo-san-lucas/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-biznaga-en-venta-en-cabo-san-lucas/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-biznaga-en-venta-en-cabo-san-lucas/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-biznaga-en-venta-en-cabo-san-lucas/render-5.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "Dlls",
+      "inicial": 0,
+      "metroCuadrado": 2967.06,
+      "base": 698000
+    },
+    "nombreModelo": "Biznaga",
+    "idDesarrollo": "5191",
+    "recamaras": 3,
+    "amenidades": [
+      "44.54 m2 de Roof frontal",
+      "48 m2 de Roof posterior",
+      "Equipado con: Minisplits, Parrilla, Campana, Canceles de baño templados y Cava de vinos"
+    ],
+    "niveles": 3,
+    "terreno": 240,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 286000000
+    }
+  },
+  {
+    "id": "5191-cardon",
+    "tipoVivienda": "Casa",
+    "banos": 4.5,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 325.9,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-cardon-en-venta-en-cabo-san-lucas/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-cardon-en-venta-en-cabo-san-lucas/plantas/planta-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-cardon-en-venta-en-cabo-san-lucas/plantas/planta-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-cardon-en-venta-en-cabo-san-lucas/plantas/planta-4.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-cardon-en-venta-en-cabo-san-lucas/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-cardon-en-venta-en-cabo-san-lucas/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-cardon-en-venta-en-cabo-san-lucas/render-3.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "Dlls",
+      "inicial": 0,
+      "metroCuadrado": 2638.85,
+      "base": 860000
+    },
+    "nombreModelo": "Cardón",
+    "idDesarrollo": "5191",
+    "recamaras": 4,
+    "amenidades": [
+      "12 m2 de frente",
+      "66.64 m2 de Roof frontal",
+      "71.89 m2 de Roof posterior",
+      "Equipado con: Minisplits, Portón eléctrico",
+      "Parrilla, Campana, Canceles de baño templados y Cava de vinos"
+    ],
+    "niveles": 3,
+    "terreno": 288,
+    "activo": true,
+    "highlights": [
+      "Modelo con más m² de construcción de Cabo San Lucas",
+      "Modelo con más m² de construcción de la zona Cabo San Lucas"
+    ],
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 288000000
+    }
+  },
+  {
+    "id": "5191-laurel",
+    "tipoVivienda": "Casa",
+    "banos": 3.5,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 231.19,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-laurel-en-venta-en-cabo-san-lucas/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-laurel-en-venta-en-cabo-san-lucas/plantas/planta-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-laurel-en-venta-en-cabo-san-lucas/plantas/planta-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-laurel-en-venta-en-cabo-san-lucas/plantas/planta-4.webp"
+      ],
+      "recorridoVirtual": "https://my.matterport.com/show/?m=zosVzLYtte4",
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-laurel-en-venta-en-cabo-san-lucas/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-laurel-en-venta-en-cabo-san-lucas/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-laurel-en-venta-en-cabo-san-lucas/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-laurel-en-venta-en-cabo-san-lucas/render-4.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "Dlls",
+      "inicial": 0,
+      "metroCuadrado": 2746.66,
+      "base": 635000
+    },
+    "nombreModelo": "Laurel",
+    "idDesarrollo": "5191",
+    "recamaras": 3,
+    "amenidades": [
+      "46 m2 de Roof frontal",
+      "51 m2 de Roof posterior",
+      "Equipado con: Parrilla, Campana, Canceles de baño templados y Cava de vinos"
+    ],
+    "niveles": 3,
+    "terreno": 240,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 286000000
+    }
+  },
+  {
+    "id": "5191-pitahaya",
+    "tipoVivienda": "Casa",
+    "banos": 3.5,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 267.28,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-pitahaya-en-venta-en-cabo-san-lucas/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-pitahaya-en-venta-en-cabo-san-lucas/plantas/planta-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-pitahaya-en-venta-en-cabo-san-lucas/plantas/planta-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-pitahaya-en-venta-en-cabo-san-lucas/plantas/planta-4.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-pitahaya-en-venta-en-cabo-san-lucas/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-pitahaya-en-venta-en-cabo-san-lucas/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-pitahaya-en-venta-en-cabo-san-lucas/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-pitahaya-en-venta-en-cabo-san-lucas/render-4.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "Dlls",
+      "inicial": 0,
+      "metroCuadrado": 2525.44,
+      "base": 675000
+    },
+    "nombreModelo": "Pitahaya",
+    "idDesarrollo": "5191",
+    "recamaras": 3,
+    "amenidades": [
+      "49.6 m2 de Roof frontal",
+      "51 m2 de Roof posterior",
+      "Equipado con: Minisplits, Portón eléctrico",
+      "Parrilla, Campana, Canceles de baño templados y Cava de vinos"
+    ],
+    "niveles": 3,
+    "terreno": 240,
+    "activo": true,
+    "highlights": [
+      "Modelo con el precio más bajo por m² de Cabo San Lucas",
+      "Modelo con el precio más bajo por m² de la zona Cabo San Lucas"
+    ],
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 287000000
+    }
+  },
+  {
+    "id": "5191-torote",
+    "tipoVivienda": "Casa",
+    "banos": 4.5,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 255,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-torote-en-venta-en-cabo-san-lucas/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-torote-en-venta-en-cabo-san-lucas/plantas/planta-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-torote-en-venta-en-cabo-san-lucas/plantas/planta-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-torote-en-venta-en-cabo-san-lucas/plantas/planta-4.webp"
+      ],
+      "recorridoVirtual": "https://my.matterport.com/show/?m=b3ebcVxT3A4",
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-torote-en-venta-en-cabo-san-lucas/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-torote-en-venta-en-cabo-san-lucas/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-torote-en-venta-en-cabo-san-lucas/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-torote-en-venta-en-cabo-san-lucas/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---casas-casa-torote-en-venta-en-cabo-san-lucas/render-5.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "Dlls",
+      "inicial": 0,
+      "metroCuadrado": 2737.25,
+      "base": 698000
+    },
+    "nombreModelo": "Torote",
+    "idDesarrollo": "5191",
+    "recamaras": 4,
+    "amenidades": [
+      "44 m2 de Roof frontal",
+      "47 m2 de Roof posterior",
+      "Equipado con: Minisplits, Parrilla, Campana, Canceles de baño templados y Cava de vinos"
+    ],
+    "niveles": 3,
+    "terreno": 240,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 286000000
+    }
+  },
+  {
+    "id": "5192-2-recamaras",
+    "tipoVivienda": "Departamento",
+    "banos": 2,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 135,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---departamentos-departamento-2-recamaras-en-venta-en-cabo-san-lucas/plantas/planta-1.webp"
+      ],
+      "recorridoVirtual": "https://my.matterport.com/show/?m=pQXRb2y7jSh",
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---departamentos-departamento-2-recamaras-en-venta-en-cabo-san-lucas/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---departamentos-departamento-2-recamaras-en-venta-en-cabo-san-lucas/render-2.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "Dlls",
+      "inicial": 0,
+      "metroCuadrado": 2925.93,
+      "base": 395000
+    },
+    "nombreModelo": "2 Recámaras",
+    "idDesarrollo": "5192",
+    "recamaras": 2,
+    "amenidades": [
+      "112 m2 Interior + 23 m2 Terraza"
+    ],
+    "niveles": 1,
+    "terreno": 0,
+    "activo": true,
+    "highlights": [
+      "Modelo con el precio más bajo de Cabo San Lucas",
+      "Modelo con el precio más bajo de la zona Cabo San Lucas"
+    ],
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 288000000
+    }
+  },
+  {
+    "id": "5192-3-recamaras",
+    "tipoVivienda": "Departamento",
+    "banos": 3,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 168,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---departamentos-departamento-3-recamaras-en-venta-en-cabo-san-lucas/plantas/planta-1.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---departamentos-departamento-3-recamaras-en-venta-en-cabo-san-lucas/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---departamentos-departamento-3-recamaras-en-venta-en-cabo-san-lucas/render-2.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "Dlls",
+      "inicial": 0,
+      "metroCuadrado": 2886.9,
+      "base": 485000
+    },
+    "nombreModelo": "3 Recámaras",
+    "idDesarrollo": "5192",
+    "recamaras": 3,
+    "amenidades": [
+      "140 m2 Interior + 28 m2 Terraza"
+    ],
+    "niveles": 1,
+    "terreno": 0,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 288000000
+    }
+  },
+  {
+    "id": "5192-ph-2-recamaras",
+    "tipoVivienda": "Departamento",
+    "banos": 2,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 242,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---departamentos-departamento-ph-2-recamaras-en-venta-en-cabo-san-lucas/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---departamentos-departamento-ph-2-recamaras-en-venta-en-cabo-san-lucas/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---departamentos-departamento-ph-2-recamaras-en-venta-en-cabo-san-lucas/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---departamentos-departamento-ph-2-recamaras-en-venta-en-cabo-san-lucas/render-2.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "Dlls",
+      "inicial": 0,
+      "metroCuadrado": 2541.32,
+      "base": 615000
+    },
+    "nombreModelo": "PH 2 Recámaras",
+    "idDesarrollo": "5192",
+    "recamaras": 2,
+    "amenidades": [
+      "112 m2 Interior + 23 m2 Terraza + 107 m2 Rooftop",
+      "Escalera privada al Rooftop"
+    ],
+    "niveles": 2,
+    "terreno": 0,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 289000000
+    }
+  },
+  {
+    "id": "5192-ph-3-recamaras",
+    "tipoVivienda": "Departamento",
+    "banos": 3,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 266,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---departamentos-departamento-ph-3-recamaras-en-venta-en-cabo-san-lucas/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---departamentos-departamento-ph-3-recamaras-en-venta-en-cabo-san-lucas/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---departamentos-departamento-ph-3-recamaras-en-venta-en-cabo-san-lucas/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/solara-del-mar---departamentos-departamento-ph-3-recamaras-en-venta-en-cabo-san-lucas/render-2.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "Dlls",
+      "inicial": 0,
+      "metroCuadrado": 2913.53,
+      "base": 775000
+    },
+    "nombreModelo": "PH 3 Recámaras",
+    "idDesarrollo": "5192",
+    "recamaras": 3,
+    "amenidades": [
+      "140 m2 Interior + 28 m2 Terraza + 106 m2 Rooftop"
+    ],
+    "niveles": 2,
+    "terreno": 0,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 289000000
+    }
+  },
+  {
+    "id": "5193-san-jorge",
+    "tipoVivienda": "Casa",
+    "banos": 2.5,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 114.7,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-rafael-casa-san-jorge-en-venta-en-la-paz/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-rafael-casa-san-jorge-en-venta-en-la-paz/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-rafael-casa-san-jorge-en-venta-en-la-paz/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-rafael-casa-san-jorge-en-venta-en-la-paz/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-rafael-casa-san-jorge-en-venta-en-la-paz/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-rafael-casa-san-jorge-en-venta-en-la-paz/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-rafael-casa-san-jorge-en-venta-en-la-paz/render-5.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-rafael-casa-san-jorge-en-venta-en-la-paz/render-6.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 28962.51,
+      "base": 3322000
+    },
+    "nombreModelo": "San Jorge",
+    "idDesarrollo": "5193",
+    "recamaras": 3,
+    "amenidades": [],
+    "niveles": 2,
+    "acabados": {
+      "pisos": "Piso Cerámico 60x60 cms. Mármol Florito en área de regaderas."
+    },
+    "terreno": 122.5,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 290000000
+    }
+  },
+  {
+    "id": "5193-santa-isabel",
+    "tipoVivienda": "Casa",
+    "banos": 2,
+    "cajones": 1,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 90,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-rafael-casa-santa-isabel-en-venta-en-la-paz/plantas/planta-1.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-rafael-casa-santa-isabel-en-venta-en-la-paz/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-rafael-casa-santa-isabel-en-venta-en-la-paz/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-rafael-casa-santa-isabel-en-venta-en-la-paz/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-rafael-casa-santa-isabel-en-venta-en-la-paz/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-rafael-casa-santa-isabel-en-venta-en-la-paz/render-5.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-rafael-casa-santa-isabel-en-venta-en-la-paz/render-6.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-rafael-casa-santa-isabel-en-venta-en-la-paz/render-7.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 30751.11,
+      "base": 2767600
+    },
+    "nombreModelo": "Santa Isabel",
+    "idDesarrollo": "5193",
+    "recamaras": 2,
+    "amenidades": [],
+    "niveles": 1,
+    "acabados": {
+      "pisos": "Piso Cerámico 60x60 cms. Mármol Florito en área de regaderas."
+    },
+    "terreno": 139.57,
+    "activo": true,
+    "highlights": [
+      "Modelo con el precio más bajo de La Paz",
+      "Modelo con el precio más bajo de la zona La Paz"
+    ],
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 290000000
+    }
+  },
+  {
+    "id": "5193-santa-lucia",
+    "tipoVivienda": "Casa",
+    "banos": 2.5,
+    "cajones": 2,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 131.16,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-rafael-casa-santa-lucia-en-venta-en-la-paz/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-rafael-casa-santa-lucia-en-venta-en-la-paz/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/san-rafael-casa-santa-lucia-en-venta-en-la-paz/render-1.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 29353.46,
+      "base": 3850000
+    },
+    "nombreModelo": "Santa Lucia",
+    "idDesarrollo": "5193",
+    "recamaras": 3,
+    "amenidades": [],
+    "niveles": 2,
+    "acabados": {
+      "pisos": "Piso Cerámico 60x60 cms. Mármol Florito en área de regaderas."
+    },
+    "terreno": 126.28,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 289000000
+    }
+  },
+  {
+    "id": "5196-amazona",
+    "tipoVivienda": "Casa",
+    "banos": 3,
+    "cajones": 2,
+    "fondo": 16.5,
+    "frente": 6.2,
+    "m2": 130,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-ii-privada-nogal-casa-amazona-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-ii-privada-nogal-casa-amazona-en-venta-en-culiacan/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-ii-privada-nogal-casa-amazona-en-venta-en-culiacan/render-1.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 23679.23,
+      "base": 3078300
+    },
+    "nombreModelo": "Amazona",
+    "idDesarrollo": "5196",
+    "recamaras": 3,
+    "amenidades": [],
+    "niveles": 2,
+    "terreno": 102.3,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 291000000
+    }
+  },
+  {
+    "id": "5196-bosque",
+    "tipoVivienda": "Casa",
+    "banos": 3.5,
+    "cajones": 2,
+    "fondo": 16.5,
+    "frente": 6.2,
+    "m2": 145,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-ii-privada-nogal-casa-bosque-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-ii-privada-nogal-casa-bosque-en-venta-en-culiacan/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-ii-privada-nogal-casa-bosque-en-venta-en-culiacan/render-1.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 22895.86,
+      "base": 3319900
+    },
+    "nombreModelo": "Bosque",
+    "idDesarrollo": "5196",
+    "recamaras": 3,
+    "amenidades": [],
+    "niveles": 2,
+    "terreno": 102.3,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 291000000
+    }
+  },
+  {
+    "id": "5196-flora",
+    "tipoVivienda": "Casa",
+    "banos": 2.5,
+    "cajones": 2,
+    "fondo": 16.5,
+    "frente": 6.2,
+    "m2": 97,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-ii-privada-nogal-casa-flora-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-ii-privada-nogal-casa-flora-en-venta-en-culiacan/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-ii-privada-nogal-casa-flora-en-venta-en-culiacan/render-1.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 26558.76,
+      "base": 2576200
+    },
+    "nombreModelo": "Flora",
+    "idDesarrollo": "5196",
+    "recamaras": 3,
+    "amenidades": [],
+    "niveles": 2,
+    "terreno": 102.3,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 290000000
+    }
+  },
+  {
+    "id": "5196-selva",
+    "tipoVivienda": "Casa",
+    "banos": 2.5,
+    "cajones": 2,
+    "fondo": 16.5,
+    "frente": 6.2,
+    "m2": 110,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-ii-privada-nogal-casa-selva-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-ii-privada-nogal-casa-selva-en-venta-en-culiacan/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-ii-privada-nogal-casa-selva-en-venta-en-culiacan/render-1.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 25722.73,
+      "base": 2829500
+    },
+    "nombreModelo": "Selva",
+    "idDesarrollo": "5196",
+    "recamaras": 3,
+    "amenidades": [],
+    "niveles": 2,
+    "terreno": 102.3,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 291000000
+    }
+  },
+  {
+    "id": "5196-tundra",
+    "tipoVivienda": "Casa",
+    "banos": 3.5,
+    "cajones": 2,
+    "fondo": 16.5,
+    "frente": 6.2,
+    "m2": 167,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-ii-privada-nogal-casa-tundra-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-ii-privada-nogal-casa-tundra-en-venta-en-culiacan/plantas/planta-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-ii-privada-nogal-casa-tundra-en-venta-en-culiacan/plantas/planta-3.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-ii-privada-nogal-casa-tundra-en-venta-en-culiacan/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-ii-privada-nogal-casa-tundra-en-venta-en-culiacan/render-2.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 23313.77,
+      "base": 3893400
+    },
+    "nombreModelo": "Tundra",
+    "idDesarrollo": "5196",
+    "recamaras": 3,
+    "amenidades": [],
+    "niveles": 3,
+    "terreno": 102.3,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 292000000
+    },
+    "highlights": []
+  },
+  {
+    "id": "5197-amapa",
+    "tipoVivienda": "Casa",
+    "banos": 3.5,
+    "cajones": 2,
+    "fondo": 17,
+    "frente": 7,
+    "m2": 210,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-arboleda-casa-amapa-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-arboleda-casa-amapa-en-venta-en-culiacan/plantas/planta-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-arboleda-casa-amapa-en-venta-en-culiacan/plantas/planta-3.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-arboleda-casa-amapa-en-venta-en-culiacan/render-1.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 22310.95,
+      "base": 4685300
+    },
+    "nombreModelo": "Amapa",
+    "idDesarrollo": "5197",
+    "recamaras": 3,
+    "amenidades": [
+      "Cochera techada",
+      "Cuarto de servicio techado en 3er nivel",
+      "Recámara principal con baño vestidor"
+    ],
+    "niveles": 3,
+    "terreno": 119,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 293000000
+    },
+    "highlights": [
+      "Modelo con más m² de construcción de Culiacán",
+      "Modelo con más m² de construcción de la zona Sur",
+      "Modelo con más terreno de la zona Sur"
+    ]
+  },
+  {
+    "id": "5197-capiro",
+    "tipoVivienda": "Casa",
+    "banos": 2.5,
+    "cajones": 2,
+    "fondo": 17,
+    "frente": 7,
+    "m2": 145,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-arboleda-casa-capiro-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-arboleda-casa-capiro-en-venta-en-culiacan/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-arboleda-casa-capiro-en-venta-en-culiacan/render-1.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 24299.31,
+      "base": 3523400
+    },
+    "nombreModelo": "Capiro",
+    "idDesarrollo": "5197",
+    "recamaras": 3,
+    "amenidades": [
+      "Cochera semitechada",
+      "Área de TV"
+    ],
+    "niveles": 2,
+    "terreno": 119,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 292000000
+    }
+  },
+  {
+    "id": "5197-cedro",
+    "tipoVivienda": "Casa",
+    "banos": 3.5,
+    "cajones": 2,
+    "fondo": 17,
+    "frente": 7,
+    "m2": 180,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-arboleda-casa-cedro-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-arboleda-casa-cedro-en-venta-en-culiacan/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-arboleda-casa-cedro-en-venta-en-culiacan/render-1.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 23544.44,
+      "base": 4238000
+    },
+    "nombreModelo": "Cedro",
+    "idDesarrollo": "5197",
+    "recamaras": 3,
+    "amenidades": [
+      "Cochera Techada",
+      "Sala de TV",
+      "Cuarto de servicio"
+    ],
+    "niveles": 2,
+    "terreno": 119,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 292000000
+    }
+  },
+  {
+    "id": "5198-alpes",
+    "tipoVivienda": "Casa",
+    "banos": 2.5,
+    "cajones": 2,
+    "fondo": 16,
+    "frente": 5,
+    "m2": 106,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-montanesa-casa-alpes-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-montanesa-casa-alpes-en-venta-en-culiacan/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-montanesa-casa-alpes-en-venta-en-culiacan/render-1.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 21996.51,
+      "base": 2331630
+    },
+    "nombreModelo": "Alpes",
+    "idDesarrollo": "5198",
+    "recamaras": 3,
+    "amenidades": [],
+    "niveles": 2,
+    "terreno": 80,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 294000000
+    }
+  },
+  {
+    "id": "5198-cerezo",
+    "tipoVivienda": "Casa",
+    "banos": 2,
+    "cajones": 2,
+    "fondo": 16,
+    "frente": 5,
+    "m2": 75,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-montanesa-casa-cerezo-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-montanesa-casa-cerezo-en-venta-en-culiacan/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-montanesa-casa-cerezo-en-venta-en-culiacan/render-1.webp"
+      ]
+    },
+    "nombreModelo": "Cerezo",
+    "idDesarrollo": "5198",
+    "recamaras": 3,
+    "amenidades": [],
+    "niveles": 2,
+    "terreno": 80,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 293000000
+    }
+  },
+  {
+    "id": "5198-colina",
+    "tipoVivienda": "Casa",
+    "banos": 1.5,
+    "cajones": 2,
+    "fondo": 16,
+    "frente": 5,
+    "m2": 66,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-montanesa-casa-colina-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-montanesa-casa-colina-en-venta-en-culiacan/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-montanesa-casa-colina-en-venta-en-culiacan/render-1.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 26956.97,
+      "base": 1779160
+    },
+    "nombreModelo": "Colina",
+    "idDesarrollo": "5198",
+    "recamaras": 2,
+    "amenidades": [],
+    "niveles": 2,
+    "terreno": 80,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 294000000
+    },
+    "highlights": [
+      "Modelo con el precio más bajo de Culiacán",
+      "Modelo con el precio más bajo de la zona Sur"
+    ]
+  },
+  {
+    "id": "5198-sauce",
+    "tipoVivienda": "Casa",
+    "banos": 1.5,
+    "cajones": 2,
+    "fondo": 16,
+    "frente": 5,
+    "m2": 60,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-montanesa-casa-sauce-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-montanesa-casa-sauce-en-venta-en-culiacan/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-montanesa-casa-sauce-en-venta-en-culiacan/render-1.webp"
+      ]
+    },
+    "nombreModelo": "Sauce",
+    "idDesarrollo": "5198",
+    "recamaras": 2,
+    "amenidades": [],
+    "niveles": 2,
+    "terreno": 80,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 293000000
+    }
+  },
+  {
+    "id": "5198-sierra",
+    "tipoVivienda": "Casa",
+    "banos": 1.5,
+    "cajones": 2,
+    "fondo": 16,
+    "frente": 5,
+    "m2": 85,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-montanesa-casa-sierra-en-venta-en-culiacan/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-montanesa-casa-sierra-en-venta-en-culiacan/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/perisur-montanesa-casa-sierra-en-venta-en-culiacan/render-1.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 24262.12,
+      "base": 2062280
+    },
+    "nombreModelo": "Sierra",
+    "idDesarrollo": "5198",
+    "recamaras": 3,
+    "amenidades": [],
+    "niveles": 2,
+    "terreno": 80,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 294000000
+    }
+  },
+  {
+    "id": "5199-glam",
+    "tipoVivienda": "Departamento",
+    "banos": 2,
+    "cajones": 1,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 70,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/iconica-departamento-glam-en-venta-en-culiacan/plantas/planta-1.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/iconica-departamento-glam-en-venta-en-culiacan/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/iconica-departamento-glam-en-venta-en-culiacan/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/iconica-departamento-glam-en-venta-en-culiacan/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/iconica-departamento-glam-en-venta-en-culiacan/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/iconica-departamento-glam-en-venta-en-culiacan/render-5.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/iconica-departamento-glam-en-venta-en-culiacan/render-6.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 54921.43,
+      "base": 3844500
+    },
+    "nombreModelo": "Glam",
+    "idDesarrollo": "5199",
+    "recamaras": 2,
+    "amenidades": [
+      "Cuenta con Terraza"
+    ],
+    "niveles": 1,
+    "terreno": 0,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 294000000
+    }
+  },
+  {
+    "id": "5199-legend",
+    "tipoVivienda": "Departamento",
+    "banos": 2,
+    "cajones": 1,
+    "fondo": 0,
+    "frente": 0,
+    "m2": 85,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/iconica-departamento-legend-en-venta-en-culiacan/plantas/planta-1.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/iconica-departamento-legend-en-venta-en-culiacan/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/iconica-departamento-legend-en-venta-en-culiacan/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/iconica-departamento-legend-en-venta-en-culiacan/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/iconica-departamento-legend-en-venta-en-culiacan/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/iconica-departamento-legend-en-venta-en-culiacan/render-5.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/iconica-departamento-legend-en-venta-en-culiacan/render-6.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/iconica-departamento-legend-en-venta-en-culiacan/render-7.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 57783.98,
+      "base": 4911638
+    },
+    "nombreModelo": "Legend",
+    "idDesarrollo": "5199",
+    "recamaras": 2,
+    "amenidades": [
+      "Recámara principal con cuarto vestidor",
+      "Terraza"
+    ],
+    "niveles": 1,
+    "terreno": 0,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 295000000
+    }
+  },
+  {
+    "id": "5200-albatros",
+    "tipoVivienda": "Casa",
+    "banos": 4,
+    "cajones": 2,
+    "fondo": 16.5,
+    "frente": 6.5,
+    "m2": 115,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-albatros-en-venta-en-navolato/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-albatros-en-venta-en-navolato/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-albatros-en-venta-en-navolato/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-albatros-en-venta-en-navolato/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-albatros-en-venta-en-navolato/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-albatros-en-venta-en-navolato/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-albatros-en-venta-en-navolato/render-5.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-albatros-en-venta-en-navolato/render-6.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 32060.87,
+      "base": 3687000
+    },
+    "nombreModelo": "Albatros",
+    "idDesarrollo": "5200",
+    "recamaras": 3,
+    "amenidades": [
+      "Bar",
+      "Cuarto de servicio independiente",
+      "Pasillo de servicio",
+      "Terraza"
+    ],
+    "niveles": 2,
+    "terreno": 107.25,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 296000000
+    },
+    "highlights": [
+      "Modelo con el precio más bajo por m² de Navolato",
+      "Modelo con el precio más bajo por m² de la zona Sin Zona"
+    ]
+  },
+  {
+    "id": "5200-cisne-grand",
+    "tipoVivienda": "Casa",
+    "banos": 2.5,
+    "cajones": 2,
+    "fondo": 16.5,
+    "frente": 6.5,
+    "m2": 100,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-cisne-grand-en-venta-en-navolato/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-cisne-grand-en-venta-en-navolato/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-cisne-grand-en-venta-en-navolato/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-cisne-grand-en-venta-en-navolato/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-cisne-grand-en-venta-en-navolato/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-cisne-grand-en-venta-en-navolato/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-cisne-grand-en-venta-en-navolato/render-5.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-cisne-grand-en-venta-en-navolato/render-6.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-cisne-grand-en-venta-en-navolato/render-7.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 34570,
+      "base": 3457000
+    },
+    "nombreModelo": "Cisne Grand",
+    "idDesarrollo": "5200",
+    "recamaras": 3,
+    "amenidades": [
+      "Bar",
+      "Cuarto de servicio independiente",
+      "Pasillo de servicio",
+      "Terraza"
+    ],
+    "niveles": 2,
+    "terreno": 107.25,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 295000000
+    }
+  },
+  {
+    "id": "5200-condor",
+    "tipoVivienda": "Casa",
+    "banos": 4,
+    "cajones": 2,
+    "fondo": 16.5,
+    "frente": 6.5,
+    "m2": 135,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-condor-en-venta-en-navolato/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-condor-en-venta-en-navolato/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-condor-en-venta-en-navolato/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-condor-en-venta-en-navolato/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-condor-en-venta-en-navolato/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-condor-en-venta-en-navolato/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-condor-en-venta-en-navolato/render-5.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-condor-en-venta-en-navolato/render-6.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-condor-en-venta-en-navolato/render-7.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-condor-en-venta-en-navolato/render-8.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-condor-en-venta-en-navolato/render-9.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-condor-en-venta-en-navolato/render-10.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-condor-en-venta-en-navolato/render-11.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-condor-en-venta-en-navolato/render-12.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 33570.37,
+      "base": 4532000
+    },
+    "nombreModelo": "Condor",
+    "idDesarrollo": "5200",
+    "recamaras": 3,
+    "amenidades": [
+      "Bar",
+      "Cuarto de servicio independiente",
+      "Pasillo de servicio",
+      "Terraza"
+    ],
+    "niveles": 2,
+    "terreno": 107.25,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 296000000
+    },
+    "highlights": [
+      "Modelo con más m² de construcción de Navolato",
+      "Modelo con más m² de construcción de la zona Sin Zona"
+    ]
+  },
+  {
+    "id": "5200-gaviota",
+    "tipoVivienda": "Casa",
+    "banos": 1.5,
+    "cajones": 2,
+    "fondo": 19.5,
+    "frente": 6.5,
+    "m2": 82,
+    "media": {
+      "plantasArquitectonicas": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-gaviota-en-venta-en-navolato/plantas/planta-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-gaviota-en-venta-en-navolato/plantas/planta-2.webp"
+      ],
+      "gallery": [
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-gaviota-en-venta-en-navolato/render-1.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-gaviota-en-venta-en-navolato/render-2.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-gaviota-en-venta-en-navolato/render-3.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-gaviota-en-venta-en-navolato/render-4.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-gaviota-en-venta-en-navolato/render-5.webp",
+        "https://storage.googleapis.com/inmueble-advisor-app.firebasestorage.app/imagenes/modelos/almarena-isla-cortes-casa-gaviota-en-venta-en-navolato/render-6.webp"
+      ]
+    },
+    "precios": {
+      "mantenimientoMensual": 0,
+      "moneda": "MNX",
+      "inicial": 0,
+      "metroCuadrado": 37426.83,
+      "base": 3069000
+    },
+    "nombreModelo": "Gaviota",
+    "idDesarrollo": "5200",
+    "recamaras": 2,
+    "amenidades": [
+      "Bar",
+      "Cuarto de servicio independiente",
+      "Pasillo de servicio",
+      "Terraza"
+    ],
+    "niveles": 2,
+    "terreno": 126.75,
+    "activo": true,
+    "updatedAt": {
+      "_seconds": 1766468878,
+      "_nanoseconds": 295000000
+    },
+    "highlights": [
+      "Modelo con el precio más bajo de Navolato",
+      "Modelo con el precio más bajo de la zona Sin Zona",
+      "Modelo con más terreno de Navolato",
+      "Modelo con más terreno de la zona Sin Zona"
+    ]
+  }
+]

@@ -5,7 +5,8 @@
   position: fixed;
   bottom: 30px;
   right: 30px;
-  background-color: #25D366; /* WhatsApp Brand Color */
+  background-color: #25D366;
+  /* WhatsApp Brand Color */
   color: white;
   width: 60px;
   height: 60px;
@@ -46,7 +47,7 @@
   border-radius: 4px;
   font-size: 0.85rem;
   font-weight: bold;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s, transform 0.3s;
@@ -68,13 +69,24 @@
     width: 50px;
     height: 50px;
   }
-  
+
   .whatsapp-btn__icon {
     width: 28px;
     height: 28px;
   }
-  
+
   .whatsapp-btn::before {
-    display: none; /* Ocultar tooltip en móvil */
+    display: none;
+    /* Ocultar tooltip en móvil */
   }
+}
+
+/* 
+   GLOBAL STATE: HIDE WHATSAPP 
+   Activado por useStickyPanel.js cuando aparece un Sticky Footer
+*/
+body.global-fab-hidden .whatsapp-btn {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: scale(0.8) !important;
 }

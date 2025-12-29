@@ -16,13 +16,17 @@ Representa un complejo habitacional (ej. conjunto de casas, torre de departament
 | **nombre** | `string` | Simple | Nombre comercial del desarrollo. |
 | **descripcion** | `string` | Simple | Texto detallado sobre el desarrollo y estilo de vida. |
 | **constructora** | `string` | Simple | Nombre de la empresa constructora. |
-| **status** | `string` | Simple | Estado de venta/construcción (ej. "Entrega Inmediata", "Pre-Venta"). |
+
 | **activo** | `boolean` | Simple | Indica si el desarrollo está habilitado (ej. `false`). |
 | **analisisIA** | `map` | Objeto anidado | Análisis generado por IA sobre el desarrollo. |
 | analisisIA.resumen | `string` | Sub-campo | Resumen ejecutivo del análisis. |
 | analisisIA.puntosFuertes | `array<string>` | Sub-campo | Lista de puntos fuertes detectados. |
 | analisisIA.puntosDebiles | `array<string>` | Sub-campo | Lista de áreas de oportunidad. |
 | **scoreDesarrollo** | `number` | Simple | Puntuación o métrica de calidad/popularidad. |
+| **promocion** | `map` | Objeto anidado | Promoción vigente (fechas en Timezone local). |
+| promocion.nombre | `string` | Sub-campo | Nombre/Detalle de la promoción. |
+| promocion.fecha_inicio | `timestamp` | Sub-campo | Inicio de vigencia. |
+| promocion.fecha_fin | `timestamp` | Sub-campo | Fin de vigencia. |
 | **keywords** | `array<string>` | Lista | Palabras clave para búsqueda y SEO. |
 | **amenidades** | `array<string>` | Lista | Lista de amenidades del *desarrollo* (ej. "Áreas verdes"). |
 | **entorno** | `array<string>` | Lista | Lista de puntos de interés o características cercanas. |
@@ -77,6 +81,11 @@ Representa un tipo específico de unidad dentro de un desarrollo.
 | **terreno** | `number` | Simple | Metros cuadrados de terreno. |
 | **frente** | `number` | Simple | Medida del frente del terreno (mts). |
 | **fondo** | `number` | Simple | Medida del fondo del terreno (mts). |
+| **status** | `string`/`array` | Flexible | Estado (ej. "Entrega Inmediata"). Soporta múltiples valores. |
+| **promocion** | `map` | Objeto anidado | Promoción vigente (fechas en Timezone local). |
+| promocion.nombre | `string` | Sub-campo | Nombre/Detalle de la promoción. |
+| promocion.fecha_inicio | `timestamp` | Sub-campo | Inicio de vigencia. |
+| promocion.fecha_fin | `timestamp` | Sub-campo | Fin de vigencia. |
 | **recamaras** | `number` | Simple | Cantidad de recámaras. |
 | **banos** | `number` | Simple | Cantidad de baños completos. |
 | **niveles** | `number` | Simple | Número de pisos de la vivienda. |
@@ -96,6 +105,7 @@ Representa un tipo específico de unidad dentro de un desarrollo.
 | infoComercial.fechaInicioVenta | `timestamp` | Sub-campo | Fecha cuando inició la venta del modelo. |
 | infoComercial.plusvaliaEstimada | `number` | Sub-campo | Plusvalía estimada del modelo. |
 | infoComercial.unidadesVendidas | `number` | Sub-campo | Unidades vendidas de este modelo. |
+| infoComercial.tiempoEntrega | `string` | Simple | Tiempo de entrega estimado (ej. "6 meses" o "Mayo 2026"). |
 | **analisisIA** | `map` | Objeto anidado | Análisis generado por IA sobre el modelo. |
 | analisisIA.resumen | `string` | Sub-campo | Resumen ejecutivo del análisis. |
 | **media** | `map` | Objeto anidado | Archivos multimedia del modelo. |

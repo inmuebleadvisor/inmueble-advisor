@@ -1,7 +1,15 @@
+import { Timestamp } from 'firebase-admin/firestore';
+import { parseDateWithTimezone } from './timezones.js';
+
 const parseDateHelper = (str) => {
     if (!str) return null;
     const d = new Date(str);
     return isNaN(d.getTime()) ? null : d;
+};
+
+// Helper: Convert JS Date (from timezone parser) to Firestore Timestamp
+const toTimestamp = (date) => {
+    return date ? Timestamp.fromDate(date) : null;
 };
 
 export const adaptDesarrollo = (row) => {
@@ -12,7 +20,8 @@ export const adaptDesarrollo = (row) => {
     if (row.nombre) out.nombre = row.nombre;
     if (row.descripcion) out.descripcion = row.descripcion;
     if (row.constructora) out.constructora = row.constructora;
-    if (row.status) out.status = row.status;
+    // Status REMOVED from Desarrollos
+
     if (row.activo !== undefined) out.activo = row.activo;
     if (row.score) out.scoreDesarrollo = row.score;
     if (row.keywords) out.keywords = row.keywords;
@@ -41,9 +50,7 @@ export const adaptDesarrollo = (row) => {
     if (row.fecha_inicio || row['infoComercial.fechaInicioVenta']) info.fechaInicioVenta = row.fecha_inicio || row['infoComercial.fechaInicioVenta'];
     if (row.num_modelos || row['infoComercial.cantidadModelos']) info.cantidadModelos = row.num_modelos || row['infoComercial.cantidadModelos'];
     if (row.plusvalia_pct || row['infoComercial.plusvaliaPromedio']) info.plusvaliaPromedio = row.plusvalia_pct || row['infoComercial.plusvaliaPromedio'];
-    // Inventory Calculation Logic (Bidirectional)
-    // If we have Total + Sold -> Calc Available
-    // If we have Total + Available -> Calc Sold
+
     const rawTotales = row.unidades_totales || row['infoComercial.unidadesTotales'];
     const rawVendidas = row.unidades_vendidas || row['infoComercial.unidadesVendidas'];
     const rawDisponibles = row.unidades_disponibles || row['infoComercial.unidadesDisponibles'];
@@ -53,26 +60,21 @@ export const adaptDesarrollo = (row) => {
         info.unidadesTotales = uT;
 
         let uV = parseFloat(rawVendidas);
-        let uD = parseFloat(rawDisponibles); // Assuming CSV might have this column
+        let uD = parseFloat(rawDisponibles);
 
-        // Case 1: Total & Sold defined -> Calc Available
         if (!isNaN(uV) && isNaN(uD)) {
             info.unidadesVendidas = uV;
             info.unidadesDisponibles = (uT - uV) > 0 ? (uT - uV) : 0;
         }
-        // Case 2: Total & Available defined -> Calc Sold
         else if (isNaN(uV) && !isNaN(uD)) {
             info.unidadesDisponibles = uD;
             info.unidadesVendidas = (uT - uD) > 0 ? (uT - uD) : 0;
         }
-        // Case 3: Both defined (Trust inputs or validate?) -> Trust inputs usually, but let's store both.
         else if (!isNaN(uV) && !isNaN(uD)) {
             info.unidadesVendidas = uV;
             info.unidadesDisponibles = uD;
         }
-        // Case 4: Only Total. Can't infer much.
     } else {
-        // Fallbacks if total is missing but others exist
         if (rawVendidas) info.unidadesVendidas = parseFloat(rawVendidas);
         if (rawDisponibles) info.unidadesDisponibles = parseFloat(rawDisponibles);
     }
@@ -101,12 +103,42 @@ export const adaptDesarrollo = (row) => {
     if (row.amenidades) out.amenidades = row.amenidades;
     if (row.entorno) out.entorno = row.entorno;
 
-    // 9. Analisis IA (New)
+    // 9. Analisis IA
     const analisis = {};
     if (row.ia_resumen) analisis.resumen = row.ia_resumen;
-    if (row.ia_fuertes) analisis.puntosFuertes = row.ia_fuertes; // Pipe separated
-    if (row.ia_debiles) analisis.puntosDebiles = row.ia_debiles; // Pipe separated
+    if (row.ia_fuertes) analisis.puntosFuertes = row.ia_fuertes;
+    if (row.ia_debiles) analisis.puntosDebiles = row.ia_debiles;
     if (Object.keys(analisis).length > 0) out.analisisIA = analisis;
+
+    // 10. PROMOCION (New)
+    const prom = {};
+    if (row.promocion_nombre || row['promocion.nombre']) prom.nombre = row.promocion_nombre || row['promocion.nombre'];
+
+    // Timezone safe parsing: Use City from same row (if csv has it)
+    const city = out.ubicacion?.ciudad || 'Mexico City';
+
+    // Start Date
+    const startStr = row.promocion_inicio || row['promocion.fecha_inicio'];
+    if (startStr) {
+        // Try parsing assuming YYYY-MM-DD in City Time
+        // Check if user provided ISO? If so, map directly?
+        // Guide says: "Regla de Oro: La vigencia ... alineados a la zona horaria de la ciudad"
+        // We assume CSV gives YYYY-MM-DD
+        const d = parseDateWithTimezone(startStr, city, false);
+        if (d) prom.fecha_inicio = toTimestamp(d);
+        // If not parsed (maybe full ISO), try basic parse
+        else if (parseDateHelper(startStr)) prom.fecha_inicio = toTimestamp(parseDateHelper(startStr));
+    }
+
+    // End Date
+    const endStr = row.promocion_fin || row['promocion.fecha_fin'];
+    if (endStr) {
+        const d = parseDateWithTimezone(endStr, city, true); // End of day
+        if (d) prom.fecha_fin = toTimestamp(d);
+        else if (parseDateHelper(endStr)) prom.fecha_fin = toTimestamp(parseDateHelper(endStr));
+    }
+
+    if (Object.keys(prom).length > 0) out.promocion = prom;
 
     return out;
 };
@@ -115,7 +147,6 @@ export const adaptModelo = (row) => {
     const out = {};
 
     // 1. Identifiers
-    // ID construction logic
     const idDesarrollo = row.idDesarrollo || row.id_desarrollo;
     const nombreModelo = row.nombreModelo || row.nombre_modelo;
 
@@ -130,26 +161,32 @@ export const adaptModelo = (row) => {
     if (nombreModelo) out.nombreModelo = nombreModelo;
     if (row.descripcion) out.descripcion = row.descripcion;
 
-    // Highlights can be manual (single string from CSV) transformed to array, 
-    // BUT usually will be calculated. Leaving mapping for manual override if needed.
     if (row.highlight || row.destacado) {
         out.highlights = [row.highlight || row.destacado];
     }
 
-    // Mapping ActivoModelo legacy to active
-    // The schema handles 'activo' or 'ActivoModelo', but here we map to 'activo' property or leave row props.
-    // Let's rely on strict mapping.
     if (row.ActivoModelo !== undefined) out.activo = row.ActivoModelo;
     else if (row.activo_modelo !== undefined) out.activo = row.activo_modelo;
     else if (row.activo !== undefined) out.activo = row.activo;
 
     if (row.tipo_vivienda || row.tipoVivienda) out.tipoVivienda = row.tipo_vivienda || row.tipoVivienda;
 
+    // STATUS (New in Model)
+    // Supports flexible (string or pipe-separated)
+    const rawStatus = row.status || row.estado;
+    if (rawStatus) {
+        if (rawStatus.includes('|')) {
+            out.status = rawStatus.split('|').map(s => s.trim()).filter(s => s);
+        } else {
+            out.status = rawStatus.trim();
+        }
+    }
+
     // 2. Precios
     const precios = {};
     if (row.precio_inicial || row.precio_base || row['precios.base']) precios.base = row.precio_inicial || row.precio_base || row['precios.base'];
-    if (row.precio_orig_lista || row['precios.inicial']) precios.inicial = row.precio_orig_lista || row['precios.inicial']; // New field mapping
-    if (row.precio_m2 || row['precios.metroCuadrado']) precios.metroCuadrado = row.precio_m2 || row['precios.metroCuadrado']; // New field mapping
+    if (row.precio_orig_lista || row['precios.inicial']) precios.inicial = row.precio_orig_lista || row['precios.inicial'];
+    if (row.precio_m2 || row['precios.metroCuadrado']) precios.metroCuadrado = row.precio_m2 || row['precios.metroCuadrado'];
     if (row.mantenimiento || row['precios.mantenimientoMensual']) precios.mantenimientoMensual = row.mantenimiento || row['precios.mantenimientoMensual'];
     if (row['precios.moneda']) precios.moneda = row['precios.moneda'];
     if (Object.keys(precios).length > 0) out.precios = precios;
@@ -159,6 +196,7 @@ export const adaptModelo = (row) => {
     if (row.unidades_vendidas || row['infoComercial.unidadesVendidas']) info.unidadesVendidas = row.unidades_vendidas || row['infoComercial.unidadesVendidas'];
     if (row.plusvalia_pct || row['infoComercial.plusvaliaEstimada']) info.plusvaliaEstimada = row.plusvalia_pct || row['infoComercial.plusvaliaEstimada'];
     if (row.fecha_inicio || row['infoComercial.fechaInicioVenta']) info.fechaInicioVenta = row.fecha_inicio || row['infoComercial.fechaInicioVenta'];
+    if (row.tiempo_entrega || row['infoComercial.tiempoEntrega']) info.tiempoEntrega = row.tiempo_entrega || row['infoComercial.tiempoEntrega'];
     if (Object.keys(info).length > 0) out.infoComercial = info;
 
     // 4. Specs
@@ -187,22 +225,42 @@ export const adaptModelo = (row) => {
     if (row.url_video || row['media.videoPromocional'] || row['media.video']) media.videoPromocional = row.url_video || row['media.videoPromocional'] || row['media.video'];
     if (Object.keys(media).length > 0) out.media = media;
 
-    // 7. Analisis IA (New)
+    // 7. Analisis IA
     const analisis = {};
     if (row.ia_resumen) analisis.resumen = row.ia_resumen;
     if (Object.keys(analisis).length > 0) out.analisisIA = analisis;
 
-    // --- CALCULATIONS (Row Level) ---
+    // 8. PROMOCION (New)
+    const prom = {};
+    if (row.promocion_nombre || row['promocion.nombre']) prom.nombre = row.promocion_nombre || row['promocion.nombre'];
 
-    // 1. Precio por m2
-    // precios.metroCuadrado = precios.base / m2
+    // Timezone safe parsing for Models
+    // Issue: We might not have City here.
+    // Solution: If 'ciudad' or 'timezone_city' is passed in CSV, use it. Else default to Mexico City.
+    const city = row.ciudad || row.timezone_city || 'Mexico City';
+
+    const startStr = row.promocion_inicio || row['promocion.fecha_inicio'];
+    if (startStr) {
+        const d = parseDateWithTimezone(startStr, city, false);
+        if (d) prom.fecha_inicio = toTimestamp(d);
+        else if (parseDateHelper(startStr)) prom.fecha_inicio = toTimestamp(parseDateHelper(startStr));
+    }
+
+    const endStr = row.promocion_fin || row['promocion.fecha_fin'];
+    if (endStr) {
+        const d = parseDateWithTimezone(endStr, city, true);
+        if (d) prom.fecha_fin = toTimestamp(d);
+        else if (parseDateHelper(endStr)) prom.fecha_fin = toTimestamp(parseDateHelper(endStr));
+    }
+
+    if (Object.keys(prom).length > 0) out.promocion = prom;
+
+    // --- CALCULATIONS ---
+
     if (out.precios?.base && out.m2 > 0) {
         out.precios.metroCuadrado = Number((out.precios.base / out.m2).toFixed(2));
     }
 
-    // 2. Plusvalia Estimada (Anualizada)
-    // Formula: ((Current - Initial) / Initial) * 100 -> Total %
-    // Annualized: (Total % / MonthsSinceStart) * 12
     if (out.precios?.base && out.precios?.inicial > 0 && out.infoComercial?.fechaInicioVenta) {
         const current = out.precios.base;
         const initial = out.precios.inicial;
@@ -210,26 +268,15 @@ export const adaptModelo = (row) => {
 
         if (startDate) {
             const now = new Date();
-            // Diff in months
             const yearsDiff = now.getFullYear() - startDate.getFullYear();
             const monthsDiff = (yearsDiff * 12) + (now.getMonth() - startDate.getMonth());
-
-            // Avoid division by zero or negative time. Minimum 1 month.
             const safeMonths = monthsDiff < 1 ? 1 : monthsDiff;
-
-            const totalGrowthPct = ((current - initial) / initial); // e.g. 0.5 for 50%
-            const annualizedGrowth = (totalGrowthPct / safeMonths) * 12; // Annualized rate e.g. 0.6
-
-            // Store as percentage number (e.g. 60.0 instead of 0.6)
+            const totalGrowthPct = ((current - initial) / initial);
+            const annualizedGrowth = (totalGrowthPct / safeMonths) * 12;
             out.infoComercial.plusvaliaEstimada = Number((annualizedGrowth * 100).toFixed(2));
         }
     }
 
-    // 3. Unidades Disponibles (Model Internal Logic)
-    // Usually 'unidadesDisponibles' is on Development, but models might carry this?
-    // Schema says Models have 'unidadesVendidas'. 'unidadesTotales' is usually Dev level,
-    // but sometimes Models have a limit. Schema for Models doesn't explicit 'unidadesTotales' or 'disponibles'.
-    // It only has 'unidadesVendidas'. So we skip specific inventory calc for Model unless we infer it.
-
     return out;
 };
+

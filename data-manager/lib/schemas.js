@@ -78,12 +78,18 @@ export const MediaDesarrolloSchema = z.object({
     video: z.string().optional(),
 });
 
+export const PromocionSchema = z.object({
+    nombre: z.string().optional(),
+    fecha_inicio: z.preprocess(parseDate, z.custom((val) => val === null || val instanceof Timestamp).optional()),
+    fecha_fin: z.preprocess(parseDate, z.custom((val) => val === null || val instanceof Timestamp).optional()),
+});
+
 export const DesarrolloSchema = z.object({
     id: z.string().optional(), // Can be optional on input (auto-generated or linked)
     nombre: z.string().min(1, "Nombre es requerido"),
     descripcion: z.string().optional(),
     constructora: z.string().optional(),
-    status: z.string().default('Entrega Inmediata'),
+    // Status REMOVED from Desarrollo
     activo: z.preprocess(parseBoolean, z.boolean().default(false)),
     scoreDesarrollo: z.preprocess(parseNumber, z.number().optional()),
     keywords: z.preprocess(parseArray, z.array(z.string()).optional()),
@@ -102,6 +108,7 @@ export const DesarrolloSchema = z.object({
     }).optional(),
     media: MediaDesarrolloSchema.optional(),
     analisisIA: AnalisisIASchema.optional(),
+    promocion: PromocionSchema.optional(), // Added
 
     // Internal
     updatedAt: z.custom((val) => val instanceof Timestamp).optional(),
@@ -127,6 +134,7 @@ export const InfoComercialModeloSchema = z.object({
     fechaInicioVenta: z.preprocess(parseDate, z.custom((val) => val === null || val instanceof Timestamp).optional()),
     plusvaliaEstimada: z.preprocess(parseNumber, z.number().optional()),
     unidadesVendidas: z.preprocess(parseNumber, z.number().optional()),
+    tiempoEntrega: z.string().optional(), // Added
 });
 
 export const PreciosModeloSchema = z.object({
@@ -141,6 +149,10 @@ export const PreciosModeloSchema = z.object({
 export const ModeloSchema = z.object({
     id: z.string().optional(),
     idDesarrollo: z.string().min(1, "ID Desarrollo es requerido"),
+
+    // Status ADDED to Modelo (Flexible: string or array)
+    status: z.union([z.string(), z.array(z.string())]).optional(),
+
     // Renamed ActivoModelo -> activo, but support legacy input
     activo: z.preprocess((val, ctx) => {
         // Fallback for ActivoModelo
@@ -172,6 +184,7 @@ export const ModeloSchema = z.object({
     infoComercial: InfoComercialModeloSchema.optional(),
     media: MediaModeloSchema.optional(),
     analisisIA: AnalisisIASchema.optional(),
+    promocion: PromocionSchema.optional(), // Added
 
     updatedAt: z.custom((val) => val instanceof Timestamp).optional(),
 });

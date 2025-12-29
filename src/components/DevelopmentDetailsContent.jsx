@@ -1,10 +1,13 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import ImageLoader from './ImageLoader';
 import PropertyCard from './PropertyCard';
 import DevelopmentInfoSection from './DevelopmentInfoSection';
-import { useNavigate } from 'react-router-dom';
-import Delightbox from './common/Delightbox'; // Import Delightbox
-import { IMAGES } from '../config/constants';
+import TrustBadges from './common/TrustBadges';
+import StickyActionPanel from './common/StickyActionPanel';
+import Delightbox from './common/Delightbox';
+import FavoriteBtn from './FavoriteBtn';
+import { useStickyPanel } from '../hooks/useStickyPanel';
+import '../styles/components/DevelopmentDetails.css';
 
 // Icons
 const Icons = {
@@ -18,15 +21,16 @@ export default function DevelopmentDetailsContent({
     isModal = false
 }) {
     const scrollRef = useRef(null);
-    const [activeIndex, setActiveIndex] = useState(0);
+    const headerRef = useRef(null);
+
     const [showDelightbox, setShowDelightbox] = useState(false);
     const [initialImageIndex, setInitialImageIndex] = useState(0);
 
-    // GALERÍA HEADER
+    // 1. Control de visibilidad del ActionPanel usando Custom Hook
+    const showActionPanel = useStickyPanel(headerRef);
+
     const galeriaImagenes = useMemo(() => {
         if (!desarrollo || !desarrollo.multimedia) return [];
-        // La lógica de unificación ya está en el servicio (catalog.service.js), 
-        // desarrollo.multimedia.galeria ya debería traer todo unificado.
         return desarrollo.multimedia.galeria || [];
     }, [desarrollo]);
 
@@ -46,21 +50,26 @@ export default function DevelopmentDetailsContent({
         desarrollo.ubicacion?.ciudad
     ].filter(Boolean).join(', ');
 
+    // Formatear precio para el ActionPanel
+    const precioDesde = modelos.length > 0
+        ? new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(Math.min(...modelos.map(m => m.precioNumerico || 0)))
+        : null;
+
     return (
-        <div className="animate-fade-in" style={isModal ? styles.modalContainer : styles.pageContainer}>
+        <div className={`dev-details ${isModal ? 'dev-details--modal' : ''}`}>
 
             {/* HEADER: Carrusel Principal */}
-            <header style={styles.carouselWrapper}>
+            <header ref={headerRef} className="dev-details__header">
                 <div
                     ref={scrollRef}
-                    style={styles.carouselContainer}
+                    style={{ display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', width: '100%', height: '100%', scrollBehavior: 'smooth' }}
                     className="hide-scrollbar"
                     onScroll={handleScroll}
                 >
                     {galeriaImagenes.map((img, idx) => (
                         <div
                             key={idx}
-                            style={{ ...styles.carouselSlide, cursor: 'zoom-in' }}
+                            style={{ minWidth: '100%', height: '100%', scrollSnapAlign: 'center', position: 'relative', cursor: 'zoom-in' }}
                             onClick={() => {
                                 setShowDelightbox(true);
                                 setInitialImageIndex(idx);
@@ -69,13 +78,12 @@ export default function DevelopmentDetailsContent({
                             <ImageLoader
                                 src={img}
                                 alt={`${desarrollo.nombre} - vista ${idx}`}
-                                style={styles.headerImage}
+                                className="dev-details__header-image"
                             />
                         </div>
                     ))}
                 </div>
 
-                {/* DELIGHTBOX INTEGRATION */}
                 {showDelightbox && (
                     <Delightbox
                         isOpen={showDelightbox}
@@ -86,55 +94,56 @@ export default function DevelopmentDetailsContent({
                 )}
 
                 {!isModal && onBack && (
-                    <button onClick={onBack} style={styles.floatingBackButton} aria-label="Volver">
+                    <button onClick={onBack} className="dev-details__back-btn" aria-label="Volver">
                         <Icons.Back />
                     </button>
                 )}
 
-                <div style={styles.statusBadgeOverlay}>
+                <div
+                    style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 10 }}
+                    className="animate-fade-in"
+                >
+                    <FavoriteBtn modeloId={desarrollo.id} />
+                </div>
+
+                <div className="dev-details__status-badge">
                     {desarrollo.status || 'En Venta'}
                 </div>
 
-                {galeriaImagenes.length > 1 && (
-                    <div style={styles.imageCounter}>
-                        {activeIndex + 1} / {galeriaImagenes.length}
-                    </div>
-                )}
-
-                <div style={styles.headerGradient}></div>
+                <div className="dev-details__header-gradient"></div>
             </header>
 
-            <main style={styles.contentBody}>
+            <main className="dev-details__content">
 
                 {/* TÍTULO Y UBICACIÓN RÁPIDA */}
-                <div style={styles.titleSection}>
-                    <h1 style={styles.devTitle}>{desarrollo.nombre}</h1>
-                    <div style={styles.locationRow}>
+                <div className="dev-details__title-section animate-fade-in-up">
+                    <h1 className="dev-details__title">{desarrollo.nombre}</h1>
+                    <div className="dev-details__location-row">
                         <Icons.MapPin />
                         <span>
-                            {desarrollo.ubicacion?.colonia
-                                ? desarrollo.ubicacion.colonia
-                                : (desarrollo.zona
-                                    ? `Zona: ${desarrollo.zona}`
-                                    : "Ubicación pendiente")}
+                            {desarrollo.ubicacion?.colonia || desarrollo.zona || "Ubicación pendiente"}
                         </span>
                     </div>
-                    <p style={styles.addressText}>{direccionCompleta}</p>
+                    <p className="dev-details__address">{direccionCompleta}</p>
+
+                    <TrustBadges />
                 </div>
 
-                <hr style={styles.divider} />
+                <hr className="dev-details__divider" />
 
                 {/* SECCIÓN DE INFORMACIÓN TÉCNICA */}
                 <DevelopmentInfoSection desarrollo={desarrollo} />
 
                 {/* LISTA DE MODELOS DISPONIBLES */}
-                <section style={styles.modelsSection}>
-                    <div style={styles.sectionHeaderRow}>
-                        <h3 style={styles.sectionTitle}>Modelos Disponibles</h3>
-                        <span style={styles.modelCountBadge}>{modelos.length}</span>
+                <section style={{ backgroundColor: 'var(--bg-secondary)', margin: '40px -24px 0', padding: '40px 24px', borderTop: '1px solid var(--border-subtle)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+                        <h3 style={{ fontSize: '1.5rem', fontWeight: '800', margin: 0 }}>Modelos Disponibles</h3>
+                        <span style={{ backgroundColor: 'var(--bg-tertiary)', padding: '4px 12px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: '800' }}>
+                            {modelos.length}
+                        </span>
                     </div>
 
-                    <div style={styles.modelsGrid}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
                         {modelos.map((modelo) => (
                             <PropertyCard
                                 key={modelo.id}
@@ -145,48 +154,21 @@ export default function DevelopmentDetailsContent({
                     </div>
 
                     {modelos.length === 0 && (
-                        <p style={{ color: '#6b7280', fontStyle: 'italic', textAlign: 'center', marginTop: '20px' }}>
+                        <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic', textAlign: 'center', marginTop: '30px' }}>
                             Próximamente modelos disponibles.
                         </p>
                     )}
                 </section>
-
             </main>
+
+            {/* STICKY ACTION PANEL */}
+            {showActionPanel && (
+                <StickyActionPanel
+                    price={precioDesde}
+                    label="Precios desde"
+                    onMainAction={() => alert("Abriendo solicitud de cita...")}
+                />
+            )}
         </div>
     );
 }
-
-// --- ESTILOS ---
-const styles = {
-    pageContainer: { backgroundColor: 'var(--bg-main)', minHeight: '100vh', paddingBottom: '40px', fontFamily: "'Outfit', sans-serif" },
-    modalContainer: { backgroundColor: 'var(--bg-main)', minHeight: 'auto', paddingBottom: '40px', fontFamily: "'Outfit', sans-serif" },
-    carouselWrapper: { position: 'relative', width: '100%', height: '320px', backgroundColor: 'var(--bg-tertiary)' }, // Taller header
-    carouselContainer: { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', width: '100%', height: '100%', scrollBehavior: 'smooth' },
-    carouselSlide: { minWidth: '100%', height: '100%', scrollSnapAlign: 'center', position: 'relative' },
-    headerImage: { width: '100%', height: '100%', objectFit: 'cover' },
-
-    // Buttons & Badges
-    floatingBackButton: { position: 'absolute', top: '20px', left: '20px', backgroundColor: 'rgba(30, 41, 59, 0.8)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', zIndex: 10, color: 'white', backdropFilter: 'blur(4px)' },
-    statusBadgeOverlay: { position: 'absolute', bottom: '20px', right: '20px', backgroundColor: 'var(--primary-color)', color: 'var(--text-inverse)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', zIndex: 5, boxShadow: '0 2px 6px rgba(0,0,0,0.3)' },
-    imageCounter: { position: 'absolute', bottom: '20px', left: '20px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold', zIndex: 10 },
-
-    // Gradients
-    headerGradient: { position: 'absolute', bottom: 0, left: 0, width: '100%', height: '120px', background: 'linear-gradient(to top, var(--bg-main), rgba(15, 23, 42, 0))', pointerEvents: 'none' },
-
-    // Content
-    contentBody: { padding: '0 24px', position: 'relative', zIndex: 2, marginTop: '-40px' },
-    titleSection: { marginBottom: '20px' },
-    devTitle: { fontSize: '2.5rem', fontWeight: '800', color: 'var(--text-main)', margin: '0 0 8px 0', lineHeight: '1.1' },
-    locationRow: { display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary-color)', fontWeight: '600', fontSize: '1.1rem', marginBottom: '8px' },
-    locationIcon: { color: 'var(--primary-color)' }, // Helper if needed
-    addressText: { color: 'var(--text-secondary)', fontSize: '0.95rem', margin: 0, lineHeight: '1.5' },
-
-    divider: { border: 'none', borderTop: '1px solid rgba(255,255,255,0.1)', margin: '30px 0' },
-
-    // Models Section
-    modelsSection: { backgroundColor: 'var(--bg-secondary)', margin: '30px -24px 0', padding: '40px 24px', borderTop: '1px solid rgba(255,255,255,0.05)' },
-    sectionHeaderRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' },
-    sectionTitle: { fontSize: '1.5rem', fontWeight: '800', margin: 0, color: 'var(--text-main)' },
-    modelCountBadge: { backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-main)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold', border: '1px solid rgba(255,255,255,0.05)' },
-    modelsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' },
-};

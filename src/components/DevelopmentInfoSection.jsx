@@ -3,7 +3,6 @@
 
 import React, { useMemo, useState } from 'react';
 import AmenidadesList from './AmenidadesList';
-import Carousel from './Carousel'; // Importamos el componente para no duplicar código
 import MapModal from './shared/MapModal';
 
 
@@ -50,42 +49,10 @@ export default function DevelopmentInfoSection({ desarrollo }) {
   const info = desarrollo.info_comercial || {};
   const mostrarFechaEntrega = esFechaFutura(info.fecha_entrega);
 
-  // 2. Preparar Galería (Reutilizando lógica del componente Carousel)
-  // Nota Didáctica: Memoizamos para evitar cálculos innecesarios en cada render
-  const galeriaItems = useMemo(() => {
-    let imagenes = [];
-
-    // 1. Cover (Priority 1)
-    if (desarrollo.media?.cover) {
-      imagenes.push(desarrollo.media.cover);
-    }
-
-    // 2. Gallery (Priority 2 - appended)
-    if (desarrollo.media?.gallery && Array.isArray(desarrollo.media.gallery)) {
-      imagenes = [...imagenes, ...desarrollo.media.gallery];
-    }
-    // Fallback: Legacy Gallery (only if main gallery missing?) - Actually, let's append if no main gallery
-    else if (desarrollo.multimedia?.galeria && Array.isArray(desarrollo.multimedia.galeria)) {
-      imagenes = [...imagenes, ...desarrollo.multimedia.galeria];
-    }
-
-    // 3. Fallback: Legacy Image (only if nothing else found)
-    if (imagenes.length === 0 && desarrollo.imagen) {
-      imagenes = [desarrollo.imagen];
-    }
-
-    // Transformamos al formato que pide tu Carousel: { url, type }
-    return imagenes.map(url => ({ url, type: 'image' }));
-  }, [desarrollo]);
 
   return (
     <div style={styles.container}>
 
-      {/* A. GALERÍA (Posición 1: Debajo del título, antes de la descripción) */}
-      {/* Asignamos una altura fija para que no desplace el contenido bruscamente al cargar */}
-      <div style={styles.carouselContainer}>
-        <Carousel items={galeriaItems} />
-      </div>
 
       {/* B. DESCRIPCIÓN (Posición 2) */}
       <section style={styles.section}>

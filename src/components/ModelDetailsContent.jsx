@@ -7,7 +7,9 @@ import FinanciamientoWidget from './FinanciamientoWidget';
 import DevelopmentInfoSection from './DevelopmentInfoSection';
 import PropertyCard from './PropertyCard';
 import FavoriteBtn from './FavoriteBtn';
+import StickyActionPanel from './common/StickyActionPanel';
 import Delightbox from './common/Delightbox';
+import { useStickyPanel } from '../hooks/useStickyPanel';
 import '../styles/ModelDetailsContent.css'; // BEM Styles relocated
 
 // Icons defined locally since they are small UI helpers
@@ -33,22 +35,8 @@ export default function ModelDetailsContent({
     const [isFloorPlanOpen, setIsFloorPlanOpen] = React.useState(false);
     const [floorPlanIndex, setFloorPlanIndex] = React.useState(0);
 
-    const [showFab, setShowFab] = React.useState(false);
     const headerRef = React.useRef(null);
-
-    React.useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                setShowFab(!entry.isIntersecting);
-            },
-            { root: null, threshold: 0, rootMargin: "-100px 0px 0px 0px" }
-        );
-
-        if (headerRef.current) observer.observe(headerRef.current);
-        return () => {
-            if (headerRef.current) observer.unobserve(headerRef.current);
-        };
-    }, []);
+    const showFab = useStickyPanel(headerRef);
 
     const galeriaImagenes = useMemo(() => {
         if (!modelo) return [];
@@ -234,25 +222,11 @@ export default function ModelDetailsContent({
 
             {/* FLOATING ACTION BUTTON (Sticky Bottom) - Shows only after scroll */}
             {showFab && (
-                <>
-                    <button
-                        className="model-details__cta-fab"
-                        onClick={() => alert("Función de Agendar Cita: Se abrirá el formulario o WhatsApp.")}
-                        aria-label="Agendar Cita"
-                    >
-                        <Icons.Calendar />
-                        <span style={{ marginLeft: '8px' }}>Agendar Visita</span>
-                    </button>
-
-                    {/* Override global WhatsApp button visibility */}
-                    <style>{`
-                        .whatsapp-btn {
-                            opacity: 0 !important;
-                            pointer-events: none !important;
-                            transform: scale(0.8) !important;
-                        }
-                    `}</style>
-                </>
+                <StickyActionPanel
+                    price={formatoMoneda(modelo.precioNumerico)}
+                    label="Precio de Lista"
+                    onMainAction={() => alert("Función de Agendar Cita: Se abrirá el formulario o WhatsApp.")}
+                />
             )}
         </div >
     );

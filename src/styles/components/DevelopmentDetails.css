@@ -1,0 +1,243 @@
+/* src/styles/components/DevelopmentDetails.css */
+/* Basado en BEM y GuiadeEstilos.md */
+
+.dev-details {
+    background-color: var(--bg-main);
+    min-height: 100vh;
+    padding-bottom: 80px; /* Espacio para el sticky footer */
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-main);
+}
+
+.dev-details--modal {
+    min-height: auto;
+}
+
+/* HEADER & CAROUSEL */
+.dev-details__header {
+    position: relative;
+    width: 100%;
+    height: 380px;
+    background-color: var(--bg-tertiary);
+    overflow: hidden;
+}
+
+.dev-details__header-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dev-details__back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    color: white;
+    backdrop-filter: blur(8px);
+    transition: transform 0.2s ease;
+}
+
+.dev-details__back-btn:hover {
+    transform: scale(1.1);
+}
+
+.dev-details__status-badge {
+    position: absolute;
+    bottom: 30px;
+    right: 24px;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 8px 18px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    z-index: 5;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.dev-details__header-gradient {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 150px;
+    background: linear-gradient(to top, var(--bg-main), transparent);
+    pointer-events: none;
+}
+
+/* CONTENT BODY */
+.dev-details__content {
+    padding: 0 24px;
+    position: relative;
+    z-index: 2;
+    margin-top: -30px;
+}
+
+.dev-details__title-section {
+    margin-bottom: 24px;
+}
+
+.dev-details__title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0 0 10px 0;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+}
+
+.dev-details__location-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.dev-details__address {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin: 0;
+    line-height: 1.6;
+    opacity: 0.9;
+}
+
+.dev-details__divider {
+    border: none;
+    border-top: 1px solid var(--border-subtle);
+    margin: 32px 0;
+}
+
+/* TRUST BADGES */
+.trust-badges {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+}
+
+.trust-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+}
+
+.trust-badge:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow-glow);
+}
+
+/* ACTION PANEL (Sticky) */
+.dev-action-panel {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    background: rgba(var(--bg-secondary-rgb, 15, 23, 42), 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-subtle);
+    padding: 16px 24px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.dev-action-panel__info {
+    display: flex;
+    flex-direction: column;
+}
+
+.dev-action-panel__label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.dev-action-panel__price {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--primary-color);
+}
+
+.dev-action-panel__btns {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-cta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-cta--primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-cta--primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px var(--shadow-glow);
+}
+
+/* ANIMATIONS */
+.animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Inhibición de WhatsApp Global */
+.hide-whatsapp .whatsapp-btn {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: scale(0.8) !important;
+    transition: opacity 0.3s ease, transform 0.3s ease !important;
+}

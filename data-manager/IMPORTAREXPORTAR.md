@@ -98,3 +98,15 @@ Cuando termines:
     Para regresar a la carpeta principal del proyecto.
 
 > **NOTA DE SEGURIDAD**: Si alguna vez el programa se queda "trabado" o cargando por mucho tiempo, puedes forzar el cierre presionando las teclas `Ctrl + C` en tu teclado.
+
+## 📄 Estructura de Columnas (CSV)
+
+### DESARROLLOS
+- **Eliminado**: `status` (Ahora vive en los modelos).
+- **Nuevo**: `promocion_nombre`, `promocion_inicio` (YYYY-MM-DD), `promocion_fin` (YYYY-MM-DD).
+  - *Nota*: Las fechas se interpretan en la zona horaria de la ciudad del desarrollo.
+
+### MODELOS
+- **Nuevo**: `status`. Puede ser texto ("Pre-Venta") o lista separada por pipes ("Pre-Venta|Entrega Inmediata").
+- **Nuevo**: `promocion_nombre`, `promocion_inicio`, `promocion_fin`.
+- **Nuevo**: `tiempo_entrega`. Texto libre (ej. "6 meses", "Diciembre 2025").
