@@ -1,8 +1,20 @@
 import { db } from '../firebase/config';
-import { collection, query, where, getDocs, doc, updateDoc, orderBy, limit, serverTimestamp, arrayUnion } from 'firebase/firestore';
-// ✅ IMPORTANTE: Importamos las constantes para la estandarización
+import { serverTimestamp } from 'firebase/firestore'; // Keep only what's needed for data construction if necessary, or move to Repo?
+// Repo handles serverTimestamp usually, but `actualizarEstadoLead` constructs the object heavily.
+// To fully decouple, the Repo should accept specific typed updates or we pass raw objects.
+// Let's pass raw objects and let Repo handle the writing. However serverTimestamp needs to be passed or generated.
+// I will keep serverTimestamp usage here if I push it as data, OR I create precise methods in Repo.
+// For now, to match the pattern, I'll pass data objects.
+// Wait, my LeadRepository definition uses serverTimestamp inside createLead, 
+// but for updates I said "trust service".
+// Let's keep serverTimestamp import for constructing the update payload.
+
 import { STATUS } from '../config/constants';
-import { createOrUpdateExternalAdvisor, addLeadToAdvisorHistory } from './externalAdvisor.service';
+import { createOrUpdateExternalAdvisor } from './externalAdvisor.service';
+import { LeadRepository } from '../repositories/lead.repository';
+
+// Singleton or instantiation
+const leadRepository = new LeadRepository(db);
 
 /**
  * ==========================================
@@ -10,6 +22,7 @@ import { createOrUpdateExternalAdvisor, addLeadToAdvisorHistory } from './extern
  * Responsabilidad: Gestión del embudo de ventas y estados de leads.
  * 
  * MODIFICADO: Dic 2025 - Soporte para Asesores Externos (Develop-Centric)
+ * REFACTORIZADO: Ene 2026 - Uso de LeadRepository
  * ==========================================
  */
 
@@ -18,17 +31,8 @@ import { createOrUpdateExternalAdvisor, addLeadToAdvisorHistory } from './extern
  * @param {string} asesorUid - ID del asesor logueado
  */
 export const obtenerLeadsAsignados = async (asesorUid) => {
-  // PORQUÉ: Siempre es buena práctica usar try/catch en operaciones asíncronas
-  // de BD para manejar fallos de conexión o permisos.
   try {
-    const q = query(
-      collection(db, "leads"),
-      where("asesorUid", "==", asesorUid),
-      // Mantenemos el ordenamiento para el dashboard.
-      orderBy("fechaUltimaInteraccion", "desc")
-    );
-    const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    return await leadRepository.getLeadsByAdvisor(asesorUid);
   } catch (error) {
     console.error("Error obteniendo leads:", error);
     return [];
@@ -42,12 +46,9 @@ export const obtenerLeadsAsignados = async (asesorUid) => {
  * @param {Object} datosExtra - Datos opcionales (monto venta, motivo perdida, notas)
  */
 export const actualizarEstadoLead = async (leadId, nuevoEstado, datosExtra = {}) => {
-  // PORQUÉ: Estandarizamos para que todos los estados pasen por aquí.
   try {
-    const leadRef = doc(db, "leads", leadId);
     const updateData = {
       status: nuevoEstado,
-      // Usamos el timestamp del servidor para la hora de la interacción.
       fechaUltimaInteraccion: serverTimestamp()
     };
 
@@ -56,7 +57,7 @@ export const actualizarEstadoLead = async (leadId, nuevoEstado, datosExtra = {})
       updateData.cierre = {
         montoFinal: datosExtra.monto,
         modeloFinal: datosExtra.modelo,
-        fechaCierre: serverTimestamp() // También usamos server timestamp aquí
+        fechaCierre: serverTimestamp()
       };
     }
 
@@ -65,9 +66,7 @@ export const actualizarEstadoLead = async (leadId, nuevoEstado, datosExtra = {})
       updateData.motivoPerdida = datosExtra.motivo;
     }
 
-    // Nota: Aquí se podría agregar al historial (opcional, Fase 3)
-
-    await updateDoc(leadRef, updateData);
+    await leadRepository.updateLead(leadId, updateData);
     return true;
   } catch (error) {
     console.error("Error actualizando lead:", error);
@@ -80,13 +79,13 @@ export const actualizarEstadoLead = async (leadId, nuevoEstado, datosExtra = {})
  */
 export const marcarComoReportado = async (leadId) => {
   try {
-    const leadRef = doc(db, "leads", leadId);
-    await updateDoc(leadRef, {
+    const updateData = {
       status: STATUS.LEAD_REPORTED,
-      "seguimientoB2B.status": 'REPORTED', // Nuevo campo estructurado
+      "seguimientoB2B.status": 'REPORTED',
       fechaReporte: serverTimestamp(),
       ultimaActualizacion: serverTimestamp()
-    });
+    };
+    await leadRepository.updateLead(leadId, updateData);
     return true;
   } catch (error) {
     console.error("Error marcando reportado:", error);
@@ -104,16 +103,8 @@ export const asignarAsesorExterno = async (leadId, datosAsesorExterno) => {
     // 1. Garantizar que el asesor exista en la colección de externos
     const advisor = await createOrUpdateExternalAdvisor(datosAsesorExterno);
 
-    // 2. Recuperar datos del lead para el historial (Snapshot rápido o pasarlos como param)
-    // Para eficiencia, asumiremos que el frontend o el contexto ya tiene algo, 
-    // pero si no, tendríamos que leer el lead. 
-    // MEJORA: Hacemos un getDoc del lead o confiamos en que 'asignarAsesorExterno' 
-    // suele llamarse desde contexto donde tenemos info.
-    // Por seguridad, leemos el lead para tener el nombre del cliente exacto.
-    const leadRef = doc(db, "leads", leadId);
-
     // Actualizamos el Lead
-    await updateDoc(leadRef, {
+    const updateData = {
       status: STATUS.LEAD_ASSIGNED_EXTERNAL,
       externalAdvisor: {
         nombre: advisor.nombre,
@@ -126,7 +117,9 @@ export const asignarAsesorExterno = async (leadId, datosAsesorExterno) => {
         hitosAlcanzados: [] // Inicializar array de hitos
       },
       fechaUltimaInteraccion: serverTimestamp()
-    });
+    };
+
+    await leadRepository.updateLead(leadId, updateData);
     return true;
   } catch (error) {
     console.error("Error asignando extrno:", error);
@@ -140,18 +133,14 @@ export const asignarAsesorExterno = async (leadId, datosAsesorExterno) => {
  */
 export const registrarHito = async (leadId, hitoName, usuarioId) => {
   try {
-    const leadRef = doc(db, "leads", leadId);
-
     const nuevoHito = {
       hito: hitoName,
-      fecha: new Date(), // Usamos Date para que sea legible en array
+      fecha: new Date(),
       usuarioResponsable: usuarioId || 'system'
     };
 
-    await updateDoc(leadRef, {
-      "seguimientoB2B.hitosAlcanzados": arrayUnion(nuevoHito),
-      fechaUltimaInteraccion: serverTimestamp()
-    });
+    // Use specialized method in repo for array operations to keep clean
+    await leadRepository.addB2BMilestone(leadId, nuevoHito);
 
     return true;
   } catch (error) {

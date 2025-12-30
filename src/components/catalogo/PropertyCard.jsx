@@ -7,6 +7,7 @@ import Delightbox from '../common/Delightbox';
 import HighlightsModal from '../common/HighlightsModal';
 import { FINANZAS, IMAGES } from '../../config/constants';
 import { useState } from 'react';
+import './PropertyCard.css';
 
 // --- ICONOS ---
 const Icons = {
@@ -39,13 +40,13 @@ export default function PropertyCard({ item, showDevName = true, style }) {
   const precioMostrar = item.precioNumerico || 0;
 
   return (
-    <article className="card" style={style}>
+    <article className="card property-card" style={style}>
       {/* 1. SECCIÓN VISUAL (CARRUSEL) */}
-      <div style={styles.carouselContainer} className="hide-scrollbar">
+      <div className="property-card__carousel-container hide-scrollbar">
         {galeriaImagenes.map((imgSrc, idx) => (
           <div
             key={`${item.id}-img-${idx}`}
-            style={{ ...styles.carouselSlide, cursor: 'zoom-in' }}
+            className="property-card__carousel-slide"
             onClick={() => {
               setShowDelightbox(true);
               setInitialImageIndex(idx);
@@ -54,76 +55,75 @@ export default function PropertyCard({ item, showDevName = true, style }) {
             <ImageLoader
               src={imgSrc}
               alt={`${item.nombre_modelo} - foto ${idx + 1}`}
-              style={styles.image}
+              className="property-card__image"
             />
             {idx === 0 && galeriaImagenes.length > 1 && (
-              <div style={styles.swipeHint}>+{galeriaImagenes.length - 1}</div>
+              <div className="property-card__swipe-hint">+{galeriaImagenes.length - 1}</div>
             )}
           </div>
         ))}
 
-        <span style={{
-          ...styles.statusTag,
-          backgroundColor: item.esPreventa ? '#f59e0b' : '#10b981'
-        }}>
+        <span
+          className="property-card__status-tag"
+          style={{ backgroundColor: item.esPreventa ? '#f59e0b' : '#10b981' }}
+        >
           {item.esPreventa ? 'PRE-VENTA' : 'ENTREGA INMEDIATA'}
         </span>
 
-        <div style={styles.favoriteBtnWrapper}>
+        <div className="property-card__favorite-btn-wrapper">
           <FavoriteBtn modeloId={item.id} />
         </div>
 
         {showDevName && (
-          <div style={styles.imageOverlay} className="pointer-events-none">
-            <h3 style={{ ...styles.overlayModelName, fontSize: '1.4rem', fontWeight: '800', margin: 0 }}>{item.nombre_modelo}</h3>
-            <p style={{ ...styles.overlayDevName, fontSize: '0.9rem', opacity: 0.9, fontWeight: '500' }}>{item.nombreDesarrollo}</p>
+          <div className="property-card__image-overlay">
+            <h3 className="property-card__overlay-model-name">{item.nombre_modelo}</h3>
+            <p className="property-card__overlay-dev-name">{item.nombreDesarrollo}</p>
           </div>
         )}
       </div>
 
       {/* 2. DATOS DE LA PROPIEDAD */}
-      <div style={styles.cardBody}>
+      <div className="property-card__body">
 
         {!showDevName && (
           <>
-            <h3 style={styles.inlineTitle}>{item.nombre_modelo}</h3>
+            <h3 className="property-card__inline-title">{item.nombre_modelo}</h3>
           </>
         )}
 
         {/* Ubicación Nueva: Icono + Tipo + en + Colonia */}
-        <div style={styles.locationRow}>
-          <span style={{ marginRight: '4px', display: 'flex', color: 'var(--primary-color)' }}><Icons.Pin /></span>
-          <span style={{ fontWeight: 600, marginRight: '4px', color: 'var(--text-main)' }}>{item.tipoVivienda}</span> en {item.colonia || (item.zona ? `${item.zona}` : "Ubicación pendiente")}
+        <div className="property-card__location-row">
+          <span className="property-card__location-icon"><Icons.Pin /></span>
+          <span className="property-card__location-type">{item.tipoVivienda}</span> en {item.colonia || (item.zona ? `${item.zona}` : "Ubicación pendiente")}
         </div>
 
         {/* Características Básicas */}
-        <div style={styles.featuresRow}>
-          <span style={styles.featureItem}>🛏 {item.recamaras} Rec.</span>
-          <span style={styles.separator}>|</span>
-          <span style={styles.featureItem}>🚿 {item.banos} Baños</span>
-          <span style={styles.separator}>|</span>
-          <span style={styles.featureItem}>📐 {item.m2} m²</span>
+        <div className="property-card__features-row">
+          <span className="property-card__feature-item">🛏 {item.recamaras} Rec.</span>
+          <span className="property-card__separator">|</span>
+          <span className="property-card__feature-item">🚿 {item.banos} Baños</span>
+          <span className="property-card__separator">|</span>
+          <span className="property-card__feature-item">📐 {item.m2} m²</span>
         </div>
 
         {/* Precio */}
-        <div style={styles.priceBox}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={styles.priceLabel}>PRECIO DE LISTA</span>
+        <div className="property-card__price-box">
+          <div className="property-card__price-header">
+            <span className="property-card__price-label">PRECIO DE LISTA</span>
             {precioMostrar > 0 && item.precios?.metroCuadrado && (
-              <span style={styles.priceLabel}>
+              <span className="property-card__price-label">
                 {formatoMoneda(item.precios.metroCuadrado)} m²
               </span>
             )}
           </div>
-          <div style={{
-            ...styles.priceValue,
+          <div className="property-card__price-value" style={{
             color: precioMostrar > 0 ? 'var(--text-main)' : 'var(--text-secondary)',
             fontSize: precioMostrar > 0 ? '1.5rem' : '1.2rem'
           }}>
             {precioMostrar > 0 ? formatoMoneda(precioMostrar) : "Consultar Precio"}
           </div>
           {precioMostrar > 0 && (
-            <div style={styles.priceNote}>
+            <div className="property-card__price-note">
               *Escrituración aprox: {calcularEscrituracion(precioMostrar)}
             </div>
           )}
@@ -137,7 +137,7 @@ export default function PropertyCard({ item, showDevName = true, style }) {
                 setShowHighlightsModal(true);
                 trackBehavior('view_highlights', { id: item.id, origin: 'card_flag' });
               }}
-              style={styles.highlightsFlag}
+              className="property-card__highlights-flag"
               title="Ver beneficios destacados"
             >
               <Icons.Flag />
@@ -147,8 +147,7 @@ export default function PropertyCard({ item, showDevName = true, style }) {
 
         <Link
           to={`/modelo/${item.id}`}
-          className="btn btn-primary btn-full"
-          style={{ marginTop: '1rem' }}
+          className="btn btn-primary btn-full property-card__cta"
           onClick={() => trackBehavior('select_property', { id: item.id, origin: 'card' })}
         >
           Ver Detalles Completos
@@ -174,38 +173,3 @@ export default function PropertyCard({ item, showDevName = true, style }) {
     </article>
   );
 }
-
-// --- ESTILOS ---
-const styles = {
-  // .card class handles main container bg/border/shadow/radius
-  carouselContainer: { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', width: '100%', height: '220px', position: 'relative', backgroundColor: 'var(--bg-tertiary)', overflow: 'hidden' },
-  carouselSlide: { minWidth: '100%', height: '100%', scrollSnapAlign: 'center', position: 'relative' },
-  image: { width: '100%', height: '100%', objectFit: 'cover' },
-  swipeHint: { position: 'absolute', top: '12px', left: '12px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', zIndex: 10 },
-  statusTag: { position: 'absolute', top: '12px', right: '12px', color: 'white', padding: '6px 12px', borderRadius: '20px', fontSize: '0.65rem', fontWeight: '800', letterSpacing: '0.5px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)', pointerEvents: 'none', zIndex: 10 },
-  favoriteBtnWrapper: { position: 'absolute', top: '50px', right: '12px', zIndex: 11 },
-  imageOverlay: { position: 'absolute', bottom: 0, left: 0, width: '100%', padding: '40px 16px 12px 16px', background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%)', display: 'flex', flexDirection: 'column', pointerEvents: 'none', zIndex: 10 },
-  overlayDevName: { color: 'var(--primary-color)', fontSize: '0.9rem', fontWeight: '700', margin: 0, lineHeight: '1.2', textShadow: '0 2px 4px rgba(0,0,0,0.5)' },
-  overlayModelName: { color: 'white', fontSize: '1.4rem', margin: '4px 0 0 0', fontWeight: '800' },
-
-  cardBody: { padding: '16px 16px', display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 },
-  inlineTitle: { margin: 0, fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-main)' },
-  locationRow: { color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'flex', alignItems: 'center' },
-  featuresRow: { display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: '500', marginTop: 'auto' },
-  featureItem: { display: 'flex', alignItems: 'center', gap: '4px' },
-  separator: { color: 'var(--bg-tertiary)', fontSize: '1.2rem', fontWeight: '300' },
-
-  priceBox: {
-    backgroundColor: 'var(--bg-tertiary)',
-    borderRadius: '12px',
-    padding: '12px',
-    marginTop: '8px',
-    border: '1px solid rgba(255,255,255,0.05)',
-    position: 'relative'
-  },
-  priceLabel: { fontSize: '0.7rem', fontWeight: '700', color: 'var(--text-secondary)', letterSpacing: '1px', textTransform: 'uppercase' },
-  priceValue: { fontWeight: '800', margin: '2px 0' },
-  priceNote: { fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px', opacity: 0.8 },
-
-  highlightsFlag: { position: 'absolute', bottom: '10px', right: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--primary-color)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.2)', zIndex: 5, color: 'var(--primary-color)' },
-};

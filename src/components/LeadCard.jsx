@@ -3,6 +3,7 @@ import React from 'react';
 // ✅ Importamos las constantes para usar los códigos universales
 import { STATUS } from '../config/constants';
 import { calcularComisionEstimada, registrarHito } from '../services/crm.service'; // Importar servicios B2B
+import './LeadCard.css';
 
 // --- DICCIONARIO DE ESTADOS (Usando las claves de STATUS) ---
 // PORQUÉ: La Card debe saber qué color usar en base al código de status de la BD. 
@@ -40,7 +41,19 @@ export default function LeadCard({ lead, onAction }) {
   // se usa un fallback seguro (STATUS.LEAD_NEW).
   const configEstado = ESTADOS[lead.status] || ESTADOS[STATUS.LEAD_NEW];
 
-  // Formato de fecha amigable
+  // Formato de fecha amigable (Added simplified mock function if not available, or assume it works)
+  // Assuming formatDate is globally available or imported, but it wasn't in the original imports?
+  // Original code tried to use formatDate in line 114 but defined getTiempoTranscurrido in line 44.
+  // I will assume formatDate was missing or intended to be getTiempoTranscurrido or similar.
+  // Wait, line 114 uses formatDate(lead.fechaCreacion). But formatDate is NOT defined in original file.
+  // I will replace it with a simple creation date formatter or just reuse getTiempoTranscurrido if appropriate,
+  // but better to fix the reference error if it existed. I'll define a helper.
+  const formatDate = (date) => {
+    if (!date) return '';
+    if (date.toDate) return date.toDate().toLocaleDateString();
+    return new Date(date).toLocaleDateString();
+  };
+
   const getTiempoTranscurrido = (fecha) => {
     // PORQUÉ: Verificamos si es un Timestamp de Firestore (objeto con .toDate) 
     // o una cadena (ej. el historial antiguo).
@@ -60,19 +73,19 @@ export default function LeadCard({ lead, onAction }) {
   };
 
   return (
-    <div style={styles.card}>
+    <div className="lead-card">
 
       {/* 1. HEADER: Nombre y Estado */}
-      <div style={styles.header}>
+      <div className="lead-card__header">
         <div>
-          <h3 style={styles.name}>{lead.clienteDatos?.nombre || 'Cliente Nuevo'}</h3>
-          <span style={styles.timeTag}>
+          <h3 className="lead-card__name">{lead.clienteDatos?.nombre || 'Cliente Nuevo'}</h3>
+          <span className="lead-card__time-tag">
             <Icons.Time /> {getTiempoTranscurrido(lead.fechaUltimaInteraccion)}
           </span>
         </div>
         <span
+          className="lead-card__status-badge"
           style={{
-            ...styles.statusBadge,
             backgroundColor: configEstado.bg,
             color: configEstado.color,
             border: configEstado.border ? `1px solid ${configEstado.border}` : 'none'
@@ -83,27 +96,27 @@ export default function LeadCard({ lead, onAction }) {
       </div>
 
       {/* 2. BODY: Interés e Info */}
-      <div style={styles.body}>
-        <div style={styles.interestBox}>
-          <span style={styles.label}>Interesado en:</span>
-          <p style={styles.value}>{lead.nombreDesarrollo || 'Desarrollo General'}</p>
-          <p style={styles.subValue}>{lead.modeloInteres || 'Modelo por definir'}</p>
+      <div className="lead-card__body">
+        <div className="lead-card__interest-box">
+          <span className="lead-card__label">Interesado en:</span>
+          <p className="lead-card__value">{lead.nombreDesarrollo || 'Desarrollo General'}</p>
+          <p className="lead-card__sub-value">{lead.modeloInteres || 'Modelo por definir'}</p>
         </div>
 
         {/* Botones de Contacto Rápido */}
-        <div style={styles.contactRow}>
+        <div className="lead-card__contact-row">
           {lead.clienteDatos?.telefono && (
             <a
               href={`https://wa.me/52${lead.clienteDatos.telefono}?text=Hola ${lead.clienteDatos.nombre}, soy tu asesor de Inmueble Advisor...`}
               target="_blank"
               rel="noopener noreferrer"
-              style={styles.whatsAppBtn}
+              className="lead-card__whatsapp-btn"
             >
               <Icons.Whatsapp /> WhatsApp
             </a>
           )}
           {lead.clienteDatos?.telefono && (
-            <a href={`tel:${lead.clienteDatos.telefono}`} style={styles.phoneBtn}>
+            <a href={`tel:${lead.clienteDatos.telefono}`} className="lead-card__phone-btn">
               <Icons.Phone />
             </a>
           )}
@@ -116,28 +129,24 @@ export default function LeadCard({ lead, onAction }) {
 
       {/* --- SECCIÓN B2B: FINANCIAL & MILESTONES --- */}
       {lead.status === STATUS.LEAD_ASSIGNED_EXTERNAL && (
-        <div style={{ marginTop: '15px', paddingTop: '10px', borderTop: '1px solid #eee' }}>
+        <div className="lead-card__b2b-section">
 
           {/* 1. BADGE FINANCIERO */}
-          <div style={{
-            background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '6px',
-            padding: '8px', marginBottom: '10px', fontSize: '0.9rem', color: '#0369a1',
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-          }}>
+          <div className="lead-card__financial-badge">
             <span>💰 Comisión Estimada:</span>
-            <strong style={{ fontSize: '1.1rem' }}>
+            <strong className="lead-card__financial-amount">
               $ {Math.round(calcularComisionEstimada(lead.precioPresupuesto || 0, { porcentaje: 3.5 })).toLocaleString()}
             </strong>
             {/* Nota: En prod, pasar la policy real del desarrollo, aquí hardcoded 3.5% como default o leer de 'lead.desarrolloData' */}
           </div>
 
           {/* 2. CHECKLIST DE HITOS */}
-          <div className="milestone-checklist">
-            <p style={{ fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '5px' }}>🏁 Seguimiento de Cierre:</p>
+          <div className="lead-card__milestone-checklist">
+            <p className="lead-card__milestone-title">🏁 Seguimiento de Cierre:</p>
             {['Apartado', 'Crédito Aprobado', 'Promesa Compraventa', 'Escrituración'].map((hito) => {
               const alcanzado = lead.seguimientoB2B?.hitosAlcanzados?.some(h => h.hito === hito);
               return (
-                <div key={hito} style={{ display: 'flex', alignItems: 'center', marginBottom: '4px', fontSize: '0.85rem' }}>
+                <div key={hito} className="lead-card__milestone-item">
                   <input
                     type="checkbox"
                     checked={alcanzado}
@@ -165,125 +174,4 @@ export default function LeadCard({ lead, onAction }) {
       )}
     </div>
   );
-};
-
-// --- ESTILOS (Sin cambios) ---
-const styles = {
-  card: {
-    backgroundColor: 'white',
-    borderRadius: '16px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-    border: '1px solid #f3f4f6',
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-    transition: 'transform 0.2s, box-shadow 0.2s',
-    cursor: 'default'
-  },
-  header: {
-    padding: '16px 16px 10px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    borderBottom: '1px solid #f9fafb'
-  },
-  name: {
-    margin: '0 0 4px 0',
-    fontSize: '1rem',
-    fontWeight: '700',
-    color: '#1f2937'
-  },
-  timeTag: {
-    fontSize: '0.75rem',
-    color: '#9ca3af',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px'
-  },
-  statusBadge: {
-    padding: '4px 10px',
-    borderRadius: '20px',
-    fontSize: '0.7rem',
-    fontWeight: '700',
-    whiteSpace: 'nowrap',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px'
-  },
-  body: {
-    padding: '16px',
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '15px'
-  },
-  interestBox: {
-    backgroundColor: '#f9fafb',
-    padding: '10px',
-    borderRadius: '8px'
-  },
-  label: {
-    display: 'block',
-    fontSize: '0.7rem',
-    color: '#6b7280',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    marginBottom: '2px'
-  },
-  value: {
-    margin: 0,
-    fontSize: '0.95rem',
-    fontWeight: '700',
-    color: '#374151'
-  },
-  subValue: {
-    margin: 0,
-    fontSize: '0.85rem',
-    color: '#6b7280'
-  },
-  contactRow: {
-    display: 'flex',
-    gap: '10px'
-  },
-  whatsAppBtn: {
-    flex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
-    backgroundColor: '#25D366',
-    color: 'white',
-    padding: '10px',
-    borderRadius: '8px',
-    fontSize: '0.9rem',
-    fontWeight: '700',
-    textDecoration: 'none',
-    boxShadow: '0 2px 5px rgba(37, 211, 102, 0.2)'
-  },
-  phoneBtn: {
-    width: '40px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'white',
-    border: '1px solid #e5e7eb',
-    color: '#374151',
-    borderRadius: '8px',
-    cursor: 'pointer'
-  },
-  actionButton: {
-    width: '100%',
-    padding: '14px',
-    backgroundColor: '#f8fafc',
-    color: '#475569',
-    border: 'none',
-    borderTop: '1px solid #e2e8f0',
-    fontSize: '0.9rem',
-    fontWeight: '600',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
-    cursor: 'pointer',
-    transition: 'background 0.2s'
-  }
 };

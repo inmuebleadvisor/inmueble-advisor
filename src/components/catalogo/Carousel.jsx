@@ -1,9 +1,9 @@
 // src/components/Carousel.jsx
-// src/components/Carousel.jsx
 // ÚLTIMA MODIFICACION: 02/12/2025
 import React, { useState, useRef } from 'react';
 import ImageLoader from '../shared/ImageLoader';
 import Delightbox from '../common/Delightbox'; // Import Delightbox
+import './Carousel.css';
 
 const Icons = {
   Play: () => <svg width="40" height="40" viewBox="0 0 24 24" fill="rgba(0,0,0,0.5)" stroke="white" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>,
@@ -27,12 +27,11 @@ export default function Carousel({ items = [] }) {
   if (items.length === 0) return null;
 
   return (
-    <div style={styles.wrapper}>
+    <div className="carousel">
       <div
         ref={scrollRef}
-        style={styles.scrollContainer}
+        className="carousel__scroll-container hide-scrollbar"
         onScroll={handleScroll}
-        className="hide-scrollbar"
       >
         {items.map((item, idx) => {
           // ✅ OPTIMIZACIÓN CRÍTICA: ESTRATEGIA DE RENDERIZADO
@@ -43,17 +42,17 @@ export default function Carousel({ items = [] }) {
           const itemType = item.type || 'image'; // Ensure type exists
 
           return (
-            <div key={idx} style={styles.slide}>
+            <div key={idx} className="carousel__slide">
               {shouldRender ? (
                 itemType === 'video' ? (
-                  <div style={styles.videoPlaceholder}>
-                    <a href={item.url} target="_blank" rel="noopener noreferrer" style={styles.videoLink}>
+                  <div className="carousel__video-placeholder">
+                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="carousel__video-link">
                       <Icons.Play /> Ver Video
                     </a>
                   </div>
                 ) : (
                   <div
-                    style={{ width: '100%', height: '100%', cursor: 'zoom-in' }}
+                    className="carousel__slide-content"
                     onClick={() => {
                       setShowDelightbox(true);
                       setInitialImageIndex(idx);
@@ -62,7 +61,7 @@ export default function Carousel({ items = [] }) {
                     <ImageLoader
                       src={item.url}
                       alt={`Slide ${idx}`}
-                      style={styles.image}
+                      className="carousel__image"
                       // Solo la primera imagen es prioritaria
                       priority={idx === 0}
                     />
@@ -75,7 +74,7 @@ export default function Carousel({ items = [] }) {
       </div>
 
       {items.length > 1 && (
-        <div style={styles.counter}>
+        <div className="carousel__counter">
           {activeIndex + 1} / {items.length}
         </div>
       )}
@@ -92,13 +91,3 @@ export default function Carousel({ items = [] }) {
     </div>
   );
 }
-
-const styles = {
-  wrapper: { position: 'relative', width: '100%', height: '100%' },
-  scrollContainer: { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', width: '100%', height: '100%', scrollBehavior: 'smooth' },
-  slide: { minWidth: '100%', height: '100%', scrollSnapAlign: 'center', position: 'relative', backgroundColor: '#e5e7eb' },
-  image: { width: '100%', height: '100%', objectFit: 'cover' },
-  counter: { position: 'absolute', bottom: '20px', right: '20px', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold', zIndex: 10 },
-  videoPlaceholder: { width: '100%', height: '100%', backgroundColor: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  videoLink: { display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'white', textDecoration: 'none', fontWeight: 'bold' }
-};

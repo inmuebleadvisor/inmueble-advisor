@@ -1,0 +1,50 @@
+/* src/components/common/HighlightsModal.css */
+
+.highlights-modal__container {
+    padding: 20px;
+    text-align: center;
+}
+
+.highlights-modal__list {
+    list-style: none;
+    margin: 0 0 25px 0;
+    text-align: left;
+    background-color: #f8fafc;
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.highlights-modal__list-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.highlights-modal__check-icon {
+    color: #10b981;
+    font-weight: bold;
+}
+
+.highlights-modal__action-container {
+    display: flex;
+    justify-content: center;
+    padding-top: 10px;
+}
+
+.highlights-modal__favorite-btn-wrapper {
+    width: 50px;
+    height: 50px;
+    transform: scale(1.2);
+}
+
+.highlights-modal__favorite-legend {
+    text-align: center;
+    margin: 10px 0 0 0;
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 500;
+}

@@ -1,5 +1,11 @@
 import { db } from '../firebase/config';
-import { collection, getDocs, doc, updateDoc, getDoc, writeBatch, query, where } from 'firebase/firestore';
+import { UserRepository } from '../repositories/user.repository';
+import { LeadRepository } from '../repositories/lead.repository';
+import { CatalogRepository } from '../repositories/catalog.repository';
+
+const userRepository = new UserRepository(db);
+const leadRepository = new LeadRepository(db);
+const catalogRepository = new CatalogRepository(db);
 
 /**
  * Servicio para la Gestión Administrativa
@@ -13,8 +19,7 @@ import { collection, getDocs, doc, updateDoc, getDoc, writeBatch, query, where }
  */
 export const getAllUsers = async () => {
     try {
-        const snap = await getDocs(collection(db, 'users'));
-        return snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+        return await userRepository.getAllUsers();
     } catch (error) {
         console.error("Error fetching all users:", error);
         return [];
@@ -26,8 +31,7 @@ export const getAllUsers = async () => {
  */
 export const getAllLeads = async () => {
     try {
-        const snap = await getDocs(collection(db, 'leads'));
-        return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        return await leadRepository.getAllLeads();
     } catch (error) {
         console.error("Error fetching all leads:", error);
         return [];
@@ -39,8 +43,7 @@ export const getAllLeads = async () => {
  */
 export const getAllDesarrollos = async () => {
     try {
-        const snap = await getDocs(collection(db, 'desarrollos'));
-        return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        return await catalogRepository.getAllDesarrollos();
     } catch (error) {
         console.error("Error fetching desarrollos:", error);
         return [];

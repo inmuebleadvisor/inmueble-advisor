@@ -1,13 +1,11 @@
 // src/services/leadAssignmentService.js
 import { db } from '../firebase/config';
-import {
-  collection,
-  addDoc,
-  serverTimestamp
-} from 'firebase/firestore';
-
 import { STATUS } from '../config/constants';
 import { findClientByContact, createClient, updateClientContact } from './client.service';
+import { LeadRepository } from '../repositories/lead.repository';
+
+// Instantiate Repository
+const leadRepository = new LeadRepository(db);
 
 /**
  * SERVICIO DE GENERACIÓN DE LEADS (FRONTEND - OPTIMIZADO)
@@ -17,6 +15,7 @@ import { findClientByContact, createClient, updateClientContact } from './client
  * Se eliminó el array 'historial' de este objeto.
  * Ahora la Cloud Function 'asignarLead' es la única responsable de crear
  * la primera entrada del historial para garantizar consistencia de Timestamps.
+ * * REFACTORIZADO: Ene 2026 - Uso de LeadRepository
  */
 
 export const generarLeadAutomatico = async (datosCliente, idDesarrollo, nombreDesarrollo, modeloInteres, providedUid = null) => {
@@ -61,26 +60,19 @@ export const generarLeadAutomatico = async (datosCliente, idDesarrollo, nombreDe
       status: STATUS.LEAD_PENDING_DEVELOPER_CONTACT,
       origen: 'web_automatico',
 
-      // Fechas de Auditoría (Solo nivel raíz)
-      fechaCreacion: serverTimestamp(),
-      fechaUltimaInteraccion: serverTimestamp(),
-
       // 🔒 BYPASS LEGACY CLOUD FUNCTION
       // Establecemos esto para que el trigger 'assignLead' en la nube (código viejo)
       // detecte que ya tiene asesor (aunque sea dummy) y aborte la ejecución,
       // evitando que sobrescriba el status a 'PENDING_ADMIN'.
       asesorUid: 'MANUAL_B2B_PROCESS'
 
-      // 🗑️ ELIMINADO: historial: [...] 
-      // (Delegado al Backend para evitar errores de escritura y duplicidad)
+      // Fechas de Auditoría son manejadas por el repositorio
     };
 
-    // 2. Guardamos en Firestore
-    const docRef = await addDoc(collection(db, "leads"), nuevoLead);
+    // 2. Guardamos usando Repositorio
+    const leadId = await leadRepository.createLead(nuevoLead);
 
-
-
-    return { success: true, leadId: docRef.id };
+    return { success: true, leadId: leadId };
 
   } catch (error) {
     console.error("Error al enviar solicitud:", error);

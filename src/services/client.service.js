@@ -1,5 +1,8 @@
 import { db } from '../firebase/config';
-import { collection, query, where, getDocs, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { UserRepository } from '../repositories/user.repository';
+
+// Singleton or instantiation
+const userRepository = new UserRepository(db);
 
 /**
  * SERVICIO DE GESTIÓN DE CLIENTES (Lead-User Link)
@@ -7,6 +10,7 @@ import { collection, query, where, getDocs, addDoc, doc, updateDoc, serverTimest
  * Responsabilidad:
  * - Garantizar que cada Lead esté vinculado a una entidad "User".
  * - Evitar duplicidad de usuarios basada en Email o Teléfono.
+ * REFACTORIZADO: Ene 2026 - Uso de UserRepository
  */
 
 // Normalizar teléfono para búsqueda (eliminar espacios, guiones)
@@ -20,28 +24,16 @@ const normalizePhone = (phone) => {
  * @returns {Promise<{uid: string, ...data} | null>}
  */
 export const findClientByContact = async (email, phone) => {
-    const usersRef = collection(db, "users");
-
     // 1. Buscar por Email
     if (email) {
-        const qEmail = query(usersRef, where("email", "==", email));
-        const emailSnap = await getDocs(qEmail);
-        if (!emailSnap.empty) {
-            const doc = emailSnap.docs[0];
-            return { uid: doc.id, ...doc.data() };
-        }
+        const user = await userRepository.findUserByEmail(email);
+        if (user) return user;
     }
 
     // 2. Buscar por Teléfono (Si no se encontró por email)
-    // Nota: Esto es más delicado porque el formato puede variar.
-    // Asumimos que el backend/frontend guarda formato limpio, o buscamos por el input exacto por ahora.
     if (phone) {
-        const qPhone = query(usersRef, where("telefono", "==", phone));
-        const phoneSnap = await getDocs(qPhone);
-        if (!phoneSnap.empty) {
-            const doc = phoneSnap.docs[0];
-            return { uid: doc.id, ...doc.data() };
-        }
+        const user = await userRepository.findUserByPhone(phone);
+        if (user) return user;
     }
 
     return null;
@@ -63,13 +55,11 @@ export const createClient = async (userData) => {
             fechaRegistro: new Date().toISOString(),
             origen: 'web_lead_form',
             onboardingCompleto: false,
-            // Metadatos de auditoría
-            createdAt: serverTimestamp(),
-            lastSeen: serverTimestamp()
+            // Metadatos de auditoría son manejados por el repo
         };
 
-        const docRef = await addDoc(collection(db, "users"), newUser);
-        return { uid: docRef.id, ...newUser };
+        const createdUser = await userRepository.createUser(newUser);
+        return createdUser;
     } catch (error) {
         console.error("Error creating client:", error);
         throw error;
@@ -81,11 +71,7 @@ export const createClient = async (userData) => {
  */
 export const updateClientContact = async (uid, newData) => {
     try {
-        const userRef = doc(db, "users", uid);
-        await updateDoc(userRef, {
-            ...newData,
-            lastSeen: serverTimestamp()
-        });
+        await userRepository.updateUser(uid, newData);
     } catch (error) {
         console.error("Error updating client:", error);
         // No lanzamos error para no bloquear el flujo principal (Lead Creation)

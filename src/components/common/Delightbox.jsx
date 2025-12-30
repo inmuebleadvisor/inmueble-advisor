@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
+import './Delightbox.css';
 
 const Icons = {
     Close: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
@@ -121,22 +122,20 @@ export default function Delightbox({ isOpen, images = [], initialIndex = 0, onCl
 
     if (!isOpen || images.length === 0) return null;
 
-    if (!isOpen || images.length === 0) return null;
-
     const currentItem = items[currentIndex];
 
     return ReactDOM.createPortal(
-        <div style={styles.overlay} onClick={onClose} className="delightbox-overlay">
-            <div style={styles.backdrop}></div>
+        <div className="delightbox-overlay" onClick={onClose}>
+            <div className="delightbox__backdrop"></div>
 
-            <button style={styles.closeButton} onClick={onClose} aria-label="Cerrar">
+            <button className="delightbox__close-button" onClick={onClose} aria-label="Cerrar">
                 <Icons.Close />
             </button>
 
             {/* Remove stopPropagation from here so clicks on empty space close the modal */}
             {/* Add touch handlers to the wrapper so you can swipe anywhere */}
             <div
-                style={styles.contentWrapper}
+                className="delightbox__content-wrapper"
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
@@ -144,7 +143,8 @@ export default function Delightbox({ isOpen, images = [], initialIndex = 0, onCl
                 {/* Navigation Buttons for Desktop (Left) */}
                 {items.length > 1 && (
                     <button
-                        style={{ ...styles.navButton, left: '20px' }}
+                        className="delightbox__nav-button"
+                        style={{ left: '20px' }}
                         onClick={(e) => { e.stopPropagation(); handlePrev(); }}
                         aria-label="Anterior"
                     >
@@ -153,12 +153,12 @@ export default function Delightbox({ isOpen, images = [], initialIndex = 0, onCl
                 )}
 
                 <div
-                    style={styles.imageContainer}
+                    className="delightbox__image-container"
                     onClick={(e) => e.stopPropagation()} // Stop propagation here so clicking image DOES NOT close
                 >
                     {currentItem.type === 'video' ? (
-                        <div style={styles.videoPlaceholder}>
-                            <a href={currentItem.url} target="_blank" rel="noopener noreferrer" style={styles.videoLink}>
+                        <div className="delightbox__video-placeholder">
+                            <a href={currentItem.url} target="_blank" rel="noopener noreferrer" className="delightbox__video-link">
                                 <span>▶ Ver Video Original</span>
                             </a>
                         </div>
@@ -166,17 +166,16 @@ export default function Delightbox({ isOpen, images = [], initialIndex = 0, onCl
                         <img
                             src={currentItem.url}
                             alt={`Imagen ${currentIndex + 1}`}
+                            className="delightbox__image"
                             style={{
-                                ...styles.image,
                                 opacity: isAnimating ? 0.5 : 1,
                                 transform: isAnimating ? 'scale(0.98)' : 'scale(1)',
                                 pointerEvents: 'auto' // Re-enable clicks on image itself
                             }}
-                            className="delightbox-image"
                         />
                     )}
 
-                    <div style={styles.counter}>
+                    <div className="delightbox__counter">
                         {currentIndex + 1} / {items.length}
                     </div>
                 </div>
@@ -184,7 +183,8 @@ export default function Delightbox({ isOpen, images = [], initialIndex = 0, onCl
                 {/* Navigation Buttons for Desktop (Right) */}
                 {items.length > 1 && (
                     <button
-                        style={{ ...styles.navButton, right: '20px' }}
+                        className="delightbox__nav-button"
+                        style={{ right: '20px' }}
                         onClick={(e) => { e.stopPropagation(); handleNext(); }}
                         aria-label="Siguiente"
                     >
@@ -192,127 +192,7 @@ export default function Delightbox({ isOpen, images = [], initialIndex = 0, onCl
                     </button>
                 )}
             </div>
-
-            <style>{`
-                .delightbox-overlay { animation: fadeIn 0.3s ease-out; }
-                .delightbox-image { transition: all 0.3s ease; }
-                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-            `}</style>
         </div>,
         document.body
     );
 }
-
-const styles = {
-    overlay: {
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100dvh', /* Use dvh for mobile browsers */
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    backdrop: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'rgba(0,0,0,0.9)',
-        backdropFilter: 'blur(5px)',
-    },
-    closeButton: {
-        position: 'absolute',
-        top: '20px',
-        right: '20px',
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        border: 'none',
-        borderRadius: '50%',
-        width: '44px',
-        height: '44px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        color: 'white',
-        zIndex: 10001,
-        transition: 'background 0.2s',
-    },
-    contentWrapper: {
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 10000,
-        padding: '20px',
-    },
-    imageContainer: {
-        width: '100%',
-        height: '100%', /* Ensure container takes full available space to center content */
-        maxWidth: '100%',
-        maxHeight: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        pointerEvents: 'none' /* Let clicks pass through empty space to wrapper */
-    },
-    image: {
-        maxWidth: '100%',
-        maxHeight: '80dvh', /* Prevent touching edges on mobile */
-        width: 'auto',
-        height: 'auto',
-        objectFit: 'contain',
-        borderRadius: '4px',
-        boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
-        display: 'block' /* Remove inline gap */
-    },
-    navButton: {
-        position: 'absolute',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        border: 'none',
-        borderRadius: '50%',
-        width: '50px',
-        height: '50px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        color: 'white',
-        zIndex: 10001,
-        transition: 'all 0.2s',
-    },
-    counter: {
-        marginTop: '15px',
-        color: 'rgba(255,255,255,0.7)',
-        fontSize: '0.9rem',
-        fontWeight: '500',
-        letterSpacing: '1px',
-    },
-    videoPlaceholder: {
-        width: '80vw',
-        height: '60vh',
-        backgroundColor: '#000',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        border: '1px solid #333',
-        borderRadius: '8px'
-    },
-    videoLink: {
-        color: 'white',
-        fontSize: '1.2rem',
-        textDecoration: 'none',
-        padding: '20px',
-        border: '1px solid white',
-        borderRadius: '30px',
-        transition: 'transform 0.2s'
-    }
-};

@@ -1,20 +1,20 @@
+```javascript
 // src/services/favorites.service.js
 import { db } from '../firebase/config';
-import { doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
+import { UserRepository } from '../repositories/user.repository';
+
+const userRepository = new UserRepository(db);
 
 /**
  * Servicio para gestionar favoritos en Firestore.
  * Sigue el principio de responsabilidad única del Manual de Arquitectura.
+ * REFACTORIZADO: Ene 2026 - Uso de UserRepository
  */
 
 // Agrega un ID al array de favoritos del usuario
 export const agregarFavoritoAPI = async (uid, modeloId) => {
   try {
-    const userRef = doc(db, "users", uid);
-    await updateDoc(userRef, {
-      favoritos: arrayUnion(modeloId) // arrayUnion evita duplicados automáticamente
-    });
-    return true;
+    return await userRepository.addFavorite(uid, modeloId);
   } catch (error) {
     console.error("Error al agregar favorito:", error);
     return false;
@@ -24,11 +24,7 @@ export const agregarFavoritoAPI = async (uid, modeloId) => {
 // Elimina un ID del array
 export const eliminarFavoritoAPI = async (uid, modeloId) => {
   try {
-    const userRef = doc(db, "users", uid);
-    await updateDoc(userRef, {
-      favoritos: arrayRemove(modeloId)
-    });
-    return true;
+    return await userRepository.removeFavorite(uid, modeloId);
   } catch (error) {
     console.error("Error al eliminar favorito:", error);
     return false;
@@ -38,14 +34,10 @@ export const eliminarFavoritoAPI = async (uid, modeloId) => {
 // Obtiene la lista actual (útil para la carga inicial)
 export const obtenerFavoritosAPI = async (uid) => {
   try {
-    const userRef = doc(db, "users", uid);
-    const snap = await getDoc(userRef);
-    if (snap.exists()) {
-      return snap.data().favoritos || [];
-    }
-    return [];
+    return await userRepository.getFavorites(uid);
   } catch (error) {
     console.error("Error obteniendo favoritos:", error);
     return [];
   }
 };
+```

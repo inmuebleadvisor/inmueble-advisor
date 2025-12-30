@@ -1,0 +1,173 @@
+/* src/components/LeadCard.css */
+
+.lead-card {
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f3f4f6;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: default;
+}
+
+.lead-card__header {
+    padding: 16px 16px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid #f9fafb;
+}
+
+.lead-card__name {
+    margin: 0 0 4px 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.lead-card__time-tag {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.lead-card__status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.lead-card__body {
+    padding: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.lead-card__interest-box {
+    background-color: #f9fafb;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.lead-card__label {
+    display: block;
+    font-size: 0.7rem;
+    color: #6b7280;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+.lead-card__value {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #374151;
+}
+
+.lead-card__sub-value {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.lead-card__contact-row {
+    display: flex;
+    gap: 10px;
+}
+
+.lead-card__whatsapp-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: #25D366;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 2px 5px rgba(37, 211, 102, 0.2);
+}
+
+.lead-card__phone-btn {
+    width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    color: #374151;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Footer styles that were seemingly present in className but not style object */
+.lead-card__footer {
+    padding: 10px 16px;
+    background-color: #f8fafc;
+    border-top: 1px solid #f1f5f9;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.lead-card__fecha {
+    font-weight: 500;
+}
+
+/* B2B Section Styles */
+.lead-card__b2b-section {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+.lead-card__financial-badge {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: #0369a1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.lead-card__financial-amount {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.lead-card__milestone-checklist {
+    /* class already existed in JSX, assumed explicit definition or just container */
+}
+
+.lead-card__milestone-title {
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.lead-card__milestone-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+    font-size: 0.85rem;
+}
