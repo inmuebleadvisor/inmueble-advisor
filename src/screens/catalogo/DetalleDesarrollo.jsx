@@ -3,11 +3,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useUser } from '../context/UserContext';
-import { catalogService } from '../services/serviceProvider';
-import { useCatalog } from '../context/CatalogContext';
+import { useUser } from '../../context/UserContext';
+import { catalogService } from '../../services/serviceProvider';
+import { useCatalog } from '../../context/CatalogContext';
 
-import DevelopmentDetailsContent from '../components/DevelopmentDetailsContent';
+import DevelopmentDetailsContent from '../../components/catalogo/DevelopmentDetailsContent';
 
 export default function DetalleDesarrollo() {
   const { id } = useParams();

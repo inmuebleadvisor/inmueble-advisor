@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAllExternalAdvisors } from '../services/externalAdvisor.service';
+import { getAllExternalAdvisors } from '../../services/externalAdvisor.service';
 
 const ExternalAdvisorModal = ({ isOpen, onClose, onAssign }) => {
     const [advisors, setAdvisors] = useState([]);

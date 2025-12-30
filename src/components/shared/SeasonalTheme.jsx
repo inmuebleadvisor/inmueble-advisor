@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import '../styles/SeasonalTheme.css';
-import { useTheme } from '../context/ThemeContext';
+import '../../styles/SeasonalTheme.css';
+import { useTheme } from '../../context/ThemeContext';
 
 const SeasonalTheme = () => {
     const { currentAssets, currentSeason } = useTheme();

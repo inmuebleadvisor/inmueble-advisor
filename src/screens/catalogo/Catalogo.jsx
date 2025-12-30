@@ -1,21 +1,21 @@
 // src/screens/Catalogo.jsx
 // ÚLTIMA MODIFICACION: 03/12/2025
 import React, { useState } from 'react'; // Only useState for modal, if needed, but hook handles filters
-import { useUser } from '../context/UserContext';
-import { useCatalog } from '../context/CatalogContext';
-import { useCatalogFilter } from '../hooks/useCatalogFilter';
-import { useScrollReveal } from '../hooks/useScrollReveal';
+import { useUser } from '../../context/UserContext';
+import { useCatalog } from '../../context/CatalogContext';
+import { useCatalogFilter } from '../../hooks/useCatalogFilter';
+import { useScrollReveal } from '../../hooks/useScrollReveal';
 
 // Components
-import PropertyCard from '../components/PropertyCard';
-import SearchBar from '../components/shared/SearchBar';
-import FilterBar from '../components/shared/FilterBar';
-import FilterModal from '../components/shared/FilterModal';
+import PropertyCard from '../../components/catalogo/PropertyCard';
+import SearchBar from '../../components/shared/SearchBar';
+import FilterBar from '../../components/shared/FilterBar';
+import FilterModal from '../../components/shared/FilterModal';
 
 // Styles
-import '../styles/Catalogo.css';
+import '../../styles/Catalogo.css';
 
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function Catalogo() {
   const { userProfile } = useUser();

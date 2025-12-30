@@ -7,7 +7,7 @@ import { useFavorites } from '../context/FavoritesContext';
 import WhatsAppButton from './common/WhatsAppButton/WhatsAppButton';
 import ThemeToggle from './shared/ThemeToggle';
 import { useTheme } from '../context/ThemeContext';
-import SeasonalTheme from './SeasonalTheme';
+import SeasonalTheme from './shared/SeasonalTheme';
 
 // --- ICONOS SVG ---
 const MenuIcons = {

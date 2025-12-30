@@ -2,8 +2,8 @@
 // ÚLTIMA MODIFICACION: 17/12/2025 - Refactor Buyer First
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useSearchParams, Navigate } from 'react-router-dom';
-import { useUser } from '../context/UserContext';
-import '../styles/Perfil.css'; // Importamos estilos dedicados
+import { useUser } from '../../context/UserContext';
+import '../../styles/Perfil.css'; // Importamos estilos dedicados
 
 export default function Perfil() {
   const navigate = useNavigate();

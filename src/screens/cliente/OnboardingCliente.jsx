@@ -3,12 +3,12 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../context/UserContext';
-import { catalogService } from '../services/serviceProvider';
-import { FINANZAS } from '../config/constants';
+import { useUser } from '../../context/UserContext';
+import { catalogService } from '../../services/serviceProvider';
+import { FINANZAS } from '../../config/constants';
 import { doc, setDoc } from 'firebase/firestore';
-import { db } from '../firebase/config';
-import '../styles/Onboarding.css'; // Importamos estilos dedicados
+import { db } from '../../firebase/config';
+import '../../styles/Onboarding.css'; // Importamos estilos dedicados
 
 const STORAGE_KEY = 'inmueble_advisor_onboarding_cliente_temp';
 

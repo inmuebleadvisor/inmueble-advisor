@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useUser } from '../context/UserContext';
-import ImageLoader from './ImageLoader';
-import FavoriteBtn from './FavoriteBtn';
-import Delightbox from './common/Delightbox';
-import HighlightsModal from './common/HighlightsModal';
-import { FINANZAS, IMAGES } from '../config/constants';
+import { useUser } from '../../context/UserContext';
+import ImageLoader from '../shared/ImageLoader';
+import FavoriteBtn from '../shared/FavoriteBtn';
+import Delightbox from '../common/Delightbox';
+import HighlightsModal from '../common/HighlightsModal';
+import { FINANZAS, IMAGES } from '../../config/constants';
 import { useState } from 'react';
 
 // --- ICONOS ---

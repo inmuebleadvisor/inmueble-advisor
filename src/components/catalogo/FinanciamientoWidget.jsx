@@ -1,7 +1,7 @@
 // src/components/FinanciamientoWidget.jsx
 // ÚLTIMA MODIFICACION: 02/12/2025
 import React from 'react';
-import { FINANZAS } from '../config/constants';
+import { FINANZAS } from '../../config/constants';
 
 const formatoMoneda = (val) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
 

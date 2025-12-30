@@ -19,22 +19,27 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 
 // --- PANTALLAS (SCREENS) ---
-import Perfil from './screens/Perfil';
-import Catalogo from './screens/Catalogo';
-import DetalleModelo from './screens/DetalleModelo';
-import DetalleDesarrollo from './screens/DetalleDesarrollo';
-import Mapa from './screens/Mapa';
+import Perfil from './screens/cliente/Perfil';
+import Catalogo from './screens/catalogo/Catalogo';
+import DetalleModelo from './screens/catalogo/DetalleModelo';
+import DetalleDesarrollo from './screens/catalogo/DetalleDesarrollo';
+import Mapa from './screens/catalogo/Mapa';
 // 🗑️ DELETED: LandingAsesores, OnboardingAsesor, AccountAsesor
 // ⭐ NUEVO: Pantalla de Onboarding Cliente (migración UX)
-import OnboardingCliente from './screens/OnboardingCliente';
+import OnboardingCliente from './screens/cliente/OnboardingCliente';
 // ⭐ NUEVO: Pantalla de Comparador y Favoritos (implementado en el plan)
-import Favoritos from './screens/Favoritos';
+import Favoritos from './screens/cliente/Favoritos';
 
 // ⭐ HERRAMIENTA ADMIN: Importamos la pantalla de exportación
-import AdminDataExport from './screens/AdminDataExport';
+import AdminDataExport from './screens/admin/AdminDataExport';
 // ⭐ NUEVO: Panel de Administrador (Sin link, acceso directo)
-// ⭐ NUEVO: Panel de Administrador (Sin link, acceso directo)
-import AdminDashboard from './screens/AdminDashboard';
+// ⭐ NUEVO MODULO DE ADMINISTRADOR
+import AdminLayout from './layouts/AdminLayout';
+import AdminHome from './screens/admin/AdminHome';
+import AdminLeads from './screens/admin/AdminLeads';
+import AdminUsers from './screens/admin/AdminUsers';
+// 🗑️ DEPRECATED: import AdminDashboard from './screens/AdminDashboard'; (Removed)
+
 // ⭐ NUEVO: Modal de selección de ciudad
 import CitySelectorModal from './components/shared/CitySelectorModal';
 
@@ -87,12 +92,17 @@ function App() {
                 {/* 7. HERRAMIENTAS ADMINISTRATIVAS (Uso interno) */}
                 {/* Accede manualmente escribiendo /admin-export-tool en la URL */}
                 <Route path="admin-export-tool" element={<AdminDataExport />} />
-                {/* Panel de Administrador Oculto (Protegido) */}
+
+                {/* ✅ NUEVO SISTEMA DE ADMINISTRACIÓN (Layout Anidado) */}
                 <Route path="administrador" element={
                   <ProtectedRoute requireAdmin={true}>
-                    <AdminDashboard />
+                    <AdminLayout />
                   </ProtectedRoute>
-                } />
+                }>
+                  <Route index element={<AdminHome />} />
+                  <Route path="leads" element={<AdminLeads />} />
+                  <Route path="users" element={<AdminUsers />} />
+                </Route>
 
                 {/* 404 - Redirección por defecto */}
                 <Route path="*" element={<Navigate to="/" replace />} />

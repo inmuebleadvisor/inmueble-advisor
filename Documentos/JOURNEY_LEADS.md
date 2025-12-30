@@ -10,7 +10,7 @@ Este documento detalla el ciclo de vida de un Lead en la plataforma Inmueble Adv
 Un usuario visita el sitio web, navega por el catálogo y muestra interés en un desarrollo o modelo específico. Rellena un formulario de contacto o solicita información.
 
 ### ⚙️ Nivel Técnico
-1.  **Frontend**: `OnboardingCliente.jsx` o formularios de detalle.
+1.  **Frontend**: `src/screens/cliente/OnboardingCliente.jsx` o formularios de detalle.
 2.  **Acción**: Se invoca `addDoc` a la colección `leads`.
 3.  **Datos Clave Iniciales**:
     *   `clienteDatos`: { nombre, telefono, email, presupuesto }
@@ -30,7 +30,7 @@ El Administrador de Inmueble Advisor revisa su **Dashboard** diariamente.
 4.  El Admin envía el mensaje y confirma en el Dashboard que la acción fue realizada.
 
 ### ⚙️ Nivel Técnico
-1.  **Componente**: `AdminDashboard.jsx`.
+1.  **Componente**: `src/screens/admin/AdminLeads.jsx`.
 2.  **Lógica**: `handleReportLead`.
     *   Genera link `wa.me` dinámico con datos del lead.
 3.  **Cambio de Estado**:
@@ -50,7 +50,7 @@ El Desarrollador responde el WhatsApp indicando: *"Asignalo a Juan Pérez (66712
 4.  Confirma la asignación.
 
 ### ⚙️ Nivel Técnico
-1.  **Componente**: `ExternalAdvisorModal.jsx`.
+1.  **Componente**: `src/components/admin/ExternalAdvisorModal.jsx`.
 2.  **Servicio**: `externalAdvisor.service.js` (Lógica Anti-Duplicados).
     *   Busca en colección `external_advisors` por teléfono.
     *   Si no existe, crea documento.
@@ -72,7 +72,7 @@ El Admin realiza seguimiento periódico (semanal) con los asesores externos.
 3.  Marca los avances según informe el asesor (ej. "Ya apartó").
 
 ### ⚙️ Nivel Técnico
-1.  **Componente**: `LeadCard.jsx`.
+1.  **Componente**: `src/components/LeadCard.jsx`.
 2.  **Visualización**:
     *   Muestra **Badge Financiero**: `calcularComisionEstimada()` (Precio * % Policy).
 3.  **Acción**: `registrarHito(leadId, 'Apartado')`.

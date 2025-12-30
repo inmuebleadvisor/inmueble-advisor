@@ -5,20 +5,20 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-import { useUser } from '../context/UserContext';
-import { useCatalog } from '../context/CatalogContext';
-import { useCatalogFilter } from '../hooks/useCatalogFilter';
-import { useFavorites } from '../context/FavoritesContext';
-import { normalizar } from '../utils/formatters';
+import { useUser } from '../../context/UserContext';
+import { useCatalog } from '../../context/CatalogContext';
+import { useCatalogFilter } from '../../hooks/useCatalogFilter';
+import { useFavorites } from '../../context/FavoritesContext';
+import { normalizar } from '../../utils/formatters';
 
 // Shared Components
-import SearchBar from '../components/shared/SearchBar';
-import FilterBar from '../components/shared/FilterBar';
-import FilterModal from '../components/shared/FilterModal';
+import SearchBar from '../../components/shared/SearchBar';
+import FilterBar from '../../components/shared/FilterBar';
+import FilterModal from '../../components/shared/FilterModal';
 
 // Styles
-import '../styles/Catalogo.css';
-import '../styles/Mapa.css';
+import '../../styles/Catalogo.css';
+import '../../styles/Mapa.css';
 
 const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
 

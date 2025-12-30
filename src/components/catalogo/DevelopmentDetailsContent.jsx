@@ -1,13 +1,13 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
-import ImageLoader from './ImageLoader';
+import ImageLoader from '../shared/ImageLoader';
 import PropertyCard from './PropertyCard';
 import DevelopmentInfoSection from './DevelopmentInfoSection';
-import TrustBadges from './common/TrustBadges';
-import StickyActionPanel from './common/StickyActionPanel';
-import Delightbox from './common/Delightbox';
-import FavoriteBtn from './FavoriteBtn';
-import { useStickyPanel } from '../hooks/useStickyPanel';
-import '../styles/components/DevelopmentDetails.css';
+import TrustBadges from '../common/TrustBadges';
+import StickyActionPanel from '../common/StickyActionPanel';
+import Delightbox from '../common/Delightbox';
+import FavoriteBtn from '../shared/FavoriteBtn';
+import { useStickyPanel } from '../../hooks/useStickyPanel';
+import '../../styles/components/DevelopmentDetails.css';
 
 // Icons
 const Icons = {

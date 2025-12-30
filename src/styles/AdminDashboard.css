@@ -1,16 +1,60 @@
 /* src/styles/AdminDashboard.css */
 
-.admin-dashboard {
-  padding: 2rem;
+/* --- NEW LAYOUT STYLES --- */
+.admin-layout {
+  display: flex;
+  height: 100vh;
   background-color: var(--bg-main);
-  min-height: 100vh;
-  font-family: var(--font-main);
   color: var(--text-main);
 }
 
-.admin-dashboard__header {
-  margin-bottom: 2rem;
+.admin-layout__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
+
+/* SIDEBAR */
+.admin-sidebar {
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-subtle);
+  transition: width 0.3s ease;
+  z-index: 20;
+}
+
+.admin-sidebar__link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: 6px;
+  margin: 0 10px;
+  transition: all 0.2s;
+}
+
+.admin-sidebar__link:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-main);
+}
+
+.admin-sidebar__link--active {
+  background-color: var(--primary-color);
+  color: #fff !important;
+  /* Force white text on primary bg */
+}
+
+/* HEADER */
+.admin-header {
+  height: 70px;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30px;
+}
+
+/* --- LEGACY COMPATIBILITY (Refactored) --- */
+/* .admin-dashboard deleted container styles, but keeping utilities below */
 
 .admin-dashboard__title {
   font-size: 2rem;

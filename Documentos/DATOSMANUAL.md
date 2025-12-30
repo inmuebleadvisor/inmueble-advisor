@@ -85,6 +85,13 @@ El sistema es inteligente. Aquí explicamos qué hace automáticamente para que 
     *   `id_desarrollo` (ej. `2846`) + `nombre_modelo` (ej. `Modelo A`) = ID `2846-modelo-a`.
     *   ⚠️ **OJO**: Es obligatorio que tu Excel de modelos tenga la columna `id_desarrollo` y `nombre_modelo`.
 
+### Reglas para DESARROLLADORES
+1.  **Vinculación Automática**: El sistema vincula al desarrollador con sus desarrollos buscando coincidencia exacta entre el campo `Nombre` del desarrollador y el campo `constructora` de los desarrollos.
+2.  **Cálculos de Totales (Automáticos)**: Al importar, se recalculan:
+    *   `ofertaTotal`: Suma de `unidadesTotales` de sus desarrollos.
+    *   `viviendasxVender`: Suma de `unidadesDisponibles` (o `inventario`) de sus desarrollos.
+    *   `ciudades`: Lista única de ciudades donde tiene proyectos.
+
 ### Flujo de "Dos Archivos"
 Si quieres subir primero la info y luego las fotos:
 1.  Sube el **Archivo 1** (Info General). El sistema creará/actualizará los registros.
@@ -92,7 +99,7 @@ Si quieres subir primero la info y luego las fotos:
 
 ---
 
-## � Paso 4: Cerrar / Salir
+##  Paso 4: Cerrar / Salir
 
 Cuando termines:
 1.  Simplemente cierra la terminal (el ícono de bote de basura en VS Code o la X en la ventana).
@@ -110,13 +117,18 @@ Cuando termines:
 - **Eliminado**: `status` (Ahora vive en los modelos).
 - **Nuevo**: `promocion_nombre`, `promocion_inicio` (YYYY-MM-DD), `promocion_fin` (YYYY-MM-DD).
   - *Nota*: Las fechas se interpretan en la zona horaria de la ciudad del desarrollo.
+- **Obligatorio**: `nombre`, `constructora`.
 
 ### MODELOS
 - **Nuevo**: `status`. Puede ser texto ("Pre-Venta") o lista separada por pipes ("Pre-Venta|Entrega Inmediata").
 - **Nuevo**: `promocion_nombre`, `promocion_inicio`, `promocion_fin`.
 - **Nuevo**: `tiempo_entrega`. Texto libre (ej. "6 meses", "Diciembre 2025").
+- **Obligatorio**: `id_desarrollo`, `nombre_modelo`.
 
 ### DESARROLLADORES
-- Usar notación de punto para objetos anidados en los encabezados del CSV:
-  - `EsquemaPago.Apartado`, `EsquemaPago.Enganche`
-  - `Contacto.Nombre1`, `Contacto.Mail1`
+- **Obligatorio**: `Nombre`.
+- **Estructura**: Usar notación de punto para objetos anidados:
+  - `EsquemaPago.Apartado`, `EsquemaPago.Enganche`, `EsquemaPago.AprobacionCredito`, `EsquemaPago.Escrituracion`.
+  - `Contacto.Nombre1`, `Contacto.Telefono1`, `Contacto.Mail1`, `Contacto.Puesto1`.
+  - `Contacto.Nombre2`, `Contacto.Telefono2`, `Contacto.Mail2`, `Contacto.Puesto2`.
+- **Arrays**: `AsesoresDesarrollo` (Lista de IDs separados por `|`).

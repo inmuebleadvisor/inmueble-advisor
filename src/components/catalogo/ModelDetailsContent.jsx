@@ -1,18 +1,18 @@
 import React, { useMemo } from 'react';
-import { IMAGES } from '../config/constants';
+import { IMAGES } from '../../config/constants';
 import Carousel from './Carousel';
-import CaracteristicasBox from './CaracteristicasBox';
+import CaracteristicasBox from '../CaracteristicasBox';
 import AmenidadesList from './AmenidadesList';
 import FinanciamientoWidget from './FinanciamientoWidget';
 import DevelopmentInfoSection from './DevelopmentInfoSection';
 import PropertyCard from './PropertyCard';
-import FavoriteBtn from './FavoriteBtn';
-import StickyActionPanel from './common/StickyActionPanel';
-import Delightbox from './common/Delightbox';
-import { useStickyPanel } from '../hooks/useStickyPanel';
-import '../styles/ModelDetailsContent.css'; // BEM Styles relocated
-import Modal from './Modal'; // Generic Modal
-import LeadCaptureForm from './LeadCaptureForm'; // New Capture Form
+import FavoriteBtn from '../shared/FavoriteBtn';
+import StickyActionPanel from '../common/StickyActionPanel';
+import Delightbox from '../common/Delightbox';
+import { useStickyPanel } from '../../hooks/useStickyPanel';
+import '../../styles/ModelDetailsContent.css'; // BEM Styles relocated
+import Modal from '../shared/Modal'; // Generic Modal
+import LeadCaptureForm from '../leads/LeadCaptureForm'; // New Capture Form
 
 // Icons defined locally since they are small UI helpers
 const Icons = {

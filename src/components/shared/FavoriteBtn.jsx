@@ -1,8 +1,8 @@
 // src/components/FavoriteBtn.jsx
 // ÚLTIMA MODIFICACION: 01/12/2025
 import React, { useState } from 'react';
-import { useFavorites } from '../context/FavoritesContext';
-import { useUser } from '../context/UserContext'; // ✅ Importamos para acceder a la sesión
+import { useFavorites } from '../../context/FavoritesContext';
+import { useUser } from '../../context/UserContext'; // ✅ Importamos para acceder a la sesión
 
 // Componente visual del ícono (Sin cambios lógicos, solo visuales)
 const HeartIcon = ({ filled }) => (

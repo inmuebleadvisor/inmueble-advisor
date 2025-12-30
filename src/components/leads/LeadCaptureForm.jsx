@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { generarLeadAutomatico } from '../services/leadAssignmentService';
-import { useUser } from '../context/UserContext'; // ✅ Contexto de Usuario
-import '../styles/LeadCaptureForm.css';
+import { generarLeadAutomatico } from '../../services/leadAssignmentService';
+import { useUser } from '../../context/UserContext'; // ✅ Contexto de Usuario
+import '../../styles/LeadCaptureForm.css';
 
 const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
     const { user, userProfile, loginWithGoogle } = useUser(); // ✅ Obtener usuario y login

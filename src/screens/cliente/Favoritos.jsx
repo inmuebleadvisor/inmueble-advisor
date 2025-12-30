@@ -2,14 +2,14 @@
 // ÚLTIMA MODIFICACION: 05/12/2025
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { useFavorites } from '../context/FavoritesContext';
-import { useCatalog } from '../context/CatalogContext';
-import ImageLoader from '../components/ImageLoader';
+import { useFavorites } from '../../context/FavoritesContext';
+import { useCatalog } from '../../context/CatalogContext';
+import ImageLoader from '../../components/shared/ImageLoader';
 
 // Componentes UI Reusables
-import Modal from '../components/Modal';
-import ModelDetailsContent from '../components/ModelDetailsContent';
-import DevelopmentDetailsContent from '../components/DevelopmentDetailsContent';
+import Modal from '../../components/shared/Modal';
+import ModelDetailsContent from '../../components/catalogo/ModelDetailsContent';
+import DevelopmentDetailsContent from '../../components/catalogo/DevelopmentDetailsContent';
 
 // --- ICONOS ---
 const Icons = {

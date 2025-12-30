@@ -2,8 +2,8 @@
 // src/components/Carousel.jsx
 // ÚLTIMA MODIFICACION: 02/12/2025
 import React, { useState, useRef } from 'react';
-import ImageLoader from './ImageLoader';
-import Delightbox from './common/Delightbox'; // Import Delightbox
+import ImageLoader from '../shared/ImageLoader';
+import Delightbox from '../common/Delightbox'; // Import Delightbox
 
 const Icons = {
   Play: () => <svg width="40" height="40" viewBox="0 0 24 24" fill="rgba(0,0,0,0.5)" stroke="white" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>,
