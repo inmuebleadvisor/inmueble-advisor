@@ -16,7 +16,7 @@ El **Módulo Administrador** de Inmueble Advisor es el centro de control central
 
 ## 2. Arquitectura Técnica
 
-El módulo sigue la arquitectura modular definida en el `MANUALDEARQUITECTURA.md`, separando responsabilidades en Capas.
+El módulo sigue la arquitectura modular definida en el `MANUALDEARQUITECTURA.md`, separando responsabilidades en Capas (UI, Servicios, Repositorios).
 
 ### Estructura de Componentes
 El módulo reside bajo la ruta `/administrador` y utiliza un Layout dedicado.
@@ -32,17 +32,24 @@ El módulo reside bajo la ruta `/administrador` y utiliza un Layout dedicado.
     *   `src/components/admin/DataTable.jsx`: Tabla genérica con soporte para filtros y acciones.
     *   `src/components/admin/ExternalAdvisorModal.jsx`: Modal para asignación de asesores.
 
-### Capa de Datos y Servicios
-Siguiendo el principio **SRP (Single Responsibility Principle)**:
+### Capa de Datos, Servicios y Repositorios
 
-*   **`src/services/admin.service.js`**:
-    *   Responsable ÚNICO de la obtención de datos "read-only" masivos (getAllUsers, getAllLeads).
-    *   No contiene lógica de negocio compleja, solo fetching.
-*   **`src/services/crm.service.js`**:
-    *   Maneja la lógica transaccional de los Leads (cambios de estado, asignaciones).
-    *   Métodos clave: `marcarComoReportado`, `asignarAsesorExterno`.
-*   **`src/hooks/useAdminData.js`**:
-    *   Custom Hook que abstrae la complejidad de la carga de datos paralela (Promise.all) y manejo de estados de carga/error.
+Siguiendo el principio **SRP (Single Responsibility Principle)** y **Dependency Injection (DI)**:
+
+1.  **Repositorios (`src/repositories/`)**:
+    *   Encargados **exclusivos** del acceso directo a Firebase Firestore.
+    *   Ejemplos: `UserRepository`, `LeadRepository`, `CatalogRepository`.
+    *   No contienen lógica de negocio, solo CRUD y queries.
+
+2.  **Servicios (`src/services/`)**:
+    *   Contienen la lógica de negocio y orquestación.
+    *   **No acceden a la DB directamente**, sino que consumen los Repositorios inyectados.
+    *   **`src/services/admin.service.js`**: Facade para lectura de datos globales (Users, Leads) usando `UserRepository` y `LeadRepository`.
+    *   **`src/services/crm.service.js`**: Maneja la lógica transaccional de Leads (cambios de estado, asignaciones) usando `LeadRepository` y `ExternalAdvisorService`.
+
+3.  **Inyección de Dependencias**:
+    *   Centralizada en `src/services/serviceProvider.js`.
+    *   Los componentes de React consumen estos servicios a través del `ServiceContext` y el hook `useServiceContext()`.
 
 ## 3. Guía de Estilos y UI
 

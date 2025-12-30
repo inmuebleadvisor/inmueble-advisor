@@ -23,26 +23,31 @@ Utilizamos una herramienta CLI personalizada (`/data-manager`) para subir estos 
 
 ---
 
-## 2. Capa de Servicio (Service Layer)
+## 2. Capa de Servicio y Repositorios (Business Logic & Data Access)
 
-La aplicación web consulta los datos a través de **Servicios** que ahora utilizan **Inyección de Dependencias**.
+La aplicación utiliza un patrón de arquitectura en capas con **Inyección de Dependencias (DI)**.
 
-### 2.1 `CatalogService` (`src/services/catalog.service.js`)
-Es el responsable único de la comunicación con Firestore para inmuebles.
+### 2.1 Capa de Repositorios (`src/repositories/`)
+Responsable **exclusiva** de la comunicación con Firebase Firestore. No contiene lógica de negocio.
+- **`CatalogRepository`**: Lee `desarrollos` y `modelos`.
+- **`UserRepository`**: Lee y escribe en `users`.
+- **`LeadRepository`**: Gestiona la colección `leads`.
 
-- **Instanciación**: Se crea una instancia única (Singleton) en `serviceProvider.js` inyectándole la conexión a la DB.
-- **Métodos Principales**:
-    - `obtenerInventarioDesarrollos()`: Trae la lista ligera de todos los desarrollos.
-    - `obtenerDatosUnificados(ciudad)`: Trae todos los modelos de una ciudad específica.
-    - `obtenerInformacionDesarrollo(id)`: Trae el detalle de un desarrollo y sus modelos asociados.
+### 2.2 Capa de Servicios (`src/services/`)
+Contiene la lógica de negocio y consume los repositorios.
+- **`CatalogService`**: Normaliza los datos crudos que vienen del repositorio (Mappers) y aplica filtros.
+- **`AuthService`**: Orquesta el login y la creación de perfiles de usuario.
+- **`CrmService`**: Maneja el flujo de ventas y asignación de leads.
 
-### 2.2 Normalización de Salida (Mappers)
-Cuando los datos bajan de Firebase, pasan inmediatamente por funciones de mapeo internas (`mapModelo` y `mapDesarrollo`) dentro del servicio.
-**¿Qué hacen?**
-- **Aplanan estructuras**: Extraen `ubicacion.ciudad` a `ciudad` para fácil acceso.
-- **Fallbacks de Imágenes**: Si no hay imagen, asignan un placeholder predefinido.
-- **Casting de Tipos**: Aseguran que `precio` sea número y `amenidades` sea array.
-- **Estado Calculado**: Determinan `esPreventa` basado en flags o fechas.
+### 2.3 Inyección de Dependencias
+- **`serviceProvider.js`**: Instancia los Repositorios y los inyecta en los Servicios. Exporta un objeto `services` listo para usar.
+- **`ServiceContext`**: Provee acceso a estos servicios en toda la aplicación React.
+
+### 2.4 Normalización de Salida (Mappers)
+Dentro de los Servicios (ej. `CatalogService`), se transforman los datos raw de la DB a objetos consumibles por la UI.
+- **Aplanamiento**: `ubicacion.ciudad` -> `ciudad`.
+- **Fallbacks**: Imágenes por defecto si faltan.
+- **Tipado**: Asegurar que precios sean números.
 
 ---
 
@@ -94,11 +99,23 @@ Finalmente, los datos procesados se pintan en pantalla.
 ```mermaid
 graph TD
     CSV[CSV Files] -->|data-manager| DB[(Firestore)]
-    DB -->|Fetch| Service[CatalogService]
-    Service -->|Map & Normalize| Service
-    Service -->|Data| Context[CatalogContext]
-    Context -->|Master Data| Hook[useCatalogFilter]
-    User[Usuario] -->|Inputs| Hook
-    Hook -->|Criterios| Static[CatalogService.filterCatalog]
-    Static -->|Lista Filtrada| UI[Catalogo / Grid]
+    
+    subgraph Data Access Layer
+    DB -->|Read/Write| Repo[Repositories <br/> (Catalog, User, Lead)]
+    end
+    
+    subgraph Service Layer
+    Repo -->|Raw Data| Service[Services <br/> (Catalog, Auth, CRM)]
+    Service -->|Normalize & Logic| Service
+    end
+    
+    subgraph Application Layer
+    Service -->|Injected via Provider| Context[ServiceContext]
+    Context -->|Exposes Services| Hook[useServiceContext / useCatalogFilter]
+    end
+    
+    subgraph UI Layer
+    Hook -->|Data & Actions| UI[Components <br/> (Catalogo, Admin, Forms)]
+    User[Usuario] -->|Interactions| UI
+    end
 ```
