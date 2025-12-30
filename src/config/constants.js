@@ -44,7 +44,12 @@ export const STATUS = {
   LEAD_LOST: 'LOST', // Antes 'perdido'
   LEAD_CLOSED: 'CLOSED', // Antes 'escriturado'
   LEAD_PENDING_ADMIN: 'PENDING_ADMIN',
-  LEAD_PENDING_ASSIGNMENT: 'PENDING_ASSIGNMENT'
+  LEAD_PENDING_ASSIGNMENT: 'PENDING_ASSIGNMENT',
+
+  // 🟢 MODELO AGENCIA - DEVELOPER 🟢
+  LEAD_PENDING_DEVELOPER_CONTACT: 'PENDING_DEVELOPER_CONTACT', // Cliente pide info, InmuebleAdvisor debe reportar al Dev
+  LEAD_REPORTED: 'REPORTED', // Ya se mandó el WA al Developer
+  LEAD_ASSIGNED_EXTERNAL: 'ASSIGNED_EXTERNAL' // El Developer ya asignó a su vendedor interno
 };
 
 // --- ETIQUETAS DE UI (Para traducir los códigos) ---
@@ -61,5 +66,8 @@ export const STATUS_LABELS = {
   [STATUS.LEAD_LOST]: 'Perdido',
   [STATUS.LEAD_CLOSED]: 'Escriturado',
   [STATUS.LEAD_PENDING_ADMIN]: 'Pendiente Admin',
-  [STATUS.LEAD_PENDING_ASSIGNMENT]: 'Asignando (Bot)'
+  [STATUS.LEAD_PENDING_ASSIGNMENT]: 'Asignando (Bot)',
+  [STATUS.LEAD_PENDING_DEVELOPER_CONTACT]: 'Por Reportar al Dev',
+  [STATUS.LEAD_REPORTED]: 'Reportado al Dev',
+  [STATUS.LEAD_ASSIGNED_EXTERNAL]: 'Asignado a Externo'
 };

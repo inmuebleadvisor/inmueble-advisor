@@ -17,9 +17,9 @@ export const adaptDesarrollo = (row) => {
 
     // 1. Identifiers
     if (row.id) out.id = row.id;
-    if (row.nombre) out.nombre = row.nombre;
+    if (row.nombre) out.nombre = row.nombre.trim();
     if (row.descripcion) out.descripcion = row.descripcion;
-    if (row.constructora) out.constructora = row.constructora;
+    if (row.constructora) out.constructora = row.constructora.trim();
     // Status REMOVED from Desarrollos
 
     if (row.activo !== undefined) out.activo = row.activo;
@@ -280,3 +280,43 @@ export const adaptModelo = (row) => {
     return out;
 };
 
+
+export const adaptDesarrollador = (row) => {
+    const out = {};
+
+    if (row.ID || row.id) out.id = String(row.ID || row.id).trim();
+    if (row.Nombre || row.nombre) out.nombre = String(row.Nombre || row.nombre).trim();
+
+    // Contacto
+    const contacto = {};
+    if (row['Contacto.Nombre1'] || row.contacto_nombre1) contacto.nombre1 = row['Contacto.Nombre1'] || row.contacto_nombre1;
+    if (row['Contacto.Telefono1'] || row.contacto_telefono1) contacto.telefono1 = row['Contacto.Telefono1'] || row.contacto_telefono1;
+    if (row['Contacto.Mail1'] || row.contacto_mail1) contacto.mail1 = row['Contacto.Mail1'] || row.contacto_mail1;
+    if (row['Contacto.Puesto1'] || row.contacto_puesto1) contacto.puesto1 = row['Contacto.Puesto1'] || row.contacto_puesto1;
+
+    if (row['Contacto.Nombre2'] || row.contacto_nombre2) contacto.nombre2 = row['Contacto.Nombre2'] || row.contacto_nombre2;
+    if (row['Contacto.Telefono2'] || row.contacto_telefono2) contacto.telefono2 = row['Contacto.Telefono2'] || row.contacto_telefono2;
+    if (row['Contacto.Mail2'] || row.contacto_mail2) contacto.mail2 = row['Contacto.Mail2'] || row.contacto_mail2;
+    if (row['Contacto.Puesto2'] || row.contacto_puesto2) contacto.puesto2 = row['Contacto.Puesto2'] || row.contacto_puesto2;
+
+    if (Object.keys(contacto).length > 0) out.contacto = contacto;
+
+    // EsquemaPago
+    const pago = {};
+    if (row['EsquemaPago.Apartado'] || row.pago_apartado) pago.apartado = row['EsquemaPago.Apartado'] || row.pago_apartado;
+    if (row['EsquemaPago.Enganche'] || row.pago_enganche) pago.enganche = row['EsquemaPago.Enganche'] || row.pago_enganche;
+    if (row['EsquemaPago.AprobacionCredito'] || row.pago_aprobacion) pago.aprobacionCredito = row['EsquemaPago.AprobacionCredito'] || row.pago_aprobacion;
+    if (row['EsquemaPago.Escrituracion'] || row.pago_escrituracion) pago.escrituracion = row['EsquemaPago.Escrituracion'] || row.pago_escrituracion;
+
+    if (Object.keys(pago).length > 0) out.esquemaPago = pago;
+
+    // Arrays
+    if (row.AsesoresDesarrollo) out.asesoresDesarrollo = row.AsesoresDesarrollo;
+    if (row.Desarrollos) out.desarrollos = row.Desarrollos;
+
+    // Note: 'Ciudades', 'Ofertatotal', 'ViviendasxVender' are typically calculated, 
+    // but if provided in csv we can allow import (though recalc will overwrite).
+    if (row.Ciudades) out.ciudades = row.Ciudades;
+
+    return out;
+};

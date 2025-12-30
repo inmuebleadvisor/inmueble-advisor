@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import Modal from '../Modal';
-import FavoriteBtn from '../FavoriteBtn';
+import Modal from '../shared/Modal';
+import FavoriteBtn from '../shared/FavoriteBtn';
 import { useFavorites } from '../../context/FavoritesContext';
 import { useUser } from '../../context/UserContext';
 import { normalizar } from '../../utils/formatters';
 import confetti from 'canvas-confetti';
+import './HighlightsModal.css';
 
 const HighlightsModal = ({ isOpen, onClose, highlights, modeloId }) => {
     const { isFavorite } = useFavorites();
@@ -44,69 +45,31 @@ const HighlightsModal = ({ isOpen, onClose, highlights, modeloId }) => {
             onClose={onClose}
             title={modalTitle}
         >
-            <div style={styles.container}>
-                <ul style={styles.list}>
+            <div className="highlights-modal__container">
+                <ul className="highlights-modal__list">
                     {highlights.map((highlight, index) => (
-                        <li key={index} style={styles.listItem}>
-                            <span style={styles.checkIcon}>✓</span>
+                        <li key={index} className="highlights-modal__list-item">
+                            <span className="highlights-modal__check-icon">✓</span>
                             {highlight}
                         </li>
                     ))}
                 </ul>
 
-                <div style={styles.actionContainer}>
-                    <FavoriteBtn
-                        modeloId={modeloId}
-                        style={{ width: '50px', height: '50px', transform: 'scale(1.2)' }}
-                    />
+                <div className="highlights-modal__action-container">
+                    {/* Wrapper div applied for specific positioning needed if FavoriteBtn is generic */}
+                    <div className="highlights-modal__favorite-btn-wrapper">
+                        <FavoriteBtn
+                            modeloId={modeloId}
+                            style={{ width: '100%', height: '100%' }}
+                        />
+                    </div>
                 </div>
-                <p style={styles.favoriteLegend}>
+                <p className="highlights-modal__favorite-legend">
                     {isFav ? "Ya está en tus favoritos" : "Agrega a tus favoritos"}
                 </p>
             </div>
         </Modal>
     );
-};
-
-const styles = {
-    container: {
-        padding: '20px',
-        textAlign: 'center',
-    },
-    list: {
-        listStyle: 'none',
-
-        margin: '0 0 25px 0',
-        textAlign: 'left',
-        backgroundColor: '#f8fafc',
-        borderRadius: '12px',
-        padding: '15px',
-    },
-    listItem: {
-        display: 'flex',
-        alignItems: 'start',
-        gap: '10px',
-        marginBottom: '10px',
-        fontSize: '1rem',
-        color: '#1e293b',
-        fontWeight: '500',
-    },
-    checkIcon: {
-        color: '#10b981',
-        fontWeight: 'bold',
-    },
-    actionContainer: {
-        display: 'flex',
-        justifyContent: 'center',
-        paddingTop: '10px'
-    },
-    favoriteLegend: {
-        textAlign: 'center',
-        margin: '10px 0 0 0',
-        fontSize: '0.9rem',
-        color: '#64748b',
-        fontWeight: '500'
-    }
 };
 
 export default HighlightsModal;

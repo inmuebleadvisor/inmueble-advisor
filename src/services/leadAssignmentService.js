@@ -1,61 +1,61 @@
-// src/services/leadAssignmentService.js
-import { db } from '../firebase/config';
-import {
-  collection,
-  addDoc,
-  serverTimestamp
-} from 'firebase/firestore';
 
 import { STATUS } from '../config/constants';
 
 /**
  * SERVICIO DE GENERACIÓN DE LEADS (FRONTEND - OPTIMIZADO)
- * -------------------------------------------------------
- * Responsabilidad: Solo crea la solicitud mínima.
- * * ✅ CAMBIO FASE 2.1: 
- * Se eliminó el array 'historial' de este objeto.
- * Ahora la Cloud Function 'asignarLead' es la única responsable de crear
- * la primera entrada del historial para garantizar consistencia de Timestamps.
  */
-
-export const generarLeadAutomatico = async (datosCliente, idDesarrollo, nombreDesarrollo, modeloInteres) => {
-  try {
-
-
-    const nuevoLead = {
-      // Datos del Cliente
-      clienteDatos: {
-        nombre: datosCliente.nombre,
-        email: datosCliente.email,
-        telefono: datosCliente.telefono,
-      },
-
-      // Datos de Interés
-      desarrolloId: String(idDesarrollo),
-      nombreDesarrollo: nombreDesarrollo,
-      modeloInteres: modeloInteres || "No especificado",
-
-      // Estado Inicial
-      status: STATUS.LEAD_PENDING_ASSIGNMENT,
-      origen: 'web_automatico',
-
-      // Fechas de Auditoría (Solo nivel raíz)
-      fechaCreacion: serverTimestamp(),
-      fechaUltimaInteraccion: serverTimestamp()
-
-      // 🗑️ ELIMINADO: historial: [...] 
-      // (Delegado al Backend para evitar errores de escritura y duplicidad)
-    };
-
-    // 2. Guardamos en Firestore
-    const docRef = await addDoc(collection(db, "leads"), nuevoLead);
-
-
-
-    return { success: true, leadId: docRef.id };
-
-  } catch (error) {
-    console.error("Error al enviar solicitud:", error);
-    return { success: false, error: error.message };
+export class LeadAssignmentService {
+  /**
+   * @param {import('../repositories/lead.repository').LeadRepository} leadRepository 
+   * @param {import('./client.service').ClientService} clientService 
+   */
+  constructor(leadRepository, clientService) {
+    this.leadRepository = leadRepository;
+    this.clientService = clientService;
   }
-};
+
+  async generarLeadAutomatico(datosCliente, idDesarrollo, nombreDesarrollo, modeloInteres, providedUid = null) {
+    try {
+      // 1. GESTIÓN DE USUARIO (Link User-Lead)
+      let clienteUid = providedUid;
+
+      if (!clienteUid) {
+        // Delegamos búsqueda/creación a ClientService
+        const client = await this.clientService.findClientByContact(datosCliente.email, datosCliente.telefono);
+        if (client) {
+          clienteUid = client.uid;
+        } else {
+          const newClient = await this.clientService.createClient(datosCliente);
+          clienteUid = newClient.uid;
+        }
+      } else {
+        // Actualizamos teléfono si aplica (sin await para no bloquear)
+        this.clientService.updateClientContact(clienteUid, { telefono: datosCliente.telefono });
+      }
+
+      const nuevoLead = {
+        clienteUid: clienteUid,
+        clienteDatos: {
+          nombre: datosCliente.nombre,
+          email: datosCliente.email,
+          telefono: datosCliente.telefono,
+        },
+        desarrolloId: String(idDesarrollo),
+        nombreDesarrollo: nombreDesarrollo,
+        modeloInteres: modeloInteres || "No especificado",
+        status: STATUS.LEAD_PENDING_DEVELOPER_CONTACT,
+        origen: 'web_automatico',
+        asesorUid: 'MANUAL_B2B_PROCESS'
+      };
+
+      // 2. Guardamos usando Repositorio
+      const leadId = await this.leadRepository.createLead(nuevoLead);
+
+      return { success: true, leadId: leadId };
+
+    } catch (error) {
+      console.error("Error al enviar solicitud:", error);
+      return { success: false, error: error.message };
+    }
+  }
+}

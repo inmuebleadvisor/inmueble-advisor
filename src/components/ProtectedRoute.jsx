@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import Modal from './Modal';
+import Modal from './shared/Modal';
 
 // Icono de Google simple para el botón
 const GoogleIcon = () => (

@@ -1,0 +1,207 @@
+/* src/components/catalogo/PropertyCard.css */
+
+.property-card {
+    /* Inherits previous .card styles or defined here if needed. Assuming .card is global/utility or local scoping is preferred */
+}
+
+.property-card__carousel-container {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    width: 100%;
+    height: 220px;
+    position: relative;
+    background-color: var(--bg-tertiary);
+    overflow: hidden;
+}
+
+.property-card__carousel-slide {
+    min-width: 100%;
+    height: 100%;
+    scroll-snap-align: center;
+    position: relative;
+    cursor: zoom-in;
+}
+
+.property-card__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.property-card__swipe-hint {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    z-index: 10;
+}
+
+.property-card__status-tag {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.property-card__favorite-btn-wrapper {
+    position: absolute;
+    top: 50px;
+    right: 12px;
+    z-index: 11;
+}
+
+.property-card__image-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 40px 16px 12px 16px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 100%);
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.property-card__overlay-model-name {
+    color: white;
+    font-size: 1.4rem;
+    margin: 4px 0 0 0;
+    font-weight: 800;
+}
+
+.property-card__overlay-dev-name {
+    color: var(--primary-color);
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    opacity: 0.9;
+}
+
+.property-card__body {
+    padding: 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.property-card__inline-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.property-card__location-row {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+}
+
+.property-card__location-icon {
+    margin-right: 4px;
+    display: flex;
+    color: var(--primary-color);
+}
+
+.property-card__location-type {
+    font-weight: 600;
+    margin-right: 4px;
+    color: var(--text-main);
+}
+
+.property-card__features-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-top: auto;
+}
+
+.property-card__feature-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.property-card__separator {
+    color: var(--bg-tertiary);
+    font-size: 1.2rem;
+    font-weight: 300;
+}
+
+.property-card__price-box {
+    background-color: var(--bg-tertiary);
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+}
+
+.property-card__price-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.property-card__price-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.property-card__price-value {
+    font-weight: 800;
+    margin: 2px 0;
+}
+
+.property-card__price-note {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+    opacity: 0.8;
+}
+
+.property-card__highlights-flag {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--primary-color);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 5;
+    color: var(--primary-color);
+}
+
+.property-card__cta {
+    margin-top: 1rem;
+}

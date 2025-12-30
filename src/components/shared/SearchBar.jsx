@@ -1,6 +1,6 @@
 // src/components/catalogo/SearchBar.jsx
 import React from 'react';
-import { Icons } from '../Icons';
+import { Icons } from './Icons';
 import '../../styles/Catalogo.css';
 
 export default function SearchBar({ searchTerm, setSearchTerm }) {

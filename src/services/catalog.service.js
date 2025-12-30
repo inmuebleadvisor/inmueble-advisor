@@ -1,152 +1,12 @@
-import {
-  collection, getDocs, doc, getDoc, query, where
-} from 'firebase/firestore';
 import { normalizar } from '../utils/formatters';
 import { IMAGES, STATUS } from '../config/constants';
+import { CatalogRepository } from '../repositories/catalog.repository';
 
 const FALLBACK_IMG = IMAGES.FALLBACK_PROPERTY;
-const UNRELIABLE_PLACEHOLDER = "via.placeholder.com";
-
-// --- HELPERS (Pure functions) ---
-
-const parseCoord = (val) => {
-  if (typeof val === 'number') return val;
-  if (typeof val === 'string') {
-    const parsed = parseFloat(val);
-    return isNaN(parsed) ? 0 : parsed;
-  }
-  return 0;
-};
-
-const procesarImagenes = (data) => {
-  let listaImagenes = [];
-  let portada = null;
-
-  if (data.media) {
-    if (data.media.cover) {
-      portada = data.media.cover;
-      listaImagenes.push(portada);
-    }
-    if (Array.isArray(data.media.gallery)) {
-      listaImagenes = [...listaImagenes, ...data.media.gallery];
-    }
-  }
-  else if (data.multimedia) {
-    if (data.multimedia.portada) {
-      portada = data.multimedia.portada;
-      if (!listaImagenes.includes(portada)) listaImagenes.push(portada);
-    }
-    if (Array.isArray(data.multimedia.galeria)) {
-      listaImagenes = [...listaImagenes, ...data.multimedia.galeria];
-    }
-  }
-  else if (data.imagen) {
-    portada = data.imagen;
-    listaImagenes.push(data.imagen);
-  }
-
-  if (listaImagenes.length === 0 && data.media && Array.isArray(data.media.plantasArquitectonicas) && data.media.plantasArquitectonicas.length > 0) {
-    listaImagenes = [...data.media.plantasArquitectonicas];
-    if (!portada) portada = listaImagenes[0];
-  }
-
-  listaImagenes = listaImagenes.filter(url =>
-    url && typeof url === 'string' && url.length > 10 && !url.includes(UNRELIABLE_PLACEHOLDER) && !url.includes('static.wixstatic.com')
-  );
-  listaImagenes = [...new Set(listaImagenes)];
-
-  if (listaImagenes.length === 0) {
-    listaImagenes.push(FALLBACK_IMG);
-    if (!portada) portada = FALLBACK_IMG;
-  }
-
-  if (!portada && listaImagenes.length > 0) {
-    portada = listaImagenes[0];
-  }
-
-  return { imagen: portada, imagenes: listaImagenes };
-};
-
-const mapModelo = (docSnapshot) => {
-  const data = docSnapshot.data();
-  const imgs = procesarImagenes(data);
-
-  let precioFinal = 0;
-  if (data.precios && typeof data.precios.base === 'number') {
-    precioFinal = data.precios.base;
-  } else if (data.precioNumerico) {
-    precioFinal = Number(data.precioNumerico);
-  }
-
-  return {
-    ...data,
-    id: docSnapshot.id,
-    idDesarrollo: data.idDesarrollo || data.id_desarrollo || data.desarrollo_id || '',
-    nombre_modelo: data.nombreModelo || data.nombre_modelo || 'Modelo',
-    nombreDesarrollo: data.nombreDesarrollo || '',
-    constructora: data.constructora || '',
-    precioNumerico: precioFinal,
-    precios: data.precios || {},
-    imagen: imgs.imagen,
-    imagenes: imgs.imagenes,
-    recamaras: Number(data.recamaras) || 0,
-    banos: Number(data.banos) || 0,
-    niveles: Number(data.niveles) || 0,
-    cajones: Number(data.cajones) || 0,
-    m2: Number(data.m2) || 0,
-    terreno: Number(data.terreno) || 0,
-    zona: data.ubicacion?.zona || '',
-    ciudad: data.ubicacion?.ciudad || '',
-    colonia: data.ubicacion?.colonia || '',
-    latitud: parseCoord(data.ubicacion?.latitud),
-    longitud: parseCoord(data.ubicacion?.longitud),
-    ubicacion: data.ubicacion || {},
-    amenidades: Array.isArray(data.amenidades) ? data.amenidades : [],
-    amenidadesDesarrollo: Array.isArray(data.amenidadesDesarrollo) ? data.amenidadesDesarrollo : [],
-    keywords: Array.isArray(data.keywords) ? data.keywords : [],
-    tipoVivienda: data.tipoVivienda || 'Propiedad',
-    esPreventa: (data.esPreventa === true || data.esPreventa === 'true' || data.esPreventa === 1),
-    infoComercial: data.infoComercial || {},
-    activo: data.activo !== undefined ? data.activo !== false : (data.ActivoModelo !== false),
-    plantas: (data.media && Array.isArray(data.media.plantasArquitectonicas)) ? data.media.plantasArquitectonicas : []
-  };
-};
-
-const mapDesarrollo = (docSnapshot) => {
-  const data = docSnapshot.data();
-  const imgs = procesarImagenes(data);
-
-  return {
-    ...data,
-    id: docSnapshot.id,
-    nombre: data.nombre || 'Desarrollo',
-    info_comercial: data.infoComercial || data.info_comercial || {},
-    amenidades: Array.isArray(data.amenidades) ? data.amenidades : [],
-    keywords: Array.isArray(data.keywords) ? data.keywords : [],
-    precioDesde: (data.precios && data.precios.desde) ? data.precios.desde : (data.precioDesde || 0),
-    precios: data.precios || {},
-    imagen: imgs.imagen,
-    multimedia: {
-      portada: imgs.imagen,
-      galeria: imgs.imagenes,
-      video: data.media?.video || data.multimedia?.video || null,
-      brochure: data.media?.brochure || data.multimedia?.brochure || null
-    },
-    ubicacion: data.ubicacion || {},
-    zona: data.ubicacion?.zona || '',
-    latitud: parseCoord(data.ubicacion?.latitud),
-    longitud: parseCoord(data.ubicacion?.longitud),
-    activo: data.activo !== false
-  };
-};
-
-const FIRESTORE_BATCH_LIMIT = 30;
-
-// --- CLASS SERVICE ---
 
 export class CatalogService {
   constructor(db) {
-    this.db = db;
+    this.repository = new CatalogRepository(db);
     this.cacheModelos = null;
     this.lastCityCached = null;
     this.cacheDesarrollos = null;
@@ -159,15 +19,20 @@ export class CatalogService {
       let modelos = [];
 
       if (ciudadFilter) {
+        // Option A: Get desarrollos by city, then models by those IDs.
+        // This logic was in the original service to optimize (?) or ensure consistency.
+        // We will keep the flow but delegate data fetching to repository.
         let devIds = [];
+
+        // Check local cache for desarrollos first if available? 
+        // Original code checked cacheDesarrollos.
         if (this.cacheDesarrollos) {
           devIds = this.cacheDesarrollos
             .filter(d => d.ubicacion?.ciudad === ciudadFilter)
             .map(d => d.id);
         } else {
-          const qDevs = query(collection(this.db, "desarrollos"), where("ubicacion.ciudad", "==", ciudadFilter));
-          const snapDevs = await getDocs(qDevs);
-          devIds = snapDevs.docs.map(d => d.id);
+          const desarrollos = await this.repository.getDesarrollosByCiudad(ciudadFilter);
+          devIds = desarrollos.map(d => d.id);
         }
 
         if (devIds.length === 0) {
@@ -175,23 +40,10 @@ export class CatalogService {
           return [];
         }
 
-        const chunks = [];
-        for (let i = 0; i < devIds.length; i += FIRESTORE_BATCH_LIMIT) {
-          chunks.push(devIds.slice(i, i + FIRESTORE_BATCH_LIMIT));
-        }
-
-        const promises = chunks.map(async (chunkIds) => {
-          const qModelos = query(collection(this.db, "modelos"), where("idDesarrollo", "in", chunkIds));
-          const snap = await getDocs(qModelos);
-          return snap.docs.map(mapModelo);
-        });
-
-        const results = await Promise.all(promises);
-        modelos = results.flat();
+        modelos = await this.repository.getModelosByDesarrolloIds(devIds);
 
       } else {
-        const snap = await getDocs(collection(this.db, "modelos"));
-        modelos = snap.docs.map(mapModelo);
+        modelos = await this.repository.getAllModelos();
       }
 
       this.cacheModelos = modelos;
@@ -219,8 +71,7 @@ export class CatalogService {
   async obtenerInventarioDesarrollos() {
     if (this.cacheDesarrollos) return this.cacheDesarrollos;
     try {
-      const snap = await getDocs(collection(this.db, "desarrollos"));
-      const desarrollos = snap.docs.map(mapDesarrollo);
+      const desarrollos = await this.repository.getAllDesarrollos();
       this.cacheDesarrollos = desarrollos;
       return desarrollos;
     } catch (error) {
@@ -247,24 +98,10 @@ export class CatalogService {
 
   async obtenerInformacionDesarrollo(id) {
     try {
-      const docRef = doc(this.db, "desarrollos", String(id).trim());
-      const docSnap = await getDoc(docRef);
-      if (!docSnap.exists()) return null;
+      const desarrolloData = await this.repository.getDesarrolloById(id);
+      if (!desarrolloData) return null;
 
-      const desarrolloData = mapDesarrollo(docSnap);
-
-      const q = query(collection(this.db, "modelos"), where("idDesarrollo", "==", id));
-      const modelosSnap = await getDocs(q);
-
-      let modelosRaw = modelosSnap.docs;
-      // Fallback for snake_case
-      if (modelosRaw.length === 0) {
-        const q2 = query(collection(this.db, "modelos"), where("id_desarrollo", "==", id));
-        const modelosSnap2 = await getDocs(q2);
-        modelosRaw = modelosSnap2.docs;
-      }
-
-      const modelos = modelosRaw.map(mapModelo);
+      const modelos = await this.repository.getModelosByDesarrolloId(id);
 
       return { ...desarrolloData, modelos };
     } catch (error) {

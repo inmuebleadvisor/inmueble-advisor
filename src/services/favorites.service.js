@@ -1,51 +1,57 @@
+
 // src/services/favorites.service.js
-import { db } from '../firebase/config';
-import { doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
+// REFACTORIZADO: Ene 2026 - Clase con Inyección de Dependencias
 
-/**
- * Servicio para gestionar favoritos en Firestore.
- * Sigue el principio de responsabilidad única del Manual de Arquitectura.
- */
-
-// Agrega un ID al array de favoritos del usuario
-export const agregarFavoritoAPI = async (uid, modeloId) => {
-  try {
-    const userRef = doc(db, "users", uid);
-    await updateDoc(userRef, {
-      favoritos: arrayUnion(modeloId) // arrayUnion evita duplicados automáticamente
-    });
-    return true;
-  } catch (error) {
-    console.error("Error al agregar favorito:", error);
-    return false;
+export class FavoritesService {
+  /**
+   * @param {Object} userRepository - Repositorio de usuarios
+   */
+  constructor(userRepository) {
+    this.userRepository = userRepository;
   }
-};
 
-// Elimina un ID del array
-export const eliminarFavoritoAPI = async (uid, modeloId) => {
-  try {
-    const userRef = doc(db, "users", uid);
-    await updateDoc(userRef, {
-      favoritos: arrayRemove(modeloId)
-    });
-    return true;
-  } catch (error) {
-    console.error("Error al eliminar favorito:", error);
-    return false;
-  }
-};
-
-// Obtiene la lista actual (útil para la carga inicial)
-export const obtenerFavoritosAPI = async (uid) => {
-  try {
-    const userRef = doc(db, "users", uid);
-    const snap = await getDoc(userRef);
-    if (snap.exists()) {
-      return snap.data().favoritos || [];
+  /**
+   * Agrega un ID al array de favoritos del usuario
+   * @param {string} uid - ID del usuario
+   * @param {string} modeloId - ID del modelo a agregar
+   * @returns {Promise<boolean>}
+   */
+  async addFavorite(uid, modeloId) {
+    try {
+      return await this.userRepository.addFavorite(uid, modeloId);
+    } catch (error) {
+      console.error("Error al agregar favorito:", error);
+      return false;
     }
-    return [];
-  } catch (error) {
-    console.error("Error obteniendo favoritos:", error);
-    return [];
   }
-};
+
+  /**
+   * Elimina un ID del array de favoritos
+   * @param {string} uid - ID del usuario
+   * @param {string} modeloId - ID del modelo a eliminar
+   * @returns {Promise<boolean>}
+   */
+  async removeFavorite(uid, modeloId) {
+    try {
+      return await this.userRepository.removeFavorite(uid, modeloId);
+    } catch (error) {
+      console.error("Error al eliminar favorito:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Obtiene la lista actual de favoritos
+   * @param {string} uid - ID del usuario
+   * @returns {Promise<Array>}
+   */
+  async getFavorites(uid) {
+    try {
+      return await this.userRepository.getFavorites(uid);
+    } catch (error) {
+      console.error("Error obteniendo favoritos:", error);
+      return [];
+    }
+  }
+}
+

@@ -1,84 +1,143 @@
-// src/services/crm.service.js
-import { db } from '../firebase/config';
-import { 
-  collection, 
-  doc, 
-  updateDoc, 
-  serverTimestamp, 
-  query, 
-  where, 
-  orderBy, 
-  getDocs 
-} from 'firebase/firestore';
 
-// ✅ IMPORTANTE: Importamos las constantes para la estandarización
+import { serverTimestamp } from 'firebase/firestore'; // Keep for constructing payload, repo handles write.
 import { STATUS } from '../config/constants';
 
 /**
- * ==========================================
  * SERVICIO CRM (LEADS)
  * Responsabilidad: Gestión del embudo de ventas y estados de leads.
- * ==========================================
  */
-
-/**
- * Obtiene los leads asignados a un asesor específico.
- * @param {string} asesorUid - ID del asesor logueado
- */
-export const obtenerLeadsAsignados = async (asesorUid) => {
-  // PORQUÉ: Siempre es buena práctica usar try/catch en operaciones asíncronas
-  // de BD para manejar fallos de conexión o permisos.
-  try {
-    const q = query(
-      collection(db, "leads"), 
-      where("asesorUid", "==", asesorUid),
-      // Mantenemos el ordenamiento para el dashboard.
-      orderBy("fechaUltimaInteraccion", "desc") 
-    );
-    const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  } catch (error) {
-    console.error("Error obteniendo leads:", error);
-    return [];
+export class CrmService {
+  /**
+   * @param {import('../repositories/lead.repository').LeadRepository} leadRepository 
+   * @param {import('./externalAdvisor.service').ExternalAdvisorService} externalAdvisorService 
+   */
+  constructor(leadRepository, externalAdvisorService) {
+    this.leadRepository = leadRepository;
+    this.externalAdvisorService = externalAdvisorService;
   }
-};
 
-/**
- * Actualiza el estado de un lead en el embudo (ej. de 'nuevo' a 'contactado').
- * @param {string} leadId - ID del documento lead
- * @param {string} nuevoEstado - Nuevo status (Debe ser un valor de STATUS.LEAD_...)
- * @param {Object} datosExtra - Datos opcionales (monto venta, motivo perdida, notas)
- */
-export const actualizarEstadoLead = async (leadId, nuevoEstado, datosExtra = {}) => {
-  // PORQUÉ: Estandarizamos para que todos los estados pasen por aquí.
-  try {
-    const leadRef = doc(db, "leads", leadId);
-    const updateData = {
-      status: nuevoEstado,
-      // Usamos el timestamp del servidor para la hora de la interacción.
-      fechaUltimaInteraccion: serverTimestamp() 
-    };
+  /**
+   * Obtiene los leads asignados a un asesor específico.
+   * @param {string} asesorUid - ID del asesor logueado
+   */
+  async obtenerLeadsAsignados(asesorUid) {
+    try {
+      return await this.leadRepository.getLeadsByAdvisor(asesorUid);
+    } catch (error) {
+      console.error("Error obteniendo leads:", error);
+      return [];
+    }
+  }
 
-    // Si es una venta cerrada (Usamos la constante)
-    if (nuevoEstado === STATUS.LEAD_WON) {
-      updateData.cierre = {
-        montoFinal: datosExtra.monto,
-        modeloFinal: datosExtra.modelo,
-        fechaCierre: serverTimestamp() // También usamos server timestamp aquí
+  /**
+   * Actualiza el estado de un lead en el embudo (ej. de 'nuevo' a 'contactado').
+   */
+  async actualizarEstadoLead(leadId, nuevoEstado, datosExtra = {}) {
+    try {
+      const updateData = {
+        status: nuevoEstado,
+        fechaUltimaInteraccion: serverTimestamp()
       };
-    }
-    
-    // Si se pierde el lead (Usamos la constante)
-    if (nuevoEstado === STATUS.LEAD_LOST) {
-      updateData.motivoPerdida = datosExtra.motivo;
-    }
 
-    // Nota: Aquí se podría agregar al historial (opcional, Fase 3)
-    
-    await updateDoc(leadRef, updateData);
-    return true;
-  } catch (error) {
-    console.error("Error actualizando lead:", error);
-    throw error;
+      // Si es una venta cerrada (Usamos la constante)
+      if (nuevoEstado === STATUS.LEAD_WON) {
+        updateData.cierre = {
+          montoFinal: datosExtra.monto,
+          modeloFinal: datosExtra.modelo,
+          fechaCierre: serverTimestamp()
+        };
+      }
+
+      // Si se pierde el lead (Usamos la constante)
+      if (nuevoEstado === STATUS.LEAD_LOST) {
+        updateData.motivoPerdida = datosExtra.motivo;
+      }
+
+      await this.leadRepository.updateLead(leadId, updateData);
+      return true;
+    } catch (error) {
+      console.error("Error actualizando lead:", error);
+      throw error; // Propagate error for UI feedback
+    }
   }
-};
+
+  /**
+   * Registra que ya se avisó al Developer sobre el Lead
+   */
+  async marcarComoReportado(leadId) {
+    try {
+      const updateData = {
+        status: STATUS.LEAD_REPORTED,
+        "seguimientoB2B.status": 'REPORTED',
+        fechaReporte: serverTimestamp(),
+        ultimaActualizacion: serverTimestamp()
+      };
+      await this.leadRepository.updateLead(leadId, updateData);
+      return true;
+    } catch (error) {
+      console.error("Error marcando reportado:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Asigna un asesor EXTERNO (del developer)
+   */
+  async asignarAsesorExterno(leadId, datosAsesorExterno) {
+    try {
+      // 1. Garantizar que el asesor exista (Delegated to Service)
+      const advisor = await this.externalAdvisorService.createOrUpdate(datosAsesorExterno);
+
+      // Actualizamos el Lead
+      const updateData = {
+        status: STATUS.LEAD_ASSIGNED_EXTERNAL,
+        externalAdvisor: {
+          nombre: advisor.nombre,
+          telefono: advisor.telefono || '',
+          fechaAsignacion: new Date()
+        },
+        seguimientoB2B: {
+          status: 'ASSIGNED',
+          vendedorExternoId: advisor.id,
+          hitosAlcanzados: []
+        },
+        fechaUltimaInteraccion: serverTimestamp()
+      };
+
+      await this.leadRepository.updateLead(leadId, updateData);
+      return true;
+    } catch (error) {
+      console.error("Error asignando externo:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Registra un hito B2B (Apartado, Promesa, Escritura).
+   */
+  async registrarHito(leadId, hitoName, usuarioId) {
+    try {
+      const nuevoHito = {
+        hito: hitoName,
+        fecha: new Date(),
+        usuarioResponsable: usuarioId || 'system'
+      };
+
+      await this.leadRepository.addB2BMilestone(leadId, nuevoHito);
+      return true;
+    } catch (error) {
+      console.error("Error registrando hito:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Calcula la comisión estimada.
+   * Static because it's pure logic, no dependencies.
+   */
+  calcularComisionEstimada(precioBase, commissionPolicy) {
+    if (!precioBase || !commissionPolicy?.porcentaje) return 0;
+    const porcentaje = Number(commissionPolicy.porcentaje);
+    return (precioBase * porcentaje) / 100;
+  }
+}
