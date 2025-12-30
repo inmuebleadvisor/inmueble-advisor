@@ -1,6 +1,6 @@
 // src/components/LeadActionModal.jsx
 import React, { useState } from 'react';
-import { actualizarEstadoLead } from '../services/crm.service';
+import { useService } from '../hooks/useService';
 
 // ✅ IMPORTANTE: Importamos las constantes de STATUS para asegurar consistencia
 import { STATUS } from '../config/constants';
@@ -19,10 +19,11 @@ const OPCIONES_ESTADO = [
 ];
 
 export default function LeadActionModal({ lead, onClose, onSuccess }) {
+  const { crm } = useService();
   // Estados del Formulario
   const [nuevoEstado, setNuevoEstado] = useState(lead.status);
   const [notas, setNotas] = useState('');
-  
+
   // Datos Obligatorios Condicionales
   const [montoVenta, setMontoVenta] = useState('');
   const [modeloVendido, setModeloVendido] = useState(lead.modeloInteres || '');
@@ -33,7 +34,7 @@ export default function LeadActionModal({ lead, onClose, onSuccess }) {
   // --- LÓGICA DE GUARDADO ---
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // 1. Validaciones de Negocio (Usamos las constantes para comparar)
     if (nuevoEstado === STATUS.LEAD_WON) {
       if (!montoVenta || montoVenta <= 0) return alert("Para marcar como vendido, el monto real es obligatorio.");
@@ -54,12 +55,12 @@ export default function LeadActionModal({ lead, onClose, onSuccess }) {
       };
 
       // 3. Llamar al Servicio (Firestore)
-      await actualizarEstadoLead(lead.id, nuevoEstado, datosExtra);
-      
+      await crm.actualizarEstadoLead(lead.id, nuevoEstado, datosExtra);
+
       // 4. Feedback y Cierre
       onSuccess(); // Recarga la lista en el padre
       onClose();   // Cierra el modal
-      
+
     } catch (error) {
       console.error("Error actualizando lead:", error);
       alert("No se pudo actualizar el estado. Intenta de nuevo.");
@@ -71,26 +72,26 @@ export default function LeadActionModal({ lead, onClose, onSuccess }) {
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
-        
+
         <div style={styles.header}>
           <h3 style={styles.title}>Gestionar Lead</h3>
           <button onClick={onClose} style={styles.closeBtn}>&times;</button>
         </div>
 
         <div style={styles.leadSummary}>
-          <strong>Cliente:</strong> {lead.clienteDatos?.nombre || 'N/A'}<br/>
-          <span style={{fontSize:'0.85rem', color:'#666'}}>
+          <strong>Cliente:</strong> {lead.clienteDatos?.nombre || 'N/A'}<br />
+          <span style={{ fontSize: '0.85rem', color: '#666' }}>
             Interés: {lead.nombreDesarrollo || 'N/A'}
           </span>
         </div>
 
         <form onSubmit={handleSubmit} style={styles.form}>
-          
+
           {/* SELECTOR DE ESTADO */}
           <div style={styles.group}>
             <label style={styles.label}>Nuevo Estado:</label>
-            <select 
-              value={nuevoEstado} 
+            <select
+              value={nuevoEstado}
               onChange={(e) => setNuevoEstado(e.target.value)}
               style={styles.select}
             >
@@ -107,11 +108,11 @@ export default function LeadActionModal({ lead, onClose, onSuccess }) {
             <div style={styles.conditionalBoxGreen}>
               <h4 style={styles.condTitle}>🎉 ¡Felicidades por el cierre!</h4>
               <p style={styles.condText}>Estos datos son necesarios para calcular tus comisiones y score.</p>
-              
+
               <div style={styles.group}>
                 <label style={styles.label}>Precio Final de Venta ($):</label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   placeholder="Ej: 2500000"
                   value={montoVenta}
                   onChange={(e) => setMontoVenta(e.target.value)}
@@ -119,11 +120,11 @@ export default function LeadActionModal({ lead, onClose, onSuccess }) {
                   required
                 />
               </div>
-              
+
               <div style={styles.group}>
                 <label style={styles.label}>Modelo Vendido:</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   placeholder="Ej: Modelo Águila"
                   value={modeloVendido}
                   onChange={(e) => setModeloVendido(e.target.value)}
@@ -140,8 +141,8 @@ export default function LeadActionModal({ lead, onClose, onSuccess }) {
               <h4 style={styles.condTitleRed}>Cierre de Expediente</h4>
               <div style={styles.group}>
                 <label style={styles.label}>Motivo de pérdida:</label>
-                <select 
-                  value={motivoPerdida} 
+                <select
+                  value={motivoPerdida}
                   onChange={(e) => setMotivoPerdida(e.target.value)}
                   style={styles.select}
                   required
@@ -160,8 +161,8 @@ export default function LeadActionModal({ lead, onClose, onSuccess }) {
           {/* BOTONES */}
           <div style={styles.actions}>
             <button type="button" onClick={onClose} style={styles.btnCancel}>Cancelar</button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={isSubmitting || nuevoEstado === lead.status}
               style={{
                 ...styles.btnSubmit,
@@ -191,11 +192,11 @@ const styles = {
   label: { display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: '600', color: '#374151' },
   select: { width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '1rem', backgroundColor: 'white' },
   input: { width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '1rem' },
-  
+
   conditionalBoxGreen: { backgroundColor: '#f0fdf4', padding: '15px', borderRadius: '10px', border: '1px solid #bbf7d0', marginBottom: '15px' },
   condTitle: { margin: '0 0 10px 0', fontSize: '0.95rem', color: '#166534' },
   condText: { fontSize: '0.8rem', color: '#15803d', marginBottom: '10px' },
-  
+
   conditionalBoxRed: { backgroundColor: '#fef2f2', padding: '15px', borderRadius: '10px', border: '1px solid #fecaca', marginBottom: '15px' },
   condTitleRed: { margin: '0 0 10px 0', fontSize: '0.95rem', color: '#991b1b' },
 

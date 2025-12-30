@@ -9,7 +9,8 @@ import {
     serverTimestamp,
     arrayUnion,
     arrayRemove,
-    getDoc
+    getDoc,
+    setDoc
 } from 'firebase/firestore';
 
 export class UserRepository {
@@ -21,6 +22,16 @@ export class UserRepository {
     async getAllUsers() {
         const snap = await getDocs(collection(this.db, this.collectionName));
         return snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+    }
+
+    async getUserById(uid) {
+        if (!uid) return null;
+        const userRef = doc(this.db, this.collectionName, uid);
+        const snap = await getDoc(userRef);
+        if (snap.exists()) {
+            return { uid: snap.id, ...snap.data() };
+        }
+        return null;
     }
 
     async findUserByEmail(email) {
@@ -53,6 +64,16 @@ export class UserRepository {
         };
         const docRef = await addDoc(collection(this.db, this.collectionName), dataWithTimestamp);
         return { uid: docRef.id, ...dataWithTimestamp };
+    }
+
+    async createUserWithId(uid, userData) {
+        const dataWithTimestamp = {
+            ...userData,
+            createdAt: serverTimestamp(),
+            lastSeen: serverTimestamp()
+        };
+        await setDoc(doc(this.db, this.collectionName, uid), dataWithTimestamp);
+        return { uid, ...dataWithTimestamp };
     }
 
     async updateUser(uid, updateData) {

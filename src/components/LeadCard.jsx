@@ -2,7 +2,7 @@
 import React from 'react';
 // ✅ Importamos las constantes para usar los códigos universales
 import { STATUS } from '../config/constants';
-import { calcularComisionEstimada, registrarHito } from '../services/crm.service'; // Importar servicios B2B
+import { useService } from '../hooks/useService'; // Import Hook
 import './LeadCard.css';
 
 // --- DICCIONARIO DE ESTADOS (Usando las claves de STATUS) ---
@@ -36,6 +36,7 @@ const Icons = {
 };
 
 export default function LeadCard({ lead, onAction }) {
+  const { crm } = useService();
   // Configuración visual según el estado actual. Usamos la clave del lead como índice.
   // PORQUÉ: Si el status del lead no coincide con ninguna clave de ESTADOS, 
   // se usa un fallback seguro (STATUS.LEAD_NEW).
@@ -135,7 +136,7 @@ export default function LeadCard({ lead, onAction }) {
           <div className="lead-card__financial-badge">
             <span>💰 Comisión Estimada:</span>
             <strong className="lead-card__financial-amount">
-              $ {Math.round(calcularComisionEstimada(lead.precioPresupuesto || 0, { porcentaje: 3.5 })).toLocaleString()}
+              $ {Math.round(crm.calcularComisionEstimada(lead.precioPresupuesto || 0, { porcentaje: 3.5 })).toLocaleString()}
             </strong>
             {/* Nota: En prod, pasar la policy real del desarrollo, aquí hardcoded 3.5% como default o leer de 'lead.desarrolloData' */}
           </div>
@@ -153,7 +154,7 @@ export default function LeadCard({ lead, onAction }) {
                     disabled={alcanzado} // Una vez marcado, safe
                     onChange={() => {
                       if (confirm(`¿Confirmas que se alcanzó el hito: ${hito}?`)) {
-                        registrarHito(lead.id, hito, 'admin_user'); // TODO: Pass real user ID
+                        crm.registrarHito(lead.id, hito, 'admin_user'); // TODO: Pass real user ID
                         // Trigger callback or force refresh if needed
                       }
                     }}

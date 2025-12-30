@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { generarLeadAutomatico } from '../../services/leadAssignmentService';
+import { useService } from '../../hooks/useService';
 import { useUser } from '../../context/UserContext'; // ✅ Contexto de Usuario
 import '../../styles/LeadCaptureForm.css';
 
 const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
     const { user, userProfile, loginWithGoogle } = useUser(); // ✅ Obtener usuario y login
+    const { leadAssignment } = useService(); // ✅ Inject Service
 
     const [formData, setFormData] = useState({
         nombre: '',
@@ -43,7 +44,7 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
         }
 
         try {
-            const result = await generarLeadAutomatico(
+            const result = await leadAssignment.generarLeadAutomatico(
                 {
                     nombre: formData.nombre,
                     telefono: formData.telefono,

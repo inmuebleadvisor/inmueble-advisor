@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useAdminData } from '../../hooks/useAdminData';
 import DataTable from '../../components/admin/DataTable';
 import { STATUS } from '../../config/constants';
-import { marcarComoReportado, asignarAsesorExterno } from '../../services/crm.service';
+import { useService } from '../../hooks/useService';
 
 const AdminLeads = () => {
+    const { crm } = useService();
     const { data, loading, refresh } = useAdminData();
     const { leads, desarrollos } = data;
     const [filter, setFilter] = useState('ALL');
@@ -28,7 +29,7 @@ const AdminLeads = () => {
         window.open(url, '_blank');
 
         if (confirm("¿Se envió el reporte? Confirmar para actualizar estado.")) {
-            await marcarComoReportado(lead.id);
+            await crm.marcarComoReportado(lead.id);
             refresh(); // Reload data
         }
     };
@@ -37,7 +38,7 @@ const AdminLeads = () => {
         const nombreVal = prompt("Nombre del Asesor Externo:");
         if (!nombreVal) return;
 
-        await asignarAsesorExterno(lead.id, { nombre: nombreVal });
+        await crm.asignarAsesorExterno(lead.id, { nombre: nombreVal });
         refresh();
     };
 

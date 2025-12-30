@@ -1,8 +1,8 @@
 // src/context/FavoritesContext.jsx
-// ÚLTIMA MODIFICACION: 02/12/2025
+// ÚLTIMA MODIFICACION: 30/12/2025 - Refactorización DI
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUser } from './UserContext';
-import { agregarFavoritoAPI, eliminarFavoritoAPI, obtenerFavoritosAPI } from '../services/favorites.service';
+import { favoritesService } from '../services/serviceProvider';
 
 const FavoritesContext = createContext();
 
@@ -24,7 +24,7 @@ export const FavoritesProvider = ({ children }) => {
     // Si hay usuario, recuperamos sus favoritos reales de la BD.
     const cargarFavoritos = async () => {
       try {
-        const cloudFavs = await obtenerFavoritosAPI(user.uid);
+        const cloudFavs = await favoritesService.getFavorites(user.uid);
         // Aseguramos que sea un array para evitar errores de renderizado
         setFavoritosIds(Array.isArray(cloudFavs) ? cloudFavs : []);
       } catch (error) {
@@ -60,9 +60,9 @@ export const FavoritesProvider = ({ children }) => {
     // C. Persistencia Asíncrona (Background):
     try {
       if (existe) {
-        await eliminarFavoritoAPI(user.uid, modeloId);
+        await favoritesService.removeFavorite(user.uid, modeloId);
       } else {
-        await agregarFavoritoAPI(user.uid, modeloId);
+        await favoritesService.addFavorite(user.uid, modeloId);
       }
       return true; // Operación exitosa
     } catch (error) {

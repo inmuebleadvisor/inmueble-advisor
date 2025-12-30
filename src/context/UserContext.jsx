@@ -1,8 +1,6 @@
-// src/context/UserContext.jsx
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth, db, googleProvider } from '../firebase/config';
-import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'; // ✅ Importamos updateDoc
+import { useService } from '../hooks/useService';
 
 const UserContext = createContext();
 
@@ -11,10 +9,12 @@ export const useUser = () => {
 };
 
 export const UserProvider = ({ children }) => {
+  const { auth } = useService(); // Inject AuthService
+
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
-  const [initialLoading, setInitialLoading] = useState(true); // ✅ Nuevo estado para la carga inicial
+  const [initialLoading, setInitialLoading] = useState(true);
 
   // ⭐ NUEVO CONSTEXTO: Ciudad Seleccionada (Global Preference)
   const [selectedCity, setSelectedCity] = useState(() => {
@@ -30,63 +30,31 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  // 1. ESCUCHA DE SESIÓN
+  // 1. ESCUCHA DE SESIÓN (Delegated to Service)
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = auth.subscribeToAuthChanges((currentUser, currentProfile) => {
       setLoadingUser(true);
-      if (currentUser) {
-        setUser(currentUser);
-        await fetchUserProfile(currentUser.uid);
-      } else {
-        setUser(null);
-        setUserProfile(null);
-      }
+
+      setUser(currentUser);
+      setUserProfile(currentProfile);
+
       setLoadingUser(false);
-      setInitialLoading(false); // ✅ Marcamos que la carga inicial terminó
+      setInitialLoading(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [auth]);
 
-  // 2. OBTENER PERFIL
-  const fetchUserProfile = async (uid) => {
-    try {
-      const docRef = doc(db, "users", uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) setUserProfile(docSnap.data());
-      else setUserProfile(null);
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-    }
-  };
+  // 2. OBTENER PERFIL (Handled internally by subscribeToAuthChanges usually, 
+  // but if needed explicitly we can expose it via service or just trust the listener)
+  // The original code had a fetchUserProfile function used in listener and manually.
+  // The listener in AuthService already fetches it.
 
-  // 3. LOGIN UNIVERSAL (Sin forzar rol)
-  // Si el usuario no existe, se crea como 'cliente' por defecto (Safety First).
-  // Si ya existe, NO tocamos su rol.
+  // 3. LOGIN UNIVERSAL
   const loginWithGoogle = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const firebaseUser = result.user;
-
-      const docRef = doc(db, "users", firebaseUser.uid);
-      const docSnap = await getDoc(docRef);
-
-      if (!docSnap.exists()) {
-        // Usuario Nuevo -> Nace como Cliente
-        const nuevoUsuario = {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          nombre: firebaseUser.displayName,
-          foto: firebaseUser.photoURL,
-          role: 'cliente', // 🔒 Default seguro
-          fechaRegistro: new Date().toISOString(),
-          onboardingCompleto: false
-        };
-        await setDoc(docRef, nuevoUsuario);
-        setUserProfile(nuevoUsuario);
-      } else {
-        // Usuario Existente -> Respetamos su rol actual
-        setUserProfile(docSnap.data());
-      }
+      const { user: firebaseUser, profile } = await auth.loginWithGoogle();
+      // State updates handled by listener usually, but for immediate feedback:
+      // Actually listener fires on auth state change.
       return firebaseUser;
     } catch (error) {
       console.error("Login Error:", error);
@@ -96,27 +64,13 @@ export const UserProvider = ({ children }) => {
 
   /**
    * ✅ NUEVA FUNCIÓN: TRANSFORMAR EN ASESOR
-   * Solo se llama cuando el usuario da clic en "Finalizar" en el Wizard.
    */
   const convertirEnAsesor = async (datosExtra) => {
     if (!user) return;
 
     try {
-      const docRef = doc(db, "users", user.uid);
-
-      // Actualizamos solo los campos necesarios
-      const newRole = userProfile?.role === 'admin' ? 'admin' : 'asesor'; // 🔒 PROTECCIÓN: Si es admin, SE QUEDA ADMIN.
-
-      await updateDoc(docRef, {
-        role: newRole,
-        onboardingCompleto: true,
-        fechaRegistroAsesor: new Date().toISOString(),
-        ...datosExtra // Telefono, Inventario, etc.
-      });
-
-      // Actualizamos el estado local para que la UI reaccione rápido
-      await fetchUserProfile(user.uid);
-
+      const updatedProfile = await auth.convertToAdvisor(user.uid, userProfile?.role, datosExtra);
+      setUserProfile(updatedProfile);
     } catch (error) {
       console.error("Error convirtiendo asesor:", error);
       throw error;
@@ -124,9 +78,8 @@ export const UserProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    await signOut(auth);
-    setUser(null);
-    setUserProfile(null);
+    await auth.logout();
+    // Listener will handle nullifying state
   };
 
   const trackBehavior = (action, details) => {
@@ -138,7 +91,7 @@ export const UserProvider = ({ children }) => {
     userProfile,
     loadingUser,
     loginWithGoogle,
-    convertirEnAsesor, // 👈 Exportamos la nueva función
+    convertirEnAsesor,
     logout,
 
     trackBehavior,
