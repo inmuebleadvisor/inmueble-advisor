@@ -188,3 +188,41 @@ export const ModeloSchema = z.object({
 
     updatedAt: z.custom((val) => val instanceof Timestamp).optional(),
 });
+
+// --- DESARROLLADOR SCHEMA ---
+
+export const ContactoSchema = z.object({
+    nombre1: z.string().optional(),
+    telefono1: z.string().optional(),
+    mail1: z.string().optional(),
+    puesto1: z.string().optional(),
+    nombre2: z.string().optional(),
+    telefono2: z.string().optional(),
+    mail2: z.string().optional(),
+    puesto2: z.string().optional(),
+});
+
+export const EsquemaPagoSchema = z.object({
+    apartado: z.preprocess(parseNumber, z.number().optional()),
+    enganche: z.preprocess(parseNumber, z.number().optional()),
+    aprobacionCredito: z.preprocess(parseNumber, z.number().optional()),
+    escrituracion: z.preprocess(parseNumber, z.number().optional()),
+});
+
+export const DesarrolladorSchema = z.object({
+    id: z.string().optional(),
+    nombre: z.string().min(1, "Nombre es requerido"),
+
+    esquemaPago: EsquemaPagoSchema.optional(),
+    contacto: ContactoSchema.optional(),
+
+    asesoresDesarrollo: z.preprocess(parseArray, z.array(z.string()).optional()),
+    desarrollos: z.preprocess(parseArray, z.array(z.string()).optional()),
+
+    // Calculated fields
+    ciudades: z.array(z.string()).optional(),
+    ofertaTotal: z.preprocess(parseNumber, z.number().optional()),
+    viviendasxVender: z.preprocess(parseNumber, z.number().optional()),
+
+    updatedAt: z.custom((val) => val instanceof Timestamp).optional(),
+});

@@ -43,6 +43,11 @@ node index.js import desarrollos "ruta/a/tu/archivo.csv"
 node index.js import modelos "ruta/a/tu/archivo.csv"
 ```
 
+**Subir Desarrolladores:**
+```bash
+node index.js import desarrolladores "ruta/a/tu/archivo.csv"
+```
+
 ### 📤 EXPORTAR (Bajar datos)
 Para descargar lo que hay en la nube a tu computadora. Los archivos se guardan en la carpeta `data-manager/output`.
 
@@ -110,3 +115,8 @@ Cuando termines:
 - **Nuevo**: `status`. Puede ser texto ("Pre-Venta") o lista separada por pipes ("Pre-Venta|Entrega Inmediata").
 - **Nuevo**: `promocion_nombre`, `promocion_inicio`, `promocion_fin`.
 - **Nuevo**: `tiempo_entrega`. Texto libre (ej. "6 meses", "Diciembre 2025").
+
+### DESARROLLADORES
+- Usar notación de punto para objetos anidados en los encabezados del CSV:
+  - `EsquemaPago.Apartado`, `EsquemaPago.Enganche`
+  - `Contacto.Nombre1`, `Contacto.Mail1`

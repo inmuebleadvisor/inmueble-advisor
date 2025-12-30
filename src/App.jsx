@@ -24,9 +24,7 @@ import Catalogo from './screens/Catalogo';
 import DetalleModelo from './screens/DetalleModelo';
 import DetalleDesarrollo from './screens/DetalleDesarrollo';
 import Mapa from './screens/Mapa';
-import LandingAsesores from './screens/LandingAsesores';
-import OnboardingAsesor from './screens/OnboardingAsesor';
-import AccountAsesor from './screens/AccountAsesor';
+// 🗑️ DELETED: LandingAsesores, OnboardingAsesor, AccountAsesor
 // ⭐ NUEVO: Pantalla de Onboarding Cliente (migración UX)
 import OnboardingCliente from './screens/OnboardingCliente';
 // ⭐ NUEVO: Pantalla de Comparador y Favoritos (implementado en el plan)
@@ -59,23 +57,7 @@ function App() {
                 <Route index element={<Perfil />} />
                 <Route path="onboarding-cliente" element={<OnboardingCliente />} />
 
-                {/* 2. LANDING PARA CAPTACIÓN DE ASESORES (Pública) */}
-                <Route path="soy-asesor" element={<LandingAsesores />} />
-
-                {/* 3. WIZARD DE ONBOARDING (Protegida: Requiere Login, pero NO onboarding previo) */}
-                <Route path="onboarding-asesor" element={
-                  // Sintaxis corregida: ProtectedRoute envuelve el componente
-                  <ProtectedRoute requireOnboarding={false}>
-                    <OnboardingAsesor />
-                  </ProtectedRoute>
-                } />
-
-                {/* 4. DASHBOARD EXCLUSIVO DE ASESORES (Protegida + Onboarding Completo) */}
-                <Route path="account-asesor" element={
-                  <ProtectedRoute requireOnboarding={true}>
-                    <AccountAsesor />
-                  </ProtectedRoute>
-                } />
+                {/* 2. LANDING / ONBOARDING / ACCOUNT ASESORES ELIMINADOS (Modelo Deprecado) */}
 
                 {/* 5. RUTAS DEL SISTEMA (Protegidas) */}
 

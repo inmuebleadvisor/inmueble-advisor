@@ -174,6 +174,33 @@ Registra cada solicitud de contacto o cita, conectando al cliente con el asesor 
 
 ---
 
+## 5. Colección: `DESARROLLADORES` (Empresas Desarrolladoras)
+
+Representa a las empresas constructoras o grupos inmobiliarios.
+
+| Campo | Tipo de Dato | Estructura | Descripción |
+| :--- | :--- | :--- | :--- |
+| **id** | `string` | **Clave principal** | Identificador único. |
+| **nombre** | `string` | Simple | Nombre de la desarrolladora (Debe coincidir con `constructora` en Desarrollos). |
+| **esquemaPago** | `map` | Objeto anidado | Esquemas financieros por defecto. |
+| esquemaPago.apartado | `number` | Sub-campo | Monto o porcentaje de apartado. |
+| esquemaPago.enganche | `number` | Sub-campo | Porcentaje de enganche. |
+| esquemaPago.aprobacionCredito | `number` | Sub-campo | Porcentaje al aprobar crédito. |
+| esquemaPago.escrituracion | `number` | Sub-campo | Porcentaje a la escrituración. |
+| **contacto** | `map` | Objeto anidado | Contactos principales de la empresa. |
+| contacto.nombre1, nombre2 | `string` | Sub-campo | Nombre del contacto. |
+| contacto.telefono1, telefono2 | `string` | Sub-campo | Teléfono. |
+| contacto.mail1, mail2 | `string` | Sub-campo | Email. |
+| contacto.puesto1, puesto2 | `string` | Sub-campo | Puesto. |
+| **asesoresDesarrollo** | `array<string>` | Lista | IDs de asesores asignados. |
+| **desarrollos** | `array<string>` | Lista (Calculado) | IDs de los desarrollos asociados. |
+| **ciudades** | `array<string>` | Lista (Calculado) | Nombres de ciudades donde tienen presencia. |
+| **ofertaTotal** | `number` | Simple (Calculado) | Suma de unidades totales de sus desarrollos. |
+| **viviendasxVender** | `number` | Simple (Calculado) | Suma de stock disponible. |
+| **updatedAt** | `timestamp` | Simple | Fecha de última actualización. |
+
+---
+
 ## 🔗 RELACIONES CLAVE
 
 | Colecciones | Relación | Campo Clave Foránea | Descripción |

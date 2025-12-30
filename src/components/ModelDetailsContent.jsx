@@ -11,6 +11,8 @@ import StickyActionPanel from './common/StickyActionPanel';
 import Delightbox from './common/Delightbox';
 import { useStickyPanel } from '../hooks/useStickyPanel';
 import '../styles/ModelDetailsContent.css'; // BEM Styles relocated
+import Modal from './Modal'; // Generic Modal
+import LeadCaptureForm from './LeadCaptureForm'; // New Capture Form
 
 // Icons defined locally since they are small UI helpers
 const Icons = {
@@ -34,6 +36,9 @@ export default function ModelDetailsContent({
     // State for floor plans lightbox
     const [isFloorPlanOpen, setIsFloorPlanOpen] = React.useState(false);
     const [floorPlanIndex, setFloorPlanIndex] = React.useState(0);
+
+    // Lead Form Modal State
+    const [isLeadFormOpen, setIsLeadFormOpen] = React.useState(false);
 
     const headerRef = React.useRef(null);
     const showFab = useStickyPanel(headerRef);
@@ -105,10 +110,10 @@ export default function ModelDetailsContent({
 
                             <button
                                 className="model-details__cta-primary"
-                                onClick={() => alert("Función de Agendar Cita: Se abrirá el formulario o WhatsApp.")}
+                                onClick={() => setIsLeadFormOpen(true)}
                             >
                                 <Icons.Calendar />
-                                <span>Agendar Cita</span>
+                                <span>Cotizar / Agendar</span>
                             </button>
                         </div>
 
@@ -225,9 +230,22 @@ export default function ModelDetailsContent({
                 <StickyActionPanel
                     price={formatoMoneda(modelo.precioNumerico)}
                     label="Precio de Lista"
-                    onMainAction={() => alert("Función de Agendar Cita: Se abrirá el formulario o WhatsApp.")}
+                    onMainAction={() => setIsLeadFormOpen(true)}
                 />
             )}
+
+            {/* --- LEAD CAPTURE MODAL --- */}
+            <Modal isOpen={isLeadFormOpen} onClose={() => setIsLeadFormOpen(false)}>
+                <LeadCaptureForm
+                    desarrollo={desarrollo}
+                    modelo={modelo}
+                    onCancel={() => setIsLeadFormOpen(false)}
+                    onSuccess={() => {
+                        setIsLeadFormOpen(false);
+                        alert("¡Solicitud enviada con éxito! Un asesor te contactará pronto.");
+                    }}
+                />
+            </Modal>
         </div >
     );
 }

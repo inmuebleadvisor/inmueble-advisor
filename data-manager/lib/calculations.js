@@ -311,3 +311,91 @@ export const recalculateCityHighlights = async (db, city) => {
         console.error(colors.red(`   > ❌ Error calculating highlights: ${e.message}`));
     }
 };
+
+/**
+ * Recalculates stats for Developers (Constructors).
+ * Links developer to developments by Name.
+ * Aggregates:
+ * - Desarrollos (List of IDs)
+ * - Ciudades (List of Cities)
+ * - OfertaTotal (Sum of units)
+ * - ViviendasxVender (Sum of inventory)
+ */
+export const recalculateDesarrolladorStats = async (db, developerIds) => {
+    if (!developerIds || developerIds.length === 0) return;
+
+    console.log(colors.cyan(`\n🏗️  Iniciando recálculo para ${developerIds.length} desarrolladores...`));
+
+    const uniqueIds = [...new Set(developerIds)];
+    let processed = 0;
+
+    for (const devId of uniqueIds) {
+        try {
+            // 1. Get Developer Doc
+            const docRef = db.collection('desarrolladores').doc(devId);
+            const docSnap = await docRef.get();
+            if (!docSnap.exists) continue;
+
+            const devData = docSnap.data();
+            const devName = devData.nombre;
+
+            if (!devName) {
+                console.log(colors.yellow(`   > Desarrollador ${devId} no tiene nombre. Saltando.`));
+                continue;
+            }
+
+            // 2. Find Developments by Constructor Name
+            const developmentsSnap = await db.collection('desarrollos')
+                .where('constructora', '==', devName)
+                .get();
+
+            const desarrollosIds = [];
+            const ciudadesSet = new Set();
+            let ofertaTotal = 0;
+            let viviendasxVender = 0;
+
+            developmentsSnap.forEach(d => {
+                const data = d.data();
+                desarrollosIds.push(d.id);
+
+                if (data.ubicacion?.ciudad) {
+                    ciudadesSet.add(String(data.ubicacion.ciudad).trim());
+                }
+
+                const infoCom = data.infoComercial || {};
+
+                // Strict mapping from ESTRUCTUREDB.md
+                const uT = infoCom.unidadesTotales;
+                const uD = infoCom.unidadesDisponibles || infoCom.inventario;
+
+                if (uT !== undefined) {
+                    ofertaTotal += (Number(uT) || 0);
+                }
+
+                if (uD !== undefined) {
+                    viviendasxVender += (Number(uD) || 0);
+                }
+            });
+
+            console.log(colors.gray(`   🔗 '${devName}': ${desarrollosIds.length} desarrollos, Total: ${ofertaTotal}, Disp: ${viviendasxVender}`));
+
+
+            // 3. Update Developer
+            await docRef.update({
+                desarrollos: desarrollosIds,
+                ciudades: Array.from(ciudadesSet),
+                ofertaTotal: ofertaTotal,
+                viviendasxVender: viviendasxVender,
+                updatedAt: Timestamp.now()
+            });
+
+            processed++;
+            process.stdout.write(colors.green('.'));
+
+        } catch (error) {
+            console.error(colors.red(`\n❌ Error recalculando desarrollador ${devId}: ${error.message}`));
+        }
+    }
+    console.log(colors.green(`\n✅ Recálculo de desarrolladores completado.`));
+};
+
