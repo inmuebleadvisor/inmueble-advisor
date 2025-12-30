@@ -123,6 +123,10 @@ export const recalculateCityHighlights = async (db, city) => {
 
     try {
         // 1. Get all Developments in this city to map DevID -> Zone & Name
+        // GeoStandard: 'city' param comes from the caller, which got it from the 'desarrollos' doc.
+        // If the doc was standardized, 'city' is already the canonical name (e.g. 'Culiacán').
+        console.log(colors.gray(`   > Buscando desarrollos en: '${city}'`));
+
         const devsSnapshot = await db.collection('desarrollos')
             .where('ubicacion.ciudad', '==', city)
             .where('activo', '==', true)

@@ -1,5 +1,37 @@
 import { Timestamp } from 'firebase-admin/firestore';
 import { parseDateWithTimezone } from './timezones.js';
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const geoDictionary = require('./geo-dictionary.json');
+
+const standardizeLocation = (ciudad, estado) => {
+    if (!ciudad) return null;
+    const normCiudad = String(ciudad).trim().toLowerCase();
+
+    // Find match in dictionary
+    const match = geoDictionary.find(entry =>
+        entry.nombre.toLowerCase() === normCiudad ||
+        entry.variaciones.some(v => v === normCiudad)
+    );
+
+    if (match) {
+        return {
+            geografiaId: match.id,
+            ciudad: match.nombre,
+            estado: match.estado || estado
+        };
+    }
+
+    // Fallback: Generate slug
+    // We log warning in the caller context if needed, or here? 
+    // Adapter should be pure if possible, but we can return meta.
+    const slug = normCiudad.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    return {
+        geografiaId: `mx-custom-${slug}`, // Fallback ID
+        ciudad: String(ciudad).trim(), // Keep original styling if not matched
+        estado: estado
+    };
+};
 
 const parseDateHelper = (str) => {
     if (!str) return null;
@@ -36,6 +68,25 @@ export const adaptDesarrollo = (row) => {
     if (row.zona || row['ubicacion.zona']) ubicacion.zona = row.zona || row['ubicacion.zona'];
     if (row.latitud || row['ubicacion.latitud']) ubicacion.latitud = row.latitud || row['ubicacion.latitud'];
     if (row.longitud || row['ubicacion.longitud']) ubicacion.longitud = row.longitud || row['ubicacion.longitud'];
+    if (row.latitud || row['ubicacion.latitud']) ubicacion.latitud = row.latitud || row['ubicacion.latitud'];
+    if (row.longitud || row['ubicacion.longitud']) ubicacion.longitud = row.longitud || row['ubicacion.longitud'];
+
+    // Geo-Tagging Implementation
+    if (ubicacion.ciudad) {
+        const std = standardizeLocation(ubicacion.ciudad, ubicacion.estado);
+        if (std) {
+            ubicacion.ciudad = std.ciudad;
+            if (std.estado) ubicacion.estado = std.estado;
+            out.geografiaId = std.geografiaId;
+
+            // Check if it was a custom fallback to log warning (optional, kept silent for adapter purity)
+            if (std.geografiaId.startsWith('mx-custom-')) {
+                // If we had a logger here... but adapters are usually pure.
+                // We trust the value is set.
+            }
+        }
+    }
+
     if (Object.keys(ubicacion).length > 0) out.ubicacion = ubicacion;
 
     // 3. Precios

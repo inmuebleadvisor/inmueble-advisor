@@ -108,7 +108,10 @@ export const DesarrolloSchema = z.object({
     }).optional(),
     media: MediaDesarrolloSchema.optional(),
     analisisIA: AnalisisIASchema.optional(),
-    promocion: PromocionSchema.optional(), // Added
+    promocion: PromocionSchema.optional(),
+
+    // Legacy fields can stay but new GeoStandard logic applies
+    geografiaId: z.string().optional(),
 
     // Internal
     updatedAt: z.custom((val) => val instanceof Timestamp).optional(),
@@ -144,6 +147,12 @@ export const PreciosModeloSchema = z.object({
     mantenimientoMensual: z.preprocess(parseNumber, z.number().optional()),
     moneda: z.string().default('MXN'),
 });
+
+export const PrecioHistoricoSchema = z.object({
+    fecha: z.custom((val) => val instanceof Timestamp),
+    precio: z.number()
+});
+
 
 
 export const ModeloSchema = z.object({
@@ -184,6 +193,11 @@ export const ModeloSchema = z.object({
     infoComercial: InfoComercialModeloSchema.optional(),
     media: MediaModeloSchema.optional(),
     analisisIA: AnalisisIASchema.optional(),
+
+    // Price History & Real Growth
+    preciosHistoricos: z.array(PrecioHistoricoSchema).optional(),
+    plusvaliaReal: z.number().optional(),
+
     promocion: PromocionSchema.optional(), // Added
 
     updatedAt: z.custom((val) => val instanceof Timestamp).optional(),

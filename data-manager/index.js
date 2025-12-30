@@ -29,10 +29,11 @@ yargs(hideBin(process.argv))
     .command('import [collection] [file]', 'Importa datos desde un archivo', (yargs) => {
         return yargs
             .positional('collection', { describe: 'Nombre de la colección destino', type: 'string' })
-            .positional('file', { describe: 'Ruta al archivo origen', type: 'string' });
+            .positional('file', { describe: 'Ruta al archivo origen', type: 'string' })
+            .option('region', { alias: 'r', describe: 'Limitar búsqueda de duplicados a una ciudad específica (Optimize Memory)', type: 'string' });
     }, async (argv) => {
         const { importCollection } = await import('./lib/import.js');
-        await importCollection(argv.collection, argv.file);
+        await importCollection(argv.collection, argv.file, { region: argv.region });
     })
     .demandCommand(1)
     .help()

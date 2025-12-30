@@ -13,6 +13,7 @@
         "csv-parser": "^3.0.0",
         "firebase-admin": "^12.0.0",
         "json2csv": "^5.0.0",
+        "string-similarity": "^4.0.4",
         "yargs": "^17.7.0",
         "zod": "^4.1.13"
     },

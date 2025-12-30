@@ -1,0 +1,160 @@
+[
+    {
+        "id": "mx-sin-cul",
+        "nombre": "Culiacán",
+        "estado": "Sinaloa",
+        "zonas_comerciales": [
+            "Tres Ríos",
+            "Centro",
+            "La Primavera",
+            "Valle Alto",
+            "Las Quintas"
+        ],
+        "variaciones": [
+            "culiacan",
+            "cln",
+            "culiacán rosales",
+            "culiacan sinaloa"
+        ]
+    },
+    {
+        "id": "mx-sin-maz",
+        "nombre": "Mazatlán",
+        "estado": "Sinaloa",
+        "zonas_comerciales": [
+            "Zona Dorada",
+            "Cerritos",
+            "Marina Mazatlán",
+            "Centro Histórico"
+        ],
+        "variaciones": [
+            "mazatlan",
+            "mzt",
+            "mazatlán sinaloa"
+        ]
+    },
+    {
+        "id": "mx-jal-gdl",
+        "nombre": "Guadalajara",
+        "estado": "Jalisco",
+        "zonas_comerciales": [
+            "Zapopan",
+            "Andares",
+            "Providencia",
+            "Centro"
+        ],
+        "variaciones": [
+            "guadalajara",
+            "gdl",
+            "jalisco guadalajara"
+        ]
+    },
+    {
+        "id": "mx-nl-mty",
+        "nombre": "Monterrey",
+        "estado": "Nuevo León",
+        "zonas_comerciales": [
+            "San Pedro Garza García",
+            "Valle Oriente",
+            "Contry",
+            "Centro"
+        ],
+        "variaciones": [
+            "monterrey",
+            "mty",
+            "nuevo leon monterrey"
+        ]
+    },
+    {
+        "id": "mx-cdmx",
+        "nombre": "Ciudad de México",
+        "estado": "CDMX",
+        "zonas_comerciales": [
+            "Polanco",
+            "Condesa",
+            "Roma",
+            "Santa Fe",
+            "Del Valle"
+        ],
+        "variaciones": [
+            "cdmx",
+            "df",
+            "distrito federal",
+            "mexico city",
+            "ciudad de mexico"
+        ]
+    },
+    {
+        "id": "mx-yuc-mer",
+        "nombre": "Mérida",
+        "estado": "Yucatán",
+        "zonas_comerciales": [
+            "Norte",
+            "Centro",
+            "Altabrisa",
+            "Cholul"
+        ],
+        "variaciones": [
+            "merida",
+            "mid",
+            "merida yucatan"
+        ]
+    },
+    {
+        "id": "mx-roo-cun",
+        "nombre": "Cancún",
+        "estado": "Quintana Roo",
+        "zonas_comerciales": [
+            "Zona Hotelera",
+            "Centro",
+            "Puerto Cancún"
+        ],
+        "variaciones": [
+            "cancun",
+            "cun",
+            "cancun quintana roo"
+        ]
+    },
+    {
+        "id": "mx-roo-tulum",
+        "nombre": "Tulum",
+        "estado": "Quintana Roo",
+        "zonas_comerciales": [
+            "Aldea Zama",
+            "Centro",
+            "Veleta"
+        ],
+        "variaciones": [
+            "tulum quintana roo"
+        ]
+    },
+    {
+        "id": "mx-bcs-lpa",
+        "nombre": "La Paz",
+        "estado": "Baja California Sur",
+        "zonas_comerciales": [
+            "Malecón",
+            "Centenario",
+            "El Tezal"
+        ],
+        "variaciones": [
+            "la paz",
+            "bcs la paz"
+        ]
+    },
+    {
+        "id": "mx-bcs-csl",
+        "nombre": "Cabo San Lucas",
+        "estado": "Baja California Sur",
+        "zonas_comerciales": [
+            "El Tezal",
+            "Cabo Del Sol",
+            "Centro"
+        ],
+        "variaciones": [
+            "cabo san lucas",
+            "csl",
+            "los cabos"
+        ]
+    }
+]
