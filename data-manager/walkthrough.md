@@ -1,42 +1,47 @@
-# Walkthrough: Refactorización Data-Manager
+# Refactorización Data Manager - Walkthrough
 
-Este documento detalla los cambios realizados durante la auditoría técnica y limpieza de `data-manager`.
+**Estado:** ✅ Completado
+**Fecha:** 30 Diciembre 2025
 
-## 1. Shared Normalization
-Se extrajo la lógica de limpieza de cadenas y generación de slugs a un módulo compartido para cumplir con DRY.
+## Cambios Realizados
 
-`lib/shared/normalization.js`:
-```javascript
-export const slugify = (str) => {
-    if (!str) return null;
-    return String(str)
-        .toLowerCase()
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-};
-```
+### 1. Reestructuración de Directorios
+Se organizó la carpeta `lib/` para separar responsabilidades sin salir de `data-manager` (usando "services" en lugar de "features"):
 
-## 2. Timezone Configuration
-Se eliminó la lógica condicional frágil (heurística) en favor de un archivo de configuración explícito y búsqueda exacta.
+- **`/lib/services/`**: Contiene la lógica de negocio.
+    - `import.service.js`: Orquestador de carga de datos CSV.
+    - `export.service.js`: Exportación a JSON/CSV.
+    - `stats.service.js`: Lógica de recálculo (precios, highlights) con validación Zod.
+- **`/lib/models/`**:
+    - `schemas.js`: Definiciones Zod (Centralizadas).
+- **`/lib/adapters/`**:
+    - `index.js`: Transformadores de CSV a Objetos de Dominio.
+- **`/lib/utils/`**:
+    - `date.utils.js`: Manejo de fechas y Timezones.
+    - `string.utils.js`: Normalización de textos y slugs.
 
-`lib/config/timezones.json` (Nuevo):
-```json
-{
-    "tijuana": "America/Tijuana",
-    "cancun": "America/Cancun",
-    "cdmx": "America/Mexico_City",
-    ...
-}
-```
+### 2. Eliminación de Código "Legacy"
+- Se eliminaron archivos obsoletos: `lib/timezones.js`, `lib/shared/normalization.js`, `lib/shared/transformers.js`.
+- Se eliminó lógica muerta: soporte para `ActivoModelo` (antiguo boolean), loops innecesarios en `calculations`.
 
-## 3. Import Determinism
-El script de importación ahora es conservador por defecto. La fusión de registros "fuzzy" está deshabilitada a menos que se use una opción explícita (simulada en código, preparada para flag CLI).
-
-## 4. Schema Hardening
-Se mejoró la seguridad de tipos en Zod, eliminando `z.any()` y agregando validaciones de rango de fechas.
+### 3. Centralización (DRY)
+- `adapters` ahora usa `string.utils.js` y `date.utils.js` en lugar de reimplementar lógica.
+- La validación Zod se invoca explícitamente antes de guardar estadísticas calculadas en `stats.service.js`.
 
 ## Verificación
-Los tests unitarios se ejecutaron exitosamente:
-- `node data-manager/test_adapters.js` ✅
-- `node data-manager/test_desarrolladores.js` ✅
+
+### Tests Automatizados
+Se ejecutó `node test_adapters.js` para validar que la lógica de transformación sigue intacta tras la migración.
+
+```bash
+✔ adaptDesarrollador - User CSV Format (2.6653ms)
+ℹ pass 1
+```
+
+### Comprobación Manual
+- El CLI (`node index.js --help`) carga correctamente el nuevo mapa de comandos dinámicos.
+- Los módulos de `services` resuelven correctamente sus dependencias cruzadas (`models`, `utils`).
+
+## Siguientes Pasos
+- Ejecutar una importación real en entorno de pruebas (Staging).
+- Monitorear logs de "Duplicados" (`logs/duplicates.json`) para confirmar la eficacia del Fuzzy Matching en la nueva ubicación.

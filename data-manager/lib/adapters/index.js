@@ -1,27 +1,21 @@
 
-import { Timestamp } from 'firebase-admin/firestore';
-import { parseDateWithTimezone } from './timezones.js';
 import {
     cleanStr,
     generateId,
     slugify,
     standardizeLocation,
     cleanEmail,
-    cleanPhone
-} from './shared/normalization.js';
-import { parsePipes, parseHitos } from './shared/transformers.js';
+    cleanPhone,
+    parsePipes,
+    parseHitos
+} from '../utils/string.utils.js';
 
-// Helper: Convert JS Date (from timezone parser) to Firestore Timestamp
-const toTimestamp = (date) => {
-    return date ? Timestamp.fromDate(date) : null;
-};
+import {
+    parseDateWithTimezone,
+    parseSimpleDate,
+    toFirestoreTimestamp
+} from '../utils/date.utils.js';
 
-// Date helper for simple strings if timezone not critical (though we prefer timezone aware)
-const parseDateHelper = (str) => {
-    if (!str) return null;
-    const d = new Date(str);
-    return isNaN(d.getTime()) ? null : d;
-};
 
 export const adaptDesarrollo = (row) => {
     const out = {};
@@ -157,16 +151,16 @@ export const adaptDesarrollo = (row) => {
     const startStr = row['promocion.inicio'] || row['promocion.fechainicio'] || row.promocion_inicio || row['promocion.fecha_inicio'];
     if (startStr) {
         const d = parseDateWithTimezone(startStr, city, false);
-        if (d) prom.fecha_inicio = toTimestamp(d);
-        else if (parseDateHelper(startStr)) prom.fecha_inicio = toTimestamp(parseDateHelper(startStr));
+        if (d) prom.fecha_inicio = toFirestoreTimestamp(d);
+        else if (parseSimpleDate(startStr)) prom.fecha_inicio = toFirestoreTimestamp(parseSimpleDate(startStr));
     }
 
     // End Date
     const endStr = row['promocion.final'] || row['promocion.fechafinal'] || row.promocion_fin || row['promocion.fecha_fin'];
     if (endStr) {
         const d = parseDateWithTimezone(endStr, city, true);
-        if (d) prom.fecha_fin = toTimestamp(d);
-        else if (parseDateHelper(endStr)) prom.fecha_fin = toTimestamp(parseDateHelper(endStr));
+        if (d) prom.fecha_fin = toFirestoreTimestamp(d);
+        else if (parseSimpleDate(endStr)) prom.fecha_fin = toFirestoreTimestamp(parseSimpleDate(endStr));
     }
 
     if (Object.keys(prom).length > 0) out.promocion = prom;
@@ -203,13 +197,12 @@ export const adaptModelo = (row) => {
         out.highlights = [row.highlight || row.destacado];
     }
 
-    if (row.ActivoModelo !== undefined) out.activo = row.ActivoModelo;
-    else if (row.activo_modelo !== undefined) out.activo = row.activo_modelo;
-    else if (row.activo !== undefined) out.activo = row.activo;
+    if (row.activo !== undefined) out.activo = row.activo;
+    // Removed Legacy ActivoModelo support as per Audit Plan.
 
     if (row.tipo_vivienda || row.tipoVivienda) out.tipoVivienda = row.tipo_vivienda || row.tipoVivienda;
 
-    // STATUS
+    // STATUS (Array support)
     const rawStatus = row.status || row.estado;
     if (rawStatus) {
         if (rawStatus.includes('|')) {
@@ -279,15 +272,15 @@ export const adaptModelo = (row) => {
     const startStr = row['promocion.inicio'] || row.promocion_inicio || row['promocion.fecha_inicio'];
     if (startStr) {
         const d = parseDateWithTimezone(startStr, city, false);
-        if (d) prom.fecha_inicio = toTimestamp(d);
-        else if (parseDateHelper(startStr)) prom.fecha_inicio = toTimestamp(parseDateHelper(startStr));
+        if (d) prom.fecha_inicio = toFirestoreTimestamp(d);
+        else if (parseSimpleDate(startStr)) prom.fecha_inicio = toFirestoreTimestamp(parseSimpleDate(startStr));
     }
 
     const endStr = row['promocion.final'] || row.promocion_fin || row['promocion.fecha_fin'];
     if (endStr) {
         const d = parseDateWithTimezone(endStr, city, true);
-        if (d) prom.fecha_fin = toTimestamp(d);
-        else if (parseDateHelper(endStr)) prom.fecha_fin = toTimestamp(parseDateHelper(endStr));
+        if (d) prom.fecha_fin = toFirestoreTimestamp(d);
+        else if (parseSimpleDate(endStr)) prom.fecha_fin = toFirestoreTimestamp(parseSimpleDate(endStr));
     }
 
     if (Object.keys(prom).length > 0) out.promocion = prom;
@@ -301,7 +294,7 @@ export const adaptModelo = (row) => {
     if (out.precios?.base && out.precios?.inicial > 0 && out.infoComercial?.fechaInicioVenta) {
         const current = out.precios.base;
         const initial = out.precios.inicial;
-        const startDate = parseDateHelper(out.infoComercial.fechaInicioVenta);
+        const startDate = parseSimpleDate(out.infoComercial.fechaInicioVenta);
 
         if (startDate) {
             const now = new Date();

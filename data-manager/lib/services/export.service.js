@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { Parser } from 'json2csv';
 import colors from 'colors';
-import { initializeFirebase } from './utils.js';
+import { initializeFirebase } from '../utils.js';
 
 export const exportCollection = async (collectionName, format = 'json') => {
     const db = initializeFirebase();

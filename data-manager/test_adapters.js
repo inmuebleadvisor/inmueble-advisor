@@ -1,7 +1,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { adaptDesarrollador } from './lib/adapters.js';
+import { adaptDesarrollador } from './lib/adapters/index.js';
 
 test('adaptDesarrollador - User CSV Format', async (t) => {
     // Simulate the user's CSV row structure

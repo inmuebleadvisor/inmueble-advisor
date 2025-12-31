@@ -18,12 +18,13 @@ yargs(hideBin(process.argv))
             console.error('❌ Falló la prueba de conexión:', e.message);
         }
     })
+
     .command('export [collection]', 'Exporta una colección a JSON/CSV', (yargs) => {
         return yargs
             .positional('collection', { describe: 'Nombre de la colección', type: 'string' })
             .option('format', { alias: 'f', describe: 'Formato de salida (json, csv)', default: 'json' });
     }, async (argv) => {
-        const { exportCollection } = await import('./lib/export.js');
+        const { exportCollection } = await import('./lib/services/export.service.js');
         await exportCollection(argv.collection, argv.format);
     })
     .command('import [collection] [file]', 'Importa datos desde un archivo', (yargs) => {
@@ -32,7 +33,7 @@ yargs(hideBin(process.argv))
             .positional('file', { describe: 'Ruta al archivo origen', type: 'string' })
             .option('region', { alias: 'r', describe: 'Limitar búsqueda de duplicados a una ciudad específica (Optimize Memory)', type: 'string' });
     }, async (argv) => {
-        const { importCollection } = await import('./lib/import.js');
+        const { importCollection } = await import('./lib/services/import.service.js');
         await importCollection(argv.collection, argv.file, { region: argv.region });
     })
     .demandCommand(1)
