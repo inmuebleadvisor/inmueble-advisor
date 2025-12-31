@@ -49,7 +49,12 @@ export const PromocionSchema = z.object({
     nombre: z.string().optional(),
     fecha_inicio: z.preprocess(parseDate, z.custom((val) => val === null || val instanceof Timestamp).optional()),
     fecha_fin: z.preprocess(parseDate, z.custom((val) => val === null || val instanceof Timestamp).optional()),
-}).strict();
+}).strict().refine((data) => {
+    if (data.fecha_inicio && data.fecha_fin) {
+        return data.fecha_fin.seconds > data.fecha_inicio.seconds;
+    }
+    return true;
+}, { message: "La fecha final debe ser posterior a la fecha de inicio" });
 
 export const CaracteristicasDesarrolloSchema = z.object({
     amenidades: z.preprocess(parseArray, z.array(z.string()).optional()),
@@ -81,7 +86,7 @@ export const DesarrolloSchema = z.object({
 
     precios: z.object({
         desde: z.preprocess(parseNumber, z.number().optional()),
-        moneda: z.string().optional() // Fix: Added missing field
+        moneda: z.string().optional()
     }).strict().optional(),
 
     // Protected / Calculated Fields 
@@ -90,7 +95,7 @@ export const DesarrolloSchema = z.object({
         inventario: z.number().optional()
     }).strict().optional(),
 
-    scoreCard: z.any().optional(),
+    scoreCard: z.record(z.unknown()).optional(),
 
     legal: z.object({
         regimenPropiedad: z.string().default('Condominio')

@@ -4,6 +4,7 @@ import { parseDateWithTimezone } from './timezones.js';
 import {
     cleanStr,
     generateId,
+    slugify,
     standardizeLocation,
     cleanEmail,
     cleanPhone
@@ -326,10 +327,7 @@ export const adaptDesarrollador = (row) => {
         out.id = cleanStr(row.ID || row.id);
     } else if (nombre) {
         // Simple slug for dev as fallback, though users should provide ID hopefully
-        out.id = nombre.toLowerCase()
-            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-+|-+$/g, '');
+        out.id = slugify(nombre);
     }
 
     if (nombre) out.nombre = nombre;

@@ -85,12 +85,12 @@ export const importCollection = async (collectionName, filePath, options = {}) =
                         // ... deduplication logic ...
 
                         // Deduplication Logic
-                        if (adaptedData.nombre && existingDevelopers.length > 0) {
+                        if (options.fuzzy && adaptedData.nombre && existingDevelopers.length > 0) {
                             // Find best match
                             const matches = stringSimilarity.findBestMatch(adaptedData.nombre, existingDevelopers.map(d => d.nombre));
                             const best = matches.bestMatch;
 
-                            if (best.rating > 0.85) {
+                            if (best.rating > 0.90) { // Increased threshold for safety
                                 const matchedDev = existingDevelopers[matches.bestMatchIndex];
                                 adaptedData.id = matchedDev.id; // Reuse ID
 
@@ -101,11 +101,9 @@ export const importCollection = async (collectionName, filePath, options = {}) =
                                     score: best.rating,
                                     action: 'MERGED'
                                 };
-                                // Simple file append for logs/duplicates.json (simulated valid JSON array structure requires read/write whole file, 
-                                // using line-delimited JSON or just appending text for now to be safe and simple)
-                                fs.appendFileSync('./logs/duplicates.json', JSON.stringify(dupLog) + '\n');
 
-                                console.log(colors.yellow(`   ⚠️  Duplicado detectado: '${adaptedData.nombre}' ~= '${matchedDev.nombre}' (${(best.rating * 100).toFixed(0)}%). Fusionando.`));
+                                fs.appendFileSync('./logs/duplicates.json', JSON.stringify(dupLog) + '\n');
+                                console.log(colors.yellow(`   ⚠️  Duplicado detectado (Fuzzy): '${adaptedData.nombre}' ~= '${matchedDev.nombre}' (${(best.rating * 100).toFixed(0)}%). Fusionando.`));
                             }
                         }
 
