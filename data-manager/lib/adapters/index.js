@@ -243,6 +243,8 @@ export const adaptModelo = (row) => {
         } else {
             out.status = rawStatus.trim();
         }
+    } else {
+        out.status = 'Por definir';
     }
 
     // 2. Precios

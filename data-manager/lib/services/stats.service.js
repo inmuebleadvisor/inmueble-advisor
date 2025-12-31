@@ -71,16 +71,11 @@ export const recalculateDevelopmentStats = async (db, developmentIds) => {
                 infoComercial: {
                     ...devData.infoComercial,
                     cantidadModelos: activeModelsCount,
-                    unidadesVendidas: totalVendidas
+                    // Preserve existing units from Development Data
+                    // unidadesVendidas & unidadesDisponibles are NOT recalculated from models
                 },
                 updatedAt: Timestamp.now()
             };
-
-            // Calculate Available
-            if (unidadesTotales > 0) {
-                const disp = unidadesTotales - totalVendidas;
-                partialUpdate.infoComercial.unidadesDisponibles = disp < 0 ? 0 : disp;
-            }
 
             // Update Price Range in Stats (Protected field)
             if (priceRange.min !== Infinity) {
@@ -90,18 +85,30 @@ export const recalculateDevelopmentStats = async (db, developmentIds) => {
                 };
             }
 
-            // Zod Validation Attempt (Safe Parse of the MERGED data)
-            // We construct the "would-be" state to validate, but we only update changed fields.
-            // Merging is complex without full object. 
-            // Ideally we validate the Partial, but Zod partial() is loose.
-            // We trust the schema is robust. 
-            // To prevent data corruption, we ensure the structure matches strict schema parts.
-            // Since we are doing a partial update, we can't fully validate the whole doc unless we read it all.
-            // We read devData above.
+            // Helper to clean existing data
+            const removeNulls = (obj) => {
+                if (obj === null) return undefined;
+                if (typeof obj !== 'object') return obj;
+                if (obj instanceof Timestamp) return obj; // Preserve Timestamps
+                if (Array.isArray(obj)) return obj.map(removeNulls);
+                const newObj = {};
+                for (const key in obj) {
+                    const val = removeNulls(obj[key]);
+                    if (val !== undefined) newObj[key] = val;
+                }
+                return newObj;
+            };
 
-            const mergedData = { ...devData, ...partialUpdate, precios: { ...devData.precios, ...partialUpdate.precios }, infoComercial: { ...devData.infoComercial, ...partialUpdate.infoComercial } };
+            const mergedData = {
+                ...devData,
+                ...partialUpdate,
+                precios: { ...devData.precios, ...partialUpdate.precios },
+                infoComercial: { ...devData.infoComercial, ...partialUpdate.infoComercial }
+            };
 
-            const val = DesarrolloSchema.safeParse(mergedData);
+            const cleanMerged = removeNulls(mergedData);
+
+            const val = DesarrolloSchema.safeParse(cleanMerged);
             if (!val.success) {
                 console.error(colors.red(`   ⚠️ Validation failed for generated stats on ${devId}. Aborting update.`));
                 // Log validation errors nicely
@@ -113,13 +120,9 @@ export const recalculateDevelopmentStats = async (db, developmentIds) => {
             const firestoreUpdate = {
                 'precios.desde': precioDesde,
                 'infoComercial.cantidadModelos': activeModelsCount,
-                'infoComercial.unidadesVendidas': finalValOrStats(totalVendidas),
                 'updatedAt': Timestamp.now()
             };
 
-            if (partialUpdate.infoComercial.unidadesDisponibles !== undefined) {
-                firestoreUpdate['infoComercial.unidadesDisponibles'] = partialUpdate.infoComercial.unidadesDisponibles;
-            }
             if (priceRange.min !== Infinity) {
                 firestoreUpdate['stats.rangoPrecios'] = [priceRange.min, priceRange.max];
             }
