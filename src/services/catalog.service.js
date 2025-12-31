@@ -157,23 +157,60 @@ export class CatalogService {
       const recamaras = Number(item.recamaras) || 0;
       if (filters.habitaciones > 0 && recamaras < filters.habitaciones) return false;
 
-      let esPreventa = false;
-      if (desarrollo) {
-        const statusDesarrollo = String(desarrollo.status || '').toUpperCase().trim();
-        if (
-          statusDesarrollo === 'PRE-VENTA' ||
-          statusDesarrollo === 'PREVENTA' ||
-          statusDesarrollo === STATUS.DEV_PREALE ||
-          statusDesarrollo.includes('PRE-VENTA') ||
-          statusDesarrollo.includes('PREVENTA')
-        ) {
-          esPreventa = true;
-        }
-      }
-      if (!esPreventa && item.esPreventa) esPreventa = true;
+      let hasPreventa = false;
+      let hasInmediata = false;
 
-      if (filters.status === 'inmediata' && esPreventa) return false;
-      if (filters.status === 'preventa' && !esPreventa) return false;
+      // Helper to process status value(s)
+      const processStatus = (val) => {
+        if (!val) return;
+        const values = Array.isArray(val) ? val : [val];
+        values.forEach(v => {
+          if (!v) return;
+          const s = String(v).toUpperCase().trim();
+
+          // Check Preventa
+          if (
+            s === 'PRE-VENTA' ||
+            s === 'PREVENTA' ||
+            s === STATUS.DEV_PREALE ||
+            s.includes('PRE-VENTA')
+          ) {
+            hasPreventa = true;
+          }
+
+          // Check Inmediata
+          if (
+            s === 'ENTREGA INMEDIATA' ||
+            s === 'INMEDIATA' ||
+            s === STATUS.DEV_IMMEDIATE ||
+            s.includes('ENTREGA INMEDIATA')
+          ) {
+            hasInmediata = true;
+          }
+        });
+      };
+
+      // 1. Check Desarrollo Status
+      if (desarrollo && desarrollo.status) {
+        processStatus(desarrollo.status);
+      }
+
+      // 2. Check Item (Model) Status - Override or Additive? 
+      //    Usually additive or specific to the unit. 
+      //    If the model says "Entrega Inmediata" specifically, it should count.
+      if (item.status) {
+        processStatus(item.status);
+      }
+
+      // Legacy field check (just in case)
+      if (item.esPreventa) hasPreventa = true;
+
+      // Filter Logic
+      // "En caso de estar en blanco o tener el valor 'Sin definir' no debe aparecer si se filtra"
+      // This is implicit: if hasPreventa/hasInmediata are false, they won't match the below checks.
+
+      if (filters.status === 'inmediata' && !hasInmediata) return false;
+      if (filters.status === 'preventa' && !hasPreventa) return false;
 
       if (filters.tipo !== 'all') {
         const tipoItem = normalizar(item.tipoVivienda);
