@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url);
 // Mock Dependencies
 import { DesarrolladorSchema } from '../lib/models/schemas.js';
 import { adaptDesarrollador } from '../lib/adapters/index.js';
-import { cleanPhone } from '../lib/utils/string.utils.js';
+import { cleanPhone } from '../lib/shared/normalization.js';
 
 console.log(colors.cyan.bold('\n🧪  VERIFICACIÓN OPTIMIZACIÓN DESARROLLADORES\n'));
 
@@ -71,6 +71,7 @@ test('Dev Optimization Script', () => {
     console.log(colors.yellow('\n2. Schema Validation (Comisiones)'));
 
     const validDev = {
+        id: "dev-valid", // ADDED
         nombre: "Dev Valid",
         comisiones: {
             porcentajeBase: 3,
@@ -86,6 +87,7 @@ test('Dev Optimization Script', () => {
     assert("Debe pasar validación con hitos = 100", valRes1.success);
 
     const invalidDev = {
+        id: "dev-invalid", // ADDED
         nombre: "Dev Invalid",
         comisiones: {
             hitos: {

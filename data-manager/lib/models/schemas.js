@@ -21,7 +21,15 @@ export const DesarrolladorSchema = z.object({
             contado: z.array(z.number()).optional(),
             directo: z.array(z.number()).optional(),
         }).optional(),
-    }).optional(),
+    }).optional().refine((data) => {
+        if (!data || !data.hitos) return true;
+        const checkSum = (arr) => {
+            if (!arr) return true;
+            const sum = arr.reduce((a, b) => a + b, 0);
+            return Math.abs(sum - 100) < 0.1; // Float tolerance
+        };
+        return checkSum(data.hitos.credito) && checkSum(data.hitos.contado) && checkSum(data.hitos.directo);
+    }, { message: "Los hitos de comisión deben sumar 100%" }),
     contacto: z.object({
         principal: z.object({
             nombre: z.string().optional(),
@@ -68,7 +76,7 @@ export const DesarrolloSchema = z.object({
         zona: z.string().optional(),
         latitud: z.number().optional(),
         longitud: z.number().optional(),
-    }).optional(),
+    }),
     caracteristicas: z.object({
         amenidades: z.array(z.string()).optional(),
         entorno: z.array(z.string()).optional(),

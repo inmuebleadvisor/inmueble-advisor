@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
 // Fix: parsers.js didn't exist in lib/utils/ list, assuming functions are in string.utils.js
-import { cleanNum, cleanPhone } from '../lib/utils/string.utils.js';
+import { cleanNum, cleanPhone } from '../lib/shared/normalization.js';
 import { adaptDesarrollo } from '../lib/adapters/index.js';
 import { ModeloSchema } from '../lib/models/schemas.js';
 

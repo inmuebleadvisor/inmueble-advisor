@@ -2,6 +2,7 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
+// Note: Navigating up from /lib/shared/ to /lib/ to get geo-dictionary
 const geoDictionary = require('../geo-dictionary.json');
 
 export const cleanStr = (val) => String(val || '').trim();
@@ -9,6 +10,14 @@ export const cleanStr = (val) => String(val || '').trim();
 export const cleanEmail = (val) => cleanStr(val).toLowerCase();
 
 export const cleanPhone = (val) => cleanStr(val).replace(/\D/g, ''); // Digits only
+
+export const cleanNum = (val) => {
+    if (!val) return undefined;
+    // Remove currency symbols, commas, and whitespace
+    const s = String(val).replace(/[$,\s]/g, '');
+    const n = parseFloat(s);
+    return isNaN(n) ? undefined : n;
+};
 
 /**
  * Normalizes a string to a URL-friendly slug.
@@ -55,4 +64,15 @@ export const standardizeLocation = (ciudad, estado) => {
         ciudad: String(ciudad).trim(), // Keep original styling if not matched
         estado: estado
     };
+};
+
+// Transformers
+
+export const parsePipes = (val) => val ? String(val).split('|').map(s => s.trim()).filter(s => s) : [];
+
+export const parseHitos = (val) => {
+    if (!val) return [];
+    return String(val).split('|')
+        .map(v => parseFloat(v.trim()))
+        .filter(n => !isNaN(n));
 };

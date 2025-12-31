@@ -1,7 +1,7 @@
 
 import assert from 'node:assert';
 import { test } from 'node:test';
-import { parseDateWithTimezone, getTimezoneBase } from '../lib/utils/date.utils.js'; // Use proper utils path, not root lib export if it was moved. 
+import { parseDateWithTimezone, getTimezoneBase } from '../lib/shared/date-utils.js';
 // Wait, 'test_verification.js' used './lib/timezones.js'.
 // In step 42 I read `lib/timezones.js`. It exists.
 // Code in `lib/timezones.js` does exist as seen in Step 41.
@@ -52,6 +52,7 @@ test('Verification Tests', async (t) => {
     await t.test('Adapter & Schema Tests', () => {
         const mockDesarrolloRow = {
             nombre: 'Desarrollo Test',
+            constructora: 'Test Constructor',
             'ubicacion.ciudad': 'Tijuana',
             'promocion.nombre': 'Promo Invierno',
             'promocion.fecha_inicio': '2025-12-01',
