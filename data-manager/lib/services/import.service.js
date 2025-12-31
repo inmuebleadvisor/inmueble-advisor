@@ -3,7 +3,7 @@ import fs from 'fs';
 import csv from 'csv-parser';
 import colors from 'colors';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
-import stringSimilarity from 'string-similarity';
+
 
 // Imports from new Structure
 import { initializeFirebase as initFirebase } from '../utils.js';
@@ -72,22 +72,13 @@ export const importCollection = async (collectionName, filePath, options = {}) =
                         adaptedData = adaptDesarrollador(row);
 
                         // Deduplication Logic
-                        if (options.fuzzy && adaptedData.nombre && existingDevelopers.length > 0) {
-                            const matches = stringSimilarity.findBestMatch(adaptedData.nombre, existingDevelopers.map(d => d.nombre));
-                            const best = matches.bestMatch;
+                        if (options.fuzzy && adaptedData.nombre) {
+                            const { checkDeveloperDuplicate, logDuplicate } = await import('./dedup.service.js');
+                            const result = checkDeveloperDuplicate(adaptedData.nombre, existingDevelopers);
 
-                            if (best.rating > 0.90) {
-                                const matchedDev = existingDevelopers[matches.bestMatchIndex];
-                                adaptedData.id = matchedDev.id;
-
-                                const dupLog = {
-                                    incoming: adaptedData.nombre,
-                                    existing: matchedDev.nombre,
-                                    score: best.rating,
-                                    action: 'MERGED'
-                                };
-                                fs.appendFileSync('./logs/duplicates.json', JSON.stringify(dupLog) + '\n');
-                                console.log(colors.yellow(`   ⚠️  Duplicado detectado (Fuzzy): '${adaptedData.nombre}' ~= '${matchedDev.nombre}' (${(best.rating * 100).toFixed(0)}%). Fusionando.`));
+                            if (result.match) {
+                                adaptedData.id = result.id;
+                                logDuplicate(adaptedData.nombre, result.name, result.score);
                             }
                         }
                         validationResult = DesarrolladorSchema.safeParse(adaptedData);

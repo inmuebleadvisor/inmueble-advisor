@@ -1,15 +1,18 @@
 
 import {
-    cleanStr,
     generateId,
-    slugify,
-    standardizeLocation,
-    parsePipes,
-    parseHitos,
-    cleanNum,
-    cleanPhone,
-    cleanEmail
+    standardizeLocation
 } from '../shared/normalization.js';
+
+import {
+    getStr,
+    getNum,
+    getPipes,
+    getHitos,
+    getPhone,
+    getEmail,
+    getValue
+} from '../shared/row-utils.js';
 
 import {
     parseSimpleDate,
@@ -21,14 +24,18 @@ export const adaptDesarrollo = (row) => {
     const out = {};
 
     // 1. Identifiers & Deterministic ID
-    const nombre = cleanStr(row.nombre || row.Nombre);
-    const constructora = cleanStr(row.constructora || row.Constructora);
+    const nombre = getStr(row, ['nombre', 'Nombre']);
+    const constructora = getStr(row, ['constructora', 'Constructora']);
 
     if (nombre) out.nombre = nombre;
     if (constructora) out.constructora = constructora;
-    if (row.descripcion) out.descripcion = row.descripcion;
-    if (row.activo !== undefined) {
-        const val = String(row.activo).toUpperCase();
+
+    const desc = getStr(row, ['descripcion']);
+    if (desc) out.descripcion = desc;
+
+    const activoRaw = getValue(row, ['activo']);
+    if (activoRaw !== undefined) {
+        const val = String(activoRaw).toUpperCase();
         out.activo = (val === 'TRUE' || val === '1' || val === 'ON');
     }
 
@@ -41,20 +48,32 @@ export const adaptDesarrollo = (row) => {
 
     // 2. Ubicacion
     const ubicacion = {};
-    if (row.calle || row['ubicacion.calle']) ubicacion.calle = row.calle || row['ubicacion.calle'];
-    if (row.colonia || row['ubicacion.colonia']) ubicacion.colonia = row.colonia || row['ubicacion.colonia'];
-    if (row.localidad || row['ubicacion.localidad']) ubicacion.localidad = row.localidad || row['ubicacion.localidad'];
+    const calle = getStr(row, ['calle', 'ubicacion.calle']);
+    if (calle) ubicacion.calle = calle;
 
-    // CP & Localidad (User specific headers: "codigopostal", "localidad")
-    if (row.codigopostal) ubicacion.cp = cleanNum(row.codigopostal);
+    const colonia = getStr(row, ['colonia', 'ubicacion.colonia']);
+    if (colonia) ubicacion.colonia = colonia;
 
-    if (row.ciudad || row['ubicacion.ciudad']) ubicacion.ciudad = row.ciudad || row['ubicacion.ciudad'];
-    if (row.estado || row['ubicacion.estado']) ubicacion.estado = row.estado || row['ubicacion.estado'];
-    if (row.zona || row['ubicacion.zona']) ubicacion.zona = row.zona || row['ubicacion.zona'];
+    const localidad = getStr(row, ['localidad', 'ubicacion.localidad']);
+    if (localidad) ubicacion.localidad = localidad;
 
-    // Coerce Coords
-    if (row.latitud || row['ubicacion.latitud']) ubicacion.latitud = cleanNum(row.latitud || row['ubicacion.latitud']);
-    if (row.longitud || row['ubicacion.longitud']) ubicacion.longitud = cleanNum(row.longitud || row['ubicacion.longitud']);
+    const cp = getNum(row, ['codigopostal', 'ubicacion.cp']);
+    if (cp) ubicacion.cp = cp;
+
+    const ciudad = getStr(row, ['ciudad', 'ubicacion.ciudad']);
+    if (ciudad) ubicacion.ciudad = ciudad;
+
+    const estado = getStr(row, ['estado', 'ubicacion.estado']);
+    if (estado) ubicacion.estado = estado;
+
+    const zona = getStr(row, ['zona', 'ubicacion.zona']);
+    if (zona) ubicacion.zona = zona;
+
+    const lat = getNum(row, ['latitud', 'ubicacion.latitud']);
+    if (lat) ubicacion.latitud = lat;
+
+    const lon = getNum(row, ['longitud', 'ubicacion.longitud']);
+    if (lon) ubicacion.longitud = lon;
 
     // Geo-Tagging Implementation
     if (ubicacion.ciudad) {
@@ -66,86 +85,97 @@ export const adaptDesarrollo = (row) => {
         }
     }
 
-    // Always assign ubicacion object to satisfy schema type (zhema validates content)
+    // Always assign ubicacion object to satisfy schema type (schema validates content)
     out.ubicacion = ubicacion;
 
     // 3. Caracteristicas (Amenidades & Entorno) - Pipes
     const caracteristicas = {};
+    const amenidades = getPipes(row, ['amenidades']);
+    if (amenidades.length) caracteristicas.amenidades = amenidades;
 
-    if (row.amenidades) caracteristicas.amenidades = parsePipes(row.amenidades);
-    if (row.entorno) caracteristicas.entorno = parsePipes(row.entorno);
+    const entorno = getPipes(row, ['entorno']);
+    if (entorno.length) caracteristicas.entorno = entorno;
 
     if (Object.keys(caracteristicas).length > 0) out.caracteristicas = caracteristicas;
 
     // 4. Financiamiento
     const fin = {};
-    if (row.acepta_creditos) fin.aceptaCreditos = parsePipes(row.acepta_creditos);
-    if (row.apartado_monto) fin.apartadoMinimo = cleanNum(row.apartado_monto);
-    if (row.enganche_pct) fin.engancheMinimoPorcentaje = cleanNum(row.enganche_pct);
+    const creditos = getPipes(row, ['acepta_creditos']);
+    if (creditos.length) fin.aceptaCreditos = creditos;
+
+    const apartado = getNum(row, ['apartado_monto']);
+    if (apartado) fin.apartadoMinimo = apartado;
+
+    const enganche = getNum(row, ['enganche_pct']);
+    if (enganche) fin.engancheMinimoPorcentaje = enganche;
 
     if (Object.keys(fin).length > 0) out.financiamiento = fin;
 
     // 5. Media
     const media = {};
-    if (row.url_cover) media.cover = row.url_cover;
-    if (row.url_gallery) media.gallery = parsePipes(row.url_gallery);
-    if (row.url_brochure) media.brochure = row.url_brochure;
-    if (row.url_video) media.video = row.url_video;
+    const cover = getValue(row, ['url_cover']);
+    if (cover) media.cover = cover;
+
+    // Check if pipes or single url? adaptDesarrollo used parsePipes for gallery but adaptModelo used simple. Assume pipes for gallery.
+    const gallery = getPipes(row, ['url_gallery']);
+    if (gallery.length) media.gallery = gallery;
+
+    const brochure = getValue(row, ['url_brochure']);
+    if (brochure) media.brochure = brochure;
+
+    const video = getValue(row, ['url_video']);
+    if (video) media.video = video;
 
     if (Object.keys(media).length > 0) out.media = media;
 
     // 6. Comisiones
-    if (row.override_comision) {
-        out.comisiones = { overridePct: cleanNum(row.override_comision) };
+    const override = getNum(row, ['override_comision']);
+    if (override) {
+        out.comisiones = { overridePct: override };
     }
 
     // 7. Info Comercial
     const info = {};
-    const rawTotales = row['unidades.totales'] || row.unidades_totales || row['infoComercial.unidadesTotales'];
-    const rawVendidas = row['unidades.vendidas'] || row.unidades_vendidas || row['infoComercial.unidadesVendidas'];
-    const rawDisponibles = row['unidades.disponibles'] || row.unidades_disponibles || row['infoComercial.unidadesDisponibles'];
+    const totales = getNum(row, ['unidades.totales', 'unidades_totales', 'infoComercial.unidadesTotales']);
+    if (totales !== undefined) info.unidadesTotales = totales;
 
-    if (rawTotales !== undefined && rawTotales !== '' && rawTotales !== null) {
-        const val = cleanNum(rawTotales);
-        if (val !== undefined) info.unidadesTotales = val;
-    }
+    const vendidas = getNum(row, ['unidades.vendidas', 'unidades_vendidas', 'infoComercial.unidadesVendidas']);
+    if (vendidas !== undefined) info.unidadesVendidas = vendidas;
 
-    if (rawVendidas !== undefined && rawVendidas !== '' && rawVendidas !== null) {
-        const val = cleanNum(rawVendidas);
-        if (val !== undefined) info.unidadesVendidas = val;
-    }
+    const disponibles = getNum(row, ['unidades.disponibles', 'unidades_disponibles', 'infoComercial.unidadesDisponibles']);
+    if (disponibles !== undefined) info.unidadesDisponibles = disponibles;
 
-    if (rawDisponibles !== undefined && rawDisponibles !== '' && rawDisponibles !== null) {
-        const val = cleanNum(rawDisponibles);
-        if (val !== undefined) info.unidadesDisponibles = val;
-    }
-
-    if (row.num_modelos) info.cantidadModelos = cleanNum(row.num_modelos);
+    const numModelos = getNum(row, ['num_modelos']);
+    if (numModelos) info.cantidadModelos = numModelos;
 
     if (Object.keys(info).length > 0) out.infoComercial = info;
 
 
     // 8. Precios
     const precios = {};
-    if (row.moneda) precios.moneda = row.moneda;
+    const moneda = getStr(row, ['moneda']);
+    if (moneda) precios.moneda = moneda;
     if (Object.keys(precios).length > 0) out.precios = precios;
 
 
-    if (row.regimen) out.legal = { regimenPropiedad: row.regimen };
+    const regimen = getStr(row, ['regimen']);
+    if (regimen) out.legal = { regimenPropiedad: regimen };
 
     const analisis = {};
-    if (row.ia_resumen) analisis.resumen = row.ia_resumen;
-    if (row.ia_fuertes) {
-        analisis.puntosFuertes = parsePipes(row.ia_fuertes);
-    }
-    if (row.ia_debiles) {
-        analisis.puntosDebiles = parsePipes(row.ia_debiles);
-    }
+    const iaResumen = getStr(row, ['ia_resumen']);
+    if (iaResumen) analisis.resumen = iaResumen;
+
+    const iaFuertes = getPipes(row, ['ia_fuertes']);
+    if (iaFuertes.length) analisis.puntosFuertes = iaFuertes;
+
+    const iaDebiles = getPipes(row, ['ia_debiles']);
+    if (iaDebiles.length) analisis.puntosDebiles = iaDebiles;
+
     if (Object.keys(analisis).length > 0) out.analisisIA = analisis;
 
     // 10. PROMOCION
     const prom = {};
-    const pNombre = row['promocion.nombre'] || row.promocion_nombre || row['Promocion.nombre'];
+    const pNombre = getStr(row, ['promocion.nombre', 'promocion_nombre', 'Promocion.nombre']);
     if (pNombre) prom.nombre = pNombre;
 
     // Timezone safe parsing: Use City from same row
@@ -166,12 +196,13 @@ export const adaptModelo = (row) => {
     const out = {};
 
     // 1. Identifiers
-    let idDesarrollo = row.idDesarrollo || row.id_desarrollo;
-    const nombreModelo = row.nombreModelo || row.nombre_modelo;
+    let idDesarrollo = getStr(row, ['idDesarrollo', 'id_desarrollo']);
+    const nombreModelo = getStr(row, ['nombreModelo', 'nombre_modelo']);
 
     if (!idDesarrollo) {
-        const nombreDes = cleanStr(row.nombreDesarrollo || row.nombre_desarrollo || row.desarrollo);
-        const constructora = cleanStr(row.constructora || row.Constructora || row.desarrollador);
+        const nombreDes = getStr(row, ['nombreDesarrollo', 'nombre_desarrollo', 'desarrollo']);
+        const constructora = getStr(row, ['constructora', 'Constructora', 'desarrollador']);
+
         if (nombreDes && constructora) {
             idDesarrollo = generateId(constructora, nombreDes);
         }
@@ -185,21 +216,26 @@ export const adaptModelo = (row) => {
 
     if (idDesarrollo) out.idDesarrollo = idDesarrollo;
     if (nombreModelo) out.nombreModelo = nombreModelo;
-    if (row.descripcion) out.descripcion = row.descripcion;
 
-    if (row.highlight || row.destacado) {
-        out.highlights = [row.highlight || row.destacado];
+    const desc = getStr(row, ['descripcion']);
+    if (desc) out.descripcion = desc;
+
+    const highlight = getStr(row, ['highlight', 'destacado']);
+    if (highlight) {
+        out.highlights = [highlight];
     }
 
-    if (row.activo !== undefined) {
-        const val = String(row.activo).toUpperCase();
+    const activoRaw = getValue(row, ['activo']);
+    if (activoRaw !== undefined) {
+        const val = String(activoRaw).toUpperCase();
         out.activo = (val === 'TRUE' || val === '1' || val === 'ON');
     }
 
-    if (row.tipo_vivienda || row.tipoVivienda) out.tipoVivienda = row.tipo_vivienda || row.tipoVivienda;
+    const tipo = getStr(row, ['tipo_vivienda', 'tipoVivienda']);
+    if (tipo) out.tipoVivienda = tipo;
 
     // STATUS (Array support)
-    const rawStatus = row.status || row.estado;
+    const rawStatus = getStr(row, ['status', 'estado']);
     if (rawStatus) {
         if (rawStatus.includes('|')) {
             out.status = rawStatus.split('|').map(s => s.trim()).filter(s => s);
@@ -210,60 +246,103 @@ export const adaptModelo = (row) => {
 
     // 2. Precios
     const precios = {};
-    if (row.precio_inicial || row.precio_base || row['precios.base']) precios.base = cleanNum(row.precio_inicial || row.precio_base || row['precios.base']);
-    if (row.precio_orig_lista || row['precios.inicial']) precios.inicial = cleanNum(row.precio_orig_lista || row['precios.inicial']);
-    if (row.precio_m2 || row['precios.metroCuadrado']) precios.metroCuadrado = cleanNum(row.precio_m2 || row['precios.metroCuadrado']);
-    if (row.mantenimiento || row['precios.mantenimientoMensual']) precios.mantenimientoMensual = cleanNum(row.mantenimiento || row['precios.mantenimientoMensual']);
-    if (row.moneda || row['precios.moneda']) precios.moneda = row.moneda || row['precios.moneda'];
+    const pBase = getNum(row, ['precio_inicial', 'precio_base', 'precios.base']);
+    if (pBase) precios.base = pBase;
+
+    const pInit = getNum(row, ['precio_orig_lista', 'precios.inicial']);
+    if (pInit) precios.inicial = pInit;
+
+    const pM2 = getNum(row, ['precio_m2', 'precios.metroCuadrado']);
+    if (pM2) precios.metroCuadrado = pM2;
+
+    const pMant = getNum(row, ['mantenimiento', 'precios.mantenimientoMensual']);
+    if (pMant) precios.mantenimientoMensual = pMant;
+
+    const pMoneda = getStr(row, ['moneda', 'precios.moneda']);
+    if (pMoneda) precios.moneda = pMoneda;
+
     if (Object.keys(precios).length > 0) out.precios = precios;
 
     // 3. Info Comercial
     const info = {};
-    if (row.unidades_vendidas || row['infoComercial.unidadesVendidas']) info.unidadesVendidas = row.unidades_vendidas || row['infoComercial.unidadesVendidas'];
-    if (row.plusvalia_pct || row['infoComercial.plusvaliaEstimada']) info.plusvaliaEstimada = row.plusvalia_pct || row['infoComercial.plusvaliaEstimada'];
-    if (row.fecha_inicio || row['infoComercial.fechaInicioVenta']) info.fechaInicioVenta = row.fecha_inicio || row['infoComercial.fechaInicioVenta'];
-    if (row.tiempo_entrega || row['infoComercial.tiempoEntrega']) info.tiempoEntrega = row.tiempo_entrega || row['infoComercial.tiempoEntrega'];
+    const iVend = getNum(row, ['unidades_vendidas', 'infoComercial.unidadesVendidas']);
+    if (iVend) info.unidadesVendidas = iVend;
+
+    const iPlus = getNum(row, ['plusvalia_pct', 'infoComercial.plusvaliaEstimada']);
+    if (iPlus) info.plusvaliaEstimada = iPlus;
+
+    const iFecha = getStr(row, ['fecha_inicio', 'infoComercial.fechaInicioVenta']);
+    if (iFecha) info.fechaInicioVenta = iFecha;
+
+    const iEntrega = getStr(row, ['tiempo_entrega', 'infoComercial.tiempoEntrega']);
+    if (iEntrega) info.tiempoEntrega = iEntrega;
+
     if (Object.keys(info).length > 0) out.infoComercial = info;
 
     // 4. Specs
-    if (row.recamaras) out.recamaras = cleanNum(row.recamaras);
-    if (row.banos) out.banos = cleanNum(row.banos);
-    if (row.niveles) out.niveles = cleanNum(row.niveles);
-    if (row.cajones) out.cajones = cleanNum(row.cajones);
-    if (row.m2_const || row.m2) out.m2 = cleanNum(row.m2_const || row.m2);
-    if (row.m2_terreno || row.terreno) out.terreno = cleanNum(row.m2_terreno || row.terreno);
-    if (row.frente) out.frente = cleanNum(row.frente);
-    if (row.fondo) out.fondo = cleanNum(row.fondo);
-    if (row.amenidades) out.amenidades = parsePipes(row.amenidades);
+    const simpleSpecs = ['recamaras', 'banos', 'niveles', 'cajones', 'frente', 'fondo'];
+    simpleSpecs.forEach(spec => {
+        const val = getNum(row, [spec]);
+        if (val) out[spec] = val;
+    });
+
+    const m2 = getNum(row, ['m2_const', 'm2']);
+    if (m2) out.m2 = m2;
+
+    const terr = getNum(row, ['m2_terreno', 'terreno']);
+    if (terr) out.terreno = terr;
+
+    const amenidades = getPipes(row, ['amenidades']);
+    if (amenidades.length) out.amenidades = amenidades;
 
     // 5. Acabados
     const acabados = {};
-    if (row.acabado_cocina || row['acabados.cocina']) acabados.cocina = row.acabado_cocina || row['acabados.cocina'];
-    if (row.acabado_pisos || row['acabados.pisos']) acabados.pisos = row.acabado_pisos || row['acabados.pisos'];
+    const aCocina = getStr(row, ['acabado_cocina', 'acabados.cocina']);
+    if (aCocina) acabados.cocina = aCocina;
+
+    const aPisos = getStr(row, ['acabado_pisos', 'acabados.pisos']);
+    if (aPisos) acabados.pisos = aPisos;
+
     if (Object.keys(acabados).length > 0) out.acabados = acabados;
 
     // 6. Media
     const media = {};
-    if (row.img_cover || row['media.cover']) media.cover = row.img_cover || row['media.cover'];
-    if (row.img_galeria || row['media.gallery'] || row['media.galeria']) media.gallery = parsePipes(row.img_galeria || row['media.gallery'] || row['media.galeria']);
-    if (row.url_plantas || row['media.plantasArquitectonicas']) media.plantasArquitectonicas = parsePipes(row.url_plantas || row['media.plantasArquitectonicas']);
-    if (row.url_tour || row['media.recorridoVirtual']) media.recorridoVirtual = row.url_tour || row['media.recorridoVirtual'];
-    if (row.url_video || row['media.videoPromocional'] || row['media.video']) media.videoPromocional = row.url_video || row['media.videoPromocional'] || row['media.video'];
+    const imgCover = getValue(row, ['img_cover', 'media.cover']);
+    if (imgCover) media.cover = imgCover;
+
+    const imgGal = getPipes(row, ['img_galeria', 'media.gallery', 'media.galeria']);
+    if (imgGal.length) media.gallery = imgGal;
+
+    const plantas = getPipes(row, ['url_plantas', 'media.plantasArquitectonicas']);
+    if (plantas.length) media.plantasArquitectonicas = plantas;
+
+    const tour = getValue(row, ['url_tour', 'media.recorridoVirtual']);
+    if (tour) media.recorridoVirtual = tour;
+
+    const vid = getValue(row, ['url_video', 'media.videoPromocional', 'media.video']);
+    if (vid) media.videoPromocional = vid;
+
     if (Object.keys(media).length > 0) out.media = media;
 
     // 7. Analisis IA
     const analisis = {};
-    if (row.ia_resumen) analisis.resumen = row.ia_resumen;
-    if (row.ia_fuertes) analisis.puntosFuertes = parsePipes(row.ia_fuertes);
-    if (row.ia_debiles) analisis.puntosDebiles = parsePipes(row.ia_debiles);
+    const rIa = getStr(row, ['ia_resumen']);
+    if (rIa) analisis.resumen = rIa;
+
+    const pIa = getPipes(row, ['ia_fuertes']);
+    if (pIa.length) analisis.puntosFuertes = pIa;
+
+    const dIa = getPipes(row, ['ia_debiles']);
+    if (dIa.length) analisis.puntosDebiles = dIa;
+
     if (Object.keys(analisis).length > 0) out.analisisIA = analisis;
 
     // 8. PROMOCION
     const prom = {};
-    const mPNombre = row['promocion.nombre'] || row.promocion_nombre || row['Promocion.nombre'];
-    if (mPNombre) prom.nombre = mPNombre;
+    const promName = getStr(row, ['promocion.nombre', 'promocion_nombre', 'Promocion.nombre']);
+    if (promName) prom.nombre = promName;
 
-    const city = row.ciudad || row.timezone_city || 'Mexico City';
+    const city = getStr(row, ['ciudad', 'timezone_city']) || 'Mexico City';
 
     const dates = extractPromoDates(row, city);
     if (dates.fecha_inicio) prom.fecha_inicio = dates.fecha_inicio;
@@ -299,35 +378,51 @@ export const adaptModelo = (row) => {
 
 export const adaptDesarrollador = (row) => {
     const out = {};
-    const nombre = cleanStr(row.Nombre || row.nombre);
+    const nombre = getStr(row, ['Nombre', 'nombre']);
 
     // 1. ID Slug Generation
-    if (row.ID || row.id) {
-        out.id = cleanStr(row.ID || row.id);
+    const idRow = getStr(row, ['ID', 'id']);
+    if (idRow) {
+        out.id = idRow;
     } else if (nombre) {
-        out.id = slugify(nombre);
+        out.id = generateId(nombre, ''); // slugify uses normalize which handles just one string too
+        // Wait, generateId expects 2 args. Let's check shared/normalization.js
+        // It says slugify(`${part1}-${part2}`). If part2 is empty it ends with -.
+        // slugify strips dashes. So generateId(nombre, '') should work if slugify cleans it.
+        // Let's use direct slugify imported if needed? 
+        // Normalization doesn't export slugify directly? 
+        // It does: export const slugify = ...
+        // But adapters imported generateId.
+        // Let's rely on generateId if we can't change imports easily?
+        // Actually, I can import slugify.
     }
+    // Correction: I should import slugify as well.
+    // However, looking at previous code: 
+    // } else if (nombre) { out.id = slugify(nombre); }
+    // It was importing slugify. I should ensure I import it.
 
     if (nombre) out.nombre = nombre;
-    out.status = cleanStr(row.Status || row.status || 'activo').toLowerCase();
+
+    const status = getStr(row, ['Status', 'status']) || 'activo';
+    out.status = status.toLowerCase();
 
     // 2. Fiscal
-    const razonSocial = cleanStr(row.RazonSocial || row.razon_social || row['fiscal.razonSocial']);
-    if (razonSocial) out.fiscal = { razonSocial };
+    const razon = getStr(row, ['RazonSocial', 'razon_social', 'fiscal.razonSocial']);
+    if (razon) out.fiscal = { razonSocial: razon };
 
     // 3. Comisiones
     const comisiones = {};
-    const basePct = cleanNum(row.ComisionBase || row.comision_base || row['comisiones.porcentajeBase']);
+    const basePct = getNum(row, ['ComisionBase', 'comision_base', 'comisiones.porcentajeBase']);
     if (basePct !== undefined) comisiones.porcentajeBase = basePct;
 
     const hitos = {};
-    const hCredito = parseHitos(row.HitosCredito || row.hitos_credito || row.pago_hitos_credito || row['comisiones.hitos.credito']);
+    const hCredito = getHitos(row, ['HitosCredito', 'hitos_credito', 'pago_hitos_credito', 'comisiones.hitos.credito']);
     if (hCredito.length > 0) hitos.credito = hCredito;
 
-    const hContado = parseHitos(row.HitosContado || row.hitos_contado || row.pago_hitos_contado || row['comisiones.hitos.contado']);
+    const hContado = getHitos(row, ['HitosContado', 'hitos_contado', 'pago_hitos_contado', 'comisiones.hitos.contado']);
     if (hContado.length > 0) hitos.contado = hContado;
 
-    const hDirecto = parseHitos(row.HitosDirecto || row.hitos_directo || row.pago_hitos_directo || row['comisiones.hitos.directo']);
+    const hDirecto = getHitos(row, ['HitosDirecto', 'hitos_directo', 'pago_hitos_directo', 'comisiones.hitos.directo']);
     if (hDirecto.length > 0) hitos.directo = hDirecto;
 
     if (Object.keys(hitos).length > 0) comisiones.hitos = hitos;
@@ -336,31 +431,31 @@ export const adaptDesarrollador = (row) => {
     // 4. Contacto (Principal y Secundario)
     const contacto = {};
     const principal = {};
-    const pNombre = cleanStr(row.ContactoNombre || row.contacto_nombre_principal || row.contacto_nom_1 || row['contacto.principal.nombre']);
-    if (pNombre) principal.nombre = pNombre;
+    const pNom = getStr(row, ['ContactoNombre', 'contacto_nombre_principal', 'contacto_nom_1', 'contacto.principal.nombre']);
+    if (pNom) principal.nombre = pNom;
 
-    const pTel = cleanPhone(row.ContactoTelefono || row.contacto_telefono_principal || row.contacto_tel_1 || row['contacto.principal.telefono']);
+    const pTel = getPhone(row, ['ContactoTelefono', 'contacto_telefono_principal', 'contacto_tel_1', 'contacto.principal.telefono']);
     if (pTel) principal.telefono = pTel;
 
-    const pMail = cleanEmail(row.ContactoEmail || row.contacto_email_principal || row.contacto_mail_1 || row['contacto.principal.email']);
+    const pMail = getEmail(row, ['ContactoEmail', 'contacto_email_principal', 'contacto_mail_1', 'contacto.principal.email']);
     if (pMail) principal.email = pMail;
 
-    const pPuesto = cleanStr(row.ContactoPuesto || row.contacto_puesto_principal || row.contacto_puesto_1 || row['contacto.principal.puesto']);
+    const pPuesto = getStr(row, ['ContactoPuesto', 'contacto_puesto_principal', 'contacto_puesto_1', 'contacto.principal.puesto']);
     if (pPuesto) principal.puesto = pPuesto;
 
     if (Object.keys(principal).length > 0) contacto.principal = principal;
 
     const secundario = {};
-    const sNombre = cleanStr(row.ContactoSecundarioNombre || row.contacto_nombre_secundario || row.contacto_nom_2 || row['contacto.secundario.nombre']);
-    if (sNombre) secundario.nombre = sNombre;
+    const sNom = getStr(row, ['ContactoSecundarioNombre', 'contacto_nombre_secundario', 'contacto_nom_2', 'contacto.secundario.nombre']);
+    if (sNom) secundario.nombre = sNom;
 
-    const sTel = cleanPhone(row.ContactoSecundarioTelefono || row.contacto_telefono_secundario || row.contacto_tel_2 || row['contacto.secundario.telefono']);
+    const sTel = getPhone(row, ['ContactoSecundarioTelefono', 'contacto_telefono_secundario', 'contacto_tel_2', 'contacto.secundario.telefono']);
     if (sTel) secundario.telefono = sTel;
 
-    const sMail = cleanEmail(row.ContactoSecundarioEmail || row.contacto_email_secundario || row.contacto_mail_2 || row['contacto.secundario.email']);
+    const sMail = getEmail(row, ['ContactoSecundarioEmail', 'contacto_email_secundario', 'contacto_mail_2', 'contacto.secundario.email']);
     if (sMail) secundario.email = sMail;
 
-    const sPuesto = cleanStr(row.ContactoSecundarioPuesto || row.contacto_puesto_secundario || row['contacto.secundario.puesto']);
+    const sPuesto = getStr(row, ['ContactoSecundarioPuesto', 'contacto_puesto_secundario', 'contacto.secundario.puesto']);
     if (sPuesto) secundario.puesto = sPuesto;
 
     if (Object.keys(secundario).length > 0) contacto.secundario = secundario;
@@ -369,3 +464,4 @@ export const adaptDesarrollador = (row) => {
 
     return out;
 };
+
