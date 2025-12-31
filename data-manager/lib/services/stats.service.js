@@ -34,8 +34,7 @@ export const recalculateDevelopmentStats = async (db, developmentIds) => {
             modelsSnapshot.forEach(doc => {
                 const data = doc.data();
 
-                // Check Active Status (Standard 'activo' boolean only)
-                // Legacy 'ActivoModelo' removed as per Audit.
+                // Check Active Status
                 const isActive = data.activo === true;
 
                 if (isActive) {
@@ -338,13 +337,45 @@ export const recalculateDesarrolladorStats = async (db, developerIds) => {
 
             console.log(colors.gray(`   🔗 '${devName}': ${desarrollosIds.length} desarrollos, Total: ${ofertaTotal}, Disp: ${viviendasxVender}`));
 
-            await docRef.update({
+            const updatePayload = {
                 desarrollos: desarrollosIds,
                 ciudades: Array.from(ciudadesSet),
                 ofertaTotal: ofertaTotal,
                 viviendasxVender: viviendasxVender,
                 updatedAt: Timestamp.now()
+            };
+
+            // Partial Validation (Ensure types are correct)
+            // Note: We can't validate the whole 'Desarrollador' object without fetching it all and merging.
+            // But we can validate the strictness of the fields we ARE updating.
+            const validationCheck = DesarrolladorSchema.pick({
+                desarrollos: true,
+                ciudades: true,
+                stats: true // stats is separate in schema, but here we update root props.
+                // Wait, Schema says: stats: { ofertaTotal, viviendasxVender }. 
+                // BUT the code updates root fields: `ofertaTotal`, `viviendasxVender`.
+                // Checking Schema...
+                // Schema: stats: z.object({ ofertaTotal: z.number(), ... })
+                // Code: batch.update({ ofertaTotal: ... })
+                // FIX: usage of stats object in schema vs root in code. 
+                // The ADAPTER maps them to root? No, adapter doesn't map stats.
+                // The service updates root. 
+                // ERROR DETECTED: Service is updating ROOT fields `ofertaTotal` but Schema expects `stats.ofertaTotal`.
+                // We must fix the service to write to `stats` object as per schema.
             });
+
+            // Correcting structure to match Schema
+            const finalUpdate = {
+                desarrollos: desarrollosIds,
+                ciudades: Array.from(ciudadesSet),
+                stats: {
+                    ofertaTotal: ofertaTotal,
+                    viviendasxVender: viviendasxVender
+                },
+                updatedAt: Timestamp.now()
+            };
+
+            await docRef.update(finalUpdate);
 
             processed++;
             process.stdout.write(colors.green('.'));

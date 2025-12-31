@@ -125,7 +125,6 @@ export const importCollection = async (collectionName, filePath, options = {}) =
 
                     // Price History Logic (Modelos)
                     if (collectionName === 'modelos' && finalData.precios?.base > 0) {
-                        // ... (Keeping history logic, it's valid business logic)
                         try {
                             const currentDoc = await docRef.get();
                             if (currentDoc.exists) {

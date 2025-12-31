@@ -4,16 +4,18 @@ import {
     generateId,
     slugify,
     standardizeLocation,
-    cleanEmail,
-    cleanPhone,
     parsePipes,
     parseHitos
 } from '../utils/string.utils.js';
 
 import {
-    parseDateWithTimezone,
+    cleanNum,
+    cleanPhone,
+    cleanEmail
+} from '../utils/parsers.js';
+
+import {
     parseSimpleDate,
-    toFirestoreTimestamp,
     extractPromoDates
 } from '../utils/date.utils.js';
 
@@ -47,15 +49,15 @@ export const adaptDesarrollo = (row) => {
     if (row.localidad || row['ubicacion.localidad']) ubicacion.localidad = row.localidad || row['ubicacion.localidad'];
 
     // CP & Localidad (User specific headers: "codigopostal", "localidad")
-    if (row.codigopostal) ubicacion.cp = parseFloat(row.codigopostal);
+    if (row.codigopostal) ubicacion.cp = cleanNum(row.codigopostal);
 
     if (row.ciudad || row['ubicacion.ciudad']) ubicacion.ciudad = row.ciudad || row['ubicacion.ciudad'];
     if (row.estado || row['ubicacion.estado']) ubicacion.estado = row.estado || row['ubicacion.estado'];
     if (row.zona || row['ubicacion.zona']) ubicacion.zona = row.zona || row['ubicacion.zona'];
 
     // Coerce Coords
-    if (row.latitud || row['ubicacion.latitud']) ubicacion.latitud = parseFloat(row.latitud || row['ubicacion.latitud']);
-    if (row.longitud || row['ubicacion.longitud']) ubicacion.longitud = parseFloat(row.longitud || row['ubicacion.longitud']);
+    if (row.latitud || row['ubicacion.latitud']) ubicacion.latitud = cleanNum(row.latitud || row['ubicacion.latitud']);
+    if (row.longitud || row['ubicacion.longitud']) ubicacion.longitud = cleanNum(row.longitud || row['ubicacion.longitud']);
 
     // Geo-Tagging Implementation
     if (ubicacion.ciudad) {
@@ -81,8 +83,8 @@ export const adaptDesarrollo = (row) => {
     // 4. Financiamiento
     const fin = {};
     if (row.acepta_creditos) fin.aceptaCreditos = parsePipes(row.acepta_creditos);
-    if (row.apartado_monto) fin.apartadoMinimo = parseFloat(row.apartado_monto);
-    if (row.enganche_pct) fin.engancheMinimoPorcentaje = parseFloat(row.enganche_pct);
+    if (row.apartado_monto) fin.apartadoMinimo = cleanNum(row.apartado_monto);
+    if (row.enganche_pct) fin.engancheMinimoPorcentaje = cleanNum(row.enganche_pct);
 
     if (Object.keys(fin).length > 0) out.financiamiento = fin;
 
@@ -97,7 +99,7 @@ export const adaptDesarrollo = (row) => {
 
     // 6. Comisiones
     if (row.override_comision) {
-        out.comisiones = { overridePct: parseFloat(row.override_comision) };
+        out.comisiones = { overridePct: cleanNum(row.override_comision) };
     }
 
     // 7. Info Comercial
@@ -107,21 +109,21 @@ export const adaptDesarrollo = (row) => {
     const rawDisponibles = row['unidades.disponibles'] || row.unidades_disponibles || row['infoComercial.unidadesDisponibles'];
 
     if (rawTotales !== undefined && rawTotales !== '' && rawTotales !== null) {
-        const val = parseFloat(rawTotales);
-        if (!isNaN(val)) info.unidadesTotales = val;
+        const val = cleanNum(rawTotales);
+        if (val !== undefined) info.unidadesTotales = val;
     }
 
     if (rawVendidas !== undefined && rawVendidas !== '' && rawVendidas !== null) {
-        const val = parseFloat(rawVendidas);
-        if (!isNaN(val)) info.unidadesVendidas = val;
+        const val = cleanNum(rawVendidas);
+        if (val !== undefined) info.unidadesVendidas = val;
     }
 
     if (rawDisponibles !== undefined && rawDisponibles !== '' && rawDisponibles !== null) {
-        const val = parseFloat(rawDisponibles);
-        if (!isNaN(val)) info.unidadesDisponibles = val;
+        const val = cleanNum(rawDisponibles);
+        if (val !== undefined) info.unidadesDisponibles = val;
     }
 
-    if (row.num_modelos) info.cantidadModelos = parseFloat(row.num_modelos);
+    if (row.num_modelos) info.cantidadModelos = cleanNum(row.num_modelos);
 
     if (Object.keys(info).length > 0) out.infoComercial = info;
 
@@ -196,7 +198,6 @@ export const adaptModelo = (row) => {
         const val = String(row.activo).toUpperCase();
         out.activo = (val === 'TRUE' || val === '1' || val === 'ON');
     }
-    // Removed Legacy ActivoModelo support as per Audit Plan.
 
     if (row.tipo_vivienda || row.tipoVivienda) out.tipoVivienda = row.tipo_vivienda || row.tipoVivienda;
 
@@ -211,14 +212,6 @@ export const adaptModelo = (row) => {
     }
 
     // 2. Precios
-    // 2. Precios
-    const cleanNum = (val) => {
-        if (!val) return undefined;
-        const s = String(val).replace(/[$,]/g, '');
-        const n = parseFloat(s);
-        return isNaN(n) ? undefined : n;
-    };
-
     const precios = {};
     if (row.precio_inicial || row.precio_base || row['precios.base']) precios.base = cleanNum(row.precio_inicial || row.precio_base || row['precios.base']);
     if (row.precio_orig_lista || row['precios.inicial']) precios.inicial = cleanNum(row.precio_orig_lista || row['precios.inicial']);
@@ -236,7 +229,6 @@ export const adaptModelo = (row) => {
     if (Object.keys(info).length > 0) out.infoComercial = info;
 
     // 4. Specs
-    // 4. Specs
     if (row.recamaras) out.recamaras = cleanNum(row.recamaras);
     if (row.banos) out.banos = cleanNum(row.banos);
     if (row.niveles) out.niveles = cleanNum(row.niveles);
@@ -253,7 +245,6 @@ export const adaptModelo = (row) => {
     if (row.acabado_pisos || row['acabados.pisos']) acabados.pisos = row.acabado_pisos || row['acabados.pisos'];
     if (Object.keys(acabados).length > 0) out.acabados = acabados;
 
-    // 6. Media
     // 6. Media
     const media = {};
     if (row.img_cover || row['media.cover']) media.cover = row.img_cover || row['media.cover'];
@@ -317,7 +308,6 @@ export const adaptDesarrollador = (row) => {
     if (row.ID || row.id) {
         out.id = cleanStr(row.ID || row.id);
     } else if (nombre) {
-        // Simple slug for dev as fallback, though users should provide ID hopefully
         out.id = slugify(nombre);
     }
 
@@ -330,8 +320,8 @@ export const adaptDesarrollador = (row) => {
 
     // 3. Comisiones
     const comisiones = {};
-    const basePct = parseFloat(row.ComisionBase || row.comision_base || row['comisiones.porcentajeBase']);
-    if (!isNaN(basePct)) comisiones.porcentajeBase = basePct;
+    const basePct = cleanNum(row.ComisionBase || row.comision_base || row['comisiones.porcentajeBase']);
+    if (basePct !== undefined) comisiones.porcentajeBase = basePct;
 
     const hitos = {};
     const hCredito = parseHitos(row.HitosCredito || row.hitos_credito || row.pago_hitos_credito || row['comisiones.hitos.credito']);

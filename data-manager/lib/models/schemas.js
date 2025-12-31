@@ -127,14 +127,8 @@ export const ModeloSchema = z.object({
     activo: z.boolean().default(true),
     status: z.union([z.string(), z.array(z.string())]).optional(),
     tipoVivienda: z.string().default('Casa'),
-    specs: z.object({
 
-    }).catchall(z.any()).optional(), // Flat specs in CSV often mapped directly or to root. 
-    // Wait, DATOSESTRUCTURA says specs are root level in the doc, but logical grouping.
-    // Check adapter: `out.recamaras = row.recamaras`. It puts them on ROOT.
-    // Schema must reflect ROOT structure for these.
-
-    // Specs on Root as per Adapter/Doc
+    // Specs (Direct mapping)
     recamaras: z.number().optional(),
     banos: z.number().optional(),
     niveles: z.number().optional(),
