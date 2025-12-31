@@ -17,18 +17,24 @@ import { LeadAssignmentService } from './leadAssignmentService';
 import { FavoritesService } from './favorites.service';
 
 // 1. Instantiate Repositories
+import { CatalogRepository } from '../repositories/catalog.repository';
+
 const leadRepository = new LeadRepository(db);
 const userRepository = new UserRepository(db);
 const externalAdvisorRepository = new ExternalAdvisorRepository(db);
+const catalogRepository = new CatalogRepository(db);
 
 // 2. Instantiate Services (Injecting Dependencies)
 // Legacy services that accepted db directly
 export const configService = new ConfigService(db);
+// Refactor CatalogService to use the shared repo or keep as is?
+// CatalogService creates its own repo inside. 
+// For minimal friction, we leave CatalogService as is, but we use 'catalogRepository' for ExternalAdvisorService.
 export const catalogService = new CatalogService(db);
 
 // New Refactored Services
 export const authService = new AuthService(auth, googleProvider, userRepository);
-export const externalAdvisorService = new ExternalAdvisorService(externalAdvisorRepository);
+export const externalAdvisorService = new ExternalAdvisorService(externalAdvisorRepository, catalogRepository);
 export const clientService = new ClientService(userRepository);
 export const crmService = new CrmService(leadRepository, externalAdvisorService);
 export const leadAssignmentService = new LeadAssignmentService(leadRepository, clientService);

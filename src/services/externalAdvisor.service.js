@@ -1,63 +1,66 @@
 
-/**
- * Servicio para la Gestión de Asesores Externos (Developments Sales Team)
- */
 export class ExternalAdvisorService {
-    /**
-     * @param {import('../repositories/externalAdvisor.repository').ExternalAdvisorRepository} repository 
-     */
-    constructor(repository) {
-        this.repository = repository;
+    constructor(externalAdvisorRepository, catalogRepository) {
+        this.repository = externalAdvisorRepository;
+        this.catalogRepository = catalogRepository;
     }
 
     /**
-     * Busca un asesor externo por su número de teléfono.
-     * @param {string} telefono - Teléfono a buscar.
+     * Registers a new external advisor.
+     * @param {Object} data 
+     * @param {string} data.idDesarrollador
+     * @param {string} data.nombre
+     * @param {string} data.whatsapp
+     * @param {string} [data.email]
+     * @param {string} [data.puesto]
      */
-    async findByPhone(telefono) {
-        if (!telefono) return null;
-        // Limpieza básica del teléfono para mejorar el match
-        // Nota: Si el repo ya no hace limpieza, la hacemos aquí. 
-        // El repo anterior hacía query directo.
-        const cleanPhone = telefono.replace(/\D/g, '');
-        // Ojo: En el código original la limpieza estaba en el servicio antes del query.
-        // Mi repo actual hace where('telefono', '==', telefono).
-        // Así que debo pasarle el teléfono limpio O mantener la lógica original.
-        // El original decía: const cleanPhone = telefono.replace(/\D/g, ''); 
-        // pero luego usaba `where('telefono', '==', telefono)` (usaba el param original? NO, error mío en lectura anterior?)
-        // Re-reading original file step 23:
-        // const cleanPhone = ...
-        // const q = query(..., where('telefono', '==', telefono)); <--- USABA EL ORIGINAL
-        // OK, mantengo la lógica exacta: no usaba cleanPhone en el query.
+    async registerAdvisor(data) {
+        const { idDesarrollador, nombre, whatsapp, email, puesto } = data;
 
-        return await this.repository.findByPhone(telefono);
-    }
-
-    /**
-     * Crea o Actualiza un asesor externo.
-     * @param {Object} advisorData - { nombre, telefono, email, desarrolloId(opcional) }
-     */
-    async createOrUpdate(advisorData) {
-        const existingAdvisor = await this.findByPhone(advisorData.telefono);
-
-        if (existingAdvisor) {
-            // Actualizar si es necesario
-            await this.repository.update(existingAdvisor.id, {
-                nombre: advisorData.nombre,
-                // No actualizamos teléfono porque es la llave de búsqueda
-            });
-            return { id: existingAdvisor.id, ...advisorData };
-        } else {
-            // Crear Nuevo
-            return await this.repository.create(advisorData);
+        if (!idDesarrollador || !nombre || !whatsapp) {
+            throw new Error("Missing required fields: idDesarrollador, nombre, whatsapp");
         }
+
+        // Basic validation for whatsapp (numbers only, simplified)
+        if (!/^\d+$/.test(whatsapp)) {
+            throw new Error("WhatsApp must contain only numbers");
+        }
+
+        const newAdvisor = {
+            idDesarrollador,
+            nombre,
+            whatsapp,
+            email: email || "",
+            puesto: puesto || "Asesor Comercial",
+            activo: true,
+            leadsAsignadosAcumulados: 0,
+            leadsCerrados: 0,
+            ratioConversion: 0,
+            ultimoLeadAsignadoAt: null,
+            // Additional metadata if needed
+        };
+
+        return await this.repository.create(newAdvisor);
     }
 
-    async getAll() {
-        return await this.repository.getAll();
-    }
+    /**
+     * Retrieves the directory of developers and their advisors.
+     * @returns {Promise<Array>} Array of developers with an 'advisors' array property.
+     */
+    async getDirectory() {
+        // 1. Fetch all developers
+        const developers = await this.catalogRepository.getAllDevelopers();
 
-    async addLeadToHistory(advisorId, leadSummary) {
-        return await this.repository.addLeadToHistory(advisorId, leadSummary);
+        // 2. Fetch all advisors 
+        const advisors = await this.repository.getAll();
+
+        // 3. Group advisors by developer
+        return developers.map(dev => {
+            const devAdvisors = advisors.filter(a => a.idDesarrollador === dev.id);
+            return {
+                ...dev,
+                advisors: devAdvisors
+            };
+        });
     }
 }

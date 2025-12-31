@@ -38,6 +38,7 @@ import AdminLayout from './layouts/AdminLayout';
 import AdminHome from './screens/admin/AdminHome';
 import AdminLeads from './screens/admin/AdminLeads';
 import AdminUsers from './screens/admin/AdminUsers';
+import AdvisorsDirectory from './screens/admin/AdvisorsDirectory';
 // 🗑️ DEPRECATED: import AdminDashboard from './screens/AdminDashboard'; (Removed)
 
 // ⭐ NUEVO: Modal de selección de ciudad
@@ -102,6 +103,7 @@ function App() {
                   <Route index element={<AdminHome />} />
                   <Route path="leads" element={<AdminLeads />} />
                   <Route path="users" element={<AdminUsers />} />
+                  <Route path="asesores" element={<AdvisorsDirectory />} />
                 </Route>
 
                 {/* 404 - Redirección por defecto */}

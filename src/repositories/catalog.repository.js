@@ -102,4 +102,16 @@ export class CatalogRepository {
             throw error;
         }
     }
+
+    async getAllDevelopers() {
+        try {
+            const snap = await getDocs(collection(this.db, "desarrolladores"));
+            // Return raw data or map it? DATOSESTRUCTURA says it has specific structure.
+            // Using loose mapping for now as there is no specific 'mapDesarrollador'.
+            return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        } catch (error) {
+            console.error("Error en CatalogRepository.getAllDevelopers:", error);
+            throw error;
+        }
+    }
 }

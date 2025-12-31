@@ -54,6 +54,15 @@ export class ExternalAdvisorRepository {
         return snap.docs.map(d => ({ id: d.id, ...d.data() }));
     }
 
+    async getAdvisorsByDeveloper(idDesarrollador) {
+        const q = query(
+            collection(this.db, this.collectionName),
+            where("idDesarrollador", "==", idDesarrollador)
+        );
+        const snap = await getDocs(q);
+        return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
+
     async addLeadToHistory(id, leadSummary) {
         const advisorRef = doc(this.db, this.collectionName, id);
         await updateDoc(advisorRef, {
