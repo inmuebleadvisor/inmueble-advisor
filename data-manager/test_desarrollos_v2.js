@@ -58,10 +58,7 @@ test('Desarrollo V2 Adapter & Schema', async (t) => {
             // New Units logic (snake case or dot notation in row)
             'unidades.totales': '100',
             'unidades.vendidas': '10',
-            // 'unidades.disponibles' calculated if missing? Or passed?
-            // If I pass totals and vendidas, disponibles might be calc or strict?
-            // Adapter calculates if only Totals/Vendidas passed? Let's check adapter logic.
-            // My updated logic: if rawTotales, it calcs.
+            'unidades.disponibles': '90', // Direct mapping required now
 
             // New Promo logic
             'promocion.nombre': 'Promo Verano',
@@ -85,7 +82,20 @@ test('Desarrollo V2 Adapter & Schema', async (t) => {
         // Units
         assert.strictEqual(parse.data.infoComercial.unidadesTotales, 100);
         assert.strictEqual(parse.data.infoComercial.unidadesVendidas, 10);
-        assert.strictEqual(parse.data.infoComercial.unidadesDisponibles, 90); // 100-10=90
+        assert.strictEqual(parse.data.infoComercial.unidadesDisponibles, 90);
+
+        // Verify No Calculation (explicitly)
+        const rowNoCalc = {
+            constructora: 'C',
+            nombre: 'N',
+            'unidades.totales': '100',
+            'unidades.vendidas': '10'
+            // disponibles missing
+        };
+        const adaptedNoCalc = adaptDesarrollo(rowNoCalc);
+        assert.strictEqual(adaptedNoCalc.infoComercial.unidadesTotales, 100);
+        assert.strictEqual(adaptedNoCalc.infoComercial.unidadesVendidas, 10);
+        assert.strictEqual(adaptedNoCalc.infoComercial.unidadesDisponibles, undefined); // Should NOT be 90
 
         // Promo
         assert.strictEqual(parse.data.promocion.nombre, 'Promo Verano');

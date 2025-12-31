@@ -78,6 +78,7 @@ export const importCollection = async (collectionName, filePath, options = {}) =
                     // Safe verification:
                     if (collectionName === 'desarrollos') {
                         adaptedData = adaptDesarrollo(row);
+                        validationResult = DesarrolloSchema.safeParse(adaptedData);
                         // Adapter now sets ID. If still missing, we might search by name, but ID is deterministic now.
                     } else if (collectionName === 'desarrolladores') {
                         adaptedData = adaptDesarrollador(row);

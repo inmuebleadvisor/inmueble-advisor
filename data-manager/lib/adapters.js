@@ -60,12 +60,7 @@ export const adaptDesarrollo = (row) => {
 
     // ID Generation: slug(constructora + "-" + nombre)
     if (nombre && constructora) {
-        // Normalize strict: lower, no accents, alphanumeric-only -> slug
-        const rawSlug = `${constructora}-${nombre}`;
-        out.id = rawSlug.toLowerCase()
-            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-+|-+$/g, '');
+        out.id = generateId(constructora, nombre);
     } else if (row.id) {
         out.id = row.id; // Fallback if CSV has ID but no names? Unlikely per requirements
     }
@@ -134,33 +129,25 @@ export const adaptDesarrollo = (row) => {
 
     // 7. Info Comercial
     const info = {};
-    // Units Logic (Restored & Updated)
+    // Units Logic (Direct mapping per user request - No calculations)
     const rawTotales = row['unidades.totales'] || row.unidades_totales || row['infoComercial.unidadesTotales'];
     const rawVendidas = row['unidades.vendidas'] || row.unidades_vendidas || row['infoComercial.unidadesVendidas'];
     const rawDisponibles = row['unidades.disponibles'] || row.unidades_disponibles || row['infoComercial.unidadesDisponibles'];
 
-    if (rawTotales) {
-        const uT = parseFloat(rawTotales) || 0;
-        info.unidadesTotales = uT;
+    // Parse only if value exists (including 0)
+    if (rawTotales !== undefined && rawTotales !== '' && rawTotales !== null) {
+        const val = parseFloat(rawTotales);
+        if (!isNaN(val)) info.unidadesTotales = val;
+    }
 
-        let uV = parseFloat(rawVendidas);
-        let uD = parseFloat(rawDisponibles);
+    if (rawVendidas !== undefined && rawVendidas !== '' && rawVendidas !== null) {
+        const val = parseFloat(rawVendidas);
+        if (!isNaN(val)) info.unidadesVendidas = val;
+    }
 
-        if (!isNaN(uV) && isNaN(uD)) {
-            info.unidadesVendidas = uV;
-            info.unidadesDisponibles = (uT - uV) > 0 ? (uT - uV) : 0;
-        }
-        else if (isNaN(uV) && !isNaN(uD)) {
-            info.unidadesDisponibles = uD;
-            info.unidadesVendidas = (uT - uD) > 0 ? (uT - uD) : 0;
-        }
-        else if (!isNaN(uV) && !isNaN(uD)) {
-            info.unidadesVendidas = uV;
-            info.unidadesDisponibles = uD;
-        }
-    } else {
-        if (rawVendidas) info.unidadesVendidas = parseFloat(rawVendidas);
-        if (rawDisponibles) info.unidadesDisponibles = parseFloat(rawDisponibles);
+    if (rawDisponibles !== undefined && rawDisponibles !== '' && rawDisponibles !== null) {
+        const val = parseFloat(rawDisponibles);
+        if (!isNaN(val)) info.unidadesDisponibles = val;
     }
 
     // Other info fields if needed (num_modelos, etc.) - Restore if they were useful
@@ -192,14 +179,15 @@ export const adaptDesarrollo = (row) => {
 
     // 10. PROMOCION
     const prom = {};
-    // User requested headers: promocion.nombre, promocion.fechainicio, promocion.fechafinal
-    if (row['promocion.nombre'] || row.promocion_nombre) prom.nombre = row['promocion.nombre'] || row.promocion_nombre;
+    // User requested headers: promocion.nombre, promocion.fechainicio, promocion.fechafinal, promocion.inicio, promocion.final
+    const pNombre = row['promocion.nombre'] || row.promocion_nombre || row['Promocion.nombre'];
+    if (pNombre) prom.nombre = pNombre;
 
     // Timezone safe parsing: Use City from same row
     const city = out.ubicacion?.ciudad || 'Mexico City';
 
     // Start Date
-    const startStr = row['promocion.fechainicio'] || row.promocion_inicio || row['promocion.fecha_inicio'];
+    const startStr = row['promocion.inicio'] || row['promocion.fechainicio'] || row.promocion_inicio || row['promocion.fecha_inicio'];
     if (startStr) {
         const d = parseDateWithTimezone(startStr, city, false);
         if (d) prom.fecha_inicio = toTimestamp(d);
@@ -207,7 +195,7 @@ export const adaptDesarrollo = (row) => {
     }
 
     // End Date
-    const endStr = row['promocion.fechafinal'] || row.promocion_fin || row['promocion.fecha_fin'];
+    const endStr = row['promocion.final'] || row['promocion.fechafinal'] || row.promocion_fin || row['promocion.fecha_fin'];
     if (endStr) {
         const d = parseDateWithTimezone(endStr, city, true);
         if (d) prom.fecha_fin = toTimestamp(d);
@@ -223,14 +211,22 @@ export const adaptModelo = (row) => {
     const out = {};
 
     // 1. Identifiers
-    const idDesarrollo = row.idDesarrollo || row.id_desarrollo;
+    let idDesarrollo = row.idDesarrollo || row.id_desarrollo;
     const nombreModelo = row.nombreModelo || row.nombre_modelo;
+
+    // Support automatic idDesarrollo generation if name and constructor are provided
+    if (!idDesarrollo) {
+        const nombreDes = cleanStr(row.nombreDesarrollo || row.nombre_desarrollo || row.desarrollo);
+        const constructora = cleanStr(row.constructora || row.Constructora || row.desarrollador);
+        if (nombreDes && constructora) {
+            idDesarrollo = generateId(constructora, nombreDes);
+        }
+    }
 
     if (row.id) {
         out.id = row.id;
     } else if (idDesarrollo && nombreModelo) {
-        const slugModelo = nombreModelo.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-        out.id = `${idDesarrollo}-${slugModelo}`;
+        out.id = generateId(idDesarrollo, nombreModelo);
     }
 
     if (idDesarrollo) out.idDesarrollo = idDesarrollo;
@@ -264,7 +260,7 @@ export const adaptModelo = (row) => {
     if (row.precio_orig_lista || row['precios.inicial']) precios.inicial = row.precio_orig_lista || row['precios.inicial'];
     if (row.precio_m2 || row['precios.metroCuadrado']) precios.metroCuadrado = row.precio_m2 || row['precios.metroCuadrado'];
     if (row.mantenimiento || row['precios.mantenimientoMensual']) precios.mantenimientoMensual = row.mantenimiento || row['precios.mantenimientoMensual'];
-    if (row['precios.moneda']) precios.moneda = row['precios.moneda'];
+    if (row.moneda || row['precios.moneda']) precios.moneda = row.moneda || row['precios.moneda'];
     if (Object.keys(precios).length > 0) out.precios = precios;
 
     // 3. Info Comercial
@@ -310,21 +306,22 @@ export const adaptModelo = (row) => {
 
     // 8. PROMOCION (New)
     const prom = {};
-    if (row.promocion_nombre || row['promocion.nombre']) prom.nombre = row.promocion_nombre || row['promocion.nombre'];
+    const mPNombre = row['promocion.nombre'] || row.promocion_nombre || row['Promocion.nombre'];
+    if (mPNombre) prom.nombre = mPNombre;
 
     // Timezone safe parsing for Models
     // Issue: We might not have City here.
     // Solution: If 'ciudad' or 'timezone_city' is passed in CSV, use it. Else default to Mexico City.
     const city = row.ciudad || row.timezone_city || 'Mexico City';
 
-    const startStr = row.promocion_inicio || row['promocion.fecha_inicio'];
+    const startStr = row['promocion.inicio'] || row.promocion_inicio || row['promocion.fecha_inicio'];
     if (startStr) {
         const d = parseDateWithTimezone(startStr, city, false);
         if (d) prom.fecha_inicio = toTimestamp(d);
         else if (parseDateHelper(startStr)) prom.fecha_inicio = toTimestamp(parseDateHelper(startStr));
     }
 
-    const endStr = row.promocion_fin || row['promocion.fecha_fin'];
+    const endStr = row['promocion.final'] || row.promocion_fin || row['promocion.fecha_fin'];
     if (endStr) {
         const d = parseDateWithTimezone(endStr, city, true);
         if (d) prom.fecha_fin = toTimestamp(d);
@@ -361,6 +358,17 @@ export const adaptModelo = (row) => {
 
 // Helper to clean strings
 const cleanStr = (val) => String(val || '').trim();
+
+// Generic Slug/ID Generator
+const generateId = (part1, part2) => {
+    if (!part1 || !part2) return null;
+    const raw = `${part1}-${part2}`;
+    return raw.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove accents
+        .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with -
+        .replace(/^-+|-+$/g, ''); // Trim leading/trailing dashes
+};
+
 const cleanEmail = (val) => cleanStr(val).toLowerCase();
 const cleanPhone = (val) => cleanStr(val).replace(/\D/g, ''); // Digits only
 
