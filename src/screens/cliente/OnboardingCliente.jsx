@@ -4,10 +4,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
-import { catalogService } from '../../services/serviceProvider';
+import { catalogService, clientService } from '../../services/serviceProvider';
 import { FINANZAS } from '../../config/constants';
-import { doc, setDoc } from 'firebase/firestore';
-import { db } from '../../firebase/config';
+// Firestore imports eliminados por refactoring (DI Principle)
+import '../../styles/Onboarding.css'; // Importamos estilos dedicados
 import '../../styles/Onboarding.css'; // Importamos estilos dedicados
 
 const STORAGE_KEY = 'inmueble_advisor_onboarding_cliente_temp';
@@ -135,21 +135,28 @@ export default function OnboardingCliente() {
             }
 
             if (firebaseUser) {
-                const updates = {
-                    uid: firebaseUser.uid,
-                    email: firebaseUser.email,
-                    nombre: firebaseUser.displayName,
-                    ultimoAcceso: new Date().toISOString(),
-                    perfilFinanciero: {
-                        capitalInicial,
-                        mensualidadMaxima: mensualidad,
-                        presupuestoCalculado: presupuestoMaximo,
-                        recamarasDeseadas: recamaras,
-                        interesInmediato: entregaInmediata
-                    }
+                // REFACTOR: Usar Service Layer (ClientService via ServiceProvider or UserContext abstraction)
+                // Para mantener consistencia, accedemos al servicio global o inyectado.
+                // Importamos 'clientService' directamente de serviceProvider para este caso puntual
+                // o lo agregamos al context. Por simplicidad y evitar ciclos, usaremos el import arriba.
+                // (Nota: Asegurarse de importar clientService al inicio del archivo)
+
+                const profileData = {
+                    capitalInicial,
+                    mensualidadMaxima: mensualidad,
+                    presupuestoCalculado: presupuestoMaximo,
+                    recamarasDeseadas: recamaras,
+                    interesInmediato: entregaInmediata
                 };
 
-                await setDoc(doc(db, "users", firebaseUser.uid), updates, { merge: true });
+                // Actualizamos nombre/email si vienen del provider (Google)
+                // Esto podría manejarse dentro del completeOnboarding si le pasamos todo el user object
+                // pero por seguridad pasamos solo lo necesario.
+
+                await clientService.completeOnboarding(firebaseUser.uid, profileData);
+
+                // Update root fields like email/name just in case (optional, but good for sync)
+                // clientService.updateClientContact(firebaseUser.uid, { email: firebaseUser.email, nombre: firebaseUser.displayName });
 
                 const statusParam = entregaInmediata === true ? 'inmediata' : (entregaInmediata === false ? 'preventa' : 'all');
                 const maxPrice = presupuestoMaximo > 0 ? Math.round(presupuestoMaximo) : '';

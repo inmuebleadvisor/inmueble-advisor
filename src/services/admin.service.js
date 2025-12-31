@@ -50,6 +50,18 @@ export const getAllDesarrollos = async () => {
     }
 };
 
+/**
+ * Obtiene todos los modelos (para reportes globales)
+ */
+export const getAllModelos = async () => {
+    try {
+        return await catalogRepository.getAllModelos();
+    } catch (error) {
+        console.error("Error fetching modelos:", error);
+        return [];
+    }
+};
+
 
 // --- 2. ACCIONES DE CONTROL ---
 

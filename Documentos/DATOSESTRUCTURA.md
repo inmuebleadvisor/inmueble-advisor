@@ -1,210 +1,169 @@
 # 🏗️ ESQUEMA DE DATOS - INMUEBLE ADVISOR WEB
 
-ÚLTIMA MODIFICACION: 11/12/2025
+**ÚLTIMA MODIFICACION:** 30/12/2025
+**ESTADO:** Actualizado para V2 (Nested Schemas & Strict Typing)
 
-Este documento describe la estructura detallada de las colecciones principales de la base de datos de Inmueble Advisor Web. Está diseñado para ser claro y conciso, facilitando la comprensión de variables, tipos de información y relaciones.
+Este documento describe la estructura detallada de las colecciones principales de la base de datos de Inmueble Advisor Web. Refleja la arquitectura de datos validada por el módulo `data-manager`.
 
 ---
 
-## 1. Colección: `DESARROLLOS` (Desarrollos Inmobiliarios)
+## 1. Colección: `DESARROLLADORES` (Empresas)
 
-Representa un complejo habitacional (ej. conjunto de casas, torre de departamentos).
+Representa a las empresas constructoras o grupos inmobiliarios. Actúa como entidad padre para los desarrollos.
 
-| Campo | Tipo de Dato | Estructura | Descripción |
+| Campo | Tipo | Estructura | Descripción |
 | :--- | :--- | :--- | :--- |
-| **id** | `string` | **Clave principal** | Identificador único del desarrollo. |
-| **nombre** | `string` | Simple | Nombre comercial del desarrollo. |
-| **descripcion** | `string` | Simple | Texto detallado sobre el desarrollo y estilo de vida. |
-| **constructora** | `string` | Simple | Nombre de la empresa constructora. |
+| **id** | `string` | **PK Auto/Slug** | Identificador único (ej: `grupo-impulsa`). Generado por Slug o importado. |
+| **nombre** | `string` | Simple | Nombre comercial de la desarrolladora. |
+| **status** | `string` | Simple | Estado operativo (ej: `activo`). |
+| **fiscal** | `map` | Objeto | Datos fiscales. |
+| fiscal.razonSocial | `string` | Sub-campo | Razón social oficial. |
+| **comisiones** | `map` | Objeto | Configuración de comisiones para asesores. |
+| comisiones.porcentajeBase | `number` | Sub-campo | Porcentaje base de comisión (ej. 3.0). |
+| comisiones.hitos | `map` | Sub-objeto | Arrays de porcentajes de pago según esquema. |
+| comisiones.hitos.credito | `number[]` | Lista | [30, 20, 50] |
+| comisiones.hitos.contado | `number[]` | Lista | [15, 15, 70] |
+| comisiones.hitos.directo | `number[]` | Lista | [50, 50] |
+| **contacto** | `map` | Objeto | Contactos operativos principales. |
+| contacto.principal | `map` | Sub-objeto | Contacto primario. |
+| contacto.secundario | `map` | Sub-objeto | Contacto secundario. |
+| *contacto.[role].nombre* | `string` | Sub-campo | Nombre del contacto. |
+| *contacto.[role].telefono* | `string` | Sub-campo | Teléfono directo. |
+| *contacto.[role].email* | `string` | Sub-campo | Email corporativo. |
+| *contacto.[role].puesto* | `string` | Sub-campo | Cargo (ej. "Gerente Ventas"). |
+| **operacion** | `map` | **Protegido** | Datos operativos internos (No se sobrescribe en import). |
+| operacion.asesoresAutorizados | `string[]` | Lista | IDs de asesores con permiso de venta. |
+| operacion.asesoresConLeads | `string[]` | Lista | IDs de asesores con leads activos. |
+| **stats** | `map` | **Calculado** | Estadísticas agregadas automáticamente. |
+| stats.ofertaTotal | `number` | Auto | Valor total del inventario ($). |
+| stats.viviendasxVender | `number` | Auto | Unidades disponibles totales. |
+| **ciudades** | `string[]` | Calculado | Lista de ciudades donde tiene presencia activa. |
+| **desarrollos** | `string[]` | Calculado | Lista de IDs de desarrollos asociados. |
+| **updatedAt** | `timestamp` | Simple | Fecha última modificación. |
 
-| **activo** | `boolean` | Simple | Indica si el desarrollo está habilitado (ej. `false`). |
-| **analisisIA** | `map` | Objeto anidado | Análisis generado por IA sobre el desarrollo. |
-| analisisIA.resumen | `string` | Sub-campo | Resumen ejecutivo del análisis. |
-| analisisIA.puntosFuertes | `array<string>` | Sub-campo | Lista de puntos fuertes detectados. |
-| analisisIA.puntosDebiles | `array<string>` | Sub-campo | Lista de áreas de oportunidad. |
-| **scoreDesarrollo** | `number` | Simple | Puntuación o métrica de calidad/popularidad. |
-| **promocion** | `map` | Objeto anidado | Promoción vigente (fechas en Timezone local). |
-| promocion.nombre | `string` | Sub-campo | Nombre/Detalle de la promoción. |
-| promocion.fecha_inicio | `timestamp` | Sub-campo | Inicio de vigencia. |
-| promocion.fecha_fin | `timestamp` | Sub-campo | Fin de vigencia. |
-| **keywords** | `array<string>` | Lista | Palabras clave para búsqueda y SEO. |
-| **amenidades** | `array<string>` | Lista | Lista de amenidades del *desarrollo* (ej. "Áreas verdes"). |
-| **entorno** | `array<string>` | Lista | Lista de puntos de interés o características cercanas. |
-| **updatedAt** | `timestamp` | Simple | Fecha de la última modificación de este registro. |
-| **ubicacion** | `map` | Objeto anidado | Datos geográficos y de dirección. |
+---
+
+## 2. Colección: `DESARROLLOS` (Desarrollos Inmobiliarios)
+
+Representa un complejo habitacional. Vinculado a una Constructora y una Geografía Estandarizada.
+
+| Campo | Tipo | Estructura | Descripción |
+| :--- | :--- | :--- | :--- |
+| **id** | `string` | **PK Determinista** | Slug único: `constructora-nombre` (ej: `impulsa-guadalupe-loft`). |
+| **nombre** | `string` | Requerido | Nombre comercial del desarrollo. |
+| **descripcion** | `string` | Simple | Descripción comercial. |
+| **constructora** | `string` | Requerido | Nombre de la constructora (FK Lógica con Desarrolladores). |
+| **activo** | `boolean` | Default `true` | Visibilidad del desarrollo. |
+| **geografiaId** | `string` | **FK Geo** | ID estandarizado de la ciudad (ej: `mx-sin-cul`). |
+| **ubicacion** | `map` | Objeto | Coordenadas y dirección física. |
 | ubicacion.calle | `string` | Sub-campo | Calle y número. |
-| ubicacion.colonia | `string` | Sub-campo | Nombre de la colonia o barrio. |
-| ubicacion.localidad | `string` | Sub-campo | Localidad o municipio (entre colonia y ciudad). |
-| ubicacion.ciudad | `string` | Sub-campo | Ciudad. |
-| ubicacion.estado | `string` | Sub-campo | Estado o provincia. |
-| ubicacion.zona | `string` | Sub-campo | Nombre de la zona de la ciudad (ej. "Oriente"). |
-| ubicacion.latitud | `number` | Sub-campo | Coordenada latitud. |
-| ubicacion.longitud | `number` | Sub-campo | Coordenada longitud. |
-| **financiamiento** | `map` | Objeto anidado | Información sobre opciones de compra. |
-| financiamiento.aceptaCreditos | `array<string>` | Sub-campo | Tipos de crédito aceptados (ej. "Infonavit"). |
-| financiamiento.apartadoMinimo | `number` | Sub-campo | Monto mínimo para el apartado. |
-| financiamiento.engancheMinimoPorcentaje | `number` | Sub-campo | Porcentaje mínimo de enganche requerido. |
-| **precios** | `map` | Objeto anidado | Detalle de precios. |
-| precios.desde | `number` | Sub-campo | Precio base. |
-| precios.moneda | `string` | Sub-campo | Código de la moneda (ej. "MXN"). |
-| **infoComercial** / **info_comercial** | `map` | Objeto anidado | Datos de ventas y disponibilidad. |
-| infoComercial.cantidadModelos | `number` | Sub-campo | Número total de modelos de vivienda en el desarrollo. |
-| infoComercial.fechaEntrega / fecha_entrega | `timestamp` | Sub-campo | Fecha de entrega estimada. |
-| infoComercial.plusvaliaPromedio | `number` | Sub-campo | Plusvalía promedio estimada. |
-| infoComercial.unidadesTotales | `number` | Sub-campo | Número total de unidades a construir. |
-| infoComercial.unidadesVendidas / unidades_vendidas | `number` | Sub-campo | Unidades vendidas hasta la fecha. |
-| infoComercial.unidadesDisponibles / inventario | `number` | Sub-campo | Unidades restantes para la venta. |
-| **legal** | `map` | Objeto anidado | Información legal. |
-| legal.regimenPropiedad | `string` | Sub-campo | Tipo de propiedad (ej. "Condominio"). |
-| **media** | `map` | Objeto anidado | Archivos multimedia. |
-| media.cover | `string` (URL) | Sub-campo | URL de la imagen principal/portada. |
-| media.gallery | `array<string>` (URLs) | Sub-campo | URLs para la galería de imágenes. |
-| media.brochure | `string` (URL) | Sub-campo | URL del folleto PDF. |
-| media.video | `string` (URL) | Sub-campo | URL del video promocional del desarrollo. |
+| ubicacion.colonia | `string` | Sub-campo | Colonia. |
+| ubicacion.cp | `number` | **Nuevo** | Código Postal (ej: 80000). |
+| ubicacion.localidad | `string` | **Nuevo** | Localidad o sector específico. |
+| ubicacion.ciudad | `string` | Sub-campo | Ciudad (Normalizada por adaptador). |
+| ubicacion.estado | `string` | Sub-campo | Estado. |
+| ubicacion.zona | `string` | Sub-campo | Sector o Zona Comercial (Ej: Marina, Tres Ríos). |
+| ubicacion.latitud | `number` | Sub-campo | Coordenada GPS. |
+| ubicacion.longitud | `number` | Sub-campo | Coordenada GPS. |
+| **caracteristicas** | `map` | Objeto | Amenidades y entorno. |
+| caracteristicas.amenidades | `string[]` | Lista | Ej: ["Alberca", "Gym"]. |
+| caracteristicas.entorno | `string[]` | Lista | Ej: ["Cerca de Parque", "Escuelas"]. |
+| **financiamiento** | `map` | Objeto | Condiciones comerciales. |
+| financiamiento.aceptaCreditos | `string[]` | Lista | Ej: ["Infonavit", "Bancario"]. |
+| financiamiento.apartadoMinimo | `number` | Sub-campo | Monto ($) para apartar. |
+| financiamiento.engancheMinimoPorcentaje | `number` | Sub-campo | % Mínimo de enganche. |
+| **media** | `map` | Objeto | URLs multimedia. |
+| media.cover | `string` | URL | Imagen de portada. |
+| media.gallery | `string[]` | URLs | Galería de imágenes. |
+| media.brochure | `string` | URL | PDF informativo. |
+| media.video | `string` | URL | Video promocional. |
+| **comisiones** | `map` | Objeto | Override de comisiones (Opcional). |
+| comisiones.overridePct | `number` | Sub-campo | % específico para este desarrollo si difiere del developer. |
+| **infoComercial** | `map` | Objeto | Datos de entrega y ventas. |
+| infoComercial.cantidadModelos | `number` | Sub-campo | Número de prototipos diferentes. |
+| infoComercial.fechaInicioVenta | `timestamp` | Sub-campo | Fecha inicio de ventas. |
+| infoComercial.unidadesTotales | `number` | Sub-campo | Total construidas. |
+| infoComercial.unidadesVendidas | `number` | Sub-campo | Total vendidas. |
+| infoComercial.unidadesDisponibles | `number` | Manual/Auto | Stock actual (Manual o Calculado). |
+| infoComercial.plusvaliaPromedio | `number` | Sub-campo | % Plusvalía histórica. |
+| **precios** | `map` | Objeto | Resumen de precios (Calculado desde Modelos). |
+| precios.desde | `number` | Calculado | Precio más bajo disponible. |
+| **stats** | `map` | **Protegido** | Estadísticas internas (No se borran al importar). |
+| stats.rangoPrecios | `number[]` | Auto | [min, max] de precios actuales. |
+| stats.inventario | `number` | Auto | Suma real de inventario de modelos. |
+| **scoreCard** | `any` | **Protegido** | Calificación del desarrollo (Motor externo). |
+| **promocion** | `map` | Objeto | Campaña activa. |
+| promocion.nombre | `string` | Sub-campo | Título de la promo. |
+| promocion.fecha_inicio | `timestamp` | Sub-campo | (Timezone Safe). |
+| promocion.fecha_fin | `timestamp` | Sub-campo | (Timezone Safe). |
+| **analisisIA** | `map` | Objeto | Insights generados por IA. |
+| analisisIA.resumen | `string` | Sub-campo | Resumen ejecutivo. |
+| analisisIA.puntosFuertes | `string[]` | Sub-campo | Listado de fortalezas. |
+| analisisIA.puntosDebiles | `string[]` | Sub-campo | Listado de debilidades. |
+| **legal** | `map` | Objeto | Información legal. |
+| legal.regimenPropiedad | `string` | Sub-campo | Ej: Condominio, Privada. |
 
 ---
 
-## 2. Colección: `MODELOS` (Modelos de Vivienda)
+## 3. Colección: `MODELOS` (Prototipos)
 
-Representa un tipo específico de unidad dentro de un desarrollo.
+Tipos de vivienda disponibles dentro de un desarrollo.
 
-| Campo | Tipo de Dato | Estructura | Descripción |
+| Campo | Tipo | Estructura | Descripción |
 | :--- | :--- | :--- | :--- |
-| **id** | `string` | **Clave principal** | ID único (compuesto por `idDesarrollo-nombreModelo`). |
-| **idDesarrollo** | `string` | **Clave foránea** | Referencia al `id` del desarrollo padre. |
-| **activo** | `boolean` | Simple | Indica si el modelo está habilitado. Anteriormente `ActivoModelo`. |
-| **nombreModelo** | `string` | Simple | Nombre comercial del modelo (ej. "Águila"). |
-| **descripcion** | `string` | Simple | Texto promocional o descriptivo del modelo. |
-| **highlights** | `array<string>` | Lista | Badges destacados calculados (ej. "Precio más bajo de la Zona"). |
-| **tipoVivienda** | `string` | Simple | Categoría (ej. "Casas", "Departamentos"). |
-| **m2** | `number` | Simple | Metros cuadrados de construcción. |
-| **terreno** | `number` | Simple | Metros cuadrados de terreno. |
-| **frente** | `number` | Simple | Medida del frente del terreno (mts). |
-| **fondo** | `number` | Simple | Medida del fondo del terreno (mts). |
-| **status** | `string`/`array` | Flexible | Estado (ej. "Entrega Inmediata"). Soporta múltiples valores. |
-| **promocion** | `map` | Objeto anidado | Promoción vigente (fechas en Timezone local). |
-| promocion.nombre | `string` | Sub-campo | Nombre/Detalle de la promoción. |
-| promocion.fecha_inicio | `timestamp` | Sub-campo | Inicio de vigencia. |
-| promocion.fecha_fin | `timestamp` | Sub-campo | Fin de vigencia. |
-| **recamaras** | `number` | Simple | Cantidad de recámaras. |
-| **banos** | `number` | Simple | Cantidad de baños completos. |
-| **niveles** | `number` | Simple | Número de pisos de la vivienda. |
-| **cajones** | `number` | Simple | Cajones de estacionamiento. |
-| **amenidades** | `array<string>` | Lista | Amenidades o características del *modelo* (ej. "Cocina Integral"). |
-| **updatedAt** | `timestamp` | Simple | Fecha de la última modificación de este registro. |
-| **acabados** | `map` | Objeto anidado | Detalle de los acabados. |
-| acabados.cocina | `string` | Sub-campo | Descripción de acabados de cocina. |
-| acabados.pisos | `string` | Sub-campo | Descripción de acabados de pisos. |
-| **precios** | `map` | Objeto anidado | Estructura de precios detallada. |
-| precios.base | `number` | Sub-campo | Precio actual base del modelo. |
-| precios.inicial | `number` | Sub-campo | Precio de lista original/lanzamiento. |
-| precios.metroCuadrado | `number` | Sub-campo | Costo por metro cuadrado (`m2`). |
-| precios.mantenimientoMensual | `number` | Sub-campo | Costo mensual de mantenimiento. |
-| precios.moneda | `string` | Sub-campo | Código de la moneda. |
-| **infoComercial** | `map` | Objeto anidado | Datos comerciales del modelo. |
-| infoComercial.fechaInicioVenta | `timestamp` | Sub-campo | Fecha cuando inició la venta del modelo. |
-| infoComercial.plusvaliaEstimada | `number` | Sub-campo | Plusvalía estimada del modelo. |
-| infoComercial.unidadesVendidas | `number` | Sub-campo | Unidades vendidas de este modelo. |
-| infoComercial.tiempoEntrega | `string` | Simple | Tiempo de entrega estimado (ej. "6 meses" o "Mayo 2026"). |
-| **analisisIA** | `map` | Objeto anidado | Análisis generado por IA sobre el modelo. |
-| analisisIA.resumen | `string` | Sub-campo | Resumen ejecutivo del análisis. |
-| **media** | `map` | Objeto anidado | Archivos multimedia del modelo. |
-| media.plantasArquitectonicas | `array<string>` (URLs) | Sub-campo | URLs de los planos arquitectónicos. |
-| media.gallery | `array<string>` (URLs) | Sub-campo | Galería de imágenes del modelo (renders, fotos). |
-| media.recorridoVirtual | `string` (URL) | Sub-campo | URL del recorrido virtual. |
-| media.video | `string` (URL) | Sub-campo | URL del video promocional del modelo. |
+| **id** | `string` | **PK Comuesta** | `desarrolloId` + `-` + `slugModelo`. |
+| **idDesarrollo** | `string` | **FK** | ID del desarrollo padre. |
+| **nombreModelo** | `string` | Requerido | Nombre del prototipo (ej: "Ceiba"). |
+| **activo** | `boolean` | Default `true` | Disponibilidad. |
+| **status** | `string` `string[]` | Flexible | Estado de venta (ej: "Entrega Inmediata", "Preventa"). |
+| **tipoVivienda** | `string` | Default `Casas` | Tipo (Casa, Depto, Loft). |
+| **specs** | - | - | Especificaciones directas (Root level). |
+| m2 | `number` | Simple | Construcción. |
+| terreno | `number` | Simple | Terreno. |
+| recamaras | `number` | Simple | Habitaciones. |
+| banos | `number` | Simple | Baños (Float para medios baños). |
+| niveles | `number` | Simple | Pisos. |
+| cajones | `number` | Simple | Estacionamientos. |
+| frente | `number` | Simple | Metros de frente (Terreno). |
+| fondo | `number` | Simple | Metros de fondo (Terreno). |
+| amenidades | `string[]` | Lista | Amenidades específicas del modelo. |
+| **precios** | `map` | Objeto | Precios y Valor. |
+| precios.base | `number` | Requerido | Precio de lista actual. |
+| precios.inicial | `number` | Opcional | Precio "Friend & Family" o lanzamiento. |
+| precios.metroCuadrado | `number` | Calculado | Precio / m2. |
+| precios.mantenimientoMensual | `number` | Opcional | Cuota de mantenimiento. |
+| **preciosHistoricos** | `object[]` | **Historial** | Registro de cambios de precio. |
+| preciosHistoricos[].fecha | `timestamp` | Sub-campo | Fecha del cambio. |
+| preciosHistoricos[].precio | `number` | Sub-campo | Valor anterior. |
+| **plusvaliaReal** | `number` | **Calculado** | % Crecimiento real (Base vs Inicial/Histórico). |
+| **acabados** | `map` | Objeto | Detalles de terminados. |
+| acabados.cocina | `string` | Sub-campo | Ej: "Granito". |
+| acabados.pisos | `string` | Sub-campo | Ej: "Porcelanato". |
+| **media** | `map` | Objeto | Multimedia específica. |
+| media.cover | `string` | URL | Imagen de portada. |
+| media.gallery | `string[]` | URLs | Galería de imágenes. |
+| media.plantasArquitectonicas | `string[]` | URLs | Planos. |
+| media.recorridoVirtual | `string` | URL | Tour 3D / Matterport. |
+| media.videoPromocional | `string` | URL | Video promocional. |
+| **highlights** | `string[]` | **Calculado** | Badges competitivos (ej: "Mayor Terreno de la Zona"). |
+| **promocion** | `map` | Objeto | Promoción específica del modelo. |
 
 ---
 
-## 3. Colección: `USERS` (Usuarios: Clientes y Asesores)
+## 4. Diccionarios y Auxiliares
 
-Almacena la información de los usuarios de la plataforma.
-
-| Campo | Tipo de Dato | Estructura | Descripción |
-| :--- | :--- | :--- | :--- |
-| **uid** | `string` | **Clave principal** | ID único de autenticación del usuario. |
-| **email** | `string` | Simple | Correo electrónico. |
-| **nombre** | `string` | Simple | Nombre completo. |
-| **role** | `string` | Simple | Rol del usuario ("cliente", "asesor"). |
-| **foto** | `string` (URL) | Simple | URL de la foto de perfil. |
-| **fechaRegistro** | `string` (ISO 8601) | Simple | Fecha y hora de registro. |
-| **ultimoAcceso** | `string` (ISO 8601) | Simple | Fecha y hora del último acceso. |
-| **onboardingCompleto** | `boolean` | Simple | Indica si el proceso de bienvenida está finalizado. |
-| **scoreGlobal** | `number` | Simple | Puntuación total del Score Card del asesor. |
-| **metricas** | `map` | Objeto anidado | Métricas detalladas del desempeño y Score Card. |
-| metricas.tasaCierre | `number` | Sub-campo | Porcentaje de leads ganados vs finalizados. |
-| metricas.puntosCierre | `number` | Sub-campo | Puntos otorgados por la tasa de cierre (1.5 pts por %). |
-| metricas.puntosEncuestas | `number` | Sub-campo | (Manual) Puntos por calificación promedio de encuestas. |
-| metricas.puntosActualizacion | `number` | Sub-campo | (Manual) Puntos por mantener info actualizada. |
-| metricas.puntosComunicacion | `number` | Sub-campo | (Manual) Puntos por nivel de comunicación. |
-| **favoritos** | `array<string>` | Lista | Lista de IDs de modelos o desarrollos favoritos. |
-| **perfilFinanciero** | `map` | Objeto anidado | Datos del perfil de compra del cliente. |
-| perfilFinanciero.capitalInicial | `number` | Sub-campo | Monto de ahorro o enganche disponible. |
-| perfilFinanciero.mensualidadMaxima | `number` | Sub-campo | Máximo a pagar mensualmente. |
-| perfilFinanciero.presupuestoCalculado | `number` | Sub-campo | Presupuesto total estimado. |
-| perfilFinanciero.recamarasDeseadas | `number` | Sub-campo | Cantidad de recámaras buscadas. |
+### Geo-Dictionary (`geografiaId`)
+Identificadores únicos para ciudades y zonas, usados para agregación y SEO.
+Formato: `mx-[estado]-[ciudad]` (ej: `mx-sin-cul`, `mx-sin-mzt`).
 
 ---
 
-## 4. Colección: `LEADS` (Clientes Potenciales y Citas)
+## Consideraciones de Importación (Data Manager)
 
-Registra cada solicitud de contacto o cita, conectando al cliente con el asesor y el desarrollo.
-
-| Campo | Tipo de Dato | Estructura | Descripción |
-| :--- | :--- | :--- | :--- |
-| **desarrolloId** | `string` | **Clave foránea** | Referencia al `id` del desarrollo de interés. |
-| **asesorUid** | `string` | **Clave foránea** | Referencia al `uid` del asesor asignado. |
-| **asesorNombre** | `string` | Simple | Nombre del asesor asignado. |
-| **nombreDesarrollo** | `string` | Simple | Nombre del desarrollo (para referencia rápida). |
-| **modeloInteres** | `string` | Simple | Nombre del modelo de vivienda específico. |
-| **status** | `string` | Simple | Estado actual del lead (ej. "VISITED", "NEW"). |
-| **origen** | `string` | Simple | Fuente de donde se generó el lead. |
-| **motivoAsignacion** | `string` | Simple | Razón de la asignación del asesor. |
-| **fechaCreacion** | `timestamp` | Simple | Fecha de creación del lead. |
-| **fechaAsignacion** | `timestamp` | Simple | Fecha de asignación del asesor. |
-| **fechaUltimaInteraccion** | `timestamp` | Simple | Fecha de la última actividad registrada. |
-| **clienteDatos** | `map` | Objeto anidado | Información de contacto del cliente. |
-| clienteDatos.nombre | `string` | Sub-campo | Nombre del cliente. |
-| clienteDatos.email | `string` | Sub-campo | Correo electrónico del cliente. |
-| clienteDatos.telefono | `string` | Sub-campo | Número de teléfono del cliente. |
-| **historial** | `array<map>` | Lista de objetos | Registro de eventos y cambios de estado. |
-| historial[].fecha | `timestamp` | Sub-campo | Fecha y hora del evento. |
-| historial[].accion | `string` | Sub-campo | Tipo de acción registrada (ej. "asignacion_automatica"). |
-| historial[].detalle | `string` | Sub-campo | Descripción del evento. |
-
----
-
-## 5. Colección: `DESARROLLADORES` (Empresas Desarrolladoras)
-
-Representa a las empresas constructoras o grupos inmobiliarios.
-
-| Campo | Tipo de Dato | Estructura | Descripción |
-| :--- | :--- | :--- | :--- |
-| **id** | `string` | **Clave principal** | Identificador único. |
-| **nombre** | `string` | Simple | Nombre de la desarrolladora (Debe coincidir con `constructora` en Desarrollos). |
-| **esquemaPago** | `map` | Objeto anidado | Esquemas financieros por defecto. |
-| esquemaPago.apartado | `number` | Sub-campo | Monto o porcentaje de apartado. |
-| esquemaPago.enganche | `number` | Sub-campo | Porcentaje de enganche. |
-| esquemaPago.aprobacionCredito | `number` | Sub-campo | Porcentaje al aprobar crédito. |
-| esquemaPago.escrituracion | `number` | Sub-campo | Porcentaje a la escrituración. |
-| **contacto** | `map` | Objeto anidado | Contactos principales de la empresa. |
-| contacto.nombre1, nombre2 | `string` | Sub-campo | Nombre del contacto. |
-| contacto.telefono1, telefono2 | `string` | Sub-campo | Teléfono. |
-| contacto.mail1, mail2 | `string` | Sub-campo | Email. |
-| contacto.puesto1, puesto2 | `string` | Sub-campo | Puesto. |
-| **asesoresDesarrollo** | `array<string>` | Lista | IDs de asesores asignados. |
-| **desarrollos** | `array<string>` | Lista (Calculado) | IDs de los desarrollos asociados. |
-| **ciudades** | `array<string>` | Lista (Calculado) | Nombres de ciudades donde tienen presencia. |
-| **ofertaTotal** | `number` | Simple (Calculado) | Suma de unidades totales de sus desarrollos. |
-| **viviendasxVender** | `number` | Simple (Calculado) | Suma de stock disponible. |
-| **updatedAt** | `timestamp` | Simple | Fecha de última actualización. |
-
----
-
-## 🔗 RELACIONES CLAVE
-
-| Colecciones | Relación | Campo Clave Foránea | Descripción |
-| :--- | :--- | :--- | :--- |
-| `MODELOS` $\rightarrow$ `DESARROLLOS` | 1:N | `idDesarrollo` | Cada modelo pertenece a un desarrollo. |
-| `LEADS` $\rightarrow$ `DESARROLLOS` | N:1 | `desarrolloId` | Múltiples leads pueden estar interesados en el mismo desarrollo. |
-| `LEADS` $\rightarrow$ `USERS` | N:1 | `asesorUid` | Múltiples leads pueden ser asignados al mismo asesor. |
+*   **Identidad:** Los IDs de Desarrollo son deterministas. Si cambias el nombre de la constructora o del desarrollo, cambiará el ID (generando un nuevo doc).
+*   **Safe Merge:** La importación utiliza `merge: true`.
+*   **Campos Protegidos:**
+    *   `desarrollo.stats`, `desarrollo.scoreCard`
+    *   `desarrollador.operacion`, `desarrollador.stats`
+    *   *Estos campos no son sobrescritos por el CSV.*
+*   **Timezones:** Las fechas (`fechaEntrega`, Promociones) se convierten a UTC respetando la zona horaria física de la ciudad del desarrollo.

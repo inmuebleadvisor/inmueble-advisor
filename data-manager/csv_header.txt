@@ -1,0 +1,1 @@
+﻿nombre_desarrollo,constructora,nombre_modelo,descripcion,tipoVivienda,activo,estado,tiempo_entrega,precio_orig_lista,fecha_inicio,precio_base,precio_moneda,mantenimiento,m2_const,m2_terreno,frente,fondo,recamaras,banos,niveles,cajones,amenidades,acabados_cocina,acabados_pisos,img_cover,url_plantas,img_galeria,url_tour,url_video,Promocion.nombre,promocion.inicio,promocion.final

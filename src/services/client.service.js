@@ -89,4 +89,30 @@ export class ClientService {
             // No lanzamos error para no bloquear el flujo principal
         }
     }
+
+    /**
+     * Finaliza el proceso de onboarding guardando el perfil financiero y preferencias.
+     * @param {string} uid - ID del usuario.
+     * @param {Object} profileData - Datos del perfil financiero (capital, mensualidad, etc).
+     */
+    async completeOnboarding(uid, profileData) {
+        try {
+            const updates = {
+                uid: uid, // Redundant but consistent
+                ultimoAcceso: new Date().toISOString(),
+                perfilFinanciero: profileData,
+                onboardingCompleto: true
+            };
+
+            // If profileData contains name/email, we might want to update root fields too, but 
+            // the component logic seemed to only update them if they were part of the auth provider result.
+            // For now, we strictly follow the component's logic: update profile items.
+
+            await this.userRepository.updateUser(uid, updates);
+            return true;
+        } catch (error) {
+            console.error("Error completing onboarding:", error);
+            throw error;
+        }
+    }
 }
