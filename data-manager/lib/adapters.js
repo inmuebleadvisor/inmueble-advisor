@@ -1,50 +1,26 @@
+
 import { Timestamp } from 'firebase-admin/firestore';
 import { parseDateWithTimezone } from './timezones.js';
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const geoDictionary = require('./geo-dictionary.json');
-
-const standardizeLocation = (ciudad, estado) => {
-    if (!ciudad) return null;
-    const normCiudad = String(ciudad).trim().toLowerCase();
-
-    // Find match in dictionary
-    const match = geoDictionary.find(entry =>
-        entry.nombre.toLowerCase() === normCiudad ||
-        entry.variaciones.some(v => v === normCiudad)
-    );
-
-    if (match) {
-        return {
-            geografiaId: match.id,
-            ciudad: match.nombre,
-            estado: match.estado || estado
-        };
-    }
-
-    // Fallback: Generate slug
-    // We log warning in the caller context if needed, or here? 
-    // Adapter should be pure if possible, but we can return meta.
-    const slug = normCiudad.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-    return {
-        geografiaId: `mx-custom-${slug}`, // Fallback ID
-        ciudad: String(ciudad).trim(), // Keep original styling if not matched
-        estado: estado
-    };
-};
-
-const parseDateHelper = (str) => {
-    if (!str) return null;
-    const d = new Date(str);
-    return isNaN(d.getTime()) ? null : d;
-};
+import {
+    cleanStr,
+    generateId,
+    standardizeLocation,
+    cleanEmail,
+    cleanPhone
+} from './shared/normalization.js';
+import { parsePipes, parseHitos } from './shared/transformers.js';
 
 // Helper: Convert JS Date (from timezone parser) to Firestore Timestamp
 const toTimestamp = (date) => {
     return date ? Timestamp.fromDate(date) : null;
 };
 
-const parsePipes = (val) => val ? String(val).split('|').map(s => s.trim()).filter(s => s) : [];
+// Date helper for simple strings if timezone not critical (though we prefer timezone aware)
+const parseDateHelper = (str) => {
+    if (!str) return null;
+    const d = new Date(str);
+    return isNaN(d.getTime()) ? null : d;
+};
 
 export const adaptDesarrollo = (row) => {
     const out = {};
@@ -62,7 +38,7 @@ export const adaptDesarrollo = (row) => {
     if (nombre && constructora) {
         out.id = generateId(constructora, nombre);
     } else if (row.id) {
-        out.id = row.id; // Fallback if CSV has ID but no names? Unlikely per requirements
+        out.id = row.id;
     }
 
     // 2. Ubicacion
@@ -73,11 +49,11 @@ export const adaptDesarrollo = (row) => {
 
     // CP & Localidad (User specific headers: "codigopostal", "localidad")
     if (row.codigopostal) ubicacion.cp = parseFloat(row.codigopostal);
-    // row.localidad handled above but make sure user header maps there if not covered by standard
 
     if (row.ciudad || row['ubicacion.ciudad']) ubicacion.ciudad = row.ciudad || row['ubicacion.ciudad'];
     if (row.estado || row['ubicacion.estado']) ubicacion.estado = row.estado || row['ubicacion.estado'];
     if (row.zona || row['ubicacion.zona']) ubicacion.zona = row.zona || row['ubicacion.zona'];
+
     // Coerce Coords
     if (row.latitud || row['ubicacion.latitud']) ubicacion.latitud = parseFloat(row.latitud || row['ubicacion.latitud']);
     if (row.longitud || row['ubicacion.longitud']) ubicacion.longitud = parseFloat(row.longitud || row['ubicacion.longitud']);
@@ -102,7 +78,6 @@ export const adaptDesarrollo = (row) => {
 
     if (Object.keys(caracteristicas).length > 0) out.caracteristicas = caracteristicas;
 
-
     // 4. Financiamiento
     const fin = {};
     if (row.acepta_creditos) fin.aceptaCreditos = parsePipes(row.acepta_creditos);
@@ -110,7 +85,6 @@ export const adaptDesarrollo = (row) => {
     if (row.enganche_pct) fin.engancheMinimoPorcentaje = parseFloat(row.enganche_pct);
 
     if (Object.keys(fin).length > 0) out.financiamiento = fin;
-
 
     // 5. Media
     const media = {};
@@ -121,7 +95,6 @@ export const adaptDesarrollo = (row) => {
 
     if (Object.keys(media).length > 0) out.media = media;
 
-
     // 6. Comisiones
     if (row.override_comision) {
         out.comisiones = { overridePct: parseFloat(row.override_comision) };
@@ -129,12 +102,10 @@ export const adaptDesarrollo = (row) => {
 
     // 7. Info Comercial
     const info = {};
-    // Units Logic (Direct mapping per user request - No calculations)
     const rawTotales = row['unidades.totales'] || row.unidades_totales || row['infoComercial.unidadesTotales'];
     const rawVendidas = row['unidades.vendidas'] || row.unidades_vendidas || row['infoComercial.unidadesVendidas'];
     const rawDisponibles = row['unidades.disponibles'] || row.unidades_disponibles || row['infoComercial.unidadesDisponibles'];
 
-    // Parse only if value exists (including 0)
     if (rawTotales !== undefined && rawTotales !== '' && rawTotales !== null) {
         const val = parseFloat(rawTotales);
         if (!isNaN(val)) info.unidadesTotales = val;
@@ -150,7 +121,6 @@ export const adaptDesarrollo = (row) => {
         if (!isNaN(val)) info.unidadesDisponibles = val;
     }
 
-    // Other info fields if needed (num_modelos, etc.) - Restore if they were useful
     if (row.num_modelos) info.cantidadModelos = parseFloat(row.num_modelos);
 
     if (Object.keys(info).length > 0) out.infoComercial = info;
@@ -158,7 +128,6 @@ export const adaptDesarrollo = (row) => {
 
     // 8. Precios
     const precios = {};
-    // Only basic mapping, most pricing logic is in models
     if (row.moneda) precios.moneda = row.moneda;
     if (Object.keys(precios).length > 0) out.precios = precios;
 
@@ -168,18 +137,15 @@ export const adaptDesarrollo = (row) => {
     const analisis = {};
     if (row.ia_resumen) analisis.resumen = row.ia_resumen;
     if (row.ia_fuertes) {
-        const parsePipes = (val) => val ? String(val).split('|').map(s => s.trim()).filter(s => s) : [];
         analisis.puntosFuertes = parsePipes(row.ia_fuertes);
     }
     if (row.ia_debiles) {
-        const parsePipes = (val) => val ? String(val).split('|').map(s => s.trim()).filter(s => s) : [];
         analisis.puntosDebiles = parsePipes(row.ia_debiles);
     }
     if (Object.keys(analisis).length > 0) out.analisisIA = analisis;
 
     // 10. PROMOCION
     const prom = {};
-    // User requested headers: promocion.nombre, promocion.fechainicio, promocion.fechafinal, promocion.inicio, promocion.final
     const pNombre = row['promocion.nombre'] || row.promocion_nombre || row['Promocion.nombre'];
     if (pNombre) prom.nombre = pNombre;
 
@@ -214,7 +180,6 @@ export const adaptModelo = (row) => {
     let idDesarrollo = row.idDesarrollo || row.id_desarrollo;
     const nombreModelo = row.nombreModelo || row.nombre_modelo;
 
-    // Support automatic idDesarrollo generation if name and constructor are provided
     if (!idDesarrollo) {
         const nombreDes = cleanStr(row.nombreDesarrollo || row.nombre_desarrollo || row.desarrollo);
         const constructora = cleanStr(row.constructora || row.Constructora || row.desarrollador);
@@ -243,8 +208,7 @@ export const adaptModelo = (row) => {
 
     if (row.tipo_vivienda || row.tipoVivienda) out.tipoVivienda = row.tipo_vivienda || row.tipoVivienda;
 
-    // STATUS (New in Model)
-    // Supports flexible (string or pipe-separated)
+    // STATUS
     const rawStatus = row.status || row.estado;
     if (rawStatus) {
         if (rawStatus.includes('|')) {
@@ -304,14 +268,11 @@ export const adaptModelo = (row) => {
     if (row.ia_debiles) analisis.puntosDebiles = parsePipes(row.ia_debiles);
     if (Object.keys(analisis).length > 0) out.analisisIA = analisis;
 
-    // 8. PROMOCION (New)
+    // 8. PROMOCION
     const prom = {};
     const mPNombre = row['promocion.nombre'] || row.promocion_nombre || row['Promocion.nombre'];
     if (mPNombre) prom.nombre = mPNombre;
 
-    // Timezone safe parsing for Models
-    // Issue: We might not have City here.
-    // Solution: If 'ciudad' or 'timezone_city' is passed in CSV, use it. Else default to Mexico City.
     const city = row.ciudad || row.timezone_city || 'Mexico City';
 
     const startStr = row['promocion.inicio'] || row.promocion_inicio || row['promocion.fecha_inicio'];
@@ -356,43 +317,19 @@ export const adaptModelo = (row) => {
 };
 
 
-// Helper to clean strings
-const cleanStr = (val) => String(val || '').trim();
-
-// Generic Slug/ID Generator
-const generateId = (part1, part2) => {
-    if (!part1 || !part2) return null;
-    const raw = `${part1}-${part2}`;
-    return raw.toLowerCase()
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove accents
-        .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with -
-        .replace(/^-+|-+$/g, ''); // Trim leading/trailing dashes
-};
-
-const cleanEmail = (val) => cleanStr(val).toLowerCase();
-const cleanPhone = (val) => cleanStr(val).replace(/\D/g, ''); // Digits only
-
-// Helper to parse pipes "15|15|70" -> [15, 15, 70]
-const parseHitos = (val) => {
-    if (!val) return [];
-    return String(val).split('|')
-        .map(v => parseFloat(v.trim()))
-        .filter(n => !isNaN(n));
-};
-
 export const adaptDesarrollador = (row) => {
     const out = {};
     const nombre = cleanStr(row.Nombre || row.nombre);
 
     // 1. ID Slug Generation
-    // If ID provided use it, otherwise generate from name
     if (row.ID || row.id) {
         out.id = cleanStr(row.ID || row.id);
     } else if (nombre) {
+        // Simple slug for dev as fallback, though users should provide ID hopefully
         out.id = nombre.toLowerCase()
-            .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove accents
-            .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanum with -
-            .replace(/^-+|-+$/g, ''); // Trim dashes
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
     }
 
     if (nombre) out.nombre = nombre;

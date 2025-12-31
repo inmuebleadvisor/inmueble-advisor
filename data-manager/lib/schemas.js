@@ -1,39 +1,7 @@
+
 import { z } from 'zod';
 import { Timestamp } from 'firebase-admin/firestore';
-
-// --- UTILS & TRANSFORMS ---
-
-const parseBoolean = (val) => {
-    if (typeof val === 'boolean') return val;
-    if (val === undefined || val === null || val === '') return false;
-    const s = String(val).trim().toLowerCase();
-    return ['true', '1', 'yes', 'si', 'on', 'activo', 'active'].includes(s);
-};
-
-const parseNumber = (val) => {
-    if (typeof val === 'number') return val;
-    if (!val) return 0;
-    const num = parseFloat(String(val).replace(/[$,]/g, ''));
-    return isNaN(num) ? 0 : num;
-};
-
-const parseArray = (val) => {
-    if (Array.isArray(val)) return val;
-    if (!val) return [];
-    return String(val).split('|').map(s => s.trim()).filter(s => s !== "");
-};
-
-const parseDate = (val) => {
-    if (val instanceof Timestamp) return val;
-    if (!val) return null;
-    try {
-        const date = new Date(val);
-        if (isNaN(date.getTime())) return null;
-        return Timestamp.fromDate(date);
-    } catch (e) {
-        return null;
-    }
-};
+import { parseBoolean, parseNumber, parseArray, parseDate } from './shared/zod-utils.js';
 
 // --- SCHEMAS ---
 
@@ -41,19 +9,19 @@ export const UbicacionSchema = z.object({
     calle: z.string().optional(),
     colonia: z.string().optional(),
     localidad: z.string().optional(),
-    cp: z.preprocess(parseNumber, z.number().optional()), // Added
+    cp: z.preprocess(parseNumber, z.number().optional()),
     ciudad: z.string().optional(),
     estado: z.string().optional(),
     zona: z.string().optional(),
     latitud: z.preprocess(parseNumber, z.number().optional()),
     longitud: z.preprocess(parseNumber, z.number().optional()),
-});
+}).strict(); // Data hygiene
 
 export const FinanciamientoSchema = z.object({
     aceptaCreditos: z.preprocess(parseArray, z.array(z.string()).optional()),
     apartadoMinimo: z.preprocess(parseNumber, z.number().optional()),
     engancheMinimoPorcentaje: z.preprocess(parseNumber, z.number().optional()),
-});
+}).strict();
 
 export const InfoComercialDesarrolloSchema = z.object({
     cantidadModelos: z.preprocess(parseNumber, z.number().optional()),
@@ -62,44 +30,44 @@ export const InfoComercialDesarrolloSchema = z.object({
     unidadesTotales: z.preprocess(parseNumber, z.number().optional()),
     unidadesVendidas: z.preprocess(parseNumber, z.number().optional()),
     unidadesDisponibles: z.preprocess(parseNumber, z.number().optional()),
-});
+}).strict();
 
 export const AnalisisIASchema = z.object({
     resumen: z.string().optional(),
     puntosFuertes: z.preprocess(parseArray, z.array(z.string()).optional()),
     puntosDebiles: z.preprocess(parseArray, z.array(z.string()).optional()),
-});
+}).strict();
 
 export const MediaDesarrolloSchema = z.object({
     cover: z.string().optional(),
     gallery: z.preprocess(parseArray, z.array(z.string()).optional()),
     brochure: z.string().optional(),
     video: z.string().optional(),
-});
+}).strict();
 
 export const PromocionSchema = z.object({
     nombre: z.string().optional(),
     fecha_inicio: z.preprocess(parseDate, z.custom((val) => val === null || val instanceof Timestamp).optional()),
     fecha_fin: z.preprocess(parseDate, z.custom((val) => val === null || val instanceof Timestamp).optional()),
-});
+}).strict();
 
 export const CaracteristicasDesarrolloSchema = z.object({
     amenidades: z.preprocess(parseArray, z.array(z.string()).optional()),
     entorno: z.preprocess(parseArray, z.array(z.string()).optional()),
-});
+}).strict();
 
 export const ComisionesDesarrolloSchema = z.object({
     overridePct: z.preprocess(parseNumber, z.number().optional()),
-});
+}).strict();
 
 export const DesarrolloSchema = z.object({
     id: z.string().optional(),
     nombre: z.string().min(1, "Nombre es requerido"),
     descripcion: z.string().optional(),
-    constructora: z.string().min(1, "Constructora es requerida"), // Linked to Desarrollador Name/ID logically
+    constructora: z.string().min(1, "Constructora es requerida"),
 
     activo: z.preprocess(parseBoolean, z.boolean().default(true)),
-    geografiaId: z.string().optional(), // Standardized ID (e.g., mx-sin-cul)
+    geografiaId: z.string().optional(),
 
     ubicacion: UbicacionSchema.optional(),
     caracteristicas: CaracteristicasDesarrolloSchema.optional(),
@@ -112,26 +80,27 @@ export const DesarrolloSchema = z.object({
     infoComercial: InfoComercialDesarrolloSchema.optional(),
 
     precios: z.object({
-        desde: z.preprocess(parseNumber, z.number().optional()), // Calculated usually
-    }).optional(),
+        desde: z.preprocess(parseNumber, z.number().optional()),
+        moneda: z.string().optional() // Fix: Added missing field
+    }).strict().optional(),
 
-    // Protected / Calculated Fields (Not usually in CSV but schema supports them for DB reads/writes)
+    // Protected / Calculated Fields 
     stats: z.object({
         rangoPrecios: z.array(z.number()).optional(),
         inventario: z.number().optional()
-    }).optional(),
+    }).strict().optional(),
 
-    scoreCard: z.any().optional(), // Calculated external process
+    scoreCard: z.any().optional(),
 
     legal: z.object({
         regimenPropiedad: z.string().default('Condominio')
-    }).optional(),
+    }).strict().optional(),
 
     analisisIA: AnalisisIASchema.optional(),
     promocion: PromocionSchema.optional(),
 
     updatedAt: z.custom((val) => val instanceof Timestamp).optional(),
-});
+}).strict();
 
 
 // --- MODELO SCHEMA ---
@@ -139,7 +108,7 @@ export const DesarrolloSchema = z.object({
 export const AcabadosSchema = z.object({
     cocina: z.string().optional(),
     pisos: z.string().optional(),
-});
+}).strict();
 
 export const MediaModeloSchema = z.object({
     cover: z.string().optional(),
@@ -147,14 +116,14 @@ export const MediaModeloSchema = z.object({
     plantasArquitectonicas: z.preprocess(parseArray, z.array(z.string()).optional()),
     recorridoVirtual: z.string().optional(),
     videoPromocional: z.string().optional(),
-});
+}).strict();
 
 export const InfoComercialModeloSchema = z.object({
     fechaInicioVenta: z.preprocess(parseDate, z.custom((val) => val === null || val instanceof Timestamp).optional()),
     plusvaliaEstimada: z.preprocess(parseNumber, z.number().optional()),
     unidadesVendidas: z.preprocess(parseNumber, z.number().optional()),
-    tiempoEntrega: z.string().optional(), // Added
-});
+    tiempoEntrega: z.string().optional(),
+}).strict();
 
 export const PreciosModeloSchema = z.object({
     base: z.preprocess(parseNumber, z.number().min(0)),
@@ -162,12 +131,12 @@ export const PreciosModeloSchema = z.object({
     metroCuadrado: z.preprocess(parseNumber, z.number().optional()),
     mantenimientoMensual: z.preprocess(parseNumber, z.number().optional()),
     moneda: z.string().default('MXN'),
-});
+}).strict();
 
 export const PrecioHistoricoSchema = z.object({
     fecha: z.custom((val) => val instanceof Timestamp),
     precio: z.number()
-});
+}).strict();
 
 
 
@@ -214,10 +183,10 @@ export const ModeloSchema = z.object({
     preciosHistoricos: z.array(PrecioHistoricoSchema).optional(),
     plusvaliaReal: z.number().optional(),
 
-    promocion: PromocionSchema.optional(), // Added
+    promocion: PromocionSchema.optional(),
 
     updatedAt: z.custom((val) => val instanceof Timestamp).optional(),
-});
+}).strict();
 
 // --- DESARROLLADOR SCHEMA ---
 
@@ -230,14 +199,14 @@ export const ContactoSchema = z.object({
     telefono2: z.string().optional(),
     mail2: z.string().optional(),
     puesto2: z.string().optional(),
-});
+}).strict();
 
 export const EsquemaPagoSchema = z.object({
     apartado: z.preprocess(parseNumber, z.number().optional()),
     enganche: z.preprocess(parseNumber, z.number().optional()),
     aprobacionCredito: z.preprocess(parseNumber, z.number().optional()),
     escrituracion: z.preprocess(parseNumber, z.number().optional()),
-});
+}).strict();
 
 export const DesarrolladorSchema = z.object({
     id: z.string().optional(),
@@ -246,7 +215,7 @@ export const DesarrolladorSchema = z.object({
 
     fiscal: z.object({
         razonSocial: z.string().optional()
-    }).optional(),
+    }).strict().optional(),
 
     comisiones: z.object({
         porcentajeBase: z.preprocess(parseNumber, z.number().default(3)),
@@ -254,7 +223,7 @@ export const DesarrolladorSchema = z.object({
             credito: z.array(z.number()).optional(),
             contado: z.array(z.number()).optional(),
             directo: z.array(z.number()).optional()
-        }).optional().refine((data) => {
+        }).strict().optional().refine((data) => {
             if (!data) return true;
             const validateSum = (arr) => {
                 if (!arr || arr.length === 0) return true;
@@ -267,7 +236,7 @@ export const DesarrolladorSchema = z.object({
             if (!validateSum(data.directo)) return false;
             return true;
         }, { message: "La suma de los hitos de comisión debe ser 100%" })
-    }).optional(),
+    }).strict().optional(),
 
     contacto: z.object({
         principal: z.object({
@@ -275,17 +244,15 @@ export const DesarrolladorSchema = z.object({
             telefono: z.string().optional(),
             email: z.string().toLowerCase().optional(),
             puesto: z.string().optional()
-        }).optional(),
+        }).strict().optional(),
         secundario: z.object({
             nombre: z.string().optional(),
             telefono: z.string().optional(),
             email: z.string().toLowerCase().optional(),
             puesto: z.string().optional()
-        }).optional()
-    }).optional(),
+        }).strict().optional()
+    }).strict().optional(),
 
-    // Legacy or deprecated flat fields removed or kept for backward compat?
-    // Requirement implies transforming to new structure. We keep schema strict on output structure.
 
     asesoresDesarrollo: z.preprocess(parseArray, z.array(z.string()).optional()),
     desarrollos: z.preprocess(parseArray, z.array(z.string()).optional()),
@@ -294,7 +261,7 @@ export const DesarrolladorSchema = z.object({
     operacion: z.object({
         asesoresAutorizados: z.array(z.string()).optional(),
         asesoresConLeads: z.array(z.string()).optional()
-    }).optional(),
+    }).strict().optional(),
 
     // Calculated fields
     ciudades: z.array(z.string()).optional(),
@@ -303,7 +270,7 @@ export const DesarrolladorSchema = z.object({
     stats: z.object({
         ofertaTotal: z.number().optional(),
         viviendasxVender: z.number().optional()
-    }).optional(),
+    }).strict().optional(),
 
     updatedAt: z.custom((val) => val instanceof Timestamp).optional(),
-});
+}).strict();
