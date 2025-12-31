@@ -105,7 +105,8 @@ export const recalculateDevelopmentStats = async (db, developmentIds) => {
             const val = DesarrolloSchema.safeParse(mergedData);
             if (!val.success) {
                 console.error(colors.red(`   ⚠️ Validation failed for generated stats on ${devId}. Aborting update.`));
-                // console.error(val.error);
+                // Log validation errors nicely
+                console.error(JSON.stringify(val.error.format(), null, 2));
                 continue;
             }
 

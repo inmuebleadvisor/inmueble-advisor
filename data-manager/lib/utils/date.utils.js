@@ -89,3 +89,33 @@ export const toFirestoreTimestamp = (val) => {
     if (!date) return null;
     return Timestamp.fromDate(date);
 };
+
+/**
+ * Extracts and parses promotion dates from a CSV row.
+ * Handles multiple header variations and city timezone.
+ * @param {object} row - The CSV row data.
+ * @param {string} city - The city for timezone context.
+ * @returns {object} - { fecha_inicio: Timestamp | undefined, fecha_fin: Timestamp | undefined }
+ */
+export const extractPromoDates = (row, city) => {
+    const out = {};
+    if (!city) city = 'Mexico City';
+
+    // Start Date Keys
+    const startStr = row['promocion.inicio'] || row['promocion.fechainicio'] || row.promocion_inicio || row['promocion.fecha_inicio'];
+    if (startStr) {
+        const d = parseDateWithTimezone(startStr, city, false);
+        if (d) out.fecha_inicio = toFirestoreTimestamp(d);
+        else if (parseSimpleDate(startStr)) out.fecha_inicio = toFirestoreTimestamp(parseSimpleDate(startStr));
+    }
+
+    // End Date Keys
+    const endStr = row['promocion.final'] || row['promocion.fechafinal'] || row.promocion_fin || row['promocion.fecha_fin'];
+    if (endStr) {
+        const d = parseDateWithTimezone(endStr, city, true);
+        if (d) out.fecha_fin = toFirestoreTimestamp(d);
+        else if (parseSimpleDate(endStr)) out.fecha_fin = toFirestoreTimestamp(parseSimpleDate(endStr));
+    }
+
+    return out;
+};

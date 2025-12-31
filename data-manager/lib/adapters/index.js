@@ -13,7 +13,8 @@ import {
 import {
     parseDateWithTimezone,
     parseSimpleDate,
-    toFirestoreTimestamp
+    toFirestoreTimestamp,
+    extractPromoDates
 } from '../utils/date.utils.js';
 
 
@@ -27,7 +28,10 @@ export const adaptDesarrollo = (row) => {
     if (nombre) out.nombre = nombre;
     if (constructora) out.constructora = constructora;
     if (row.descripcion) out.descripcion = row.descripcion;
-    if (row.activo !== undefined) out.activo = row.activo;
+    if (row.activo !== undefined) {
+        const val = String(row.activo).toUpperCase();
+        out.activo = (val === 'TRUE' || val === '1' || val === 'ON');
+    }
 
     // ID Generation: slug(constructora + "-" + nombre)
     if (nombre && constructora) {
@@ -63,7 +67,8 @@ export const adaptDesarrollo = (row) => {
         }
     }
 
-    if (Object.keys(ubicacion).length > 0) out.ubicacion = ubicacion;
+    // Always assign ubicacion object to satisfy schema type (zhema validates content)
+    out.ubicacion = ubicacion;
 
     // 3. Caracteristicas (Amenidades & Entorno) - Pipes
     const caracteristicas = {};
@@ -148,20 +153,10 @@ export const adaptDesarrollo = (row) => {
     const city = out.ubicacion?.ciudad || 'Mexico City';
 
     // Start Date
-    const startStr = row['promocion.inicio'] || row['promocion.fechainicio'] || row.promocion_inicio || row['promocion.fecha_inicio'];
-    if (startStr) {
-        const d = parseDateWithTimezone(startStr, city, false);
-        if (d) prom.fecha_inicio = toFirestoreTimestamp(d);
-        else if (parseSimpleDate(startStr)) prom.fecha_inicio = toFirestoreTimestamp(parseSimpleDate(startStr));
-    }
-
-    // End Date
-    const endStr = row['promocion.final'] || row['promocion.fechafinal'] || row.promocion_fin || row['promocion.fecha_fin'];
-    if (endStr) {
-        const d = parseDateWithTimezone(endStr, city, true);
-        if (d) prom.fecha_fin = toFirestoreTimestamp(d);
-        else if (parseSimpleDate(endStr)) prom.fecha_fin = toFirestoreTimestamp(parseSimpleDate(endStr));
-    }
+    // Start & End Date (Timezone Safe)
+    const dates = extractPromoDates(row, city);
+    if (dates.fecha_inicio) prom.fecha_inicio = dates.fecha_inicio;
+    if (dates.fecha_fin) prom.fecha_fin = dates.fecha_fin;
 
     if (Object.keys(prom).length > 0) out.promocion = prom;
 
@@ -197,7 +192,10 @@ export const adaptModelo = (row) => {
         out.highlights = [row.highlight || row.destacado];
     }
 
-    if (row.activo !== undefined) out.activo = row.activo;
+    if (row.activo !== undefined) {
+        const val = String(row.activo).toUpperCase();
+        out.activo = (val === 'TRUE' || val === '1' || val === 'ON');
+    }
     // Removed Legacy ActivoModelo support as per Audit Plan.
 
     if (row.tipo_vivienda || row.tipoVivienda) out.tipoVivienda = row.tipo_vivienda || row.tipoVivienda;
@@ -213,11 +211,19 @@ export const adaptModelo = (row) => {
     }
 
     // 2. Precios
+    // 2. Precios
+    const cleanNum = (val) => {
+        if (!val) return undefined;
+        const s = String(val).replace(/[$,]/g, '');
+        const n = parseFloat(s);
+        return isNaN(n) ? undefined : n;
+    };
+
     const precios = {};
-    if (row.precio_inicial || row.precio_base || row['precios.base']) precios.base = row.precio_inicial || row.precio_base || row['precios.base'];
-    if (row.precio_orig_lista || row['precios.inicial']) precios.inicial = row.precio_orig_lista || row['precios.inicial'];
-    if (row.precio_m2 || row['precios.metroCuadrado']) precios.metroCuadrado = row.precio_m2 || row['precios.metroCuadrado'];
-    if (row.mantenimiento || row['precios.mantenimientoMensual']) precios.mantenimientoMensual = row.mantenimiento || row['precios.mantenimientoMensual'];
+    if (row.precio_inicial || row.precio_base || row['precios.base']) precios.base = cleanNum(row.precio_inicial || row.precio_base || row['precios.base']);
+    if (row.precio_orig_lista || row['precios.inicial']) precios.inicial = cleanNum(row.precio_orig_lista || row['precios.inicial']);
+    if (row.precio_m2 || row['precios.metroCuadrado']) precios.metroCuadrado = cleanNum(row.precio_m2 || row['precios.metroCuadrado']);
+    if (row.mantenimiento || row['precios.mantenimientoMensual']) precios.mantenimientoMensual = cleanNum(row.mantenimiento || row['precios.mantenimientoMensual']);
     if (row.moneda || row['precios.moneda']) precios.moneda = row.moneda || row['precios.moneda'];
     if (Object.keys(precios).length > 0) out.precios = precios;
 
@@ -230,15 +236,16 @@ export const adaptModelo = (row) => {
     if (Object.keys(info).length > 0) out.infoComercial = info;
 
     // 4. Specs
-    if (row.recamaras) out.recamaras = row.recamaras;
-    if (row.banos) out.banos = row.banos;
-    if (row.niveles) out.niveles = row.niveles;
-    if (row.cajones) out.cajones = row.cajones;
-    if (row.m2_const || row.m2) out.m2 = row.m2_const || row.m2;
-    if (row.m2_terreno || row.terreno) out.terreno = row.m2_terreno || row.terreno;
-    if (row.frente) out.frente = row.frente;
-    if (row.fondo) out.fondo = row.fondo;
-    if (row.amenidades) out.amenidades = row.amenidades;
+    // 4. Specs
+    if (row.recamaras) out.recamaras = cleanNum(row.recamaras);
+    if (row.banos) out.banos = cleanNum(row.banos);
+    if (row.niveles) out.niveles = cleanNum(row.niveles);
+    if (row.cajones) out.cajones = cleanNum(row.cajones);
+    if (row.m2_const || row.m2) out.m2 = cleanNum(row.m2_const || row.m2);
+    if (row.m2_terreno || row.terreno) out.terreno = cleanNum(row.m2_terreno || row.terreno);
+    if (row.frente) out.frente = cleanNum(row.frente);
+    if (row.fondo) out.fondo = cleanNum(row.fondo);
+    if (row.amenidades) out.amenidades = parsePipes(row.amenidades);
 
     // 5. Acabados
     const acabados = {};
@@ -247,10 +254,11 @@ export const adaptModelo = (row) => {
     if (Object.keys(acabados).length > 0) out.acabados = acabados;
 
     // 6. Media
+    // 6. Media
     const media = {};
     if (row.img_cover || row['media.cover']) media.cover = row.img_cover || row['media.cover'];
-    if (row.img_galeria || row['media.gallery'] || row['media.galeria']) media.gallery = row.img_galeria || row['media.gallery'] || row['media.galeria'];
-    if (row.url_plantas || row['media.plantasArquitectonicas']) media.plantasArquitectonicas = row.url_plantas || row['media.plantasArquitectonicas'];
+    if (row.img_galeria || row['media.gallery'] || row['media.galeria']) media.gallery = parsePipes(row.img_galeria || row['media.gallery'] || row['media.galeria']);
+    if (row.url_plantas || row['media.plantasArquitectonicas']) media.plantasArquitectonicas = parsePipes(row.url_plantas || row['media.plantasArquitectonicas']);
     if (row.url_tour || row['media.recorridoVirtual']) media.recorridoVirtual = row.url_tour || row['media.recorridoVirtual'];
     if (row.url_video || row['media.videoPromocional'] || row['media.video']) media.videoPromocional = row.url_video || row['media.videoPromocional'] || row['media.video'];
     if (Object.keys(media).length > 0) out.media = media;
@@ -269,19 +277,9 @@ export const adaptModelo = (row) => {
 
     const city = row.ciudad || row.timezone_city || 'Mexico City';
 
-    const startStr = row['promocion.inicio'] || row.promocion_inicio || row['promocion.fecha_inicio'];
-    if (startStr) {
-        const d = parseDateWithTimezone(startStr, city, false);
-        if (d) prom.fecha_inicio = toFirestoreTimestamp(d);
-        else if (parseSimpleDate(startStr)) prom.fecha_inicio = toFirestoreTimestamp(parseSimpleDate(startStr));
-    }
-
-    const endStr = row['promocion.final'] || row.promocion_fin || row['promocion.fecha_fin'];
-    if (endStr) {
-        const d = parseDateWithTimezone(endStr, city, true);
-        if (d) prom.fecha_fin = toFirestoreTimestamp(d);
-        else if (parseSimpleDate(endStr)) prom.fecha_fin = toFirestoreTimestamp(parseSimpleDate(endStr));
-    }
+    const dates = extractPromoDates(row, city);
+    if (dates.fecha_inicio) prom.fecha_inicio = dates.fecha_inicio;
+    if (dates.fecha_fin) prom.fecha_fin = dates.fecha_fin;
 
     if (Object.keys(prom).length > 0) out.promocion = prom;
 

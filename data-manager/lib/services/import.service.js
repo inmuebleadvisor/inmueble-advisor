@@ -6,24 +6,11 @@ import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import stringSimilarity from 'string-similarity';
 
 // Imports from new Structure
-import { initializeFirebase } from '../utils.js'; // Helper kept in root of lib for now or move? 
-// Actually utils.js is in lib/utils.js now? No, the original utils.js (firebase init) was at lib/utils.js.
-// Wait, I created lib/utils directory but didn't move the original lib/utils.js there yet. 
-// I should probably move it or import from parent.
-// Let's assume I will move lib/utils.js to lib/utils/firebase.utils.js or similar?
-// For now, I'll refer to wherever it is. The user "kept logic in data-manager".
-// I'll stick to 'lib/utils.js' if I haven't moved it, OR import from '../utils.js' if I am in lib/services.
-// Checking my previous steps: I created lib/utils dir. I created date/string utils there.
-// I did NOT move lib/utils.js (Firebase init). So it is at '../utils.js' relative to 'lib/services'.
-
+import { initializeFirebase as initFirebase } from '../utils.js';
 import { recalculateDevelopmentStats, recalculateCityHighlights, recalculateDesarrolladorStats } from './stats.service.js';
 import { logger } from '../logger.js';
 import { DesarrolloSchema, ModeloSchema, DesarrolladorSchema } from '../models/schemas.js';
 import { adaptDesarrollo, adaptModelo, adaptDesarrollador } from '../adapters/index.js';
-
-// Fix import path for initializeFirebase if I haven't moved it.
-// Path: lib/utils.js -> ../utils.js
-import { initializeFirebase as initFirebase } from '../utils.js';
 
 export const importCollection = async (collectionName, filePath, options = {}) => {
     const db = initFirebase();

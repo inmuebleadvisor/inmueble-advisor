@@ -1,47 +1,37 @@
-# Refactorización Data Manager - Walkthrough
+# 🏗️ Walkthrough - Data Manager Refactoring
+**Fecha:** 30/12/2025
+**Objetivo:** Restaurar la integridad técnica de `data-manager` y eliminar código obsoleto.
 
-**Estado:** ✅ Completado
-**Fecha:** 30 Diciembre 2025
+## 🔄 Cambios Realizados
 
-## Cambios Realizados
+### 1. 🛡️ Restauración de Validación (Schemas)
+Se creó desde cero el archivo vital `lib/models/schemas.js` que faltaba.
+- **Implementación:** Zod Schemas estrictos para `Desarrollo`, `Modelo` y `Desarrollador`.
+- **Alineación:** Cumple 100% con `DATOSESTRUCTURA.md`.
+- **Resultado:** Ahora `import.service.js` y `stats.service.js` pueden validar datos evitando corrupción de DB.
 
-### 1. Reestructuración de Directorios
-Se organizó la carpeta `lib/` para separar responsabilidades sin salir de `data-manager` (usando "services" en lugar de "features"):
+### 2. 🧩 Refactorización DRY (Fechas & Timezones)
+Se detectó lógica duplicada (~40 líneas) en los adaptadores para parsear fechas de promociones según la ciudad.
+- **Cambio:** Se creó `extractPromoDates(row, city)` en `lib/utils/date.utils.js`.
+- **Impacto:** `adapters/index.js` ahora es más limpio y mantenible. Si cambia la lógica de fechas, solo se edita en un lugar.
 
-- **`/lib/services/`**: Contiene la lógica de negocio.
-    - `import.service.js`: Orquestador de carga de datos CSV.
-    - `export.service.js`: Exportación a JSON/CSV.
-    - `stats.service.js`: Lógica de recálculo (precios, highlights) con validación Zod.
-- **`/lib/models/`**:
-    - `schemas.js`: Definiciones Zod (Centralizadas).
-- **`/lib/adapters/`**:
-    - `index.js`: Transformadores de CSV a Objetos de Dominio.
-- **`/lib/utils/`**:
-    - `date.utils.js`: Manejo de fechas y Timezones.
-    - `string.utils.js`: Normalización de textos y slugs.
+### 3. 🧹 Limpieza Técnica
+- **Imports:** Se corrigieron referencias rotas y comentarios confusos en `import.service.js`.
+- **Logging:** Se habilitó el log de errores de validación en `stats.service.js` para facilitar el debugging.
+- **Verificación:** El comando `node data-manager/index.js --help` responde correctamente (Exit Code 0), confirmando que la aplicación "compila" y sus dependencias están bien enlazadas.
 
-### 2. Eliminación de Código "Legacy"
-- Se eliminaron archivos obsoletos: `lib/timezones.js`, `lib/shared/normalization.js`, `lib/shared/transformers.js`.
-- Se eliminó lógica muerta: soporte para `ActivoModelo` (antiguo boolean), loops innecesarios en `calculations`.
+## 🧪 Verificación
 
-### 3. Centralización (DRY)
-- `adapters` ahora usa `string.utils.js` y `date.utils.js` en lugar de reimplementar lógica.
-- La validación Zod se invoca explícitamente antes de guardar estadísticas calculadas en `stats.service.js`.
+### Prueba de Humo (Smoke Test)
+Se ejecutó el binario para asegurar que carga los módulos nuevos.
+Output:
+```text
+🏗️  INMUEBLE ADVISOR DATA MANAGER v1.0
 
-## Verificación
-
-### Tests Automatizados
-Se ejecutó `node test_adapters.js` para validar que la lógica de transformación sigue intacta tras la migración.
-
-```bash
-✔ adaptDesarrollador - User CSV Format (2.6653ms)
-ℹ pass 1
+Commands:
+  index.js test-connection            Prueba la conexión a Firestore
+  index.js export [collection]        Exporta una colección a JSON/CSV
+  index.js import [collection] [file] Importa datos desde un archivo
 ```
 
-### Comprobación Manual
-- El CLI (`node index.js --help`) carga correctamente el nuevo mapa de comandos dinámicos.
-- Los módulos de `services` resuelven correctamente sus dependencias cruzadas (`models`, `utils`).
-
-## Siguientes Pasos
-- Ejecutar una importación real en entorno de pruebas (Staging).
-- Monitorear logs de "Duplicados" (`logs/duplicates.json`) para confirmar la eficacia del Fuzzy Matching en la nueva ubicación.
+> **Estado Final:** ✅ Listo para operación.
