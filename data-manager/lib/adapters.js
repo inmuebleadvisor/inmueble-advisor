@@ -44,32 +44,48 @@ const toTimestamp = (date) => {
     return date ? Timestamp.fromDate(date) : null;
 };
 
+const parsePipes = (val) => val ? String(val).split('|').map(s => s.trim()).filter(s => s) : [];
+
 export const adaptDesarrollo = (row) => {
     const out = {};
 
-    // 1. Identifiers
-    if (row.id) out.id = row.id;
-    if (row.nombre) out.nombre = row.nombre.trim();
-    if (row.descripcion) out.descripcion = row.descripcion;
-    if (row.constructora) out.constructora = row.constructora.trim();
-    // Status REMOVED from Desarrollos
+    // 1. Identifiers & Deterministic ID
+    const nombre = cleanStr(row.nombre || row.Nombre);
+    const constructora = cleanStr(row.constructora || row.Constructora);
 
+    if (nombre) out.nombre = nombre;
+    if (constructora) out.constructora = constructora;
+    if (row.descripcion) out.descripcion = row.descripcion;
     if (row.activo !== undefined) out.activo = row.activo;
-    if (row.score) out.scoreDesarrollo = row.score;
-    if (row.keywords) out.keywords = row.keywords;
+
+    // ID Generation: slug(constructora + "-" + nombre)
+    if (nombre && constructora) {
+        // Normalize strict: lower, no accents, alphanumeric-only -> slug
+        const rawSlug = `${constructora}-${nombre}`;
+        out.id = rawSlug.toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+    } else if (row.id) {
+        out.id = row.id; // Fallback if CSV has ID but no names? Unlikely per requirements
+    }
 
     // 2. Ubicacion
     const ubicacion = {};
     if (row.calle || row['ubicacion.calle']) ubicacion.calle = row.calle || row['ubicacion.calle'];
     if (row.colonia || row['ubicacion.colonia']) ubicacion.colonia = row.colonia || row['ubicacion.colonia'];
     if (row.localidad || row['ubicacion.localidad']) ubicacion.localidad = row.localidad || row['ubicacion.localidad'];
+
+    // CP & Localidad (User specific headers: "codigopostal", "localidad")
+    if (row.codigopostal) ubicacion.cp = parseFloat(row.codigopostal);
+    // row.localidad handled above but make sure user header maps there if not covered by standard
+
     if (row.ciudad || row['ubicacion.ciudad']) ubicacion.ciudad = row.ciudad || row['ubicacion.ciudad'];
     if (row.estado || row['ubicacion.estado']) ubicacion.estado = row.estado || row['ubicacion.estado'];
     if (row.zona || row['ubicacion.zona']) ubicacion.zona = row.zona || row['ubicacion.zona'];
-    if (row.latitud || row['ubicacion.latitud']) ubicacion.latitud = row.latitud || row['ubicacion.latitud'];
-    if (row.longitud || row['ubicacion.longitud']) ubicacion.longitud = row.longitud || row['ubicacion.longitud'];
-    if (row.latitud || row['ubicacion.latitud']) ubicacion.latitud = row.latitud || row['ubicacion.latitud'];
-    if (row.longitud || row['ubicacion.longitud']) ubicacion.longitud = row.longitud || row['ubicacion.longitud'];
+    // Coerce Coords
+    if (row.latitud || row['ubicacion.latitud']) ubicacion.latitud = parseFloat(row.latitud || row['ubicacion.latitud']);
+    if (row.longitud || row['ubicacion.longitud']) ubicacion.longitud = parseFloat(row.longitud || row['ubicacion.longitud']);
 
     // Geo-Tagging Implementation
     if (ubicacion.ciudad) {
@@ -78,33 +94,50 @@ export const adaptDesarrollo = (row) => {
             ubicacion.ciudad = std.ciudad;
             if (std.estado) ubicacion.estado = std.estado;
             out.geografiaId = std.geografiaId;
-
-            // Check if it was a custom fallback to log warning (optional, kept silent for adapter purity)
-            if (std.geografiaId.startsWith('mx-custom-')) {
-                // If we had a logger here... but adapters are usually pure.
-                // We trust the value is set.
-            }
         }
     }
 
     if (Object.keys(ubicacion).length > 0) out.ubicacion = ubicacion;
 
-    // 3. Precios
-    const precios = {};
-    if (row.precio_desde || row['precios.desde']) precios.desde = row.precio_desde || row['precios.desde'];
-    if (row['precios.moneda']) precios.moneda = row['precios.moneda'];
-    if (Object.keys(precios).length > 0) out.precios = precios;
+    // 3. Caracteristicas (Amenidades & Entorno) - Pipes
+    const caracteristicas = {};
 
-    // 4. Info Comercial
+    if (row.amenidades) caracteristicas.amenidades = parsePipes(row.amenidades);
+    if (row.entorno) caracteristicas.entorno = parsePipes(row.entorno);
+
+    if (Object.keys(caracteristicas).length > 0) out.caracteristicas = caracteristicas;
+
+
+    // 4. Financiamiento
+    const fin = {};
+    if (row.acepta_creditos) fin.aceptaCreditos = parsePipes(row.acepta_creditos);
+    if (row.apartado_monto) fin.apartadoMinimo = parseFloat(row.apartado_monto);
+    if (row.enganche_pct) fin.engancheMinimoPorcentaje = parseFloat(row.enganche_pct);
+
+    if (Object.keys(fin).length > 0) out.financiamiento = fin;
+
+
+    // 5. Media
+    const media = {};
+    if (row.url_cover) media.cover = row.url_cover;
+    if (row.url_gallery) media.gallery = parsePipes(row.url_gallery);
+    if (row.url_brochure) media.brochure = row.url_brochure;
+    if (row.url_video) media.video = row.url_video;
+
+    if (Object.keys(media).length > 0) out.media = media;
+
+
+    // 6. Comisiones
+    if (row.override_comision) {
+        out.comisiones = { overridePct: parseFloat(row.override_comision) };
+    }
+
+    // 7. Info Comercial
     const info = {};
-    if (row.fecha_entrega || row['infoComercial.fechaEntrega']) info.fechaEntrega = row.fecha_entrega || row['infoComercial.fechaEntrega'];
-    if (row.fecha_inicio || row['infoComercial.fechaInicioVenta']) info.fechaInicioVenta = row.fecha_inicio || row['infoComercial.fechaInicioVenta'];
-    if (row.num_modelos || row['infoComercial.cantidadModelos']) info.cantidadModelos = row.num_modelos || row['infoComercial.cantidadModelos'];
-    if (row.plusvalia_pct || row['infoComercial.plusvaliaPromedio']) info.plusvaliaPromedio = row.plusvalia_pct || row['infoComercial.plusvaliaPromedio'];
-
-    const rawTotales = row.unidades_totales || row['infoComercial.unidadesTotales'];
-    const rawVendidas = row.unidades_vendidas || row['infoComercial.unidadesVendidas'];
-    const rawDisponibles = row.unidades_disponibles || row['infoComercial.unidadesDisponibles'];
+    // Units Logic (Restored & Updated)
+    const rawTotales = row['unidades.totales'] || row.unidades_totales || row['infoComercial.unidadesTotales'];
+    const rawVendidas = row['unidades.vendidas'] || row.unidades_vendidas || row['infoComercial.unidadesVendidas'];
+    const rawDisponibles = row['unidades.disponibles'] || row.unidades_disponibles || row['infoComercial.unidadesDisponibles'];
 
     if (rawTotales) {
         const uT = parseFloat(rawTotales) || 0;
@@ -130,61 +163,53 @@ export const adaptDesarrollo = (row) => {
         if (rawDisponibles) info.unidadesDisponibles = parseFloat(rawDisponibles);
     }
 
+    // Other info fields if needed (num_modelos, etc.) - Restore if they were useful
+    if (row.num_modelos) info.cantidadModelos = parseFloat(row.num_modelos);
+
     if (Object.keys(info).length > 0) out.infoComercial = info;
 
-    // 5. Financiamiento
-    const fin = {};
-    if (row.fin_creditos || row['financiamiento.aceptaCreditos']) fin.aceptaCreditos = row.fin_creditos || row['financiamiento.aceptaCreditos'];
-    if (row.fin_apartado || row['financiamiento.apartadoMinimo']) fin.apartadoMinimo = row.fin_apartado || row['financiamiento.apartadoMinimo'];
-    if (row.fin_enganche || row['financiamiento.engancheMinimoPorcentaje']) fin.engancheMinimoPorcentaje = row.fin_enganche || row['financiamiento.engancheMinimoPorcentaje'];
-    if (Object.keys(fin).length > 0) out.financiamiento = fin;
 
-    // 6. Media
-    const media = {};
-    if (row.img_cover || row['media.cover']) media.cover = row.img_cover || row['media.cover'];
-    if (row.img_galeria || row['media.gallery']) media.gallery = row.img_galeria || row['media.gallery'];
-    if (row.url_brochure || row['media.brochure']) media.brochure = row.url_brochure || row['media.brochure'];
-    if (row.url_video || row['media.video']) media.video = row.url_video || row['media.video'];
-    if (Object.keys(media).length > 0) out.media = media;
+    // 8. Precios
+    const precios = {};
+    // Only basic mapping, most pricing logic is in models
+    if (row.moneda) precios.moneda = row.moneda;
+    if (Object.keys(precios).length > 0) out.precios = precios;
 
-    // 7. Legal
-    if (row.regimen || row['legal.regimenPropiedad']) out.legal = { regimenPropiedad: row.regimen || row['legal.regimenPropiedad'] };
 
-    // 8. Amenidades & Entorno
-    if (row.amenidades) out.amenidades = row.amenidades;
-    if (row.entorno) out.entorno = row.entorno;
+    if (row.regimen) out.legal = { regimenPropiedad: row.regimen };
 
-    // 9. Analisis IA
     const analisis = {};
     if (row.ia_resumen) analisis.resumen = row.ia_resumen;
-    if (row.ia_fuertes) analisis.puntosFuertes = row.ia_fuertes;
-    if (row.ia_debiles) analisis.puntosDebiles = row.ia_debiles;
+    if (row.ia_fuertes) {
+        const parsePipes = (val) => val ? String(val).split('|').map(s => s.trim()).filter(s => s) : [];
+        analisis.puntosFuertes = parsePipes(row.ia_fuertes);
+    }
+    if (row.ia_debiles) {
+        const parsePipes = (val) => val ? String(val).split('|').map(s => s.trim()).filter(s => s) : [];
+        analisis.puntosDebiles = parsePipes(row.ia_debiles);
+    }
     if (Object.keys(analisis).length > 0) out.analisisIA = analisis;
 
-    // 10. PROMOCION (New)
+    // 10. PROMOCION
     const prom = {};
-    if (row.promocion_nombre || row['promocion.nombre']) prom.nombre = row.promocion_nombre || row['promocion.nombre'];
+    // User requested headers: promocion.nombre, promocion.fechainicio, promocion.fechafinal
+    if (row['promocion.nombre'] || row.promocion_nombre) prom.nombre = row['promocion.nombre'] || row.promocion_nombre;
 
-    // Timezone safe parsing: Use City from same row (if csv has it)
+    // Timezone safe parsing: Use City from same row
     const city = out.ubicacion?.ciudad || 'Mexico City';
 
     // Start Date
-    const startStr = row.promocion_inicio || row['promocion.fecha_inicio'];
+    const startStr = row['promocion.fechainicio'] || row.promocion_inicio || row['promocion.fecha_inicio'];
     if (startStr) {
-        // Try parsing assuming YYYY-MM-DD in City Time
-        // Check if user provided ISO? If so, map directly?
-        // Guide says: "Regla de Oro: La vigencia ... alineados a la zona horaria de la ciudad"
-        // We assume CSV gives YYYY-MM-DD
         const d = parseDateWithTimezone(startStr, city, false);
         if (d) prom.fecha_inicio = toTimestamp(d);
-        // If not parsed (maybe full ISO), try basic parse
         else if (parseDateHelper(startStr)) prom.fecha_inicio = toTimestamp(parseDateHelper(startStr));
     }
 
     // End Date
-    const endStr = row.promocion_fin || row['promocion.fecha_fin'];
+    const endStr = row['promocion.fechafinal'] || row.promocion_fin || row['promocion.fecha_fin'];
     if (endStr) {
-        const d = parseDateWithTimezone(endStr, city, true); // End of day
+        const d = parseDateWithTimezone(endStr, city, true);
         if (d) prom.fecha_fin = toTimestamp(d);
         else if (parseDateHelper(endStr)) prom.fecha_fin = toTimestamp(parseDateHelper(endStr));
     }
@@ -279,6 +304,8 @@ export const adaptModelo = (row) => {
     // 7. Analisis IA
     const analisis = {};
     if (row.ia_resumen) analisis.resumen = row.ia_resumen;
+    if (row.ia_fuertes) analisis.puntosFuertes = parsePipes(row.ia_fuertes);
+    if (row.ia_debiles) analisis.puntosDebiles = parsePipes(row.ia_debiles);
     if (Object.keys(analisis).length > 0) out.analisisIA = analisis;
 
     // 8. PROMOCION (New)
@@ -332,42 +359,92 @@ export const adaptModelo = (row) => {
 };
 
 
+// Helper to clean strings
+const cleanStr = (val) => String(val || '').trim();
+const cleanEmail = (val) => cleanStr(val).toLowerCase();
+const cleanPhone = (val) => cleanStr(val).replace(/\D/g, ''); // Digits only
+
+// Helper to parse pipes "15|15|70" -> [15, 15, 70]
+const parseHitos = (val) => {
+    if (!val) return [];
+    return String(val).split('|')
+        .map(v => parseFloat(v.trim()))
+        .filter(n => !isNaN(n));
+};
+
 export const adaptDesarrollador = (row) => {
     const out = {};
+    const nombre = cleanStr(row.Nombre || row.nombre);
 
-    if (row.ID || row.id) out.id = String(row.ID || row.id).trim();
-    if (row.Nombre || row.nombre) out.nombre = String(row.Nombre || row.nombre).trim();
+    // 1. ID Slug Generation
+    // If ID provided use it, otherwise generate from name
+    if (row.ID || row.id) {
+        out.id = cleanStr(row.ID || row.id);
+    } else if (nombre) {
+        out.id = nombre.toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove accents
+            .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanum with -
+            .replace(/^-+|-+$/g, ''); // Trim dashes
+    }
 
-    // Contacto
+    if (nombre) out.nombre = nombre;
+    out.status = cleanStr(row.Status || row.status || 'activo').toLowerCase();
+
+    // 2. Fiscal
+    const razonSocial = cleanStr(row.RazonSocial || row.razon_social || row['fiscal.razonSocial']);
+    if (razonSocial) out.fiscal = { razonSocial };
+
+    // 3. Comisiones
+    const comisiones = {};
+    const basePct = parseFloat(row.ComisionBase || row.comision_base || row['comisiones.porcentajeBase']);
+    if (!isNaN(basePct)) comisiones.porcentajeBase = basePct;
+
+    const hitos = {};
+    const hCredito = parseHitos(row.HitosCredito || row.hitos_credito || row.pago_hitos_credito || row['comisiones.hitos.credito']);
+    if (hCredito.length > 0) hitos.credito = hCredito;
+
+    const hContado = parseHitos(row.HitosContado || row.hitos_contado || row.pago_hitos_contado || row['comisiones.hitos.contado']);
+    if (hContado.length > 0) hitos.contado = hContado;
+
+    const hDirecto = parseHitos(row.HitosDirecto || row.hitos_directo || row.pago_hitos_directo || row['comisiones.hitos.directo']);
+    if (hDirecto.length > 0) hitos.directo = hDirecto;
+
+    if (Object.keys(hitos).length > 0) comisiones.hitos = hitos;
+    if (Object.keys(comisiones).length > 0) out.comisiones = comisiones;
+
+    // 4. Contacto (Principal y Secundario)
     const contacto = {};
-    if (row['Contacto.Nombre1'] || row.contacto_nombre1) contacto.nombre1 = row['Contacto.Nombre1'] || row.contacto_nombre1;
-    if (row['Contacto.Telefono1'] || row.contacto_telefono1) contacto.telefono1 = row['Contacto.Telefono1'] || row.contacto_telefono1;
-    if (row['Contacto.Mail1'] || row.contacto_mail1) contacto.mail1 = row['Contacto.Mail1'] || row.contacto_mail1;
-    if (row['Contacto.Puesto1'] || row.contacto_puesto1) contacto.puesto1 = row['Contacto.Puesto1'] || row.contacto_puesto1;
+    const principal = {};
+    const pNombre = cleanStr(row.ContactoNombre || row.contacto_nombre_principal || row.contacto_nom_1 || row['contacto.principal.nombre']);
+    if (pNombre) principal.nombre = pNombre;
 
-    if (row['Contacto.Nombre2'] || row.contacto_nombre2) contacto.nombre2 = row['Contacto.Nombre2'] || row.contacto_nombre2;
-    if (row['Contacto.Telefono2'] || row.contacto_telefono2) contacto.telefono2 = row['Contacto.Telefono2'] || row.contacto_telefono2;
-    if (row['Contacto.Mail2'] || row.contacto_mail2) contacto.mail2 = row['Contacto.Mail2'] || row.contacto_mail2;
-    if (row['Contacto.Puesto2'] || row.contacto_puesto2) contacto.puesto2 = row['Contacto.Puesto2'] || row.contacto_puesto2;
+    const pTel = cleanPhone(row.ContactoTelefono || row.contacto_telefono_principal || row.contacto_tel_1 || row['contacto.principal.telefono']);
+    if (pTel) principal.telefono = pTel;
+
+    const pMail = cleanEmail(row.ContactoEmail || row.contacto_email_principal || row.contacto_mail_1 || row['contacto.principal.email']);
+    if (pMail) principal.email = pMail;
+
+    const pPuesto = cleanStr(row.ContactoPuesto || row.contacto_puesto_principal || row.contacto_puesto_1 || row['contacto.principal.puesto']);
+    if (pPuesto) principal.puesto = pPuesto;
+
+    if (Object.keys(principal).length > 0) contacto.principal = principal;
+
+    const secundario = {};
+    const sNombre = cleanStr(row.ContactoSecundarioNombre || row.contacto_nombre_secundario || row.contacto_nom_2 || row['contacto.secundario.nombre']);
+    if (sNombre) secundario.nombre = sNombre;
+
+    const sTel = cleanPhone(row.ContactoSecundarioTelefono || row.contacto_telefono_secundario || row.contacto_tel_2 || row['contacto.secundario.telefono']);
+    if (sTel) secundario.telefono = sTel;
+
+    const sMail = cleanEmail(row.ContactoSecundarioEmail || row.contacto_email_secundario || row.contacto_mail_2 || row['contacto.secundario.email']);
+    if (sMail) secundario.email = sMail;
+
+    const sPuesto = cleanStr(row.ContactoSecundarioPuesto || row.contacto_puesto_secundario || row['contacto.secundario.puesto']);
+    if (sPuesto) secundario.puesto = sPuesto;
+
+    if (Object.keys(secundario).length > 0) contacto.secundario = secundario;
 
     if (Object.keys(contacto).length > 0) out.contacto = contacto;
-
-    // EsquemaPago
-    const pago = {};
-    if (row['EsquemaPago.Apartado'] || row.pago_apartado) pago.apartado = row['EsquemaPago.Apartado'] || row.pago_apartado;
-    if (row['EsquemaPago.Enganche'] || row.pago_enganche) pago.enganche = row['EsquemaPago.Enganche'] || row.pago_enganche;
-    if (row['EsquemaPago.AprobacionCredito'] || row.pago_aprobacion) pago.aprobacionCredito = row['EsquemaPago.AprobacionCredito'] || row.pago_aprobacion;
-    if (row['EsquemaPago.Escrituracion'] || row.pago_escrituracion) pago.escrituracion = row['EsquemaPago.Escrituracion'] || row.pago_escrituracion;
-
-    if (Object.keys(pago).length > 0) out.esquemaPago = pago;
-
-    // Arrays
-    if (row.AsesoresDesarrollo) out.asesoresDesarrollo = row.AsesoresDesarrollo;
-    if (row.Desarrollos) out.desarrollos = row.Desarrollos;
-
-    // Note: 'Ciudades', 'Ofertatotal', 'ViviendasxVender' are typically calculated, 
-    // but if provided in csv we can allow import (though recalc will overwrite).
-    if (row.Ciudades) out.ciudades = row.Ciudades;
 
     return out;
 };

@@ -41,10 +41,10 @@ export const UbicacionSchema = z.object({
     calle: z.string().optional(),
     colonia: z.string().optional(),
     localidad: z.string().optional(),
+    cp: z.preprocess(parseNumber, z.number().optional()), // Added
     ciudad: z.string().optional(),
     estado: z.string().optional(),
     zona: z.string().optional(),
-    localidad: z.string().optional(),
     latitud: z.preprocess(parseNumber, z.number().optional()),
     longitud: z.preprocess(parseNumber, z.number().optional()),
 });
@@ -57,7 +57,6 @@ export const FinanciamientoSchema = z.object({
 
 export const InfoComercialDesarrolloSchema = z.object({
     cantidadModelos: z.preprocess(parseNumber, z.number().optional()),
-    fechaEntrega: z.preprocess(parseDate, z.custom((val) => val === null || val instanceof Timestamp).optional()),
     fechaInicioVenta: z.preprocess(parseDate, z.custom((val) => val === null || val instanceof Timestamp).optional()),
     plusvaliaPromedio: z.preprocess(parseNumber, z.number().optional()),
     unidadesTotales: z.preprocess(parseNumber, z.number().optional()),
@@ -84,36 +83,53 @@ export const PromocionSchema = z.object({
     fecha_fin: z.preprocess(parseDate, z.custom((val) => val === null || val instanceof Timestamp).optional()),
 });
 
-export const DesarrolloSchema = z.object({
-    id: z.string().optional(), // Can be optional on input (auto-generated or linked)
-    nombre: z.string().min(1, "Nombre es requerido"),
-    descripcion: z.string().optional(),
-    constructora: z.string().optional(),
-    // Status REMOVED from Desarrollo
-    activo: z.preprocess(parseBoolean, z.boolean().default(false)),
-    scoreDesarrollo: z.preprocess(parseNumber, z.number().optional()),
-    keywords: z.preprocess(parseArray, z.array(z.string()).optional()),
+export const CaracteristicasDesarrolloSchema = z.object({
     amenidades: z.preprocess(parseArray, z.array(z.string()).optional()),
     entorno: z.preprocess(parseArray, z.array(z.string()).optional()),
-    // Nested Objects
+});
+
+export const ComisionesDesarrolloSchema = z.object({
+    overridePct: z.preprocess(parseNumber, z.number().optional()),
+});
+
+export const DesarrolloSchema = z.object({
+    id: z.string().optional(),
+    nombre: z.string().min(1, "Nombre es requerido"),
+    descripcion: z.string().optional(),
+    constructora: z.string().min(1, "Constructora es requerida"), // Linked to Desarrollador Name/ID logically
+
+    activo: z.preprocess(parseBoolean, z.boolean().default(true)),
+    geografiaId: z.string().optional(), // Standardized ID (e.g., mx-sin-cul)
+
     ubicacion: UbicacionSchema.optional(),
+    caracteristicas: CaracteristicasDesarrolloSchema.optional(),
     financiamiento: FinanciamientoSchema.optional(),
-    precios: z.object({
-        desde: z.preprocess(parseNumber, z.number().optional()),
-        moneda: z.string().default('MXN'),
-    }).optional(),
+
+    media: MediaDesarrolloSchema.optional(),
+
+    comisiones: ComisionesDesarrolloSchema.optional(),
+
     infoComercial: InfoComercialDesarrolloSchema.optional(),
+
+    precios: z.object({
+        desde: z.preprocess(parseNumber, z.number().optional()), // Calculated usually
+    }).optional(),
+
+    // Protected / Calculated Fields (Not usually in CSV but schema supports them for DB reads/writes)
+    stats: z.object({
+        rangoPrecios: z.array(z.number()).optional(),
+        inventario: z.number().optional()
+    }).optional(),
+
+    scoreCard: z.any().optional(), // Calculated external process
+
     legal: z.object({
         regimenPropiedad: z.string().default('Condominio')
     }).optional(),
-    media: MediaDesarrolloSchema.optional(),
+
     analisisIA: AnalisisIASchema.optional(),
     promocion: PromocionSchema.optional(),
 
-    // Legacy fields can stay but new GeoStandard logic applies
-    geografiaId: z.string().optional(),
-
-    // Internal
     updatedAt: z.custom((val) => val instanceof Timestamp).optional(),
 });
 
@@ -226,17 +242,68 @@ export const EsquemaPagoSchema = z.object({
 export const DesarrolladorSchema = z.object({
     id: z.string().optional(),
     nombre: z.string().min(1, "Nombre es requerido"),
+    status: z.string().default("activo"),
 
-    esquemaPago: EsquemaPagoSchema.optional(),
-    contacto: ContactoSchema.optional(),
+    fiscal: z.object({
+        razonSocial: z.string().optional()
+    }).optional(),
+
+    comisiones: z.object({
+        porcentajeBase: z.preprocess(parseNumber, z.number().default(3)),
+        hitos: z.object({
+            credito: z.array(z.number()).optional(),
+            contado: z.array(z.number()).optional(),
+            directo: z.array(z.number()).optional()
+        }).optional().refine((data) => {
+            if (!data) return true;
+            const validateSum = (arr) => {
+                if (!arr || arr.length === 0) return true;
+                const sum = arr.reduce((a, b) => a + b, 0);
+                return Math.abs(sum - 100) < 0.1; // Float tolerance
+            };
+
+            if (!validateSum(data.credito)) return false;
+            if (!validateSum(data.contado)) return false;
+            if (!validateSum(data.directo)) return false;
+            return true;
+        }, { message: "La suma de los hitos de comisión debe ser 100%" })
+    }).optional(),
+
+    contacto: z.object({
+        principal: z.object({
+            nombre: z.string().optional(),
+            telefono: z.string().optional(),
+            email: z.string().toLowerCase().optional(),
+            puesto: z.string().optional()
+        }).optional(),
+        secundario: z.object({
+            nombre: z.string().optional(),
+            telefono: z.string().optional(),
+            email: z.string().toLowerCase().optional(),
+            puesto: z.string().optional()
+        }).optional()
+    }).optional(),
+
+    // Legacy or deprecated flat fields removed or kept for backward compat?
+    // Requirement implies transforming to new structure. We keep schema strict on output structure.
 
     asesoresDesarrollo: z.preprocess(parseArray, z.array(z.string()).optional()),
     desarrollos: z.preprocess(parseArray, z.array(z.string()).optional()),
+
+    // Operation fields (Protected)
+    operacion: z.object({
+        asesoresAutorizados: z.array(z.string()).optional(),
+        asesoresConLeads: z.array(z.string()).optional()
+    }).optional(),
 
     // Calculated fields
     ciudades: z.array(z.string()).optional(),
     ofertaTotal: z.preprocess(parseNumber, z.number().optional()),
     viviendasxVender: z.preprocess(parseNumber, z.number().optional()),
+    stats: z.object({
+        ofertaTotal: z.number().optional(),
+        viviendasxVender: z.number().optional()
+    }).optional(),
 
     updatedAt: z.custom((val) => val instanceof Timestamp).optional(),
 });
