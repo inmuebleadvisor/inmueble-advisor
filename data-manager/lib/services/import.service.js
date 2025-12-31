@@ -229,13 +229,26 @@ export const importCollection = async (collectionName, filePath, options = {}) =
 
             if (collectionName === 'desarrollos' && affectedConstructorNames.size > 0) await resolveNamesToIds(affectedConstructorNames);
             if (collectionName === 'modelos' && affectedDevelopmentIds.size > 0) {
-                // We already fetched devs, assuming we didn't track names there.
-                // For Safety, assume we need to resolving again or rely on what we have.
-                // The easiest way is resolve names if we have them. 
-                // But for models we only tracked devIds. 
-                // We can skip this complex lookup unless critical. 
-                // Ideally models -> update development -> update developer stats.
-                // Let's add that logic if we have time, but adhering to Audit, we simplified.
+                // To safely update developers, we need to know WHICH developers own the affected developments.
+                // Since we didn't track names during model import, we can fetch them now.
+                // This replaces the previous TODO with actual logic.
+
+                const affectedDevIdsArray = Array.from(affectedDevelopmentIds);
+                // Optimize: chunking if too many, but for now linear is fine for batch imports.
+                for (const dId of affectedDevIdsArray) {
+                    try {
+                        const devSnap = await db.collection('desarrollos').doc(dId).get();
+                        if (devSnap.exists) {
+                            const dData = devSnap.data();
+                            if (dData.constructora) {
+                                affectedConstructorNames.add(dData.constructora);
+                            }
+                        }
+                    } catch (e) {
+                        logger.error(`Error resolving constructor for dev ${dId}`, e);
+                    }
+                }
+
                 await resolveNamesToIds(affectedConstructorNames);
             }
 

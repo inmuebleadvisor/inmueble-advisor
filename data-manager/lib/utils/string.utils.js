@@ -13,6 +13,14 @@ export const cleanEmail = (val) => cleanStr(val).toLowerCase();
 
 export const cleanPhone = (val) => cleanStr(val).replace(/\D/g, ''); // Digits only
 
+export const cleanNum = (val) => {
+    if (!val) return undefined;
+    // Remove currency symbols, commas, and whitespace
+    const s = String(val).replace(/[$,\s]/g, '');
+    const n = parseFloat(s);
+    return isNaN(n) ? undefined : n;
+};
+
 /**
  * Normalizes a string to a URL-friendly slug.
  * Removes accents, special chars, and lowercases.

@@ -5,14 +5,11 @@ import {
     slugify,
     standardizeLocation,
     parsePipes,
-    parseHitos
+    parseHitos,
+    cleanNum, // Moved here
+    cleanPhone, // Moved here
+    cleanEmail // Moved here
 } from '../utils/string.utils.js';
-
-import {
-    cleanNum,
-    cleanPhone,
-    cleanEmail
-} from '../utils/parsers.js';
 
 import {
     parseSimpleDate,
