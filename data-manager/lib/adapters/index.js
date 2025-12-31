@@ -1,6 +1,7 @@
 
 import {
     generateId,
+    slugify,
     standardizeLocation
 } from '../shared/normalization.js';
 
@@ -385,21 +386,8 @@ export const adaptDesarrollador = (row) => {
     if (idRow) {
         out.id = idRow;
     } else if (nombre) {
-        out.id = generateId(nombre, ''); // slugify uses normalize which handles just one string too
-        // Wait, generateId expects 2 args. Let's check shared/normalization.js
-        // It says slugify(`${part1}-${part2}`). If part2 is empty it ends with -.
-        // slugify strips dashes. So generateId(nombre, '') should work if slugify cleans it.
-        // Let's use direct slugify imported if needed? 
-        // Normalization doesn't export slugify directly? 
-        // It does: export const slugify = ...
-        // But adapters imported generateId.
-        // Let's rely on generateId if we can't change imports easily?
-        // Actually, I can import slugify.
+        out.id = slugify(nombre);
     }
-    // Correction: I should import slugify as well.
-    // However, looking at previous code: 
-    // } else if (nombre) { out.id = slugify(nombre); }
-    // It was importing slugify. I should ensure I import it.
 
     if (nombre) out.nombre = nombre;
 

@@ -2,7 +2,7 @@
 import colors from 'colors';
 import { Timestamp } from 'firebase-admin/firestore';
 // Import Schema to Validate before Updating
-import { DesarrolloSchema, ModeloSchema } from '../models/schemas.js';
+import { DesarrolloSchema, ModeloSchema, DesarrolladorSchema } from '../models/schemas.js';
 
 /**
  * Recalculates and updates statistics for a list of developments.
