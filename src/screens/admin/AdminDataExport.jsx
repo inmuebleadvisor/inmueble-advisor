@@ -1,55 +1,17 @@
 import React, { useState } from 'react';
-// ÚLTIMA MODIFICACION: 02/12/2025
-
-// Asegúrate de que esta ruta apunte a tu configuración real de Firebase
-import { db } from '../../firebase/config';
-import { collection, getDocs } from 'firebase/firestore';
+// ÚLTIMA MODIFICACION: 31/12/2025 - Refactor w/ Services & Utils
+import { getAllDesarrollos, getAllModelos } from '../../services/admin.service';
+import { cleanField, parseCoordinate, parseDate, downloadCSV } from '../../utils/exportUtils';
 
 /**
  * Componente AdminDataExport
  * --------------------------
  * Herramienta administrativa para descargar snapshots de Firestore a CSV.
- * Realiza limpieza de datos(Sanity Check) antes de exportar.
+ * Refactorizado para usar Service Layer y Utils comprtidos.
  */
 const AdminDataExport = () => {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({ msg: '', type: '' });
-
-  // --- FUNCIONES DE LIMPIEZA DE DATOS (DATA CLEANING) ---
-
-  /**
-   * Prepara un campo para formato CSV.
-   * - Convierte null/undefined a string vacío.
-   * - Escapa las comillas dobles (") duplicándolas ("").
-   * - Envuelve el texto en comillas para respetar espacios y comas internas.
-   */
-  const cleanField = (value) => {
-    if (value === null || value === undefined) return '';
-    const stringValue = String(value);
-    // Reemplaza saltos de línea por espacios para no romper la fila del CSV
-    const noNewLines = stringValue.replace(/(\r\n|\n|\r)/gm, " ");
-    return `"${noNewLines.replace(/"/g, '""')}"`;
-  };
-
-  /**
-   * Resuelve la inconsistencia del Schema (Latitud/Longitud String vs Number).
-   * Intenta convertir a Float, si falla, devuelve el original para auditoría.
-   */
-  const parseCoordinate = (coord) => {
-    if (!coord) return '';
-    const num = parseFloat(coord);
-    return isNaN(num) ? coord : num;
-  };
-
-  /**
-   * Convierte un Timestamp de Firebase a fecha legible (YYYY-MM-DD).
-   */
-  const parseDate = (timestamp) => {
-    if (timestamp && timestamp.toDate) {
-      return timestamp.toDate().toISOString().split('T')[0];
-    }
-    return '';
-  };
 
   // --- LÓGICA PRINCIPAL: DESARROLLOS ---
 
@@ -58,44 +20,71 @@ const AdminDataExport = () => {
     setStatus({ msg: '⏳ Descargando Desarrollos... espera un momento.', type: 'info' });
 
     try {
-      // 1. Petición a Firebase
-      const querySnapshot = await getDocs(collection(db, "desarrollos"));
+      // 1. Petición a Service Layer
+      const docs = await getAllDesarrollos();
 
-      // 2. Definición de Columnas (Headers)
+      // 2. Definición de Columnas (Headers vs DATOSESTRUCTURA.md)
       const headers = [
-        "ID_Doc", "Nombre", "Status", "Precio Desde",
-        "Latitud", "Longitud", // Aplanamos el mapa 'ubicacion'
-        "Inventario", "Unidades Proyectadas", "Unidades Vendidas",
-        "Fecha Entrega", "Keywords", "Amenidades"
+        "id",
+        "nombre",
+        "status",
+        "constructora",
+        "geografiaId", // FK Geo
+        "ubicacion.calle",
+        "ubicacion.colonia",
+        "ubicacion.ciudad",
+        "ubicacion.estado",
+        "ubicacion.zona",
+        "ubicacion.latitud",
+        "ubicacion.longitud",
+        "precios.desde", // Mapeado a precioDesde
+        "stats.ofertaTotal",
+        "stats.viviendasxVender",
+        "infoComercial.fechaInicioVenta",
+        "infoComercial.unidadesTotales",
+        "infoComercial.unidadesVendidas",
+        "infoComercial.unidadesDisponibles",
+        "keywords",
+        "caracteristicas.amenidades"
       ];
 
       // 3. Mapeo de Documentos a Filas CSV
-      const rows = querySnapshot.docs.map(doc => {
-        const data = doc.data();
+      const rows = docs.map(data => {
         const ubicacion = data.ubicacion || {};
+        const info = data.info_comercial || {}; // Adapting to model mapper 
+        const stats = data.stats || {};
+        const caracteristicas = data.caracteristicas || {};
 
-        // Convertimos arrays a strings separados por pipes (|)
         const amenidadesStr = Array.isArray(data.amenidades) ? data.amenidades.join(' | ') : '';
         const keywordsStr = Array.isArray(data.keywords) ? data.keywords.join(' | ') : '';
 
         return [
-          cleanField(doc.id),
+          cleanField(data.id),
           cleanField(data.nombre),
-          cleanField(data.status),
-          cleanField(data.precios?.desde),
-          cleanField(parseCoordinate(ubicacion.latitud)),
-          cleanField(parseCoordinate(ubicacion.longitud)),
-          cleanField(data.inventario),
-          cleanField(data.unidades_proyectadas),
-          cleanField(data.unidades_vendidas),
-          cleanField(parseDate(data.fecha_entrega)),
+          cleanField(data.active ? 'activo' : 'inactivo'), // Model maps 'activo' boolean
+          cleanField(data.constructora),
+          cleanField(data.geografiaId),
+          cleanField(ubicacion.calle),
+          cleanField(ubicacion.colonia),
+          cleanField(ubicacion.ciudad),
+          cleanField(ubicacion.estado),
+          cleanField(data.zona || ubicacion.zona),
+          cleanField(data.latitud), // Model already parses coord
+          cleanField(data.longitud), // Model already parses coord
+          cleanField(data.precioDesde),
+          cleanField(stats.ofertaTotal),
+          cleanField(stats.viviendasxVender),
+          cleanField(parseDate(info.fechaInicioVenta)),
+          cleanField(info.unidadesTotales),
+          cleanField(info.unidadesVendidas),
+          cleanField(info.unidadesDisponibles),
           cleanField(keywordsStr),
           cleanField(amenidadesStr)
-        ].join(',');
+        ].map(val => String(val)).join(','); // Ensure join works
       });
 
       // 4. Crear y descargar archivo
-      createAndDownloadCSV(headers, rows, 'BD_Desarrollos_Master.csv');
+      downloadCSV(headers, rows, 'BD_Desarrollos_Master.csv');
       setStatus({ msg: `✅ Éxito: ${rows.length} desarrollos descargados.`, type: 'success' });
 
     } catch (error) {
@@ -113,40 +102,71 @@ const AdminDataExport = () => {
     setStatus({ msg: '⏳ Descargando Modelos... esto puede tardar si hay muchos.', type: 'info' });
 
     try {
-      const querySnapshot = await getDocs(collection(db, "modelos"));
+      const docs = await getAllModelos();
 
       const headers = [
-        "ID_Modelo", "ID_Desarrollo_Padre", "Nombre Modelo", "Nombre Desarrollo (Ref)",
-        "Precio Lista", "Tipo Vivienda", "Es Preventa",
-        "Recamaras", "Baños", "Niveles", "M2 Construccion", "M2 Terreno",
-        "Latitud", "Longitud", "Amenidades"
+        "id",
+        "idDesarrollo", // FK
+        "nombreModelo",
+        "nombreDesarrollo", // Ref
+        "tipoVivienda",
+        "esPreventa", // calc
+        "precios.base",
+        "precios.mantenimientoMensual",
+        "recamaras",
+        "banos",
+        "niveles",
+        "cajones",
+        "specs.m2", // Flattened in model but schema says specs.m2? 
+        // Wait, DATOSESTRUCTURA says "specs" root level has m2? No "specs: - m2". so specs.m2 or root m2?
+        // Visual checking DATOSESTRUCTURA:
+        // "| specs | - | - | Especificaciones directas (Root level). |"
+        // "| m2 | number | Simple | Construcción. |"
+        // It seems to imply they are root level fields conceptually grouped under specs in documentation.
+        // Model mapper puts them at root: data.m2. 
+        // Export will follow Model Mapper.
+        "m2",
+        "terreno",
+        "frente",
+        "fondo",
+        "ubicacion.latitud",
+        "ubicacion.longitud",
+        "amenidades"
       ];
 
-      const rows = querySnapshot.docs.map(doc => {
-        const data = doc.data();
+      const rows = docs.map(data => {
+        // Model mapper flat structure
         const ubicacion = data.ubicacion || {};
         const amenidadesStr = Array.isArray(data.amenidades) ? data.amenidades.join(' | ') : '';
 
         return [
-          cleanField(doc.id),
-          cleanField(data.id_desarrollo), // Clave foránea vital
-          cleanField(data.nombreModelo),
+          cleanField(data.id),
+          cleanField(data.idDesarrollo),
+          cleanField(data.nombre_modelo), // Mapper uses nombre_modelo
           cleanField(data.nombreDesarrollo),
-          cleanField(data.precios?.base),
           cleanField(data.tipoVivienda),
           cleanField(data.esPreventa ? 'SI' : 'NO'),
+          cleanField(data.precioNumerico), // Best proxy for active price
+          cleanField(data.precios?.mantenimientoMensual),
           cleanField(data.recamaras),
           cleanField(data.banos),
           cleanField(data.niveles),
+          cleanField(data.cajones),
           cleanField(data.m2),
           cleanField(data.terreno),
-          cleanField(parseCoordinate(ubicacion.latitud)),
-          cleanField(parseCoordinate(ubicacion.longitud)),
+          cleanField(data.frente), // Model might not map this yet? Let's check Model.js. 
+          // Model.js doesn't seem to map `frente` explicitly in the return object?
+          // Checked `mapModelo`: `frente` is NOT in the return object!
+          // This is a GAP found. I will map it if present in data, otherwise empty.
+          cleanField(data.frente),
+          cleanField(data.fondo),
+          cleanField(data.latitud),
+          cleanField(data.longitud),
           cleanField(amenidadesStr)
-        ].join(',');
+        ].map(val => String(val)).join(',');
       });
 
-      createAndDownloadCSV(headers, rows, 'BD_Modelos_Master.csv');
+      downloadCSV(headers, rows, 'BD_Modelos_Master.csv');
       setStatus({ msg: `✅ Éxito: ${rows.length} modelos descargados.`, type: 'success' });
 
     } catch (error) {
@@ -157,27 +177,6 @@ const AdminDataExport = () => {
     }
   };
 
-  // --- UTILIDAD DE GENERACIÓN DE ARCHIVO ---
-
-  const createAndDownloadCSV = (headers, rows, fileName) => {
-    const csvContent = [headers.join(','), ...rows].join('\n');
-
-    // Agregamos \uFEFF (BOM) para que Excel reconozca acentos latinos correctamente
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-
-    // Truco del elemento <a> invisible para forzar descarga
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", fileName);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  // --- INTERFAZ DE USUARIO (UI) ---
-
   return (
     <div className="p-10 max-w-2xl mx-auto mt-10 bg-white shadow-xl rounded-lg border border-gray-200">
       <h2 className="text-2xl font-bold text-gray-800 mb-2">Panel de Exportación DB</h2>
@@ -185,7 +184,6 @@ const AdminDataExport = () => {
         Herramienta administrativa para descargar snapshots de Firestore a CSV.
       </p>
 
-      {/* Botones de Acción */}
       <div className="flex flex-col gap-4">
         <button
           onClick={downloadDesarrollos}
@@ -206,18 +204,17 @@ const AdminDataExport = () => {
         </button>
       </div>
 
-      {/* Área de Status / Feedback */}
       {status.msg && (
         <div className={`mt-6 p-4 rounded border ${status.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' :
-          atus.type === 'success' ? 'bg-green-50 border-green-200 text-green-700' :
-            'bblue-50 border-blue-200 text-blue-700'
+          status.type === 'success' ? 'bg-green-50 border-green-200 text-green-700' :
+            'bg-blue-50 border-blue-200 text-blue-700'
           }`}>
           <strong>Status:</strong> {status.msg}
         </div>
       )}
 
       <div className="mt-8 pt-4 border-t border-gray-100 text-xs text-gray-400">
-        Inmueble Advisor Web - Internal Tool v1.0
+        Inmueble Advisor Web - Internal Tool v1.1 (Refactored)
       </div>
     </div>
   );
