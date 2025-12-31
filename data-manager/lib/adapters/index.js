@@ -20,6 +20,8 @@ import {
     extractPromoDates
 } from '../shared/date-utils.js';
 
+import { calculateAnnualizedGrowth } from '../shared/math-utils.js';
+
 
 export const adaptDesarrollo = (row) => {
     const out = {};
@@ -137,13 +139,17 @@ export const adaptDesarrollo = (row) => {
 
     // 7. Info Comercial
     const info = {};
-    const totales = getNum(row, ['unidades.totales', 'unidades_totales', 'infoComercial.unidadesTotales']);
+    const totales = getNum(row, ['unidades.totales', 'unidades_totales', 'infoComercial.unidadesTotales', 'viviendas_totales', 'total_viviendas']);
     if (totales !== undefined) info.unidadesTotales = totales;
 
-    const vendidas = getNum(row, ['unidades.vendidas', 'unidades_vendidas', 'infoComercial.unidadesVendidas']);
+    // Strict mapping: No default calculation.
+    // If 'unidades_vendidas' is missing, it remains undefined (does not default to 0).
+    const vendidas = getNum(row, ['unidades.vendidas', 'unidades_vendidas', 'infoComercial.unidadesVendidas', 'viviendas_vendidas', 'unidades_vendidas']);
     if (vendidas !== undefined) info.unidadesVendidas = vendidas;
 
-    const disponibles = getNum(row, ['unidades.disponibles', 'unidades_disponibles', 'infoComercial.unidadesDisponibles']);
+    // Strict mapping: No default calculation.
+    // If 'unidades_disponibles' is missing, it remains undefined (does not default to totales).
+    const disponibles = getNum(row, ['unidades.disponibles', 'unidades_disponibles', 'infoComercial.unidadesDisponibles', 'viviendas_disponibles']);
     if (disponibles !== undefined) info.unidadesDisponibles = disponibles;
 
     const numModelos = getNum(row, ['num_modelos']);
@@ -360,18 +366,12 @@ export const adaptModelo = (row) => {
     }
 
     if (out.precios?.base && out.precios?.inicial > 0 && out.infoComercial?.fechaInicioVenta) {
-        const current = out.precios.base;
-        const initial = out.precios.inicial;
         const startDate = parseSimpleDate(out.infoComercial.fechaInicioVenta);
-
         if (startDate) {
-            const now = new Date();
-            const yearsDiff = now.getFullYear() - startDate.getFullYear();
-            const monthsDiff = (yearsDiff * 12) + (now.getMonth() - startDate.getMonth());
-            const safeMonths = monthsDiff < 1 ? 1 : monthsDiff;
-            const totalGrowthPct = ((current - initial) / initial);
-            const annualizedGrowth = (totalGrowthPct / safeMonths) * 12;
-            out.infoComercial.plusvaliaEstimada = Number((annualizedGrowth * 100).toFixed(2));
+            const growth = calculateAnnualizedGrowth(out.precios.base, out.precios.inicial, startDate);
+            if (growth !== undefined) {
+                out.infoComercial.plusvaliaEstimada = growth;
+            }
         }
     }
 
