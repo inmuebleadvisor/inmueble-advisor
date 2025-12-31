@@ -3,7 +3,7 @@ import { Timestamp } from 'firebase-admin/firestore';
 
 // Helper for Firestore Timestamps or Dates
 const TimestampSchema = z.custom((val) => {
-    return val instanceof Timestamp || val instanceof Date;
+    return val instanceof Timestamp || val instanceof Date || (typeof val === 'object' && val !== null && '_seconds' in val);
 }, { message: "Must be a Firestore Timestamp or Date" });
 
 // --- 1. DESARROLLADORES ---

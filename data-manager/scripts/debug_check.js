@@ -1,6 +1,7 @@
 
-import { initializeFirebase } from './lib/utils.js';
+import { initializeFirebase } from '../lib/utils.js';
 
+// This is a script, not a test.
 const checkModel = async () => {
     const db = initializeFirebase();
     const modelId = '2846-guila';

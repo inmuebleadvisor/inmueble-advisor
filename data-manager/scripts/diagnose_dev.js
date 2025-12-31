@@ -1,6 +1,8 @@
-import { initializeFirebase } from './lib/utils.js';
+
+import { initializeFirebase } from '../lib/utils.js';
 import colors from 'colors';
 
+// This is a script, not a test.
 const db = initializeFirebase();
 
 const diagnose = async (devName) => {

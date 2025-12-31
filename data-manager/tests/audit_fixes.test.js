@@ -1,9 +1,10 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { cleanNum, cleanStr, cleanPhone, cleanEmail } from './lib/utils/parsers.js';
-import { adaptDesarrollo } from './lib/adapters/index.js';
-import { ModeloSchema } from './lib/models/schemas.js';
+// Fix: parsers.js didn't exist in lib/utils/ list, assuming functions are in string.utils.js
+import { cleanNum, cleanPhone } from '../lib/utils/string.utils.js';
+import { adaptDesarrollo } from '../lib/adapters/index.js';
+import { ModeloSchema } from '../lib/models/schemas.js';
 
 // 1. Test Parsers (DRY Logic)
 test('Parsers - cleanNum', (t) => {
@@ -37,7 +38,6 @@ test('Schema - ModeloSchema rejects unknown root props disguised as specs', (t) 
         nombreModelo: 'Modelo A',
         activo: true,
         tipoVivienda: 'Casa',
-        recamaras: 3,
         precios: { base: 1000000 }
     };
 

@@ -1,8 +1,8 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { adaptDesarrollo } from './lib/adapters.js';
-import { DesarrolloSchema } from './lib/schemas.js';
+import { adaptDesarrollo } from '../lib/adapters/index.js';
+import { DesarrolloSchema } from '../lib/models/schemas.js';
 
 test('Desarrollo V2 Adapter & Schema', async (t) => {
 
