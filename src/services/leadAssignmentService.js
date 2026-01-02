@@ -40,8 +40,8 @@ export class LeadAssignmentService {
       if (idDesarrollo && !finalIdDesarrollador) {
         try {
           const devCheck = await this.catalogRepository.getDesarrolloById(idDesarrollo);
-          if (devCheck && devCheck.idDesarrollador) {
-            finalIdDesarrollador = devCheck.idDesarrollador;
+          if (devCheck) {
+            finalIdDesarrollador = devCheck.idDesarrollador || devCheck.constructora;
           }
         } catch (e) {
           console.warn("Could not fetch development for ID lookup:", e);
@@ -53,7 +53,8 @@ export class LeadAssignmentService {
       }
 
       const nuevoLead = {
-        clienteUid: clienteUid,
+        uid: clienteUid, // ✅ Fix: Repository expects 'uid'
+        clienteUid: clienteUid, // Keeping for backward compatibility/service clarity
         clienteDatos: {
           nombre: datosCliente.nombre,
           email: datosCliente.email,

@@ -1,121 +1,105 @@
-# Mapa de Flujo de Datos y Arquitectura
+# 🔄 MAPA DE FLUJO DE DATOS (Data Lineage)
 
-Este documento describe detalladamente el ciclo de vida de la información dentro de la aplicación **Inmueble Advisor**, desde su origen y almacenamiento hasta su procesamiento, filtrado y visualización en la interfaz de usuario.
+**Estado:** Actualizado (Sincronizado con Codebase)
+**Validación:** `data-manager` + `src/repositories` + `src/services`
 
----
-
-## 1. Origen y Almacenamiento (Data Ingestion)
-
-Antes de que la aplicación web pueda mostrar algo, los datos deben existir en la Base de Datos.
-
-### 1.1 Fuente Original (CSV)
-La información nace en **archivos CSV** masivos gestionados externamente.
-- `desarrollos.csv`: Contiene la información de los desarrollos (padres).
-- `modelos.csv`: Contiene las unidades individuales (hijos).
-
-### 1.2 Procesamiento de Ingesta (`data-manager`)
-Utilizamos una herramienta CLI personalizada (`/data-manager`) para subir estos datos a Firebase.
-- **Normalización**: Se limpian caracteres, se parsean fechas (con Timezone `America/Mexico_City`), y se convierten precios a números.
-- **Estructura DB**:
-    - **Colección `desarrollos`**: Documentos raíz.
-    - **Colección `modelos`**: Documentos independientes que apuntan a su padre mediante `idDesarrollo`.
-- **Validación**: Se usa `Zod` (en `schemas.js`) para asegurar que los datos cumplan con el tipado estricto antes de subir.
+Este documento traza la ruta completa del dato, desde un archivo CSV crudo hasta su renderizado en React.
 
 ---
 
-## 2. Capa de Servicio y Repositorios (Business Logic & Data Access)
+## 1. Etapa de Ingesta de Catálogo (Data Ingestion)
 
-La aplicación utiliza un patrón de arquitectura en capas con **Inyección de Dependencias (DI)**.
+El punto de entrada es el CLI `data-manager`.
 
-### 2.1 Capa de Repositorios (`src/repositories/`)
-Responsable **exclusiva** de la comunicación con Firebase Firestore. No contiene lógica de negocio.
-- **`CatalogRepository`**: Lee `desarrollos` y `modelos`.
-- **`UserRepository`**: Lee y escribe en `users`.
-- **`LeadRepository`**: Gestiona la colección `leads`.
+### 1.1 Fuente (CSV)
+Archivos de **Desarrollos, Modelos y Desarrolladores**.
+*   **Desafío:** Datos sucios (fechas variadas, strings vacíos).
+*   **Solución:** Los **Adapters** (`adapters/index.js`) normalizan nombres de columnas.
 
-### 2.2 Capa de Servicios (`src/services/`)
-Contiene la lógica de negocio y consume los repositorios.
-- **`CatalogService`**: Normaliza los datos crudos que vienen del repositorio (Mappers) y aplica filtros.
-- **`AuthService`**: Orquesta el login y la creación de perfiles de usuario.
-- **`CrmService`**: Maneja el flujo de ventas y asignación de leads.
+### 1.2 Validación Estricta (Zod Layer)
+*   **Schema Validation:** Si un campo obligatorio falta o el tipo es incorrecto, la fila se **descarta**.
+*   **Result:** Solo datos limpios entran a Firestore.
 
-### 2.3 Inyección de Dependencias
-- **`serviceProvider.js`**: Instancia los Repositorios y los inyecta en los Servicios. Exporta un objeto `services` listo para usar.
-- **`ServiceContext`**: Provee acceso a estos servicios en toda la aplicación React.
-
-### 2.4 Normalización de Salida (Mappers)
-Dentro de los Servicios (ej. `CatalogService`), se transforman los datos raw de la DB a objetos consumibles por la UI.
-- **Aplanamiento**: `ubicacion.ciudad` -> `ciudad`.
-- **Fallbacks**: Imágenes por defecto si faltan.
-- **Tipado**: Asegurar que precios sean números.
+### 1.3 Post-Procesamiento (Triggers)
+1.  **Historial de Precios:** Detecta cambios en `precio.base` y archiva el valor anterior.
+2.  **Agregación (Stats):** Suma inventarios y calcula rangos de precios en el Desarrollo padre.
+3.  **Geo-Highlights:** Recalcula "Top Desarrollos" por ciudad.
 
 ---
 
-## 3. Gestión de Estado (State Management)
+## 2. Etapa de Generación de Leads (CRM Flow)
 
-Una vez obtenidos los datos, se almacenan en la memoria del navegador para evitar lecturas excesivas a la BD.
+A diferencia del catálogo, los leads nacen en la UI y viajan a la BD.
 
-### 3.1 `CatalogContext` (`src/context/CatalogContext.jsx`)
-Actúa como la "fuente de verdad" para toda la UI.
-- **Carga Perezosa**: Al inicio solo carga la configuración básica. Los modelos pesados solo se cargan cuando el usuario selecciona una ciudad.
-- **Cacheo**: Mantiene en memoria (`modelosResult`, `desarrollosResult`) la última consulta realizada.
+### 2.1 Origen (User Interaction)
+*   **Web Forms:** Landing Pages, Botón "Cotizar", Botón "Agendar Cita".
+*   **Input:** El usuario anónimo provee `nombre`, `telefono`, `email`.
 
----
+### 2.2 Creación (Lead Service)
+*   **Validación de Negocio:**
+    *   Verifica que vengan `idDesarrollo` e `idDesarrollador`.
+    *   Sanea el teléfono.
+*   **Persistencia:** `LeadRepository.createLead()` guarda el documento con status `PENDIENTE` e inicia el `statusHistory`.
 
-## 4. Lógica de Filtrado y Búsqueda
-
-Aquí es donde la "magia" ocurre para el usuario final.
-
-### 4.1 `useCatalogFilter` (`src/hooks/useCatalogFilter.js`)
-Es un **Custom Hook** que conecta la UI con la lógica de filtrado.
-- **Persistencia de Filtros**: Guarda las preferencias del usuario (precio, ciudad) en `localStorage` para que no se pierdan al recargar.
-- **Reactive**: Escucha cambios en los inputs y recálcula la lista visible.
-
-### 4.2 Métodos Estáticos (`CatalogService.filterCatalog`)
-La lógica *pura* de filtrado reside como método estático en el servicio. Recibe la lista completa (Master Data) y aplica:
-1.  **Filtro Visibilidad**: Descarta items inactivos (`activo: false`).
-2.  **Filtro Precio**: `min <= precio <= max`. Maneja la lógica de "Mostrar sin precio".
-3.  **Filtro Habitaciones**: `recamaras >= n`.
-4.  **Filtro Texto**: Búsqueda difusa en nombre, colonia, zona y amenidades.
-5.  **Filtro Status**: Pre-venta vs Entrega Inmediata (basado en `tiempoEntrega` y flags).
+### 2.3 Procesamiento (Assignment)
+1.  **Asesor Interno:** El Admin puede asignar un asesor del equipo (`CrmService.asignarAsesor`).
+2.  **Asesor Externo:** Si se trata de un desarrollo B2B, se asigna a un `ExternalAdvisor` previamente registrado.
+    *   **ExternalAdvisor:** Se busca por teléfono (WhatsApp key).
+    *   **Tracking:** Se actualiza la métrica `leadsAsignadosAcumulados` del asesor externo.
 
 ---
 
-## 5. Capa de Presentación (UI Layer)
+## 3. Etapa de Almacenamiento (Firestore)
 
-Finalmente, los datos procesados se pintan en pantalla.
+Base de datos NoSQL orientada a documentos.
 
-### 5.1 Flujo de Componentes
-1.  **`App.jsx`**: Verifica si hay ciudad seleccionada. Si no, muestra `CitySelectorModal`.
-2.  **`Catalogo.jsx`**: Pagina principal. Usa `useCatalogFilter` para obtener `modelosFiltrados`.
-3.  **`PropertyGrid`**: Recibe la lista filtrada y renderiza una `PropertyCard` por cada ítem.
-4.  **`PropertyCard`**: Muestra la información final (Imagen, Precio Formateado, Badges de Preventa).
-5.  **`DetalleDesarrollo` / `DetalleModelo`**: Vistas individuales que solicitan datos específicos por ID al servicio.
+*   **Colección `desarrollos`**: Documentos pesados.
+*   **Colección `modelos`**: Documentos ligeros.
+*   **Colección `leads`**: Datos transaccionales de alta frecuencia.
+*   **Colección `external_advisors`**: Directorio de vendedores de las constructoras.
 
 ---
 
-## Diagrama de Resumen
+## 4. Etapa de Consumo (Frontend Layer)
+
+### 4.1 Data Access Layer (`src/repositories`)
+Abstracción pura sobre Firestore.
+*   **`CatalogRepository`**: Lee productos.
+*   **`LeadRepository`**: Escribe leads y lee dashboard.
+*   **`ExternalAdvisorRepository`**: Gestiona el directorio B2B.
+
+### 4.2 Service Layer (`src/services`)
+*   **`CatalogService`**: Filtros y Mappers.
+*   **`CrmService`**: Máquina de estados del Lead (Nuevo -> Contactado -> Cierre). Gestiona las reglas de negocio para mover un lead de una etapa a otra.
+
+### 4.3 State Management (`CatalogContext`)
+*   **Context API:** Cachea el catálogo.
+*   **(No cacheamos Leads):** Por seguridad y frescura, los leads se consultan en tiempo real o con SWR.
+
+---
+
+## 5. Diagrama de Flujo Actualizado
 
 ```mermaid
 graph TD
-    CSV[CSV Files] -->|data-manager| DB[(Firestore)]
-    
-    subgraph Data Access Layer
-    DB -->|Read/Write| Repo[Repositories <br/> (Catalog, User, Lead)]
+    subgraph Ingestion [Catálogo Ingest]
+    CSV[CSV Files] -->|Data Manager| Valid{Zod Valid?}
+    Valid -- Sí --> DB[(Firestore)]
     end
     
-    subgraph Service Layer
-    Repo -->|Raw Data| Service[Services <br/> (Catalog, Auth, CRM)]
-    Service -->|Normalize & Logic| Service
+    subgraph CRM [CRM Flow]
+    User[Usuario Web] -->|Form Submit| Service[Lead Service]
+    Service -->|Create| Lead[(Leads Col)]
+    
+    Admin[Admin/CRM] -->|Assign| Advisor[Asignación]
+    Advisor -->|Interno| Staff[Asesor Staff]
+    Advisor -->|Externo| Ext[External Advisor]
+    
+    Ext -->|Update| Metrics[Metrics Update]
     end
     
-    subgraph Application Layer
-    Service -->|Injected via Provider| Context[ServiceContext]
-    Context -->|Exposes Services| Hook[useServiceContext / useCatalogFilter]
-    end
-    
-    subgraph UI Layer
-    Hook -->|Data & Actions| UI[Components <br/> (Catalogo, Admin, Forms)]
-    User[Usuario] -->|Interactions| UI
+    subgraph Consumption
+    DB -->|Read| Repo[Repositories]
+    Repo -->|Logic| App[React App]
     end
 ```

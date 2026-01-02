@@ -57,7 +57,7 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
             }
 
             // Ensure idDesarrollador exists - Service handles lookup now if missing
-            if (!desarrollo?.idDesarrollador) {
+            if (!desarrollo?.idDesarrollador && !desarrollo?.constructora) {
                 console.warn("Falta ID del Desarrollador en frontend. El servicio intentará recuperarlo.");
             }
 
@@ -69,10 +69,10 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                 },
                 desarrollo?.id,
                 desarrollo?.nombre,
-                modelo?.nombre_modelo || "Interés General", // Fallback name
-                user?.uid, // ✅ PASAMOS EL UID GARANTIZADO
-                desarrollo?.idDesarrollador, // ✅ New Param
-                precioRef // ✅ New Param
+                modelo?.nombre_modelo || "Interés General",
+                user?.uid,
+                desarrollo?.idDesarrollador || desarrollo?.constructora,
+                precioRef
             );
 
             if (result.success) {

@@ -1,134 +1,140 @@
-# Guía de Importación y Exportación (Inmueble Advisor)
+# 📟 GUÍA DE OPERACIÓN - DATA MANAGER CLI
 
-Esta herramienta es un programa independiente (CLI) que te permite subir y bajar información de la base de datos de manera segura y controlada.
+**Versión:** 1.0
+**Fuente de Verdad:** `data-manager/index.js` y `data-manager/lib/adapters/index.js`
 
----
+El `Data Manager` es la herramienta de línea de comandos para sincronizar los CSV maestros con Firebase Firestore.
 
-## �️ Paso 1: Abrir la Terminal y Preparar
-
-Para usar esta herramienta, necesitas estar ubicado exactamente en la carpeta `data-manager`.
-
-### Opción A: Desde Visual Studio Code
-1.  Abre la terminal integrada: Menú **Terminal** > **New Terminal**.
-2.  Escribe el siguiente comando para entrar a la carpeta:
-    ```bash
-    cd data-manager
-    ```
-    *(Verás que la ruta en la terminal termina en `.../inmueble-advisor/data-manager`)*.
-
-### Opción B: Instalación (Solo la primera vez) (Ya se instaló)
-Si es la primera vez que usas esto en esta computadora, ejecuta:
-```bash
-npm install
-```
-Esto descarga las herramientas necesarias.
+> ⚠️ **IMPORTANTE:** Esta herramienta SOLO gestiona el **Catálogo** (`Desarrollos`, `Modelos`, `Desarrolladores`).
+> Las colecciones **CRM** (`Leads`, `Asesores Externos`) se gestionan exclusivamente desde la Aplicación Web o API, no desde CSV.
 
 ---
 
-## 🕹️ Paso 2: Operar la Herramienta (Comandos)
+## 🚀 Comandos Disponibles
 
-Todos los comandos empiezan con `node index.js`. Aquí tienes los más importantes:
+Ejecutar desde la carpeta: `/data-manager`
 
-### � IMPORTAR (Subir datos)
-Para subir un archivo CSV a la base de datos.
-
-**Subir Desarrollos:**
-```bash
-node index.js import desarrollos "ruta/a/tu/archivo.csv"
-```
-*Ejemplo:* `node index.js import desarrollos "C:/Documentos/desarrollos_final.csv"`
-
-**Subir Modelos:**
-```bash
-node index.js import modelos "ruta/a/tu/archivo.csv"
-```
-
-**Subir Desarrolladores:**
-```bash
-node index.js import desarrolladores "ruta/a/tu/archivo.csv"
-```
-
-### 📤 EXPORTAR (Bajar datos)
-Para descargar lo que hay en la nube a tu computadora. Los archivos se guardan en la carpeta `data-manager/output`.
-
-**Bajar TODO a un JSON (Respaldo):**
-```bash
-node index.js export desarrollos
-node index.js export modelos
-```
-
-**Bajar a Excel/CSV:**
-```bash
-node index.js export desarrollos --format=csv
-```
-
-### ✅ Verificar Conexión
-Si tienes dudas de si tienes internet o acceso:
+### 1. Probar Conexión
+Verifica que las credenciales de Firebase sean correctas.
 ```bash
 node index.js test-connection
 ```
 
+### 2. Importar Datos (Ingesta)
+Sube información desde un CSV local.
+```bash
+node index.js import [coleccion] [ruta_archivo] [opciones]
+```
+
+**Colecciones Soportadas:**
+*   `desarrollos`
+*   `modelos`
+*   `desarrolladores` (Empresas)
+
+**Colecciones NO Soportadas (Use la App):**
+*   ❌ `leads`
+*   ❌ `external_advisors`
+
+**Opciones:**
+*   `--region "NombreCiudad"`: Optimiza la memoria limitando la búsqueda de duplicados (útil para `desarrolladores`).
+
+**Ejemplos:**
+```bash
+# Carga estándar
+node index.js import desarrollos "C:/datos/master_desarrollos.csv"
+
+# Carga de modelos
+node index.js import modelos "C:/datos/inventario_2025.csv"
+
+# Carga optimizada por ciudad
+node index.js import desarrolladores "C:/datos/devs_culiacan.csv" --region "Culiacan"
+```
+
+### 3. Exportar Datos (Respaldo)
+Descarga la base de datos actual a JSON o CSV.
+```bash
+node index.js export [coleccion] --format=[json|csv]
+```
+*   Los archivos se guardan en `data-manager/output/`.
+*   Formato default: `json`.
+
 ---
 
-## 🧠 Paso 3: Entender las Reglas (Automáticas)
+## 📋 Diccionario de Columnas CSV (Mapeo Exacto)
 
-El sistema es inteligente. Aquí explicamos qué hace automáticamente para que tú solo te preocupes por el Excel.
+El sistema normalizará automáticamente los nombres de columnas. Se aceptan las siguientes variaciones:
 
-### Reglas para DESARROLLOS
-1.  **Si subes un archivo con ID (columna `id`)**: El sistema respeta ese número (ej. `2846`). Úsalo para actualizar datos.
-2.  **Si NO pones ID**:
-    *   Primero busca si ya existe un desarrollo con ese **Nombre**. Si lo encuentra, actualiza ese mismo.
-    *   Si es totalmente nuevo, busca el **número más alto** de la base de datos (ej. `2846`) y le asigna el siguiente (`2847`).
+### A. DESARROLLOS (`desarrollos`)
 
-### Reglas para MODELOS
-1.  **Si NO pones ID**: El sistema lo crea automáticamente usando:
-    *   `id_desarrollo` (ej. `2846`) + `nombre_modelo` (ej. `Modelo A`) = ID `2846-modelo-a`.
-    *   ⚠️ **OJO**: Es obligatorio que tu Excel de modelos tenga la columna `id_desarrollo` y `nombre_modelo`.
+| Columna CSV (Cualquiera funciona) | Campo DB Destino | Notas |
+| :--- | :--- | :--- |
+| `Nombre`, `nombre` | `nombre` | **Requerido** |
+| `Constructora`, `constructora` | `constructora` | **Requerido** |
+| `descripcion` | `descripcion` | |
+| `activo` | `activo` | `TRUE` / `1` / `ON` |
+| `ubicacion.calle`, `calle` | `ubicacion.calle` | |
+| `ubicacion.colonia`, `colonia` | `ubicacion.colonia` | |
+| `ubicacion.cp`, `codigopostal` | `ubicacion.cp` | |
+| `ubicacion.ciudad`, `ciudad` | `ubicacion.ciudad` | **Crucial** para Geo-Tagging |
+| `ubicacion.latitud`, `latitud` | `ubicacion.latitud` | |
+| `amenidades` | `caracteristicas.amenidades` | Separar con `|` (Pipes) |
+| `entorno` | `caracteristicas.entorno` | Separar con `|` (Pipes) |
+| `acepta_creditos` | `financiamiento.aceptaCreditos` | Separar con `|` |
+| `apartado_monto` | `financiamiento.apartadoMinimo` | Numérico |
+| `enganche_pct` | `financiamiento.engancheMinimoPorcentaje` | Numérico (ej: 10) |
+| `url_cover` | `media.cover` | URL Imagen Principal |
+| `url_gallery` | `media.gallery` | URLs separadas por `|` |
+| `url_brochure` | `media.brochure` | URL PDF |
+| `unidades_totales`, `viviendas_totales` | `infoComercial.unidadesTotales` | |
+| `unidades_vendidas`, `viviendas_vendidas` | `infoComercial.unidadesVendidas` | |
+| `unidades_disponibles` | `infoComercial.unidadesDisponibles` | |
+| `promocion_nombre` | `promocion.nombre` | |
+| `promocion_inicio` | `promocion.fecha_inicio` | Formato `YYYY-MM-DD` |
+| `promocion_fin` | `promocion.fecha_fin` | Formato `YYYY-MM-DD` |
+| `ia_resumen` | `analisisIA.resumen` | Generado por IA |
 
-### Reglas para DESARROLLADORES
-1.  **Vinculación Automática**: El sistema vincula al desarrollador con sus desarrollos buscando coincidencia exacta entre el campo `Nombre` del desarrollador y el campo `constructora` de los desarrollos.
-2.  **Cálculos de Totales (Automáticos)**: Al importar, se recalculan:
-    *   `ofertaTotal`: Suma de `unidadesTotales` de sus desarrollos.
-    *   `viviendasxVender`: Suma de `unidadesDisponibles` (o `inventario`) de sus desarrollos.
-    *   `ciudades`: Lista única de ciudades donde tiene proyectos.
+### B. MODELOS (`modelos`)
 
-### Flujo de "Dos Archivos"
-Si quieres subir primero la info y luego las fotos:
-1.  Sube el **Archivo 1** (Info General). El sistema creará/actualizará los registros.
-2.  Sube el **Archivo 2** (Links de Fotos). El sistema detectará los mismos desarrollos/modelos (por su ID o por su Nombre) y **SOLO** actualizará las fotos, sin borrar la info que subiste en el paso 1.
+| Columna CSV (Cualquiera funciona) | Campo DB Destino | Notas |
+| :--- | :--- | :--- |
+| `id_desarrollo`, `idDesarrollo` | `idDesarrollo` | **Requerido** (o usar nombre+const) |
+| `nombre_modelo`, `nombreModelo` | `nombreModelo` | **Requerido** |
+| `nombre_desarrollo` | (Auxiliar) | Se usa si falta `id_desarrollo` |
+| `constructora` | (Auxiliar) | Se usa si falta `id_desarrollo` |
+| `status`, `estado` | `status` | `Preventa | Entrega Inmediata` |
+| `tipo_vivienda` | `tipoVivienda` | `Casa`, `Depto`, etc. |
+| `recamaras` | `recamaras` | Numérico |
+| `banos` | `banos` | Numérico |
+| `m2_const`, `m2` | `m2` | Metros de Construcción |
+| `m2_terreno`, `terreno` | `terreno` | Metros de Terreno |
+| `precio_base`, `precio_inicial` | `precios.base` | **Precio Actual** |
+| `precio_orig_lista`, `precios.inicial` | `precios.inicial` | Precio Lanzamiento |
+| `mantenimiento` | `precios.mantenimientoMensual` | |
+| `tiempo_entrega` | `infoComercial.tiempoEntrega` | Texto libre |
+| `img_cover` | `media.cover` | |
+| `img_galeria` | `media.gallery` | Separar con `|` |
+| `url_plantas` | `media.plantasArquitectonicas` | Separar con `|` |
+| `url_video` | `media.videoPromocional` | |
 
 ---
 
-##  Paso 4: Cerrar / Salir
+## ⚙️ Procesos Automáticos
 
-Cuando termines:
-1.  Simplemente cierra la terminal (el ícono de bote de basura en VS Code o la X en la ventana).
-2.  O escribe:
-    ```bash
-    cd ..
-    ```
-    Para regresar a la carpeta principal del proyecto.
+1.  **Validación Inteligente (Zod)**
+    *   Si una fila no cumple con los tipos de datos (ej. texto en campo numérico), la fila se **rechaza** y se muestra una `x` roja en la consola.
+    *   Si faltan campos opcionales, se carga sin ellos.
+    *   Si faltan campos obligatorios (`id`, `nombre`), falla.
 
-> **NOTA DE SEGURIDAD**: Si alguna vez el programa se queda "trabado" o cargando por mucho tiempo, puedes forzar el cierre presionando las teclas `Ctrl + C` en tu teclado.
+2.  **Cálculo de Precios por m²**
+    *   Si provees `precio_base` y `m2`, el sistema calcula automáticamente `precio_m2`.
 
-## 📄 Estructura de Columnas (CSV)
+3.  **Historial de Precios**
+    *   Si importas un modelo que ya existe y el `precio_base` es diferente, el precio anterior se guarda automáticamente en `preciosHistoricos` con la fecha de hoy.
+    *   Se recalcula la `plusvaliaReal`.
 
-### DESARROLLOS
-- **Eliminado**: `status` (Ahora vive en los modelos).
-- **Nuevo**: `promocion_nombre`, `promocion_inicio` (YYYY-MM-DD), `promocion_fin` (YYYY-MM-DD).
-  - *Nota*: Las fechas se interpretan en la zona horaria de la ciudad del desarrollo.
-- **Obligatorio**: `nombre`, `constructora`.
-
-### MODELOS
-- **Nuevo**: `status`. Puede ser texto ("Pre-Venta") o lista separada por pipes ("Pre-Venta|Entrega Inmediata").
-- **Nuevo**: `promocion_nombre`, `promocion_inicio`, `promocion_fin`.
-- **Nuevo**: `tiempo_entrega`. Texto libre (ej. "6 meses", "Diciembre 2025").
-- **Obligatorio**: `id_desarrollo`, `nombre_modelo`.
-
-### DESARROLLADORES
-- **Obligatorio**: `Nombre`.
-- **Estructura**: Usar notación de punto para objetos anidados:
-  - `EsquemaPago.Apartado`, `EsquemaPago.Enganche`, `EsquemaPago.AprobacionCredito`, `EsquemaPago.Escrituracion`.
-  - `Contacto.Nombre1`, `Contacto.Telefono1`, `Contacto.Mail1`, `Contacto.Puesto1`.
-  - `Contacto.Nombre2`, `Contacto.Telefono2`, `Contacto.Mail2`, `Contacto.Puesto2`.
-- **Arrays**: `AsesoresDesarrollo` (Lista de IDs separados por `|`).
+4.  **Recálculo de Estadísticas (Triggers)**
+    *   Al terminar la importación de Modelos, se actualizan los Desarrollos padres:
+        *   `rangoPrecios` (Min/Max de los modelos).
+        *   `inventario` (Suma de unidades disponibles).
+        *   `precios.desde` (Precio más bajo).
+    *   Se regeneran los `Highlights` de las ciudades afectadas.

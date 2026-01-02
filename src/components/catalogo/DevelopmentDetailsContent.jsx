@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import ImageLoader from '../shared/ImageLoader';
 import PropertyCard from './PropertyCard';
 import DevelopmentInfoSection from './DevelopmentInfoSection';
@@ -8,6 +8,8 @@ import Delightbox from '../common/Delightbox';
 import FavoriteBtn from '../shared/FavoriteBtn';
 import { useStickyPanel } from '../../hooks/useStickyPanel';
 import '../../styles/components/DevelopmentDetails.css';
+import Modal from '../shared/Modal';
+import LeadCaptureForm from '../leads/LeadCaptureForm';
 
 // Icons
 const Icons = {
@@ -25,6 +27,8 @@ export default function DevelopmentDetailsContent({
 
     const [showDelightbox, setShowDelightbox] = useState(false);
     const [initialImageIndex, setInitialImageIndex] = useState(0);
+    const [activeIndex, setActiveIndex] = useState(0); // Fixed missing state
+    const [isLeadFormOpen, setIsLeadFormOpen] = useState(false); // New state for modal
 
     // 1. Control de visibilidad del ActionPanel usando Custom Hook
     const showActionPanel = useStickyPanel(headerRef);
@@ -166,9 +170,22 @@ export default function DevelopmentDetailsContent({
                 <StickyActionPanel
                     price={precioDesde}
                     label="Precios desde"
-                    onMainAction={() => alert("Abriendo solicitud de cita...")}
+                    onMainAction={() => setIsLeadFormOpen(true)}
                 />
             )}
+
+            {/* LEAD CAPTURE MODAL */}
+            <Modal isOpen={isLeadFormOpen} onClose={() => setIsLeadFormOpen(false)}>
+                <LeadCaptureForm
+                    desarrollo={desarrollo}
+                    modelo={null}
+                    onCancel={() => setIsLeadFormOpen(false)}
+                    onSuccess={() => {
+                        setIsLeadFormOpen(false);
+                        alert("¡Solicitud enviada con éxito! Un asesor te contactará pronto.");
+                    }}
+                />
+            </Modal>
         </div>
     );
 }

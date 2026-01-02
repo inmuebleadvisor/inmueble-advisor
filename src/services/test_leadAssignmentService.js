@@ -14,14 +14,22 @@ const mockClientService = {
 describe('LeadAssignmentService', () => {
     let service;
 
+    const mockCatalogRepo = {
+        getDesarrolloById: vi.fn(),
+        getDesarrollosByCiudad: vi.fn(),
+        getAllDesarrollos: vi.fn(),
+        // Add other methods if needed
+    };
+
     beforeEach(() => {
-        service = new LeadAssignmentService(mockLeadRepo, mockClientService);
+        service = new LeadAssignmentService(mockLeadRepo, mockClientService, mockCatalogRepo);
         vi.clearAllMocks();
     });
 
     it('generarLeadAutomatico should create lead with existing user', async () => {
         mockClientService.findClientByContact.mockResolvedValue({ uid: 'exist_uid' });
         mockLeadRepo.createLead.mockResolvedValue('new_lead_id');
+        service.catalogRepository.getDesarrolloById.mockResolvedValue({ idDesarrollador: 'dev_id_1' });
 
         const result = await service.generarLeadAutomatico(
             { nombre: 'Test', email: 'e', telefono: 't' },
@@ -31,6 +39,7 @@ describe('LeadAssignmentService', () => {
         expect(result.success).toBe(true);
         expect(mockLeadRepo.createLead).toHaveBeenCalledWith(expect.objectContaining({
             clienteUid: 'exist_uid',
+            uid: 'exist_uid',
             status: STATUS.LEAD_PENDING_DEVELOPER_CONTACT
         }));
     });
@@ -39,6 +48,7 @@ describe('LeadAssignmentService', () => {
         mockClientService.findClientByContact.mockResolvedValue(null);
         mockClientService.createClient.mockResolvedValue({ uid: 'new_uid' });
         mockLeadRepo.createLead.mockResolvedValue('new_lead_id_2');
+        service.catalogRepository.getDesarrolloById.mockResolvedValue({ idDesarrollador: 'dev_id_1' });
 
         await service.generarLeadAutomatico(
             { nombre: 'Test', email: 'e', telefono: 't' },
@@ -48,6 +58,26 @@ describe('LeadAssignmentService', () => {
         expect(mockClientService.createClient).toHaveBeenCalled();
         expect(mockLeadRepo.createLead).toHaveBeenCalledWith(expect.objectContaining({
             clienteUid: 'new_uid'
+        }));
+    });
+
+    it('generarLeadAutomatico should fallback to constructora if idDesarrollador is missing', async () => {
+        mockClientService.findClientByContact.mockResolvedValue({ uid: 'exist_uid' });
+        mockLeadRepo.createLead.mockResolvedValue('new_lead_id_3');
+
+        // Setup specific behavior for this test
+        service.catalogRepository.getDesarrolloById.mockResolvedValue({ constructora: 'constructora_fallback' });
+
+        const result = await service.generarLeadAutomatico(
+            { nombre: 'Test', email: 'e', telefono: 't' },
+            'dev_no_id', 'DesarrolloFallback', 'ModeloB',
+            null, // providedUid
+            null // idDesarrollador missing
+        );
+
+        expect(result.success).toBe(true);
+        expect(mockLeadRepo.createLead).toHaveBeenCalledWith(expect.objectContaining({
+            idDesarrollador: 'constructora_fallback'
         }));
     });
 });
