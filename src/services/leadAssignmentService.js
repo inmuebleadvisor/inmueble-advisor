@@ -8,13 +8,15 @@ export class LeadAssignmentService {
   /**
    * @param {import('../repositories/lead.repository').LeadRepository} leadRepository 
    * @param {import('./client.service').ClientService} clientService 
+   * @param {import('../repositories/catalog.repository').CatalogRepository} catalogRepository
    */
-  constructor(leadRepository, clientService) {
+  constructor(leadRepository, clientService, catalogRepository) {
     this.leadRepository = leadRepository;
     this.clientService = clientService;
+    this.catalogRepository = catalogRepository;
   }
 
-  async generarLeadAutomatico(datosCliente, idDesarrollo, nombreDesarrollo, modeloInteres, providedUid = null) {
+  async generarLeadAutomatico(datosCliente, idDesarrollo, nombreDesarrollo, modeloInteres, providedUid = null, idDesarrollador = null, precioReferencia = 0) {
     try {
       // 1. GESTIÓN DE USUARIO (Link User-Lead)
       let clienteUid = providedUid;
@@ -33,6 +35,23 @@ export class LeadAssignmentService {
         this.clientService.updateClientContact(clienteUid, { telefono: datosCliente.telefono });
       }
 
+      // 2. lookup idDesarrollador if missing
+      let finalIdDesarrollador = idDesarrollador;
+      if (idDesarrollo && !finalIdDesarrollador) {
+        try {
+          const devCheck = await this.catalogRepository.getDesarrolloById(idDesarrollo);
+          if (devCheck && devCheck.idDesarrollador) {
+            finalIdDesarrollador = devCheck.idDesarrollador;
+          }
+        } catch (e) {
+          console.warn("Could not fetch development for ID lookup:", e);
+        }
+      }
+
+      if (!idDesarrollo || !finalIdDesarrollador) {
+        throw new Error("Missing required fields: idDesarrollo and idDesarrollador are mandatory.");
+      }
+
       const nuevoLead = {
         clienteUid: clienteUid,
         clienteDatos: {
@@ -40,9 +59,11 @@ export class LeadAssignmentService {
           email: datosCliente.email,
           telefono: datosCliente.telefono,
         },
-        desarrolloId: String(idDesarrollo),
+        idDesarrollo: String(idDesarrollo), // Ensure mapped to correct field
+        idDesarrollador: String(finalIdDesarrollador),
         nombreDesarrollo: nombreDesarrollo,
         modeloInteres: modeloInteres || "No especificado",
+        precioReferencia: Number(precioReferencia) || 0,
         status: STATUS.LEAD_PENDING_DEVELOPER_CONTACT,
         origen: 'web_automatico',
         asesorUid: 'MANUAL_B2B_PROCESS'

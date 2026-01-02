@@ -44,6 +44,23 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
         }
 
         try {
+            // Determine Price: Model Price OR Min Development Price
+            let precioRef = 0;
+            if (modelo && modelo.precioNumerico) {
+                precioRef = modelo.precioNumerico;
+            } else if (desarrollo && desarrollo.modelos && desarrollo.modelos.length > 0) {
+                // Sort/Find min price
+                const prices = desarrollo.modelos.map(m => Number(m.precioNumerico)).filter(p => p > 0);
+                if (prices.length > 0) {
+                    precioRef = Math.min(...prices);
+                }
+            }
+
+            // Ensure idDesarrollador exists - Service handles lookup now if missing
+            if (!desarrollo?.idDesarrollador) {
+                console.warn("Falta ID del Desarrollador en frontend. El servicio intentará recuperarlo.");
+            }
+
             const result = await leadAssignment.generarLeadAutomatico(
                 {
                     nombre: formData.nombre,
@@ -52,8 +69,10 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                 },
                 desarrollo?.id,
                 desarrollo?.nombre,
-                modelo?.nombre_modelo,
-                user?.uid // ✅ PASAMOS EL UID GARANTIZADO
+                modelo?.nombre_modelo || "Interés General", // Fallback name
+                user?.uid, // ✅ PASAMOS EL UID GARANTIZADO
+                desarrollo?.idDesarrollador, // ✅ New Param
+                precioRef // ✅ New Param
             );
 
             if (result.success) {

@@ -42,6 +42,11 @@ const AdminSidebar = ({ collapsed, toggleCollapse }) => {
                     {!collapsed && <span>Usuarios</span>}
                 </NavLink>
 
+                <NavLink to="/administrador/asesores" className={getLinkClass} style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'var(--text-secondary)' }}>
+                    <span>👔</span>
+                    {!collapsed && <span>Gestión Asesores</span>}
+                </NavLink>
+
             </nav>
 
             {/* Footer / Toggle */}

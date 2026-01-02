@@ -37,7 +37,7 @@ export const authService = new AuthService(auth, googleProvider, userRepository)
 export const externalAdvisorService = new ExternalAdvisorService(externalAdvisorRepository, catalogRepository);
 export const clientService = new ClientService(userRepository);
 export const crmService = new CrmService(leadRepository, externalAdvisorService);
-export const leadAssignmentService = new LeadAssignmentService(leadRepository, clientService);
+export const leadAssignmentService = new LeadAssignmentService(leadRepository, clientService, catalogRepository);
 export const favoritesService = new FavoritesService(userRepository);
 
 // 3. Export Registry

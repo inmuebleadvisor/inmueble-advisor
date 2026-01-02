@@ -63,4 +63,8 @@ export class ExternalAdvisorService {
             };
         });
     }
+    async getByDeveloper(developerId) {
+        if (!developerId) return [];
+        return await this.repository.getAdvisorsByDeveloper(developerId);
+    }
 }
