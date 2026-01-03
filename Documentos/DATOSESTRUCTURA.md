@@ -161,34 +161,37 @@ Este documento describe la estructura **real** de las colecciones en Firebase Fi
 
 | Campo | Tipo | Obligatorio | Descripción |
 | :--- | :--- | :--- | :--- |
-| **uid** | `string` | **Sí** | ID del usuario generador (User). |
-| **idModelo** | `string` | No | Modelo de interés. |
-| **idDesarrollo** | `string` | **Sí** | Desarrollo de interés. |
-| **idDesarrollador** | `string` | **Sí** | Empresa responsable. |
-| **nombre** | `string` | No | Nombre del cliente. |
-| **email** | `string` | No | |
-| **telefono** | `string` | No | |
+| **uid** | `string` | **Sí** | ID del usuario generador (User/Client). |
+| **clienteUid** | `string` | **Sí** | Redundancia del UID para búsquedas directas. |
+| **clienteDatos** | `map` | **Sí** | Datos de contacto (Fuente de Verdad). |
+| &nbsp;&nbsp;`.nombre` | `string` | | |
+| &nbsp;&nbsp;`.email` | `string` | | |
+| &nbsp;&nbsp;`.telefono` | `string` | | |
+| **idDesarrollo** | `string` | **Sí** | ID del desarrollo. |
+| **idDesarrollador** | `string` | **Sí** | ID de la empresa desarrolladora. |
+| **nombreDesarrollo** | `string` | No | Nombre denormalizado para UI. |
+| **modeloInteres** | `string` | No | Nombre del modelo (ej. "Prototipo A"). |
 | **precioReferencia** | `number` | No | Precio al momento de generar el lead. |
-| **comisionPorcentaje** | `number` | No | Snapshot de comisión (ej: 1.5). |
-| **status** | `string` | **Sí** | Default `PENDIENTE`. |
-| **origen** | `string` | No | Ej: `WEB_DESKTOP`, `MOBILE`. |
+| **status** | `string` | **Sí** | `PENDING_DEVELOPER_CONTACT`, `REPORTED`, `ASSIGNED_EXTERNAL`, `WON`. |
+| **origen** | `string` | No | Ej: `web_cita_vip`, `web_automatico`. |
 | **urlOrigen** | `string` | No | URL exacta de captura. |
-| **snapshot** | `map` | No | Contexto del producto al momento de crear. |
+| **snapshot** | `map` | No | Contexto inmutable del producto. |
 | &nbsp;&nbsp;`.idModelo` | `string` | | |
 | &nbsp;&nbsp;`.modeloNombre` | `string` | | |
 | &nbsp;&nbsp;`.desarrolloNombre` | `string` | | |
 | &nbsp;&nbsp;`.precioAtCapture` | `number` | | |
-| **citainicial** | `map` | No | Cita agendada (Persistencia Diferida). |
-| &nbsp;&nbsp;`.dia` | `Timestamp` | | |
-| &nbsp;&nbsp;`.hora` | `string` | | Formato 24h (ej: "14:00"). |
-| **idAsesorAsignado** | `string` | No | Asesor interno asignado via CRM. |
-| **statusHistory** | `map[]` | **Sí** | Historial de cambios de estado (Ver Tracking). |
-| &nbsp;&nbsp;`.status` | `string` | | |
-| &nbsp;&nbsp;`.timestamp` | `Timestamp` | | |
-| &nbsp;&nbsp;`.note` | `string` | | |
-| &nbsp;&nbsp;`.changedBy` | `string` | | |
-| **createdAt** | `Timestamp` | **Sí** | |
-| **updatedAt** | `Timestamp` | **Sí** | |
+| **citainicial** | `map` | No | Objeto de cita agendada. |
+| &nbsp;&nbsp;`.dia` | `Timestamp` | | Fecha de la cita. |
+| &nbsp;&nbsp;`.hora` | `string` | | Hora "HH:mm". |
+| **idAsesorAsignado** | `string` | No | ID del asesor externo asignado (si aplica). |
+| **asesorUid** | `string` | No | ID interno de control (ej. `MANUAL_B2B_PROCESS`). |
+| **statusHistory** | `map[]` | **Sí** | Historial de auditoría. |
+| &nbsp;&nbsp;`.status` | `string` | | Estado aplicado. |
+| &nbsp;&nbsp;`.timestamp` | `Timestamp` | | Fecha del cambio. |
+| &nbsp;&nbsp;`.note` | `string` | | Razón del cambio. |
+| &nbsp;&nbsp;`.changedBy` | `string` | | Actor (SYSTEM, Admin UID). |
+| **createdAt** | `Timestamp` | **Sí** | Fecha de creación. |
+| **updatedAt** | `Timestamp` | **Sí** | Última modificación. |
 
 ---
 

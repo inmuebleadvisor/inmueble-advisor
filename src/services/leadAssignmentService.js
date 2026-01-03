@@ -35,21 +35,45 @@ export class LeadAssignmentService {
         this.clientService.updateClientContact(clienteUid, { telefono: datosCliente.telefono });
       }
 
-      // 2. lookup idDesarrollador if missing
+      // 2. lookup idDesarrollador if missing AND fetch commission data
       let finalIdDesarrollador = idDesarrollador;
-      if (idDesarrollo && !finalIdDesarrollador) {
+      let desarrolloData = null;
+      let desarrolladorData = null;
+      let comisionFinal = 0;
+
+      // Ensure we have development data
+      if (idDesarrollo) {
         try {
-          const devCheck = await this.catalogRepository.getDesarrolloById(idDesarrollo);
-          if (devCheck) {
-            finalIdDesarrollador = devCheck.idDesarrollador || devCheck.constructora;
+          desarrolloData = await this.catalogRepository.getDesarrolloById(idDesarrollo);
+          if (desarrolloData) {
+            if (!finalIdDesarrollador) {
+              finalIdDesarrollador = desarrolloData.idDesarrollador || desarrolloData.constructora;
+            }
           }
         } catch (e) {
-          console.warn("Could not fetch development for ID lookup:", e);
+          console.warn("Could not fetch development data:", e);
+        }
+      }
+
+      // Ensure we have developer data
+      if (finalIdDesarrollador) {
+        try {
+          desarrolladorData = await this.catalogRepository.getDesarrolladorById(finalIdDesarrollador);
+        } catch (e) {
+          console.warn("Could not fetch developer data:", e);
         }
       }
 
       if (!idDesarrollo || !finalIdDesarrollador) {
         throw new Error("Missing required fields: idDesarrollo and idDesarrollador are mandatory.");
+      }
+
+      // 3. CALCULAR COMISIÓN
+      // Priority: Development Override > Developer Base > 0
+      if (desarrolloData?.comisiones?.overridePct) {
+        comisionFinal = Number(desarrolloData.comisiones.overridePct);
+      } else if (desarrolladorData?.comisiones?.porcentajeBase) {
+        comisionFinal = Number(desarrolladorData.comisiones.porcentajeBase);
       }
 
       const nuevoLead = {
@@ -61,10 +85,12 @@ export class LeadAssignmentService {
           telefono: datosCliente.telefono,
         },
         idDesarrollo: String(idDesarrollo), // Ensure mapped to correct field
+        idModelo: contextData.idModelo || null, // ✅ Mapped from context
         idDesarrollador: String(finalIdDesarrollador),
         nombreDesarrollo: nombreDesarrollo,
         modeloInteres: modeloInteres || "No especificado",
         precioReferencia: Number(precioReferencia) || 0,
+        comisionPorcentaje: comisionFinal, // ✅ Calculated Commission
         status: STATUS.LEAD_PENDING_DEVELOPER_CONTACT,
         origen: contextData.origen || 'web_automatico',
         urlOrigen: contextData.urlOrigen || null,

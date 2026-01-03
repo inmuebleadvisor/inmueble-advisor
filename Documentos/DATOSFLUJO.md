@@ -28,78 +28,85 @@ Archivos de **Desarrollos, Modelos y Desarrolladores**.
 ---
 
 ## 2. Etapa de Generación de Leads (CRM Flow)
-
-A diferencia del catálogo, los leads nacen en la UI y viajan a la BD.
-
-### 2.1 Origen (User Interaction)
-*   **Web Forms:** Landing Pages, Botón "Cotizar", Botón "Agendar Cita".
-*   **Input:** El usuario anónimo provee `nombre`, `telefono`, `email`.
-
-### 2.2 Creación (Lead Service)
-*   **Validación de Negocio:**
-    *   Verifica que vengan `idDesarrollo` e `idDesarrollador`.
-    *   Sanea el teléfono.
-*   **Persistencia:** `LeadRepository.createLead()` guarda el documento con status `PENDIENTE` e inicia el `statusHistory`.
-
-### 2.3 Procesamiento (Assignment)
-1.  **Asesor Interno:** El Admin puede asignar un asesor del equipo (`CrmService.asignarAsesor`).
-2.  **Asesor Externo:** Si se trata de un desarrollo B2B, se asigna a un `ExternalAdvisor` previamente registrado.
-    *   **ExternalAdvisor:** Se busca por teléfono (WhatsApp key).
-    *   **Tracking:** Se actualiza la métrica `leadsAsignadosAcumulados` del asesor externo.
-
----
-
-## 3. Etapa de Almacenamiento (Firestore)
-
-Base de datos NoSQL orientada a documentos.
-
-*   **Colección `desarrollos`**: Documentos pesados.
-*   **Colección `modelos`**: Documentos ligeros.
-*   **Colección `leads`**: Datos transaccionales de alta frecuencia.
-*   **Colección `external_advisors`**: Directorio de vendedores de las constructoras.
-
----
-
-## 4. Etapa de Consumo (Frontend Layer)
-
-### 4.1 Data Access Layer (`src/repositories`)
-Abstracción pura sobre Firestore.
-*   **`CatalogRepository`**: Lee productos.
-*   **`LeadRepository`**: Escribe leads y lee dashboard.
-*   **`ExternalAdvisorRepository`**: Gestiona el directorio B2B.
-
-### 4.2 Service Layer (`src/services`)
-*   **`CatalogService`**: Filtros y Mappers.
-*   **`CrmService`**: Máquina de estados del Lead (Nuevo -> Contactado -> Cierre). Gestiona las reglas de negocio para mover un lead de una etapa a otra.
-
-### 4.3 State Management (`CatalogContext`)
-*   **Context API:** Cachea el catálogo.
-*   **(No cacheamos Leads):** Por seguridad y frescura, los leads se consultan en tiempo real o con SWR.
-
----
-
-## 5. Diagrama de Flujo Actualizado
-
-```mermaid
-graph TD
-    subgraph Ingestion [Catálogo Ingest]
-    CSV[CSV Files] -->|Data Manager| Valid{Zod Valid?}
-    Valid -- Sí --> DB[(Firestore)]
-    end
-    
-    subgraph CRM [CRM Flow]
-    User[Usuario Web] -->|Form Submit| Service[Lead Service]
-    Service -->|Create| Lead[(Leads Col)]
-    
-    Admin[Admin/CRM] -->|Assign| Advisor[Asignación]
-    Advisor -->|Interno| Staff[Asesor Staff]
-    Advisor -->|Externo| Ext[External Advisor]
-    
-    Ext -->|Update| Metrics[Metrics Update]
-    end
-    
-    subgraph Consumption
-    DB -->|Read| Repo[Repositories]
-    Repo -->|Logic| App[React App]
-    end
-```
+ 
+ El flujo ha evolucionado para incluir muros de autenticación y lógica de agendamiento.
+ 
+ ### 2.1 Trigger & Validación (UI Layer)
+ *   **Componente:** `LeadCaptureForm.jsx`
+ *   **Auth Wall:** Si `!user`, se bloquea la vista y se fuerza el Login con Google.
+ *   **Paso 1 - Agendamiento:** El usuario selecciona fecha y hora en `AppointmentScheduler`.
+     *   *Output:* Objeto `{ dia: Date, hora: "HH:mm" }`.
+ *   **Paso 2 - Datos Personales:** Se pre-llenan con `UserContext`.
+ 
+ ### 2.2 Orquestación (Service Layer)
+ *   **Servicio:** `LeadAssignmentService.generarLeadAutomatico`
+ *   **Cliente Unificado:**
+     *   Verifica si el email/teléfono ya existe en `ClientService`.
+     *   Si existe, reutiliza el UID. Si no, crea un nuevo cliente.
+ *   **Resolución de Desarrollador:**
+     *   Si falta el `idDesarrollador`, lo busca en tiempo real usando `CatalogRepository`.
+ *   **Construcción de Payload:**
+     *   Empaqueta `clienteDatos`, `snapshot` del inmueble y `citainicial`.
+     *   Asigna estado inicial: `PENDING_DEVELOPER_CONTACT`.
+ 
+ ### 2.3 Persistencia (Repository Layer)
+ *   **`LeadRepository.createLead`**:
+     *   Recibe el objeto denormalizado.
+     *   Agrega `createdAt`, `updatedAt` (ServerTimestamp).
+     *   Inicializa `statusHistory`.
+ 
+ ### 2.4 Gestión Administrativa (Manual)
+ *   **Panel Admin:** `/admin/leads` (`AdminLeads.jsx`)
+ *   **Acción 1: Reportar (Whatsapp):**
+     *   Genera deep-link de Whatsapp al contacto del Desarrollador.
+     *   Cambia estado a `REPORTED`.
+ *   **Acción 2: Asignar:**
+     *   Permite seleccionar o registrar un nuevo `ExternalAdvisor`.
+     *   Cambia estado a `ASSIGNED_EXTERNAL`.
+ 
+ ---
+ 
+ ## 3. Etapa de Almacenamiento (Firestore)
+ 
+ Base de datos NoSQL orientada a documentos.
+ 
+ *   **Colección `desarrollos`**: Documentos pesados.
+ *   **Colección `modelos`**: Documentos ligeros.
+ *   **Colección `leads`**: Datos transaccionales. Contiene la verdad completa del contacto (`clienteDatos`).
+ *   **Colección `external_advisors`**: Directorio de vendedores de las constructoras.
+ 
+ ---
+ 
+ ## 4. Diagrama de Flujo Actualizado
+ 
+ ```mermaid
+ graph TD
+     subgraph UI_Interaction [Frontend Interaction]
+     User((Usuario)) -->|Click Interes| Auth{Está Logueado?}
+     Auth -- No --> Login[Google Login Modal]
+     Login --> Scheduler
+     Auth -- Si --> Scheduler[Appointment Scheduler]
+     Scheduler --> Form[Datos Contacto]
+     Form -->|Submit| Service[LeadAssignmentService]
+     end
+     
+     subgraph Backend_Logic [Service Logic]
+     Service -->|Lookup| ClientCheck{Existe Cliente?}
+     ClientCheck -->|No| CreateClient[Crear Cliente]
+     ClientCheck -->|Si| ReuseUID[Reusar UID]
+     Service -->|Resolve| DevLookup[Buscar ID Desarrollador]
+     Service -->|Persist| Repo[LeadRepository]
+     end
+     
+     subgraph Admin_Ops [Admin Operations]
+     Admin((Admin)) -->|View| Dashboard[/admin/leads]
+     Dashboard -->|Action| WA[Reportar via WhatsApp]
+     WA --> StatusRep[[Status: REPORTED]]
+     Dashboard -->|Action| Assign[Asignar Asesor Externo]
+     Assign --> StatusAss[[Status: ASSIGNED_EXTERNAL]]
+     end
+ 
+     Repo --> Firestore[(Firestore LEADS)]
+     StatusRep --> Firestore
+     StatusAss --> Firestore
+ ```

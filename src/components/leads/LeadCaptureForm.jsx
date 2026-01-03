@@ -64,13 +64,21 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                 datosCliente,
                 desarrollo?.id, // Ensure these props exist
                 desarrollo?.nombre,
-                modelo?.nombre_modelo, // nullable
+                modelo?.nombreModelo || modelo?.nombre_modelo, // nullable, support DB/Legacy
                 user?.uid,
                 desarrollo?.idDesarrollador, // nullable, service will lookup
-                modelo?.precio || 0,
+                modelo?.precios?.base || modelo?.precio || 0,
                 {
                     origen: 'web_cita_vip',
-                    citainicial: formData.citainicial
+                    urlOrigen: window.location.href, // ✅ Capture URL
+                    citainicial: formData.citainicial,
+                    idModelo: modelo?.id || null, // ✅ Pass ID for top-level field
+                    snapshot: {
+                        idModelo: modelo?.id || null,
+                        modeloNombre: modelo?.nombreModelo || modelo?.nombre_modelo || "N/A",
+                        desarrolloNombre: desarrollo?.nombre || "N/A",
+                        precioAtCapture: modelo?.precios?.base || modelo?.precio || 0
+                    }
                 }
             );
 

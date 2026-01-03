@@ -114,4 +114,15 @@ export class CatalogRepository {
             throw error;
         }
     }
+    async getDesarrolladorById(id) {
+        try {
+            const docRef = doc(this.db, "desarrolladores", String(id).trim());
+            const docSnap = await getDoc(docRef);
+            if (!docSnap.exists()) return null;
+            return { id: docSnap.id, ...docSnap.data() };
+        } catch (error) {
+            console.error(`Error en CatalogRepository.getDesarrolladorById(${id}):`, error);
+            throw error;
+        }
+    }
 }
