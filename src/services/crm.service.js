@@ -83,24 +83,29 @@ export class CrmService {
   /**
    * Asigna un asesor EXTERNO (del developer)
    */
-  async asignarAsesorExterno(leadId, datosAsesorExterno) {
+  async asignarAsesorExterno(leadId, advisor) {
     try {
-      // 1. Garantizar que el asesor exista (Delegated to Service)
-      const advisor = await this.externalAdvisorService.createOrUpdate(datosAsesorExterno);
+      // Validamos que venga la info mínima
+      if (!advisor || !advisor.nombre) {
+        throw new Error("Datos de asesor inválidos");
+      }
 
       // Actualizamos el Lead
       const updateData = {
         status: STATUS.LEAD_ASSIGNED_EXTERNAL,
         externalAdvisor: {
+          id: advisor.id || null, // Guardamos ID si existe
           nombre: advisor.nombre,
-          telefono: advisor.telefono || '',
+          telefono: advisor.whatsapp || advisor.telefono || '', // Normalizamos a whatsapp/telefono
+          email: advisor.email || '',
           fechaAsignacion: new Date()
         },
         seguimientoB2B: {
           status: 'ASSIGNED',
-          vendedorExternoId: advisor.id,
+          vendedorExternoId: advisor.id || null,
           hitosAlcanzados: []
         },
+        idAsesorAsignadoExterno: advisor.id || null, // Field indexado si es necesario
         fechaUltimaInteraccion: serverTimestamp()
       };
 

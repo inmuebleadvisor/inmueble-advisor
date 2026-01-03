@@ -1,134 +1,85 @@
-# Guía de Importación y Exportación (Inmueble Advisor)
+# 📟 GUÍA DE OPERACIÓN - DATA MANAGER CLI Y ADMIN DASHBOARD
 
-Esta herramienta es un programa independiente (CLI) que te permite subir y bajar información de la base de datos de manera segura y controlada.
-
----
-
-## �️ Paso 1: Abrir la Terminal y Preparar
-
-Para usar esta herramienta, necesitas estar ubicado exactamente en la carpeta `data-manager`.
-
-### Opción A: Desde Visual Studio Code
-1.  Abre la terminal integrada: Menú **Terminal** > **New Terminal**.
-2.  Escribe el siguiente comando para entrar a la carpeta:
-    ```bash
-    cd data-manager
-    ```
-    *(Verás que la ruta en la terminal termina en `.../inmueble-advisor/data-manager`)*.
-
-### Opción B: Instalación (Solo la primera vez) (Ya se instaló)
-Si es la primera vez que usas esto en esta computadora, ejecuta:
-```bash
-npm install
-```
-Esto descarga las herramientas necesarias.
+**Versión:** 1.1
+**Fuente de Verdad:** 
+1. `data-manager/index.js` (Catálogo)
+2. `src/screens/admin/AdminLeads.jsx` (CRM/Leads)
 
 ---
 
-## 🕹️ Paso 2: Operar la Herramienta (Comandos)
+## 🛠️ PARTE A: GESTIÓN DE CATÁLOGO (CLI)
 
-Todos los comandos empiezan con `node index.js`. Aquí tienes los más importantes:
+> ⚠️ **IMPORTANTE:** El CLI SOLO gestiona `Desarrollos`, `Modelos` y `Desarrolladores`. Para Leads, ver **PARTE B**.
 
-### � IMPORTAR (Subir datos)
-Para subir un archivo CSV a la base de datos.
+Ejecutar desde la carpeta: `/data-manager`
 
-**Subir Desarrollos:**
+### 1. Comandos Básicos (Ingesta)
 ```bash
-node index.js import desarrollos "ruta/a/tu/archivo.csv"
-```
-*Ejemplo:* `node index.js import desarrollos "C:/Documentos/desarrollos_final.csv"`
+# Importar Desarrollos
+node index.js import desarrollos "C:/datos/master.csv"
 
-**Subir Modelos:**
-```bash
-node index.js import modelos "ruta/a/tu/archivo.csv"
-```
+# Importar Modelos
+node index.js import modelos "C:/datos/inventario.csv"
 
-**Subir Desarrolladores:**
-```bash
-node index.js import desarrolladores "ruta/a/tu/archivo.csv"
-```
-
-### 📤 EXPORTAR (Bajar datos)
-Para descargar lo que hay en la nube a tu computadora. Los archivos se guardan en la carpeta `data-manager/output`.
-
-**Bajar TODO a un JSON (Respaldo):**
-```bash
-node index.js export desarrollos
-node index.js export modelos
-```
-
-**Bajar a Excel/CSV:**
-```bash
-node index.js export desarrollos --format=csv
-```
-
-### ✅ Verificar Conexión
-Si tienes dudas de si tienes internet o acceso:
-```bash
-node index.js test-connection
+# Exportar Backup
+node index.js export desarrollos --format=json
 ```
 
 ---
 
-## 🧠 Paso 3: Entender las Reglas (Automáticas)
+## 👥 PARTE B: GESTIÓN DE LEADS (ADMIN UI)
 
-El sistema es inteligente. Aquí explicamos qué hace automáticamente para que tú solo te preocupes por el Excel.
+La gestión de Leads, Citas y Asignaciones se realiza **exclusivamente** desde la interfaz web administrativa.
 
-### Reglas para DESARROLLOS
-1.  **Si subes un archivo con ID (columna `id`)**: El sistema respeta ese número (ej. `2846`). Úsalo para actualizar datos.
-2.  **Si NO pones ID**:
-    *   Primero busca si ya existe un desarrollo con ese **Nombre**. Si lo encuentra, actualiza ese mismo.
-    *   Si es totalmente nuevo, busca el **número más alto** de la base de datos (ej. `2846`) y le asigna el siguiente (`2847`).
+**URL:** `/admin/leads`
 
-### Reglas para MODELOS
-1.  **Si NO pones ID**: El sistema lo crea automáticamente usando:
-    *   `id_desarrollo` (ej. `2846`) + `nombre_modelo` (ej. `Modelo A`) = ID `2846-modelo-a`.
-    *   ⚠️ **OJO**: Es obligatorio que tu Excel de modelos tenga la columna `id_desarrollo` y `nombre_modelo`.
+### 1. Flujo de Atención de Leads
+El sistema clasifica los leads en 3 estados principales para su gestión:
 
-### Reglas para DESARROLLADORES
-1.  **Vinculación Automática**: El sistema vincula al desarrollador con sus desarrollos buscando coincidencia exacta entre el campo `Nombre` del desarrollador y el campo `constructora` de los desarrollos.
-2.  **Cálculos de Totales (Automáticos)**: Al importar, se recalculan:
-    *   `ofertaTotal`: Suma de `unidadesTotales` de sus desarrollos.
-    *   `viviendasxVender`: Suma de `unidadesDisponibles` (o `inventario`) de sus desarrollos.
-    *   `ciudades`: Lista única de ciudades donde tiene proyectos.
+#### A. Leads Por Reportar (`PENDING_DEVELOPER_CONTACT`)
+Son leads nuevos generados desde la web. Requieren acción manual inmediata.
 
-### Flujo de "Dos Archivos"
-Si quieres subir primero la info y luego las fotos:
-1.  Sube el **Archivo 1** (Info General). El sistema creará/actualizará los registros.
-2.  Sube el **Archivo 2** (Links de Fotos). El sistema detectará los mismos desarrollos/modelos (por su ID o por su Nombre) y **SOLO** actualizará las fotos, sin borrar la info que subiste en el paso 1.
+*   **Acción Requerida:** Notificar al desarrollador.
+*   **Procedimiento:**
+    1.  Ubicar el lead en la tabla (Color Rojo).
+    2.  Clic en botón **"Reportar"**.
+    3.  El sistema abrirá **WhatsApp Web** con un mensaje pre-formateado dirigido al contacto del Desarrollador.
+    4.  Confirmar la alerta en pantalla ("¿Se envió el reporte?").
+    5.  El lead cambia de estado a `REPORTED` (Color Ámbar).
+
+#### B. Leads Reportados (`REPORTED`)
+Leads que el desarrollador ya conoce, pero aún no tienen un vendedor específico asignado.
+
+*   **Acción Requerida:** Asignar un Asesor Externo.
+*   **Procedimiento:**
+    1.  Cuando el desarrollador responda el WhatsApp indicando quién atenderá al cliente.
+    2.  Clic en botón **"Asignar"**.
+    3.  **Opción 1 (Existente):** Seleccionar un asesor de la lista (filtrada por desarrollador).
+    4.  **Opción 2 (Nuevo):** Clic en "Registrar Nuevo Asesor".
+        *   Ingresar Nombre, WhatsApp (solo números) y Email.
+    5.  Al guardar, el lead cambia a `ASSIGNED_EXTERNAL` (Color Azul).
+
+#### C. En Seguimiento (`ASSIGNED_EXTERNAL`)
+Leads que ya están en manos de un vendedor.
+*   **Acciones:**
+    *   **Reasignar:** Si el vendedor no responde, se puede cambiar el asesor usando el mismo botón.
 
 ---
 
-##  Paso 4: Cerrar / Salir
+## 📋 Diccionario de Columnas CSV (Catálogo - CLI)
 
-Cuando termines:
-1.  Simplemente cierra la terminal (el ícono de bote de basura en VS Code o la X en la ventana).
-2.  O escribe:
-    ```bash
-    cd ..
-    ```
-    Para regresar a la carpeta principal del proyecto.
+### DESARROLLOS (`desarrollos`)
+| Columna CSV | Campo DB |
+| :--- | :--- |
+| `nombre` | `nombre` |
+| `constructora` | `constructora` |
+| `ciudad` | `ubicacion.ciudad` |
+| `latitud`/`longitud` | `ubicacion.latitud`/`longitud` |
 
-> **NOTA DE SEGURIDAD**: Si alguna vez el programa se queda "trabado" o cargando por mucho tiempo, puedes forzar el cierre presionando las teclas `Ctrl + C` en tu teclado.
-
-## 📄 Estructura de Columnas (CSV)
-
-### DESARROLLOS
-- **Eliminado**: `status` (Ahora vive en los modelos).
-- **Nuevo**: `promocion_nombre`, `promocion_inicio` (YYYY-MM-DD), `promocion_fin` (YYYY-MM-DD).
-  - *Nota*: Las fechas se interpretan en la zona horaria de la ciudad del desarrollo.
-- **Obligatorio**: `nombre`, `constructora`.
-
-### MODELOS
-- **Nuevo**: `status`. Puede ser texto ("Pre-Venta") o lista separada por pipes ("Pre-Venta|Entrega Inmediata").
-- **Nuevo**: `promocion_nombre`, `promocion_inicio`, `promocion_fin`.
-- **Nuevo**: `tiempo_entrega`. Texto libre (ej. "6 meses", "Diciembre 2025").
-- **Obligatorio**: `id_desarrollo`, `nombre_modelo`.
-
-### DESARROLLADORES
-- **Obligatorio**: `Nombre`.
-- **Estructura**: Usar notación de punto para objetos anidados:
-  - `EsquemaPago.Apartado`, `EsquemaPago.Enganche`, `EsquemaPago.AprobacionCredito`, `EsquemaPago.Escrituracion`.
-  - `Contacto.Nombre1`, `Contacto.Telefono1`, `Contacto.Mail1`, `Contacto.Puesto1`.
-  - `Contacto.Nombre2`, `Contacto.Telefono2`, `Contacto.Mail2`, `Contacto.Puesto2`.
-- **Arrays**: `AsesoresDesarrollo` (Lista de IDs separados por `|`).
+### MODELOS (`modelos`)
+| Columna CSV | Campo DB |
+| :--- | :--- |
+| `id_desarrollo` | `idDesarrollo` |
+| `nombre` | `nombreModelo` |
+| `precio` | `precios.base` |
+| `m2` | `m2` |

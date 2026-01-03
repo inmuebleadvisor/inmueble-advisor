@@ -63,12 +63,55 @@ export default function PropertyCard({ item, showDevName = true, style }) {
           </div>
         ))}
 
-        <span
-          className="property-card__status-tag"
-          style={{ backgroundColor: item.esPreventa ? '#f59e0b' : '#10b981' }}
-        >
-          {item.esPreventa ? 'PRE-VENTA' : 'ENTREGA INMEDIATA'}
-        </span>
+        {(() => {
+          let hasPreventa = false;
+          let hasInmediata = false;
+
+          const check = (val) => {
+            if (!val) return;
+            const s = String(val).toUpperCase().trim();
+            if (s.includes('PRE-VENTA') || s.includes('PREVENTA')) hasPreventa = true;
+            if (s.includes('INMEDIATA') || s.includes('IMMEDIATE')) hasInmediata = true;
+          };
+
+          // Check Status Array/String
+          if (item.status) {
+            if (Array.isArray(item.status)) {
+              item.status.forEach(check);
+            } else {
+              check(item.status);
+            }
+          }
+
+          // Fallback legacy
+          if (item.esPreventa) hasPreventa = true;
+
+          // Determine Label & Color
+          let label = null;
+          let bgColor = 'transparent';
+
+          if (hasInmediata && hasPreventa) {
+            label = 'Inmediato/Preventa';
+            bgColor = '#0ea5e9'; // Blue for mixed/special
+          } else if (hasInmediata) {
+            label = 'ENTREGA INMEDIATA';
+            bgColor = '#10b981'; // Green
+          } else if (hasPreventa) {
+            label = 'PRE-VENTA';
+            bgColor = '#f59e0b'; // Orange
+          }
+
+          if (!label) return null;
+
+          return (
+            <span
+              className="property-card__status-tag"
+              style={{ backgroundColor: bgColor }}
+            >
+              {label}
+            </span>
+          );
+        })()}
 
         <div className="property-card__favorite-btn-wrapper">
           <FavoriteBtn modeloId={item.id} />

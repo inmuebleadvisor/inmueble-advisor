@@ -8,13 +8,15 @@ export class LeadAssignmentService {
   /**
    * @param {import('../repositories/lead.repository').LeadRepository} leadRepository 
    * @param {import('./client.service').ClientService} clientService 
+   * @param {import('../repositories/catalog.repository').CatalogRepository} catalogRepository
    */
-  constructor(leadRepository, clientService) {
+  constructor(leadRepository, clientService, catalogRepository) {
     this.leadRepository = leadRepository;
     this.clientService = clientService;
+    this.catalogRepository = catalogRepository;
   }
 
-  async generarLeadAutomatico(datosCliente, idDesarrollo, nombreDesarrollo, modeloInteres, providedUid = null) {
+  async generarLeadAutomatico(datosCliente, idDesarrollo, nombreDesarrollo, modeloInteres, providedUid = null, idDesarrollador = null, precioReferencia = 0, contextData = {}) {
     try {
       // 1. GESTIÓN DE USUARIO (Link User-Lead)
       let clienteUid = providedUid;
@@ -33,19 +35,68 @@ export class LeadAssignmentService {
         this.clientService.updateClientContact(clienteUid, { telefono: datosCliente.telefono });
       }
 
+      // 2. lookup idDesarrollador if missing AND fetch commission data
+      let finalIdDesarrollador = idDesarrollador;
+      let desarrolloData = null;
+      let desarrolladorData = null;
+      let comisionFinal = 0;
+
+      // Ensure we have development data
+      if (idDesarrollo) {
+        try {
+          desarrolloData = await this.catalogRepository.getDesarrolloById(idDesarrollo);
+          if (desarrolloData) {
+            if (!finalIdDesarrollador) {
+              finalIdDesarrollador = desarrolloData.idDesarrollador || desarrolloData.constructora;
+            }
+          }
+        } catch (e) {
+          console.warn("Could not fetch development data:", e);
+        }
+      }
+
+      // Ensure we have developer data
+      if (finalIdDesarrollador) {
+        try {
+          desarrolladorData = await this.catalogRepository.getDesarrolladorById(finalIdDesarrollador);
+        } catch (e) {
+          console.warn("Could not fetch developer data:", e);
+        }
+      }
+
+      if (!idDesarrollo || !finalIdDesarrollador) {
+        throw new Error("Missing required fields: idDesarrollo and idDesarrollador are mandatory.");
+      }
+
+      // 3. CALCULAR COMISIÓN
+      // Priority: Development Override > Developer Base > 0
+      if (desarrolloData?.comisiones?.overridePct) {
+        comisionFinal = Number(desarrolloData.comisiones.overridePct);
+      } else if (desarrolladorData?.comisiones?.porcentajeBase) {
+        comisionFinal = Number(desarrolladorData.comisiones.porcentajeBase);
+      }
+
       const nuevoLead = {
-        clienteUid: clienteUid,
+        uid: clienteUid, // ✅ Fix: Repository expects 'uid'
+        clienteUid: clienteUid, // Keeping for backward compatibility/service clarity
         clienteDatos: {
           nombre: datosCliente.nombre,
           email: datosCliente.email,
           telefono: datosCliente.telefono,
         },
-        desarrolloId: String(idDesarrollo),
+        idDesarrollo: String(idDesarrollo), // Ensure mapped to correct field
+        idModelo: contextData.idModelo || null, // ✅ Mapped from context
+        idDesarrollador: String(finalIdDesarrollador),
         nombreDesarrollo: nombreDesarrollo,
         modeloInteres: modeloInteres || "No especificado",
+        precioReferencia: Number(precioReferencia) || 0,
+        comisionPorcentaje: comisionFinal, // ✅ Calculated Commission
         status: STATUS.LEAD_PENDING_DEVELOPER_CONTACT,
-        origen: 'web_automatico',
-        asesorUid: 'MANUAL_B2B_PROCESS'
+        origen: contextData.origen || 'web_automatico',
+        urlOrigen: contextData.urlOrigen || null,
+        snapshot: contextData.snapshot || {}, // ✅ Persist Snapshot
+        asesorUid: 'MANUAL_B2B_PROCESS',
+        citainicial: contextData.citainicial || null // ✅ Appointment scheduling
       };
 
       // 2. Guardamos usando Repositorio
@@ -55,6 +106,54 @@ export class LeadAssignmentService {
 
     } catch (error) {
       console.error("Error al enviar solicitud:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Checks if the user already has an active appointment for this development.
+   * @param {string} uid 
+   * @param {string} idDesarrollo 
+   */
+  async checkActiveAppointment(uid, idDesarrollo) {
+    if (!uid || !idDesarrollo) {
+      console.warn("⚠️ [Service] checkActiveAppointment missing params:", { uid, idDesarrollo });
+      return { hasAppointment: false };
+    }
+
+    try {
+      console.log("🔍 [Service] Calling repo.findActiveAppointment...");
+      const appointment = await this.leadRepository.findActiveAppointment(uid, idDesarrollo);
+      return {
+        hasAppointment: !!appointment,
+        appointment
+      };
+    } catch (error) {
+      console.error("Error checking active appointment:", error);
+      return { hasAppointment: false, error };
+    }
+  }
+
+  /**
+   * Reschedules an existing appointment.
+   * @param {string} leadId 
+   * @param {Object} newCita { dia: Date, hora: string }
+   */
+  async rescheduleAppointment(leadId, newCita) {
+    try {
+      await this.leadRepository.updateLead(leadId, {
+        citainicial: newCita
+      });
+
+      // Add history event
+      await this.leadRepository.updateStatus(leadId, STATUS.LEAD_PENDING_DEVELOPER_CONTACT, {
+        note: `Cita reprogramada a ${newCita.hora} del ${newCita.dia.toLocaleDateString()}`,
+        changedBy: "USER"
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error("Error rescheduling:", error);
       return { success: false, error: error.message };
     }
   }

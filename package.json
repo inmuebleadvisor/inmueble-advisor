@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",
+    "date-fns": "^4.1.0",
     "firebase": "^12.6.0",
     "leaflet": "^1.9.4",
     "papaparse": "^5.5.3",

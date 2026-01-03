@@ -5,10 +5,19 @@ import { STATUS } from '../../config/constants';
 import { useService } from '../../hooks/useService';
 
 const AdminLeads = () => {
-    const { crm } = useService();
+    const { externalAdvisor, crm } = useService(); // Access externalAdvisor and crm service
     const { data, loading, refresh } = useAdminData();
     const { leads, desarrollos } = data;
+    const [selectedLead, setSelectedLead] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [advisors, setAdvisors] = useState([]);
+    const [loadingAdvisors, setLoadingAdvisors] = useState(false);
+    const [viewMode, setViewMode] = useState('LIST'); // 'LIST' or 'REGISTER'
     const [filter, setFilter] = useState('ALL');
+
+    // Form State for new advisor
+    const [newAdvisorForm, setNewAdvisorForm] = useState({ nombre: '', whatsapp: '', email: '', puesto: 'Asesor Comercial' });
+    const [submitting, setSubmitting] = useState(false);
 
     const handleReport = async (lead) => {
         const desarrollo = desarrollos.find(d => String(d.id) === String(lead.desarrolloId));
@@ -34,12 +43,59 @@ const AdminLeads = () => {
         }
     };
 
-    const handleAssign = async (lead) => {
-        const nombreVal = prompt("Nombre del Asesor Externo:");
-        if (!nombreVal) return;
+    const openAssignModal = async (lead) => {
+        setSelectedLead(lead);
+        setIsModalOpen(true);
+        setViewMode('LIST');
+        setLoadingAdvisors(true);
+        try {
+            // Fetch advisors for this lead's developer
+            if (lead.idDesarrollador) {
+                const results = await externalAdvisor.getByDeveloper(lead.idDesarrollador);
+                setAdvisors(results);
+            } else {
+                setAdvisors([]);
+                console.warn("Lead missing idDesarrollador");
+            }
+        } catch (error) {
+            console.error("Error fetching advisors:", error);
+        } finally {
+            setLoadingAdvisors(false);
+        }
+    };
 
-        await crm.asignarAsesorExterno(lead.id, { nombre: nombreVal });
-        refresh();
+    const handleAssignExisting = async (advisor) => {
+        if (!confirm(`¿Asignar lead a ${advisor.nombre}?`)) return;
+        try {
+            await crm.asignarAsesorExterno(selectedLead.id, advisor);
+            setIsModalOpen(false);
+            refresh();
+        } catch (error) {
+            alert("Error al asignar: " + error.message);
+        }
+    };
+
+    const handleRegisterAndAssign = async (e) => {
+        e.preventDefault();
+        setSubmitting(true);
+        try {
+            // 1. Register
+            const newAdvisor = await externalAdvisor.registerAdvisor({
+                idDesarrollador: selectedLead.idDesarrollador,
+                ...newAdvisorForm
+            });
+
+            // 2. Assign
+            await crm.asignarAsesorExterno(selectedLead.id, newAdvisor); // newAdvisor usually returns { id, ...data }
+
+            setIsModalOpen(false);
+            refresh();
+            setNewAdvisorForm({ nombre: '', whatsapp: '', email: '', puesto: 'Asesor Comercial' }); // Reset
+        } catch (error) {
+            alert("Error: " + error.message);
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     // --- TABLE COLUMNS ---
@@ -56,10 +112,11 @@ const AdminLeads = () => {
         {
             header: 'Estado', accessor: 'status', render: row => {
                 let color = '#64748b'; // default slate
-                if (row.status === 'PENDING_DEVELOPER_CONTACT') color = '#e11d48';
-                if (row.status === 'REPORTED') color = '#f59e0b';
-                if (row.status === 'ASSIGNED_EXTERNAL') color = '#3b82f6';
-                if (row.status === 'WON') color = '#10b981';
+                const s = row.status;
+                if (s === 'PENDING_DEVELOPER_CONTACT') color = '#e11d48';
+                else if (s === 'REPORTED') color = '#f59e0b';
+                else if (s === 'ASSIGNED_EXTERNAL') color = '#3b82f6';
+                else if (s === 'WON') color = '#10b981';
 
                 return (
                     <span style={{
@@ -70,7 +127,7 @@ const AdminLeads = () => {
                         fontSize: '0.75rem',
                         fontWeight: 'bold'
                     }}>
-                        {row.status}
+                        {s}
                     </span>
                 );
             }
@@ -79,14 +136,12 @@ const AdminLeads = () => {
             header: 'Acciones', render: row => (
                 <div style={{ display: 'flex', gap: '5px' }}>
                     {row.status === 'PENDING_DEVELOPER_CONTACT' && (
-                        <button onClick={() => handleReport(row)} style={{
-                            background: '#be123c', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer'
-                        }}>Reportar</button>
+                        <button onClick={() => handleReport(row)} style={styles.actionBtnReport}>Reportar</button>
                     )}
-                    {row.status === 'REPORTED' && (
-                        <button onClick={() => handleAssign(row)} style={{
-                            background: '#f97316', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer'
-                        }}>Asignar</button>
+                    {(row.status === 'REPORTED' || row.status === 'ASSIGNED_EXTERNAL') && (
+                        <button onClick={() => openAssignModal(row)} style={styles.actionBtnAssign}>
+                            {row.status === 'ASSIGNED_EXTERNAL' ? 'Reasignar' : 'Asignar'}
+                        </button>
                     )}
                 </div>
             )
@@ -106,9 +161,132 @@ const AdminLeads = () => {
                     <option value="ASSIGNED_EXTERNAL">En Seguimiento</option>
                 </select>
             </div>
+
             <DataTable columns={columns} data={filteredLeads} isLoading={loading} />
+
+            {/* ASSIGNMENT MODAL */}
+            {isModalOpen && (
+                <div style={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
+                    <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
+                        <div style={styles.modalHeader}>
+                            <h3>Asignar Lead: {selectedLead?.nombreDesarrollo}</h3>
+                            <button onClick={() => setIsModalOpen(false)} style={styles.closeBtn}>X</button>
+                        </div>
+
+                        <div style={styles.modalBody}>
+                            {viewMode === 'LIST' ? (
+                                <>
+                                    <div style={{ marginBottom: '15px' }}>
+                                        <p>Selecciona un asesor existente o registra uno nuevo.</p>
+                                    </div>
+
+                                    {loadingAdvisors ? (
+                                        <div>Cargando asesores...</div>
+                                    ) : (
+                                        <div style={styles.advisorsList}>
+                                            {advisors.length > 0 ? (
+                                                advisors.map(adv => (
+                                                    <div key={adv.id} style={styles.advisorItem} onClick={() => handleAssignExisting(adv)}>
+                                                        <div style={{ fontWeight: 'bold' }}>{adv.nombre}</div>
+                                                        <div style={{ fontSize: '0.85rem', color: '#64748b' }}>{adv.puesto} • {adv.whatsapp}</div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div style={{ padding: '20px', textAlign: 'center', color: '#64748b', background: '#f8fafc', borderRadius: '8px' }}>
+                                                    No hay asesores registrados para este desarrollador aún.
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <button
+                                        onClick={() => setViewMode('REGISTER')}
+                                        style={styles.registerBtn}
+                                    >
+                                        + Registrar Nuevo Asesor
+                                    </button>
+                                </>
+                            ) : (
+                                <form onSubmit={handleRegisterAndAssign} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                    <h4>Nuevo Asesor para {selectedLead?.nombreDesarrollo}</h4>
+                                    <input
+                                        placeholder="Nombre Completo"
+                                        required
+                                        style={styles.input}
+                                        value={newAdvisorForm.nombre}
+                                        onChange={e => setNewAdvisorForm({ ...newAdvisorForm, nombre: e.target.value })}
+                                    />
+                                    <input
+                                        placeholder="WhatsApp (Solo números)"
+                                        required
+                                        pattern="\d+"
+                                        style={styles.input}
+                                        value={newAdvisorForm.whatsapp}
+                                        onChange={e => setNewAdvisorForm({ ...newAdvisorForm, whatsapp: e.target.value })}
+                                    />
+                                    <input
+                                        placeholder="Email (Opcional)"
+                                        type="email"
+                                        style={styles.input}
+                                        value={newAdvisorForm.email}
+                                        onChange={e => setNewAdvisorForm({ ...newAdvisorForm, email: e.target.value })}
+                                    />
+
+                                    <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                                        <button type="button" onClick={() => setViewMode('LIST')} style={styles.cancelBtn}>
+                                            Volver a Lista
+                                        </button>
+                                        <button type="submit" disabled={submitting} style={styles.submitBtn}>
+                                            {submitting ? 'Guardando...' : 'Guardar y Asignar'}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
+};
+
+const styles = {
+    actionBtnReport: { background: '#be123c', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' },
+    actionBtnAssign: { background: '#f97316', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' },
+
+    // Modal Styles (Inline for speed, ideally moved to CSS or Modal Component)
+    modalOverlay: {
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
+    },
+    modalContent: {
+        backgroundColor: 'white', padding: '20px', borderRadius: '8px', width: '90%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto'
+    },
+    modalHeader: {
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', borderBottom: '1px solid #e2e8f0', paddingBottom: '10px'
+    },
+    closeBtn: {
+        background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer'
+    },
+    advisorsList: {
+        display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px', maxHeight: '300px', overflowY: 'auto'
+    },
+    advisorItem: {
+        padding: '10px', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
+        ':hover': { backgroundColor: '#f1f5f9' } // Note: Inline styles don't support pseudo-classes generally without libs, but this is a rough indication.
+    },
+    registerBtn: {
+        width: '100%', padding: '12px', background: '#eab308', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer'
+    },
+    input: {
+        padding: '10px', borderRadius: '4px', border: '1px solid #cbd5e1'
+    },
+    submitBtn: {
+        flex: 1, padding: '10px', background: '#22c55e', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold'
+    },
+    cancelBtn: {
+        flex: 1, padding: '10px', background: '#94a3b8', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer'
+    }
 };
 
 export default AdminLeads;

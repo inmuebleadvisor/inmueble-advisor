@@ -1,182 +1,529 @@
 import React, { useState, useEffect } from 'react';
 import { useService } from '../../hooks/useService';
-import { useUser } from '../../context/UserContext'; // ✅ Contexto de Usuario
-import '../../styles/LeadCaptureForm.css';
+import AppointmentScheduler from '../common/AppointmentScheduler'; // Will reintegrate in next step
+import { useUser } from '../../context/UserContext';
+import confetti from 'canvas-confetti';
+import '../../styles/LeadCaptureForm.css'; // Now empty, kept for build safety
 
 const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
-    const { user, userProfile, loginWithGoogle } = useUser(); // ✅ Obtener usuario y login
+    const { user, userProfile, loginWithGoogle } = useUser();
     const { leadAssignment } = useService(); // ✅ Inject Service
 
+    // --- STATE ---
+    const [step, setStep] = useState(1); // 1: Date, 2: Info
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [isSuccess, setIsSuccess] = useState(false);
+
+    // Duplicate Maintenance
+    const [existingAppointment, setExistingAppointment] = useState(null);
+    const [isRescheduling, setIsRescheduling] = useState(false);
+
+    // Form Data
     const [formData, setFormData] = useState({
         nombre: '',
         telefono: '',
         email: '',
-        mensaje: `Hola, me interesa el modelo ${modelo?.nombre_modelo || ''} en ${desarrollo?.nombre || ''}.`
+        citainicial: null
     });
 
-    // 🔄 EFECTO: Pre-llenar datos si el usuario está logueado
+    // Determine context for display
+    const contextName = modelo?.nombre_modelo || desarrollo?.nombre || "Propiedad Exclusiva";
+
+    // --- EFFECT: Load User Data ---
+    // --- EFFECT: Load User Data & Check Appointments ---
     useEffect(() => {
-        if (user && userProfile) {
+        if (user) {
+            // Prefill User Data
             setFormData(prev => ({
                 ...prev,
-                nombre: userProfile.nombre || user.displayName || '',
-                email: userProfile.email || user.email || '',
-                telefono: userProfile.telefono || '' // Si ya lo tenemos guardado
+                nombre: userProfile?.nombre || user.displayName || '',
+                email: userProfile?.email || user.email || '',
+                telefono: userProfile?.telefono || ''
             }));
+
+            // Check for existing active appointment
+            console.log("🔍 [UI] Checking appointment for dev:", desarrollo?.id);
+            if (desarrollo?.id) {
+                const checkAppointment = async () => {
+                    setLoading(true);
+                    console.log("🔍 [UI] Invoking service...");
+                    const { hasAppointment, appointment } = await leadAssignment.checkActiveAppointment(user.uid, desarrollo.id);
+                    console.log("🔍 [UI] Result:", { hasAppointment, appointment });
+                    if (hasAppointment) {
+                        setExistingAppointment(appointment);
+                    }
+                    setLoading(false);
+                };
+                checkAppointment();
+            } else {
+                console.warn("⚠️ [UI] No desarrollo ID found in props:", desarrollo);
+            }
         }
-    }, [user, userProfile]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    }, [user, userProfile, desarrollo?.id, leadAssignment]);
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+    // --- HANDLERS ---
+    const handleNext = () => setStep(2);
+    const handleBack = () => setStep(1);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
-
-        if (!formData.nombre || !formData.telefono) {
-            setError("Nombre y teléfono son obligatorios");
-            setLoading(false);
+    const handleSubmit = async () => {
+        if (!formData.nombre || !formData.telefono || !formData.citainicial) {
+            setError("Por favor completa todos los campos requeridos.");
             return;
         }
 
-        try {
-            const result = await leadAssignment.generarLeadAutomatico(
-                {
-                    nombre: formData.nombre,
-                    telefono: formData.telefono,
-                    email: formData.email
-                },
-                desarrollo?.id,
-                desarrollo?.nombre,
-                modelo?.nombre_modelo,
-                user?.uid // ✅ PASAMOS EL UID GARANTIZADO
-            );
+        setLoading(true);
+        setError(null);
 
-            if (result.success) {
-                if (onSuccess) onSuccess();
+        try {
+            // Prepare data for service
+            const datosCliente = {
+                nombre: formData.nombre,
+                telefono: formData.telefono,
+                email: formData.email
+            };
+
+            // Generate Lead OR Reschedule
+            let result;
+
+            if (isRescheduling && existingAppointment) {
+                // RESCHEDULE FLOW
+                result = await leadAssignment.rescheduleAppointment(
+                    existingAppointment.id,
+                    formData.citainicial
+                );
             } else {
-                setError("Error al enviar: " + result.error);
+                // NEW LEAD FLOW
+                result = await leadAssignment.generarLeadAutomatico(
+                    datosCliente,
+                    desarrollo?.id,
+                    desarrollo?.nombre,
+                    modelo?.nombreModelo || modelo?.nombre_modelo,
+                    user?.uid,
+                    desarrollo?.idDesarrollador,
+                    modelo?.precios?.base || modelo?.precio || 0,
+                    {
+                        origen: 'web_cita_vip',
+                        urlOrigen: window.location.href,
+                        citainicial: formData.citainicial,
+                        idModelo: modelo?.id || null, // ✅ Pass ID for top-level field
+                        snapshot: {
+                            idModelo: modelo?.id || null,
+                            modeloNombre: modelo?.nombreModelo || modelo?.nombre_modelo || "N/A",
+                            desarrolloNombre: desarrollo?.nombre || "N/A",
+                            precioAtCapture: modelo?.precios?.base || modelo?.precio || 0
+                        }
+                    }
+                );
             }
+
+            if (!result.success) {
+                throw new Error(result.error || "Error desconocido al generar el lead.");
+            }
+
+            // Trigger Confetti
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.7 },
+                zIndex: 10000,
+                colors: ['#f59e0b', '#ffffff']
+            });
+
+            // Show Success View instead of closing
+            setIsSuccess(true);
+
         } catch (err) {
             console.error(err);
-            setError("Error inesperado. Intenta de nuevo.");
+            setError("Hubo un error al agendar. Intenta nuevamente.");
         } finally {
             setLoading(false);
         }
     };
 
-    // 🔒 GATED CONTENT: REQUIRE LOGIN
+    const handleCloseFinal = () => {
+        if (onSuccess) onSuccess(); // Notify parent to close/refresh
+        else onCancel();
+    };
+
+    // --- RENDER HELPERS ---
+
+    // Gated Content Check
     if (!user) {
+        // Return a simple dark themed gated view directly
         return (
-            <div className="lead-form lead-form--gated">
-                <h3 className="lead-form__title">Inicia Sesión</h3>
-                <p className="lead-form__subtitle">
-                    Para agendar una cita o cotizar, necesitamos verificar tu identidad.
-                </p>
-                <button
-                    type="button"
-                    className="lead-form__btn lead-form__btn--google"
-                    onClick={async () => {
-                        try { await loginWithGoogle(); } catch (e) { console.error(e); }
-                    }}
-                >
-                    <img
-                        src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                        alt="Google"
-                        style={{ width: '20px', marginRight: '10px' }}
-                    />
-                    Continuar con Google
-                </button>
-                <div className="lead-form__actions">
-                    <button type="button" className="lead-form__btn lead-form__btn--secondary" onClick={onCancel}>
-                        Cancelar
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+                style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', backdropFilter: 'blur(8px)' }}>
+                <div className="bg-white/5 p-8 rounded-2xl border border-white/10 text-center max-w-sm w-full shadow-2xl">
+                    <h3 className="text-xl font-bold text-white mb-2">Acceso VIP</h3>
+                    <p className="text-gray-400 text-sm mb-6">Inicia sesión para agendar tu visita exclusiva.</p>
+                    <button
+                        onClick={() => loginWithGoogle()}
+                        className="w-full py-3 bg-white text-black font-bold rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+                    >
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" className="w-5 h-5" />
+                        Continuar con Google
                     </button>
+                    <button onClick={onCancel} className="mt-4 text-xs text-gray-500 hover:text-white transition-colors">Cancelar</button>
                 </div>
             </div>
         );
     }
 
+    // --- INLINE STYLES FOR NO-TAILWIND ENVIRONMENT ---
+    const s = {
+        overlay: {
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(9, 9, 11, 0.9)', // Very dark overlay
+            backdropFilter: 'blur(8px)',
+            zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '16px',
+            animation: 'fadeIn 0.3s ease-out'
+        },
+        card: {
+            width: '100%', maxWidth: '650px',
+            backgroundColor: '#0f172a', // Slate 900
+            borderRadius: '24px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.1)',
+            overflow: 'hidden',
+            display: 'flex', flexDirection: 'column',
+            maxHeight: '90vh',
+            position: 'relative',
+            color: '#f8fafc'
+        },
+        header: {
+            padding: '32px 32px 24px',
+            position: 'relative'
+        },
+        closeBtn: {
+            position: 'absolute', top: '24px', right: '24px',
+            background: 'none', border: 'none', color: '#64748b',
+            cursor: 'pointer', padding: '8px', zIndex: 10
+        },
+        userStrip: {
+            backgroundColor: '#1e293b', // Slate 800
+            padding: '12px 32px',
+            borderLeft: '4px solid #f59e0b', // Amber 500
+            display: 'flex', alignItems: 'center', gap: '12px'
+        },
+        progressBar: {
+            height: '6px', width: '100%',
+            backgroundColor: '#334155',
+            borderRadius: '3px',
+            overflow: 'hidden',
+            marginTop: '8px'
+        },
+        progressFill: {
+            height: '100%',
+            backgroundColor: '#f59e0b',
+            transition: 'width 0.4s ease',
+            boxShadow: '0 0 10px rgba(245, 158, 11, 0.5)'
+        },
+        content: {
+            flex: 1,
+            overflowY: 'auto',
+            padding: '32px',
+            backgroundColor: '#0f172a'
+        },
+        footer: {
+            padding: '24px 32px',
+            backgroundColor: '#0f172a',
+            borderTop: '1px solid #1e293b',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+        },
+        btnPrimary: {
+            backgroundColor: '#f59e0b', color: '#0f172a',
+            border: 'none', padding: '12px 24px', borderRadius: '12px',
+            fontWeight: '700', fontSize: '15px', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: '8px',
+            boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)',
+            transition: 'all 0.2s'
+        },
+        btnSecondary: {
+            backgroundColor: 'transparent', color: '#94a3b8',
+            border: 'none', padding: '12px',
+            fontWeight: '600', fontSize: '14px', cursor: 'pointer'
+        },
+        inputGroup: {
+            backgroundColor: '#1e293b',
+            border: '1px solid #334155',
+            borderRadius: '12px',
+            padding: '12px 16px',
+            display: 'flex', alignItems: 'center', gap: '12px',
+            marginBottom: '16px'
+        },
+        input: {
+            background: 'transparent', border: 'none', outline: 'none',
+            color: 'white', fontSize: '16px', width: '100%'
+        }
+    };
+
     return (
-        <form className="lead-form" onSubmit={handleSubmit}>
-            <h3 className="lead-form__title">Confirmar Datos</h3>
+        <div style={s.overlay}>
+            <div style={s.card}>
 
-            <div style={{
-                background: '#f0fdf4', color: '#166534', padding: '10px', borderRadius: '6px',
-                fontSize: '0.9rem', textAlign: 'center', border: '1px solid #bbf7d0', marginBottom: '1rem'
-            }}>
-                👤 Solicitando como: <strong>{user.displayName}</strong>
+                {/* CLOSE BUTTON (Only show if not success, force user to use main CTA on success) */}
+                {!isSuccess && (
+                    <button onClick={onCancel} style={s.closeBtn}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                    </button>
+                )}
+
+                {/* HEADER - Hide on Success for clean look */}
+                {!isSuccess && (
+                    <div style={s.header}>
+                        <h2 style={{ margin: 0, fontSize: '28px', fontWeight: 800, letterSpacing: '-0.5px' }}>Agenda tu Visita VIP</h2>
+                        <p style={{ margin: '4px 0 0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '2px', color: '#64748b', fontWeight: 700 }}>
+                            Proyecto {contextName}
+                        </p>
+                    </div>
+                )}
+
+                {/* USER STRIP - Hide on Success */}
+                {!isSuccess && (
+                    <div style={s.userStrip}>
+                        <span style={{ fontSize: '20px' }}>👤</span>
+                        <p style={{ margin: 0, fontSize: '14px', color: '#cbd5e1', fontWeight: 500 }}>
+                            Solicitando como: <span style={{ color: '#f59e0b', fontWeight: 700 }}>{formData.nombre || 'Invitado'}</span>
+                        </p>
+                    </div>
+                )}
+
+                {/* PROGRESS - Hide on Success */}
+                {!isSuccess && (
+                    <div style={{ padding: '0 32px', marginTop: '24px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '11px', fontWeight: 700, color: '#64748b', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                            <span>
+                                {isRescheduling ? 'Reprogramar Cita' : (step === 1 ? 'Paso 1: Selecciona Fecha' : 'Paso 2: Confirma Datos')}
+                            </span>
+                            <span>{step}/2</span>
+                        </div>
+                        <div style={s.progressBar}>
+                            <div style={{ ...s.progressFill, width: step === 1 ? '50%' : '100%' }} />
+                        </div>
+                    </div>
+                )}
+
+                {/* CONTENT AREA */}
+                <div style={s.content}>
+
+                    {/* DUPLICATE WARNING VIEW */}
+                    {!isSuccess && !isRescheduling && existingAppointment && (
+                        <div style={{ animation: 'fadeIn 0.3s ease-out', textAlign: 'center', padding: '16px 0' }}>
+                            <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', fontSize: '32px' }}>
+                                📅
+                            </div>
+                            <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'white', marginBottom: '8px' }}>Ya tienes una cita agendada</h3>
+                            <p style={{ color: '#94a3b8', fontSize: '14px', maxWidth: '90%', margin: '0 auto 24px', lineHeight: '1.5' }}>
+                                Vemos que ya tienes una visita programada para <strong>{contextName}</strong>.
+                                <br />No es necesario crear una nueva solicitud.
+                            </p>
+
+                            <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '24px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                <div style={{ flex: 1 }}>
+                                    <p style={{ margin: 0, fontSize: '10px', textTransform: 'uppercase', color: '#64748b', fontWeight: 700 }}>Fecha Actual</p>
+                                    <p style={{ margin: '4px 0 0', fontSize: '16px', fontWeight: 700, color: 'white' }}>
+                                        {existingAppointment.citainicial?.dia?.toDate
+                                            ? existingAppointment.citainicial.dia.toDate().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })
+                                            : new Date(existingAppointment.citainicial?.dia).toLocaleDateString('es-MX')}
+                                    </p>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                    <p style={{ margin: 0, fontSize: '10px', textTransform: 'uppercase', color: '#64748b', fontWeight: 700 }}>Hora</p>
+                                    <p style={{ margin: '4px 0 0', fontSize: '16px', fontWeight: 700, color: '#f59e0b' }}>
+                                        {existingAppointment.citainicial?.hora}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                                <button
+                                    onClick={onCancel}
+                                    style={{ ...s.btnSecondary, backgroundColor: '#1e293b', borderRadius: '12px', padding: '12px 24px', color: 'white' }}
+                                >
+                                    Entendido, mantener cita
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setIsRescheduling(true);
+                                        setStep(1); // Go to Scheduler
+                                    }}
+                                    style={{ ...s.btnPrimary, boxShadow: 'none' }}
+                                >
+                                    Cambiar Día/Hora
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* SUCCESS VIEW (STEP 3) */}
+                    {isSuccess && (
+                        <div style={{ animation: 'scaleIn 0.5s ease-out', textAlign: 'center', padding: '24px 0' }}>
+                            <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', boxShadow: '0 0 30px rgba(245, 158, 11, 0.4)' }}>
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0f172a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            </div>
+                            <h2 style={{ fontSize: '32px', fontWeight: 800, color: 'white', marginBottom: '8px' }}>
+                                {isRescheduling ? '¡Cita Actualizada!' : '¡Cita Confirmada!'}
+                            </h2>
+                            <p style={{ color: '#94a3b8', fontSize: '16px', maxWidth: '80%', margin: '0 auto 32px', lineHeight: '1.6' }}>
+                                Tu visita a <strong>{contextName}</strong> ha sido {isRescheduling ? 'reprogramada' : 'agendada'} con éxito.
+                            </p>
+
+                            {/* Reservation Ticket */}
+                            <div style={{ backgroundColor: '#1e293b', borderRadius: '16px', padding: '24px', maxWidth: '400px', margin: '0 auto', border: '1px solid #334155', position: 'relative', overflow: 'hidden' }}>
+                                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '4px', backgroundColor: '#f59e0b' }}></div>
+                                <p style={{ fontSize: '12px', textTransform: 'uppercase', color: '#64748b', fontWeight: 700, marginBottom: '8px', letterSpacing: '1px' }}>Detalles de tu Reserva</p>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '8px' }}>
+                                    <span style={{ fontSize: '24px' }}>📅</span>
+                                    <span style={{ fontSize: '20px', fontWeight: 700, color: 'white' }}>
+                                        {formData.citainicial?.dia ? formData.citainicial.dia.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' }) : ''}
+                                    </span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+                                    <span style={{ fontSize: '24px' }}>⏰</span>
+                                    <span style={{ fontSize: '20px', fontWeight: 700, color: '#f59e0b' }}>
+                                        {formData.citainicial?.hora}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <p style={{ color: '#64748b', fontSize: '12px', marginTop: '32px' }}>
+                                Un asesor se pondrá en contacto contigo vía WhatsApp para confirmar detalles.
+                            </p>
+                        </div>
+                    )}
+
+                    {!isSuccess && (!existingAppointment || isRescheduling) && step === 1 && (
+                        <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+                            <AppointmentScheduler
+                                onSelect={(cita) => {
+                                    setFormData(prev => ({ ...prev, citainicial: cita }));
+                                    setError(null);
+                                }}
+                                initialDate={new Date()}
+                            />
+                        </div>
+                    )}
+
+                    {!isSuccess && (!existingAppointment || isRescheduling) && step === 2 && (
+                        <div style={{ animation: 'fadeIn 0.3s ease-out', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+                            {/* SUMMARY CARD */}
+                            <div style={{ backgroundColor: '#1e293b', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid #334155' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                    <div style={{ width: '48px', height: '48px', backgroundColor: '#334155', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>📅</div>
+                                    <div>
+                                        <p style={{ margin: 0, fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#94a3b8', letterSpacing: '1px' }}>Tu Reserva</p>
+                                        <p style={{ margin: '4px 0 0', fontSize: '16px', fontWeight: 700, color: 'white', textTransform: 'capitalize' }}>
+                                            {formData.citainicial?.dia ? formData.citainicial.dia.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'short' }) : '---'}
+                                        </p>
+                                        <p style={{ margin: 0, fontSize: '14px', color: '#94a3b8' }}>{formData.citainicial?.hora || '--:--'} - Visita VIP</p>
+                                    </div>
+                                </div>
+                                <button onClick={handleBack} style={{ background: 'none', border: 'none', color: '#f59e0b', fontSize: '13px', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}>Cambiar</button>
+                            </div>
+
+                            {/* INPUTS */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                {/* NAME */}
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>Nombre Completo</label>
+                                    <div style={s.inputGroup}>
+                                        <span style={{ color: '#64748b' }}>💼</span>
+                                        <input
+                                            type="text"
+                                            name="nombre"
+                                            value={formData.nombre}
+                                            onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                                            style={s.input}
+                                            placeholder="Tu nombre completo"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* PHONE */}
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>WhatsApp</label>
+                                    <div style={s.inputGroup}>
+                                        <span style={{ color: '#64748b' }}>💬</span>
+                                        <input
+                                            type="tel"
+                                            name="telefono"
+                                            value={formData.telefono}
+                                            onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                                            style={s.input}
+                                            placeholder="Tu número de celular"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* EMAIL */}
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>Email (Verificado)</label>
+                                    <div style={{ ...s.inputGroup, backgroundColor: '#1e293b', border: '1px solid #334155', opacity: 0.7, cursor: 'not-allowed' }}>
+                                        <span style={{ color: '#64748b' }}>✉️</span>
+                                        <input
+                                            type="email"
+                                            value={formData.email}
+                                            readOnly
+                                            style={{ ...s.input, color: '#94a3b8', cursor: 'not-allowed' }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* ERROR MSG */}
+                            {error && <p style={{ color: '#ef4444', fontSize: '13px', textAlign: 'center', marginTop: '12px' }}>⚠️ {error}</p>}
+                        </div>
+                    )}
+                </div>
+
+                {/* FOOTER */}
+                <div style={s.footer}>
+                    {isSuccess ? (
+                        <button
+                            onClick={handleCloseFinal}
+                            style={{ ...s.btnPrimary, width: '100%', justifyContent: 'center' }}
+                        >
+                            Entendido, Cerrar Ventana
+                        </button>
+                    ) : (
+                        step === 1 ? (
+                            <>
+                                <button onClick={onCancel} style={s.btnSecondary}>Cancelar</button>
+                                <button
+                                    onClick={handleNext}
+                                    disabled={!formData.citainicial}
+                                    style={{
+                                        ...s.btnPrimary,
+                                        opacity: formData.citainicial ? 1 : 0.5,
+                                        cursor: formData.citainicial ? 'pointer' : 'not-allowed',
+                                        backgroundColor: formData.citainicial ? '#f59e0b' : '#334155',
+                                        color: formData.citainicial ? '#0f172a' : '#94a3b8',
+                                        boxShadow: formData.citainicial ? s.btnPrimary.boxShadow : 'none'
+                                    }}
+                                >
+                                    Continuar →
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button onClick={handleBack} style={s.btnSecondary}>Atrás</button>
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={loading}
+                                    style={{ ...s.btnPrimary, opacity: loading ? 0.7 : 1, cursor: loading ? 'wait' : 'pointer' }}
+                                >
+                                    {loading ? 'Procesando...' : (isRescheduling ? 'Confirmar Cambio' : 'Confirmar Visita')} ✓
+                                </button>
+                            </>
+                        )
+                    )}
+                </div>
+
             </div>
-
-            <p className="lead-form__subtitle">
-                Recibe información detallada de <strong>{modelo?.nombre_modelo}</strong>.
-            </p>
-
-            {error && <div className="lead-form__error">{error}</div>}
-
-            <div className="lead-form__group">
-                <label className="lead-form__label" htmlFor="nombre">Nombre Completo</label>
-                <input
-                    type="text"
-                    id="nombre"
-                    name="nombre"
-                    className="lead-form__input"
-                    value={formData.nombre}
-                    onChange={handleChange}
-                    placeholder="Ej. Juan Pérez"
-                />
-            </div>
-
-            <div className="lead-form__group">
-                <label className="lead-form__label" htmlFor="telefono">Teléfono (WhatsApp)</label>
-                <input
-                    type="tel"
-                    id="telefono"
-                    name="telefono"
-                    className="lead-form__input"
-                    value={formData.telefono}
-                    onChange={handleChange}
-                    placeholder="Ej. 667 123 4567"
-                />
-            </div>
-
-            <div className="lead-form__group">
-                <label className="lead-form__label" htmlFor="email">Email (Verificado)</label>
-                <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    className="lead-form__input lead-form__input--readonly"
-                    value={formData.email}
-                    readOnly
-                    disabled
-                />
-            </div>
-
-            <div className="lead-form__actions">
-                <button
-                    type="button"
-                    className="lead-form__btn lead-form__btn--secondary"
-                    onClick={onCancel}
-                >
-                    Cancelar
-                </button>
-                <button
-                    type="submit"
-                    className="lead-form__btn lead-form__btn--primary"
-                    disabled={loading}
-                >
-                    {loading ? 'Enviando...' : 'Solicitar Info'}
-                </button>
-            </div>
-
-            <p className="lead-form__disclaimer">
-                Al enviar, aceptas ser contactado por un asesor certificado.
-            </p>
-        </form>
+        </div>
     );
 };
 

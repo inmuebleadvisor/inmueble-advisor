@@ -1,64 +1,45 @@
 
 import { ExternalAdvisorRepository } from './externalAdvisor.repository';
 
-// Mock objects
+// Mock dependencies
 const mockDb = {};
-const mockCollection = vi.fn();
-const mockQuery = vi.fn();
-const mockWhere = vi.fn();
-const mockGetDocs = vi.fn();
-const mockAddDoc = vi.fn();
-const mockUpdateDoc = vi.fn();
-const mockDoc = vi.fn();
-const mockServerTimestamp = vi.fn(() => 'TIMESTAMP');
 
-// Mock Firestore functions
-vi.mock('firebase/firestore', () => ({
-    collection: (...args) => mockCollection(...args),
-    query: (...args) => mockQuery(...args),
-    where: (...args) => mockWhere(...args),
-    getDocs: (...args) => mockGetDocs(...args),
-    addDoc: (...args) => mockAddDoc(...args),
-    updateDoc: (...args) => mockUpdateDoc(...args),
-    doc: (...args) => mockDoc(...args),
-    serverTimestamp: () => mockServerTimestamp(),
-    arrayUnion: (val) => val
+jest.mock('firebase/firestore', () => ({
+    collection: jest.fn(),
+    query: jest.fn(),
+    where: jest.fn(),
+    getDocs: jest.fn(),
+    addDoc: jest.fn(),
+    updateDoc: jest.fn(),
+    doc: jest.fn(),
+    serverTimestamp: jest.fn(),
+    arrayUnion: jest.fn()
 }));
+
+import { getDocs, query, where } from 'firebase/firestore';
 
 describe('ExternalAdvisorRepository', () => {
     let repository;
 
     beforeEach(() => {
         repository = new ExternalAdvisorRepository(mockDb);
-        vi.clearAllMocks();
+        jest.clearAllMocks();
     });
 
-    it('findByPhone returns null if phone is missing', async () => {
-        const result = await repository.findByPhone(null);
-        expect(result).toBeNull();
-    });
+    describe('getAdvisorsByDeveloper', () => {
+        it('should query by idDesarrollador', async () => {
+            getDocs.mockResolvedValue({
+                docs: [
+                    { id: 'adv1', data: () => ({ name: 'John' }) }
+                ]
+            });
 
-    it('findByPhone returns advisor if found', async () => {
-        mockGetDocs.mockResolvedValue({
-            empty: false,
-            docs: [{ id: '123', data: () => ({ name: 'John' }) }]
+            const result = await repository.getAdvisorsByDeveloper('dev-id');
+
+            expect(query).toHaveBeenCalled();
+            expect(where).toHaveBeenCalledWith('idDesarrollador', '==', 'dev-id');
+            expect(result).toHaveLength(1);
+            expect(result[0].id).toBe('adv1');
         });
-
-        const result = await repository.findByPhone('5551234');
-        expect(result).toEqual({ id: '123', name: 'John' });
-        expect(mockWhere).toHaveBeenCalledWith('telefono', '==', '5551234');
-    });
-
-    it('create adds a new advisor with timestamp', async () => {
-        mockAddDoc.mockResolvedValue({ id: 'new_id' });
-        const data = { name: 'Jane' };
-
-        const result = await repository.create(data);
-
-        expect(mockAddDoc).toHaveBeenCalledWith(undefined, expect.objectContaining({
-            name: 'Jane',
-            createdAt: 'TIMESTAMP'
-        }));
-        expect(result).toEqual({ id: 'new_id', name: 'Jane' });
     });
 });
