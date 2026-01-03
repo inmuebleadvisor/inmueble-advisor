@@ -18,6 +18,7 @@ describe('LeadAssignmentService', () => {
         getDesarrolloById: vi.fn(),
         getDesarrollosByCiudad: vi.fn(),
         getAllDesarrollos: vi.fn(),
+        getDesarrolladorById: vi.fn(), // Added mock
         // Add other methods if needed
     };
 

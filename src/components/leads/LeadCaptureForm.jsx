@@ -13,7 +13,11 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
     const [step, setStep] = useState(1); // 1: Date, 2: Info
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [isSuccess, setIsSuccess] = useState(false); // Step 3: Success
+    const [isSuccess, setIsSuccess] = useState(false);
+
+    // Duplicate Maintenance
+    const [existingAppointment, setExistingAppointment] = useState(null);
+    const [isRescheduling, setIsRescheduling] = useState(false);
 
     // Form Data
     const [formData, setFormData] = useState({
@@ -27,16 +31,36 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
     const contextName = modelo?.nombre_modelo || desarrollo?.nombre || "Propiedad Exclusiva";
 
     // --- EFFECT: Load User Data ---
+    // --- EFFECT: Load User Data & Check Appointments ---
     useEffect(() => {
         if (user) {
+            // Prefill User Data
             setFormData(prev => ({
                 ...prev,
                 nombre: userProfile?.nombre || user.displayName || '',
                 email: userProfile?.email || user.email || '',
                 telefono: userProfile?.telefono || ''
             }));
+
+            // Check for existing active appointment
+            console.log("🔍 [UI] Checking appointment for dev:", desarrollo?.id);
+            if (desarrollo?.id) {
+                const checkAppointment = async () => {
+                    setLoading(true);
+                    console.log("🔍 [UI] Invoking service...");
+                    const { hasAppointment, appointment } = await leadAssignment.checkActiveAppointment(user.uid, desarrollo.id);
+                    console.log("🔍 [UI] Result:", { hasAppointment, appointment });
+                    if (hasAppointment) {
+                        setExistingAppointment(appointment);
+                    }
+                    setLoading(false);
+                };
+                checkAppointment();
+            } else {
+                console.warn("⚠️ [UI] No desarrollo ID found in props:", desarrollo);
+            }
         }
-    }, [user, userProfile]);
+    }, [user, userProfile, desarrollo?.id, leadAssignment]);
 
     // --- HANDLERS ---
     const handleNext = () => setStep(2);
@@ -59,28 +83,39 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                 email: formData.email
             };
 
-            // Generate Lead
-            const result = await leadAssignment.generarLeadAutomatico(
-                datosCliente,
-                desarrollo?.id, // Ensure these props exist
-                desarrollo?.nombre,
-                modelo?.nombreModelo || modelo?.nombre_modelo, // nullable, support DB/Legacy
-                user?.uid,
-                desarrollo?.idDesarrollador, // nullable, service will lookup
-                modelo?.precios?.base || modelo?.precio || 0,
-                {
-                    origen: 'web_cita_vip',
-                    urlOrigen: window.location.href, // ✅ Capture URL
-                    citainicial: formData.citainicial,
-                    idModelo: modelo?.id || null, // ✅ Pass ID for top-level field
-                    snapshot: {
-                        idModelo: modelo?.id || null,
-                        modeloNombre: modelo?.nombreModelo || modelo?.nombre_modelo || "N/A",
-                        desarrolloNombre: desarrollo?.nombre || "N/A",
-                        precioAtCapture: modelo?.precios?.base || modelo?.precio || 0
+            // Generate Lead OR Reschedule
+            let result;
+
+            if (isRescheduling && existingAppointment) {
+                // RESCHEDULE FLOW
+                result = await leadAssignment.rescheduleAppointment(
+                    existingAppointment.id,
+                    formData.citainicial
+                );
+            } else {
+                // NEW LEAD FLOW
+                result = await leadAssignment.generarLeadAutomatico(
+                    datosCliente,
+                    desarrollo?.id,
+                    desarrollo?.nombre,
+                    modelo?.nombreModelo || modelo?.nombre_modelo,
+                    user?.uid,
+                    desarrollo?.idDesarrollador,
+                    modelo?.precios?.base || modelo?.precio || 0,
+                    {
+                        origen: 'web_cita_vip',
+                        urlOrigen: window.location.href,
+                        citainicial: formData.citainicial,
+                        idModelo: modelo?.id || null, // ✅ Pass ID for top-level field
+                        snapshot: {
+                            idModelo: modelo?.id || null,
+                            modeloNombre: modelo?.nombreModelo || modelo?.nombre_modelo || "N/A",
+                            desarrolloNombre: desarrollo?.nombre || "N/A",
+                            precioAtCapture: modelo?.precios?.base || modelo?.precio || 0
+                        }
                     }
-                }
-            );
+                );
+            }
 
             if (!result.success) {
                 throw new Error(result.error || "Error desconocido al generar el lead.");
@@ -259,7 +294,9 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                 {!isSuccess && (
                     <div style={{ padding: '0 32px', marginTop: '24px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '11px', fontWeight: 700, color: '#64748b', letterSpacing: '1px', textTransform: 'uppercase' }}>
-                            <span>{step === 1 ? 'Paso 1: Selecciona Fecha' : 'Paso 2: Confirma Datos'}</span>
+                            <span>
+                                {isRescheduling ? 'Reprogramar Cita' : (step === 1 ? 'Paso 1: Selecciona Fecha' : 'Paso 2: Confirma Datos')}
+                            </span>
                             <span>{step}/2</span>
                         </div>
                         <div style={s.progressBar}>
@@ -271,15 +308,66 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                 {/* CONTENT AREA */}
                 <div style={s.content}>
 
+                    {/* DUPLICATE WARNING VIEW */}
+                    {!isSuccess && !isRescheduling && existingAppointment && (
+                        <div style={{ animation: 'fadeIn 0.3s ease-out', textAlign: 'center', padding: '16px 0' }}>
+                            <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', fontSize: '32px' }}>
+                                📅
+                            </div>
+                            <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'white', marginBottom: '8px' }}>Ya tienes una cita agendada</h3>
+                            <p style={{ color: '#94a3b8', fontSize: '14px', maxWidth: '90%', margin: '0 auto 24px', lineHeight: '1.5' }}>
+                                Vemos que ya tienes una visita programada para <strong>{contextName}</strong>.
+                                <br />No es necesario crear una nueva solicitud.
+                            </p>
+
+                            <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '24px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                <div style={{ flex: 1 }}>
+                                    <p style={{ margin: 0, fontSize: '10px', textTransform: 'uppercase', color: '#64748b', fontWeight: 700 }}>Fecha Actual</p>
+                                    <p style={{ margin: '4px 0 0', fontSize: '16px', fontWeight: 700, color: 'white' }}>
+                                        {existingAppointment.citainicial?.dia?.toDate
+                                            ? existingAppointment.citainicial.dia.toDate().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })
+                                            : new Date(existingAppointment.citainicial?.dia).toLocaleDateString('es-MX')}
+                                    </p>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                    <p style={{ margin: 0, fontSize: '10px', textTransform: 'uppercase', color: '#64748b', fontWeight: 700 }}>Hora</p>
+                                    <p style={{ margin: '4px 0 0', fontSize: '16px', fontWeight: 700, color: '#f59e0b' }}>
+                                        {existingAppointment.citainicial?.hora}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                                <button
+                                    onClick={onCancel}
+                                    style={{ ...s.btnSecondary, backgroundColor: '#1e293b', borderRadius: '12px', padding: '12px 24px', color: 'white' }}
+                                >
+                                    Entendido, mantener cita
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setIsRescheduling(true);
+                                        setStep(1); // Go to Scheduler
+                                    }}
+                                    style={{ ...s.btnPrimary, boxShadow: 'none' }}
+                                >
+                                    Cambiar Día/Hora
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     {/* SUCCESS VIEW (STEP 3) */}
                     {isSuccess && (
                         <div style={{ animation: 'scaleIn 0.5s ease-out', textAlign: 'center', padding: '24px 0' }}>
                             <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', boxShadow: '0 0 30px rgba(245, 158, 11, 0.4)' }}>
                                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0f172a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                             </div>
-                            <h2 style={{ fontSize: '32px', fontWeight: 800, color: 'white', marginBottom: '8px' }}>¡Cita Confirmada!</h2>
+                            <h2 style={{ fontSize: '32px', fontWeight: 800, color: 'white', marginBottom: '8px' }}>
+                                {isRescheduling ? '¡Cita Actualizada!' : '¡Cita Confirmada!'}
+                            </h2>
                             <p style={{ color: '#94a3b8', fontSize: '16px', maxWidth: '80%', margin: '0 auto 32px', lineHeight: '1.6' }}>
-                                Tu visita a <strong>{contextName}</strong> ha sido agendada con éxito.
+                                Tu visita a <strong>{contextName}</strong> ha sido {isRescheduling ? 'reprogramada' : 'agendada'} con éxito.
                             </p>
 
                             {/* Reservation Ticket */}
@@ -306,7 +394,7 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                         </div>
                     )}
 
-                    {!isSuccess && step === 1 && (
+                    {!isSuccess && (!existingAppointment || isRescheduling) && step === 1 && (
                         <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
                             <AppointmentScheduler
                                 onSelect={(cita) => {
@@ -318,7 +406,7 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                         </div>
                     )}
 
-                    {!isSuccess && step === 2 && (
+                    {!isSuccess && (!existingAppointment || isRescheduling) && step === 2 && (
                         <div style={{ animation: 'fadeIn 0.3s ease-out', display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
                             {/* SUMMARY CARD */}
@@ -427,7 +515,7 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                                     disabled={loading}
                                     style={{ ...s.btnPrimary, opacity: loading ? 0.7 : 1, cursor: loading ? 'wait' : 'pointer' }}
                                 >
-                                    {loading ? 'Enviando...' : 'Confirmar Visita'} ✓
+                                    {loading ? 'Procesando...' : (isRescheduling ? 'Confirmar Cambio' : 'Confirmar Visita')} ✓
                                 </button>
                             </>
                         )

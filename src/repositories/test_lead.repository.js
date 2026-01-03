@@ -4,7 +4,7 @@ import { Timestamp } from 'firebase/firestore';
 
 // Mock dependencies
 const mockDb = {
-    collection: jest.fn(),
+    collection: vi.fn(),
 };
 
 // Mock Firestore functions since they are imported directly
@@ -13,20 +13,20 @@ const mockDb = {
 // However, since the repo imports directly from firebase/firestore, unit testing without a real emulator or deep mocking is hard.
 // We will write the test structure assuming standard jest usage where we might mock the module 'firebase/firestore'.
 
-jest.mock('firebase/firestore', () => ({
-    collection: jest.fn(),
-    query: jest.fn(),
-    where: jest.fn(),
-    getDocs: jest.fn(),
-    addDoc: jest.fn(),
-    updateDoc: jest.fn(),
-    doc: jest.fn(),
-    serverTimestamp: jest.fn(() => 'MOCK_TIMESTAMP'),
-    orderBy: jest.fn(),
-    arrayUnion: jest.fn(val => val),
-    getDoc: jest.fn(),
+vi.mock('firebase/firestore', () => ({
+    collection: vi.fn(),
+    query: vi.fn(),
+    where: vi.fn(),
+    getDocs: vi.fn(),
+    addDoc: vi.fn(),
+    updateDoc: vi.fn(),
+    doc: vi.fn(),
+    serverTimestamp: vi.fn(() => 'MOCK_TIMESTAMP'),
+    orderBy: vi.fn(),
+    arrayUnion: vi.fn(val => val),
+    getDoc: vi.fn(),
     Timestamp: {
-        now: jest.fn(() => 'MOCK_NOW')
+        now: vi.fn(() => 'MOCK_NOW')
     }
 }));
 
@@ -37,7 +37,7 @@ describe('LeadRepository', () => {
 
     beforeEach(() => {
         leadRepository = new LeadRepository(mockDb);
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('createLead', () => {

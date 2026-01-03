@@ -109,4 +109,52 @@ export class LeadAssignmentService {
       return { success: false, error: error.message };
     }
   }
+
+  /**
+   * Checks if the user already has an active appointment for this development.
+   * @param {string} uid 
+   * @param {string} idDesarrollo 
+   */
+  async checkActiveAppointment(uid, idDesarrollo) {
+    if (!uid || !idDesarrollo) {
+      console.warn("⚠️ [Service] checkActiveAppointment missing params:", { uid, idDesarrollo });
+      return { hasAppointment: false };
+    }
+
+    try {
+      console.log("🔍 [Service] Calling repo.findActiveAppointment...");
+      const appointment = await this.leadRepository.findActiveAppointment(uid, idDesarrollo);
+      return {
+        hasAppointment: !!appointment,
+        appointment
+      };
+    } catch (error) {
+      console.error("Error checking active appointment:", error);
+      return { hasAppointment: false, error };
+    }
+  }
+
+  /**
+   * Reschedules an existing appointment.
+   * @param {string} leadId 
+   * @param {Object} newCita { dia: Date, hora: string }
+   */
+  async rescheduleAppointment(leadId, newCita) {
+    try {
+      await this.leadRepository.updateLead(leadId, {
+        citainicial: newCita
+      });
+
+      // Add history event
+      await this.leadRepository.updateStatus(leadId, STATUS.LEAD_PENDING_DEVELOPER_CONTACT, {
+        note: `Cita reprogramada a ${newCita.hora} del ${newCita.dia.toLocaleDateString()}`,
+        changedBy: "USER"
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error("Error rescheduling:", error);
+      return { success: false, error: error.message };
+    }
+  }
 }
