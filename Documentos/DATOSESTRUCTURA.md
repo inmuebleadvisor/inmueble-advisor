@@ -178,6 +178,9 @@ Este documento describe la estructura **real** de las colecciones en Firebase Fi
 | &nbsp;&nbsp;`.modeloNombre` | `string` | | |
 | &nbsp;&nbsp;`.desarrolloNombre` | `string` | | |
 | &nbsp;&nbsp;`.precioAtCapture` | `number` | | |
+| **citainicial** | `map` | No | Cita agendada (Persistencia Diferida). |
+| &nbsp;&nbsp;`.dia` | `Timestamp` | | |
+| &nbsp;&nbsp;`.hora` | `string` | | Formato 24h (ej: "14:00"). |
 | **idAsesorAsignado** | `string` | No | Asesor interno asignado via CRM. |
 | **statusHistory** | `map[]` | **Sí** | Historial de cambios de estado (Ver Tracking). |
 | &nbsp;&nbsp;`.status` | `string` | | |

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useService } from '../../hooks/useService';
+import AppointmentScheduler from '../common/AppointmentScheduler';
 import { useUser } from '../../context/UserContext'; // ✅ Contexto de Usuario
 import '../../styles/LeadCaptureForm.css';
 
@@ -39,6 +40,13 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
 
         if (!formData.nombre || !formData.telefono) {
             setError("Nombre y teléfono son obligatorios");
+            setLoading(false);
+            return;
+        }
+
+        // Validate Appointment Data Integrity
+        if (formData.citainicial && (!formData.citainicial.dia || !formData.citainicial.hora)) {
+            setError("Por favor selecciona una HORA para tu cita.");
             setLoading(false);
             return;
         }
@@ -83,7 +91,8 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                         moneda: modelo?.precios?.moneda || desarrollo?.precios?.moneda || 'MXN',
                         desarrolloNombre: desarrollo?.nombre,
                         modeloNombre: modelo?.nombre_modelo || "Interés General"
-                    }
+                    },
+                    citainicial: formData.citainicial || null // ✅ Pass Appointment Data
                 }
             );
 
@@ -132,81 +141,160 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
     }
 
     return (
-        <form className="lead-form" onSubmit={handleSubmit}>
-            <h3 className="lead-form__title">Confirmar Datos</h3>
+        <form className="lead-form !p-0 !bg-transparent !shadow-none" onSubmit={handleSubmit} style={{ minHeight: '600px' }}>
+            <div className="rounded-2xl shadow-2xl overflow-hidden p-6 md:p-8"
+                style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)' }}>
 
-            <div style={{
-                background: '#f0fdf4', color: '#166534', padding: '10px', borderRadius: '6px',
-                fontSize: '0.9rem', textAlign: 'center', border: '1px solid #bbf7d0', marginBottom: '1rem'
-            }}>
-                👤 Solicitando como: <strong>{user.displayName}</strong>
-            </div>
+                <h3 className="text-2xl font-black text-center mb-1" style={{ color: 'var(--text-main)' }}>
+                    Agenda tu Visita VIP
+                </h3>
+                <p className="text-center text-xs uppercase tracking-widest mb-6 opacity-70" style={{ color: 'var(--text-secondary)' }}>
+                    {modelo?.nombre_modelo || desarrollo?.nombre}
+                </p>
 
-            <p className="lead-form__subtitle">
-                Recibe información detallada de <strong>{modelo?.nombre_modelo}</strong>.
-            </p>
+                <div style={{
+                    background: '#f0fdf4', color: '#166534', padding: '10px', borderRadius: '6px',
+                    fontSize: '0.9rem', textAlign: 'center', border: '1px solid #bbf7d0', marginBottom: '1rem'
+                }}>
+                    👤 Solicitando como: <strong>{user.displayName}</strong>
+                </div>
 
-            {error && <div className="lead-form__error">{error}</div>}
+                {/* PROGRESS STEPPER (VISUAL) */}
+                <div className="flex items-center justify-between mb-8 px-2">
+                    <div className={`flex flex-col items-center gap-1 transition-all ${!formData.citainicial ? 'opacity-100 scale-105' : 'opacity-60'}`}>
+                        <div className="w-8 h-8 rounded-full bg-[var(--primary-color)] text-black font-bold flex items-center justify-center text-xs shadow-glow">1</div>
+                        <span className="text-[10px] uppercase tracking-wider font-bold" style={{ color: 'var(--text-main)' }}>Cita</span>
+                    </div>
+                    <div className="h-[1px] flex-1 bg-gradient-to-r from-[var(--primary-color)] to-[var(--border-subtle)] mx-2 alpha-30"></div>
+                    <div className={`flex flex-col items-center gap-1 transition-all ${formData.citainicial ? 'opacity-100 scale-105' : 'opacity-60'}`}>
+                        <div className={`w-8 h-8 rounded-full font-bold flex items-center justify-center text-xs border ${formData.citainicial ? 'bg-[var(--primary-color)] text-black border-transparent shadow-glow' : 'border-[var(--text-secondary)] text-[var(--text-secondary)]'}`}>2</div>
+                        <span className="text-[10px] uppercase tracking-wider font-bold" style={{ color: formData.citainicial ? 'var(--text-main)' : 'var(--text-secondary)' }}>Datos</span>
+                    </div>
+                </div>
 
-            <div className="lead-form__group">
-                <label className="lead-form__label" htmlFor="nombre">Nombre Completo</label>
-                <input
-                    type="text"
-                    id="nombre"
-                    name="nombre"
-                    className="lead-form__input"
-                    value={formData.nombre}
-                    onChange={handleChange}
-                    placeholder="Ej. Juan Pérez"
-                />
-            </div>
+                {/* SECTION 1: CITA (Moved completely to top priority) */}
+                <div className={`transition-all duration-500 ${formData.citainicial ? 'mb-8' : 'mb-6'}`}>
+                    {/* APPOINTMENT SCHEDULER */}
+                    <AppointmentScheduler
+                        onSelect={(cita) => setFormData(prev => ({ ...prev, citainicial: cita }))}
+                        className="mb-4"
+                    />
 
-            <div className="lead-form__group">
-                <label className="lead-form__label" htmlFor="telefono">Teléfono (WhatsApp)</label>
-                <input
-                    type="tel"
-                    id="telefono"
-                    name="telefono"
-                    className="lead-form__input"
-                    value={formData.telefono}
-                    onChange={handleChange}
-                    placeholder="Ej. 667 123 4567"
-                />
-            </div>
+                    {!formData.citainicial ? (
+                        <p className="text-xs text-center animate-pulse" style={{ color: 'var(--primary-color)' }}>
+                            ✨ Selecciona un día para continuar
+                        </p>
+                    ) : (
+                        <div className="p-4 rounded-xl border border-green-500/30 bg-green-500/10 flex items-center gap-4 animate-fadeIn">
+                            <div className="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center text-lg shadow-lg">
+                                📅
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold uppercase tracking-wider opacity-70" style={{ color: 'var(--text-main)' }}>Tu Reserva:</p>
+                                <p className="text-sm font-medium" style={{ color: 'var(--text-main)' }}>
+                                    {formData.citainicial.dia.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}
+                                    <span className="mx-2">•</span>
+                                    {formData.citainicial.hora} hrs
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData(prev => ({ ...prev, citainicial: null }))}
+                                    className="text-[10px] underline mt-1 hover:text-[var(--primary-color)]"
+                                    style={{ color: 'var(--text-secondary)' }}
+                                >
+                                    Cambiar fecha
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
 
-            <div className="lead-form__group">
-                <label className="lead-form__label" htmlFor="email">Email (Verificado)</label>
-                <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    className="lead-form__input lead-form__input--readonly"
-                    value={formData.email}
-                    readOnly
-                    disabled
-                />
-            </div>
+                {/* SECTION 2: DATOS PERSONALES (Revealed or Dimmed based on flow) */}
+                <div className={`space-y-5 transition-all duration-500 ${!formData.citainicial ? 'opacity-50 pointer-events-none blur-[1px]' : 'opacity-100'}`}>
 
-            <div className="lead-form__actions">
-                <button
-                    type="button"
-                    className="lead-form__btn lead-form__btn--secondary"
-                    onClick={onCancel}
-                >
-                    Cancelar
-                </button>
-                <button
-                    type="submit"
-                    className="lead-form__btn lead-form__btn--primary"
-                    disabled={loading}
-                >
-                    {loading ? 'Enviando...' : 'Solicitar Info'}
-                </button>
-            </div>
+                    <h4 className="text-sm uppercase tracking-widest font-bold mb-4 border-b pb-2 flex items-center gap-2"
+                        style={{ color: 'var(--text-main)', borderColor: 'var(--border-subtle)' }}>
+                        <span className="text-[var(--primary-color)]">02/</span> Confirmar Datos
+                    </h4>
 
-            <p className="lead-form__disclaimer">
-                Al enviar, aceptas ser contactado por un asesor certificado.
-            </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="lead-form__group">
+                            <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color: 'var(--text-secondary)' }} htmlFor="nombre">
+                                Nombre Completo
+                            </label>
+                            <input
+                                type="text"
+                                id="nombre"
+                                name="nombre"
+                                className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none transition-all"
+                                style={{ color: 'var(--text-main)' }}
+                                value={formData.nombre}
+                                onChange={handleChange}
+                                placeholder="Ej. Juan Pérez"
+                            />
+                        </div>
+
+                        <div className="lead-form__group">
+                            <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color: 'var(--text-secondary)' }} htmlFor="telefono">
+                                WhatsApp
+                            </label>
+                            <input
+                                type="tel"
+                                id="telefono"
+                                name="telefono"
+                                className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none transition-all"
+                                style={{ color: 'var(--text-main)' }}
+                                value={formData.telefono}
+                                onChange={handleChange}
+                                placeholder="Ej. 667 123 4567"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="lead-form__group">
+                        <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color: 'var(--text-secondary)' }} htmlFor="email">
+                            Email (Verificado)
+                        </label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            className="w-full bg-white/5 border border-white/5 rounded-lg p-3 text-sm opacity-50 cursor-not-allowed"
+                            style={{ color: 'var(--text-main)' }}
+                            value={formData.email}
+                            readOnly
+                            disabled
+                        />
+                    </div>
+                </div>
+
+
+
+                <div className="lead-form__actions">
+                    <button
+                        type="button"
+                        className="lead-form__btn lead-form__btn--secondary"
+                        onClick={onCancel}
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        type="submit"
+                        className="lead-form__btn lead-form__btn--primary"
+                        disabled={loading}
+                        style={{
+                            opacity: (formData.citainicial && !formData.citainicial.hora) ? 0.5 : 1,
+                            cursor: (formData.citainicial && !formData.citainicial.hora) ? 'not-allowed' : 'pointer'
+                        }}
+                    >
+                        {loading ? 'Enviando...' : 'Solicitar Info'}
+                    </button>
+                </div>
+
+                <p className="text-[10px] text-center mt-6 opacity-40 max-w-xs mx-auto" style={{ color: 'var(--text-secondary)' }}>
+                    Al enviar, aceptas ser contactado por un asesor certificado. Tu información está segura.
+                </p>
+            </div>{/* End Card Wrapper */}
         </form>
     );
 };

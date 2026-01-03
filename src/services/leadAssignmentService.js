@@ -69,7 +69,8 @@ export class LeadAssignmentService {
         origen: contextData.origen || 'web_automatico',
         urlOrigen: contextData.urlOrigen || null,
         snapshot: contextData.snapshot || {}, // ✅ Persist Snapshot
-        asesorUid: 'MANUAL_B2B_PROCESS'
+        asesorUid: 'MANUAL_B2B_PROCESS',
+        citainicial: contextData.citainicial || null // ✅ Appointment scheduling
       };
 
       // 2. Guardamos usando Repositorio
