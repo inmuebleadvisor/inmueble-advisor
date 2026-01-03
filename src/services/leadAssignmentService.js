@@ -16,7 +16,7 @@ export class LeadAssignmentService {
     this.catalogRepository = catalogRepository;
   }
 
-  async generarLeadAutomatico(datosCliente, idDesarrollo, nombreDesarrollo, modeloInteres, providedUid = null, idDesarrollador = null, precioReferencia = 0) {
+  async generarLeadAutomatico(datosCliente, idDesarrollo, nombreDesarrollo, modeloInteres, providedUid = null, idDesarrollador = null, precioReferencia = 0, contextData = {}) {
     try {
       // 1. GESTIÓN DE USUARIO (Link User-Lead)
       let clienteUid = providedUid;
@@ -66,7 +66,9 @@ export class LeadAssignmentService {
         modeloInteres: modeloInteres || "No especificado",
         precioReferencia: Number(precioReferencia) || 0,
         status: STATUS.LEAD_PENDING_DEVELOPER_CONTACT,
-        origen: 'web_automatico',
+        origen: contextData.origen || 'web_automatico',
+        urlOrigen: contextData.urlOrigen || null,
+        snapshot: contextData.snapshot || {}, // ✅ Persist Snapshot
         asesorUid: 'MANUAL_B2B_PROCESS'
       };
 

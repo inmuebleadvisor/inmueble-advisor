@@ -34,7 +34,8 @@ export class LeadRepository {
             nombre,
             telefono,
             precioReferencia,
-            comisionPorcentaje
+            comisionPorcentaje,
+            ...extraData // ✅ Capture any additional fields (snapshot, origen, etc)
         } = leadData;
 
         if (!idDesarrollo || !idDesarrollador) {
@@ -64,7 +65,8 @@ export class LeadRepository {
                     note: "Lead generado por el sistema",
                     changedBy: "SYSTEM"
                 }
-            ]
+            ],
+            ...extraData // ✅ Persist dynamic fields (snapshot, origen, etc)
         };
 
         const docRef = await addDoc(collection(this.db, this.collectionName), newLead);

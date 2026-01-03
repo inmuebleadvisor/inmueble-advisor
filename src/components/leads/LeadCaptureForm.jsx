@@ -72,7 +72,19 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                 modelo?.nombre_modelo || "Interés General",
                 user?.uid,
                 desarrollo?.idDesarrollador || desarrollo?.constructora,
-                precioRef
+                precioRef,
+                // ✅ NEW: Context & Snapshot
+                {
+                    origen: 'WEB_DESKTOP',
+                    urlOrigen: window.location.href, // Full URL for debugging
+                    snapshot: {
+                        idModelo: modelo?.id || null, // Explicit null if generic
+                        precioAtCapture: precioRef,
+                        moneda: modelo?.precios?.moneda || desarrollo?.precios?.moneda || 'MXN',
+                        desarrolloNombre: desarrollo?.nombre,
+                        modeloNombre: modelo?.nombre_modelo || "Interés General"
+                    }
+                }
             );
 
             if (result.success) {

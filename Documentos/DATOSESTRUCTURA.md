@@ -171,6 +171,13 @@ Este documento describe la estructura **real** de las colecciones en Firebase Fi
 | **precioReferencia** | `number` | No | Precio al momento de generar el lead. |
 | **comisionPorcentaje** | `number` | No | Snapshot de comisión (ej: 1.5). |
 | **status** | `string` | **Sí** | Default `PENDIENTE`. |
+| **origen** | `string` | No | Ej: `WEB_DESKTOP`, `MOBILE`. |
+| **urlOrigen** | `string` | No | URL exacta de captura. |
+| **snapshot** | `map` | No | Contexto del producto al momento de crear. |
+| &nbsp;&nbsp;`.idModelo` | `string` | | |
+| &nbsp;&nbsp;`.modeloNombre` | `string` | | |
+| &nbsp;&nbsp;`.desarrolloNombre` | `string` | | |
+| &nbsp;&nbsp;`.precioAtCapture` | `number` | | |
 | **idAsesorAsignado** | `string` | No | Asesor interno asignado via CRM. |
 | **statusHistory** | `map[]` | **Sí** | Historial de cambios de estado (Ver Tracking). |
 | &nbsp;&nbsp;`.status` | `string` | | |
