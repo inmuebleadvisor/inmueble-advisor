@@ -16,7 +16,6 @@ import '../../index.css'; // Ensure variables are available
 const AppointmentScheduler = ({ onSelect, initialDate, className = '' }) => {
     const [selectedDate, setSelectedDate] = useState(initialDate || new Date());
     const [selectedSlot, setSelectedSlot] = useState(null);
-    // const [slots, setSlots] = useState([]); // REMOVED: Now derived via useMemo
 
     // Generate next 15 days for the calendar strip
     const calendarDays = useMemo(() => {
@@ -51,24 +50,24 @@ const AppointmentScheduler = ({ onSelect, initialDate, className = '' }) => {
     };
 
     return (
-        <div className={`w-full ${className}`}>
+        <div style={{ width: '100%' }}>
 
             {/* Header / Context */}
-            <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm uppercase tracking-wider font-bold" style={{ color: 'var(--text-secondary)' }}>
-                    Selecciona Fecha y Hora
-                </h3>
-                {selectedSlot && (
-                    <span className="text-xs font-medium px-2 py-1 rounded-md bg-green-500/10 text-green-400 border border-green-500/20">
-                        Cita Confirmada
-                    </span>
-                )}
-            </div>
+            {/* Removed header as it is now in the wizard step title */}
 
             {/* Date Selector (Horizontal Scroll) */}
-            <div className="mb-6 relative group">
+            <div style={{ marginBottom: '32px' }}>
+                <p style={{ fontSize: '14px', fontWeight: 500, color: '#e2e8f0', marginBottom: '16px' }}>Selecciona una fecha</p>
+
                 {/* Scroll Container */}
-                <div className="overflow-x-auto pb-4 flex gap-3 no-scrollbar scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                <div
+                    className="no-scrollbar" // Keeping this custom class if it exists in index.css, otherwise flex will handle basic layout
+                    style={{
+                        display: 'flex', gap: '12px', overflowX: 'auto',
+                        paddingBottom: '8px', scrollBehavior: 'smooth',
+                        scrollbarWidth: 'none', msOverflowStyle: 'none'
+                    }}
+                >
                     {calendarDays.map((date, index) => {
                         const isSelected = isSameDay(date, selectedDate);
                         const isToday = isSameDay(date, new Date());
@@ -78,42 +77,55 @@ const AppointmentScheduler = ({ onSelect, initialDate, className = '' }) => {
                                 type="button"
                                 key={index}
                                 onClick={() => handleDateSelect(date)}
-                                className={`
-                                    flex flex-col items-center justify-center min-w-[72px] h-[90px] p-2 rounded-2xl border transition-all duration-300 ease-out flex-shrink-0 relative overflow-hidden
-                                    ${isSelected
-                                        ? 'shadow-[0_0_20px_-5px_var(--primary-color)] scale-105'
-                                        : 'bg-white/5 border-white/10 hover:border-white/30 hover:bg-white/10'}
-                                `}
                                 style={{
-                                    backgroundColor: isSelected ? 'var(--primary-color)' : undefined,
-                                    borderColor: isSelected ? 'var(--primary-color)' : undefined,
+                                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                    minWidth: '72px', width: '72px', height: '90px',
+                                    borderRadius: '16px',
+                                    border: isSelected ? '1px solid #f59e0b' : '1px solid #334155',
+                                    backgroundColor: isSelected ? '#1e293b' : '#0f172a',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    boxShadow: isSelected ? '0 0 15px rgba(245, 158, 11, 0.2)' : 'none',
+                                    flexShrink: 0  // Prevent squashing
                                 }}
                             >
-                                {/* Glow Effect for Selected */}
-                                {isSelected && (
-                                    <div className="absolute inset-0 bg-gradient-to-tr from-white/40 to-transparent opacity-50" />
-                                )}
-
-                                <span className={`text-[10px] uppercase tracking-widest font-bold mb-1 z-10 ${isSelected ? 'text-black' : 'text-[var(--text-secondary)]'}`}>
+                                {/* "HOY" Badge or Day Name */}
+                                <span style={{
+                                    fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, marginBottom: '4px',
+                                    color: isSelected ? '#f59e0b' : '#94a3b8'
+                                }}>
                                     {isToday ? 'HOY' : format(date, 'EEE', { locale: es })}
                                 </span>
-                                <span className={`text-2xl font-black z-10 ${isSelected ? 'text-black' : 'text-[var(--text-main)]'}`}>
+
+                                {/* Day Number */}
+                                <span style={{
+                                    fontSize: '24px', fontWeight: 800, marginBottom: '2px',
+                                    color: '#f8fafc'
+                                }}>
                                     {format(date, 'd')}
                                 </span>
-                                <span className={`text-[10px] uppercase z-10 ${isSelected ? 'text-black/70' : 'text-[var(--text-secondary)]'}`}>
+
+                                {/* Month */}
+                                <span style={{
+                                    fontSize: '9px', textTransform: 'uppercase', letterSpacing: '1px',
+                                    color: isSelected ? '#cbd5e1' : '#64748b'
+                                }}>
                                     {format(date, 'MMM', { locale: es })}
                                 </span>
                             </button>
                         );
                     })}
                 </div>
-                {/* Fade indicators for scroll */}
-                <div className="absolute right-0 top-0 bottom-4 w-12 bg-gradient-to-l from-[var(--bg-secondary)] to-transparent pointer-events-none" />
             </div>
 
             {/* Time Slots Grid */}
-            <div className="space-y-3">
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <p style={{ fontSize: '14px', fontWeight: 500, color: '#e2e8f0', margin: 0 }}>Horarios Disponibles</p>
+                    <span style={{ fontSize: '10px', color: '#64748b' }}>(Tiempo del Centro de México)</span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
                     {slots.length > 0 ? (
                         slots.map((slot, idx) => {
                             const isSelected = selectedSlot === slot.value;
@@ -123,20 +135,17 @@ const AppointmentScheduler = ({ onSelect, initialDate, className = '' }) => {
                                     key={idx}
                                     disabled={!slot.available}
                                     onClick={() => handleSlotClick(slot)}
-                                    className={`
-                                        relative px-1 py-3 rounded-full text-xs font-bold border transition-all duration-200 group
-                                        ${!slot.available
-                                            ? 'opacity-30 grayscale cursor-not-allowed border-transparent bg-white/5 text-[var(--text-secondary)]'
-                                            : 'cursor-pointer'}
-                                        ${isSelected
-                                            ? 'ring-2 ring-offset-2 ring-offset-[var(--bg-secondary)] ring-[var(--primary-color)]'
-                                            : 'hover:border-[var(--primary-color)] hover:text-[var(--primary-color)]'}
-                                    `}
                                     style={{
-                                        backgroundColor: isSelected ? 'var(--primary-color)' : (!slot.available ? undefined : 'transparent'),
-                                        borderColor: isSelected ? 'var(--primary-color)' : (!slot.available ? 'transparent' : 'var(--border-subtle)'),
-                                        color: isSelected ? '#000' : (slot.available ? 'var(--text-main)' : 'var(--text-secondary)'),
-                                        boxShadow: isSelected ? '0 4px 12px rgba(0,0,0,0.3)' : 'none'
+                                        padding: '12px 4px',
+                                        borderRadius: '12px',
+                                        fontSize: '13px', fontWeight: 700,
+                                        border: isSelected ? '1px solid #f59e0b' : '1px solid #334155',
+                                        backgroundColor: isSelected ? '#f59e0b' : (slot.available ? '#1e293b' : '#0f172a'),
+                                        color: isSelected ? '#0f172a' : (slot.available ? '#cbd5e1' : '#475569'),
+                                        cursor: slot.available ? 'pointer' : 'not-allowed',
+                                        opacity: slot.available ? 1 : 0.4,
+                                        transition: 'all 0.2s',
+                                        boxShadow: isSelected ? '0 4px 12px rgba(245, 158, 11, 0.3)' : 'none'
                                     }}
                                 >
                                     {slot.label}
@@ -144,11 +153,11 @@ const AppointmentScheduler = ({ onSelect, initialDate, className = '' }) => {
                             );
                         })
                     ) : (
-                        <div className="col-span-full flex flex-col items-center justify-center py-8 text-center border-2 border-dashed border-white/10 rounded-xl">
-                            <span className="text-2xl mb-2 opacity-50">😴</span>
-                            <p style={{ color: 'var(--text-secondary)' }}>
+                        <div style={{ gridColumn: '1 / -1', padding: '32px', textAlign: 'center', border: '2px dashed #334155', borderRadius: '16px', backgroundColor: '#0f172a' }}>
+                            <span style={{ fontSize: '24px', display: 'block', marginBottom: '8px' }}>😴</span>
+                            <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8' }}>
                                 No hay horarios disponibles. <br />
-                                <span className="text-xs">Intenta seleccionar otro día.</span>
+                                Intenta seleccionar otro día.
                             </p>
                         </div>
                     )}
@@ -156,12 +165,7 @@ const AppointmentScheduler = ({ onSelect, initialDate, className = '' }) => {
             </div>
 
             {/* Disclaimer */}
-            <div className="mt-6 flex items-center justify-center gap-2 opacity-60">
-                <div className="w-1.5 h-1.5 rounded-full bg-[var(--primary-color)]"></div>
-                <span className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>
-                    Tiempo del Centro de México
-                </span>
-            </div>
+            {/* Disclaimer removed - moved to header */}
         </div>
     );
 };

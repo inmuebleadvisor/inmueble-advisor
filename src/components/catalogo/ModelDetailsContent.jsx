@@ -11,7 +11,7 @@ import StickyActionPanel from '../common/StickyActionPanel';
 import Delightbox from '../common/Delightbox';
 import { useStickyPanel } from '../../hooks/useStickyPanel';
 import '../../styles/ModelDetailsContent.css'; // BEM Styles relocated
-import Modal from '../shared/Modal'; // Generic Modal
+// import Modal from '../shared/Modal'; // Generic Modal
 import LeadCaptureForm from '../leads/LeadCaptureForm'; // New Capture Form
 
 // Icons defined locally since they are small UI helpers
@@ -234,18 +234,18 @@ export default function ModelDetailsContent({
                 />
             )}
 
-            {/* --- LEAD CAPTURE MODAL --- */}
-            <Modal isOpen={isLeadFormOpen} onClose={() => setIsLeadFormOpen(false)}>
+            {/* --- LEAD CAPTURE MODAL - Unboxed --- */}
+            {isLeadFormOpen && (
                 <LeadCaptureForm
                     desarrollo={desarrollo}
                     modelo={modelo}
                     onCancel={() => setIsLeadFormOpen(false)}
                     onSuccess={() => {
                         setIsLeadFormOpen(false);
-                        alert("¡Solicitud enviada con éxito! Un asesor te contactará pronto.");
+                        // Confetti handles feedback
                     }}
                 />
-            </Modal>
+            )}
         </div >
     );
 }

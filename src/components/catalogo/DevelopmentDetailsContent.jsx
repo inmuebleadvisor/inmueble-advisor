@@ -8,7 +8,7 @@ import Delightbox from '../common/Delightbox';
 import FavoriteBtn from '../shared/FavoriteBtn';
 import { useStickyPanel } from '../../hooks/useStickyPanel';
 import '../../styles/components/DevelopmentDetails.css';
-import Modal from '../shared/Modal';
+// import Modal from '../shared/Modal'; // Removed: LeadCaptureForm is now self-contained
 import LeadCaptureForm from '../leads/LeadCaptureForm';
 
 // Icons
@@ -174,18 +174,19 @@ export default function DevelopmentDetailsContent({
                 />
             )}
 
-            {/* LEAD CAPTURE MODAL */}
-            <Modal isOpen={isLeadFormOpen} onClose={() => setIsLeadFormOpen(false)}>
+            {/* LEAD CAPTURE MODAL - Unboxed for full control */}
+            {isLeadFormOpen && (
                 <LeadCaptureForm
                     desarrollo={desarrollo}
                     modelo={null}
                     onCancel={() => setIsLeadFormOpen(false)}
                     onSuccess={() => {
                         setIsLeadFormOpen(false);
-                        alert("¡Solicitud enviada con éxito! Un asesor te contactará pronto.");
+                        // Optional: trigger a success toast or lightweight feedback if needed, 
+                        // though confetti handles the main "reward".
                     }}
                 />
-            </Modal>
+            )}
         </div>
     );
 }

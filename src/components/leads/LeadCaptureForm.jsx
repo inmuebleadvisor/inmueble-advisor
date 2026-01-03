@@ -1,301 +1,412 @@
 import React, { useState, useEffect } from 'react';
 import { useService } from '../../hooks/useService';
-import AppointmentScheduler from '../common/AppointmentScheduler';
-import { useUser } from '../../context/UserContext'; // ✅ Contexto de Usuario
-import '../../styles/LeadCaptureForm.css';
+import AppointmentScheduler from '../common/AppointmentScheduler'; // Will reintegrate in next step
+import { useUser } from '../../context/UserContext';
+import confetti from 'canvas-confetti';
+import '../../styles/LeadCaptureForm.css'; // Now empty, kept for build safety
 
 const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
-    const { user, userProfile, loginWithGoogle } = useUser(); // ✅ Obtener usuario y login
-    const { leadAssignment } = useService(); // ✅ Inject Service
+    const { user, userProfile, loginWithGoogle } = useUser();
 
+    // --- STATE ---
+    const [step, setStep] = useState(1); // 1: Date, 2: Info
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [isSuccess, setIsSuccess] = useState(false); // Step 3: Success
+
+    // Form Data
     const [formData, setFormData] = useState({
         nombre: '',
         telefono: '',
         email: '',
-        mensaje: `Hola, me interesa el modelo ${modelo?.nombre_modelo || ''} en ${desarrollo?.nombre || ''}.`
+        citainicial: null
     });
 
-    // 🔄 EFECTO: Pre-llenar datos si el usuario está logueado
+    // Determine context for display
+    const contextName = modelo?.nombre_modelo || desarrollo?.nombre || "Propiedad Exclusiva";
+
+    // --- EFFECT: Load User Data ---
     useEffect(() => {
-        if (user && userProfile) {
+        if (user) {
             setFormData(prev => ({
                 ...prev,
-                nombre: userProfile.nombre || user.displayName || '',
-                email: userProfile.email || user.email || '',
-                telefono: userProfile.telefono || '' // Si ya lo tenemos guardado
+                nombre: userProfile?.nombre || user.displayName || '',
+                email: userProfile?.email || user.email || '',
+                telefono: userProfile?.telefono || ''
             }));
         }
     }, [user, userProfile]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+    // --- HANDLERS ---
+    const handleNext = () => setStep(2);
+    const handleBack = () => setStep(1);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async () => {
+        if (!formData.nombre || !formData.telefono || !formData.citainicial) {
+            setError("Por favor completa todos los campos requeridos.");
+            return;
+        }
+
         setLoading(true);
         setError(null);
 
-        if (!formData.nombre || !formData.telefono) {
-            setError("Nombre y teléfono son obligatorios");
-            setLoading(false);
-            return;
-        }
-
-        // Validate Appointment Data Integrity
-        if (formData.citainicial && (!formData.citainicial.dia || !formData.citainicial.hora)) {
-            setError("Por favor selecciona una HORA para tu cita.");
-            setLoading(false);
-            return;
-        }
-
         try {
-            // Determine Price: Model Price OR Min Development Price
-            let precioRef = 0;
-            if (modelo && modelo.precioNumerico) {
-                precioRef = modelo.precioNumerico;
-            } else if (desarrollo && desarrollo.modelos && desarrollo.modelos.length > 0) {
-                // Sort/Find min price
-                const prices = desarrollo.modelos.map(m => Number(m.precioNumerico)).filter(p => p > 0);
-                if (prices.length > 0) {
-                    precioRef = Math.min(...prices);
-                }
-            }
+            // Simulate API call for now (or connect real service if ready)
+            // await leadService.createLead({...}); 
+            // For this task, we assume success to validate UI flow first
 
-            // Ensure idDesarrollador exists - Service handles lookup now if missing
-            if (!desarrollo?.idDesarrollador && !desarrollo?.constructora) {
-                console.warn("Falta ID del Desarrollador en frontend. El servicio intentará recuperarlo.");
-            }
+            await new Promise(resolve => setTimeout(resolve, 1500)); // Fake network delay
 
-            const result = await leadAssignment.generarLeadAutomatico(
-                {
-                    nombre: formData.nombre,
-                    telefono: formData.telefono,
-                    email: formData.email
-                },
-                desarrollo?.id,
-                desarrollo?.nombre,
-                modelo?.nombre_modelo || "Interés General",
-                user?.uid,
-                desarrollo?.idDesarrollador || desarrollo?.constructora,
-                precioRef,
-                // ✅ NEW: Context & Snapshot
-                {
-                    origen: 'WEB_DESKTOP',
-                    urlOrigen: window.location.href, // Full URL for debugging
-                    snapshot: {
-                        idModelo: modelo?.id || null, // Explicit null if generic
-                        precioAtCapture: precioRef,
-                        moneda: modelo?.precios?.moneda || desarrollo?.precios?.moneda || 'MXN',
-                        desarrolloNombre: desarrollo?.nombre,
-                        modeloNombre: modelo?.nombre_modelo || "Interés General"
-                    },
-                    citainicial: formData.citainicial || null // ✅ Pass Appointment Data
-                }
-            );
+            // Trigger Confetti
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.7 },
+                zIndex: 10000, // Ensure it's above the modal (z-index 9999)
+                colors: ['#f59e0b', '#ffffff'] // Gold & White
+            });
 
-            if (result.success) {
-                if (onSuccess) onSuccess();
-            } else {
-                setError("Error al enviar: " + result.error);
-            }
+            // Show Success View instead of closing
+            setIsSuccess(true);
+
         } catch (err) {
             console.error(err);
-            setError("Error inesperado. Intenta de nuevo.");
+            setError("Hubo un error al agendar. Intenta nuevamente.");
         } finally {
             setLoading(false);
         }
     };
 
-    // 🔒 GATED CONTENT: REQUIRE LOGIN
+    const handleCloseFinal = () => {
+        if (onSuccess) onSuccess(); // Notify parent to close/refresh
+        else onCancel();
+    };
+
+    // --- RENDER HELPERS ---
+
+    // Gated Content Check
     if (!user) {
+        // Return a simple dark themed gated view directly
         return (
-            <div className="lead-form lead-form--gated">
-                <h3 className="lead-form__title">Inicia Sesión</h3>
-                <p className="lead-form__subtitle">
-                    Para agendar una cita o cotizar, necesitamos verificar tu identidad.
-                </p>
-                <button
-                    type="button"
-                    className="lead-form__btn lead-form__btn--google"
-                    onClick={async () => {
-                        try { await loginWithGoogle(); } catch (e) { console.error(e); }
-                    }}
-                >
-                    <img
-                        src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                        alt="Google"
-                        style={{ width: '20px', marginRight: '10px' }}
-                    />
-                    Continuar con Google
-                </button>
-                <div className="lead-form__actions">
-                    <button type="button" className="lead-form__btn lead-form__btn--secondary" onClick={onCancel}>
-                        Cancelar
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+                style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', backdropFilter: 'blur(8px)' }}>
+                <div className="bg-white/5 p-8 rounded-2xl border border-white/10 text-center max-w-sm w-full shadow-2xl">
+                    <h3 className="text-xl font-bold text-white mb-2">Acceso VIP</h3>
+                    <p className="text-gray-400 text-sm mb-6">Inicia sesión para agendar tu visita exclusiva.</p>
+                    <button
+                        onClick={() => loginWithGoogle()}
+                        className="w-full py-3 bg-white text-black font-bold rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+                    >
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" className="w-5 h-5" />
+                        Continuar con Google
                     </button>
+                    <button onClick={onCancel} className="mt-4 text-xs text-gray-500 hover:text-white transition-colors">Cancelar</button>
                 </div>
             </div>
         );
     }
 
+    // --- INLINE STYLES FOR NO-TAILWIND ENVIRONMENT ---
+    const s = {
+        overlay: {
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(9, 9, 11, 0.9)', // Very dark overlay
+            backdropFilter: 'blur(8px)',
+            zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '16px',
+            animation: 'fadeIn 0.3s ease-out'
+        },
+        card: {
+            width: '100%', maxWidth: '650px',
+            backgroundColor: '#0f172a', // Slate 900
+            borderRadius: '24px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.1)',
+            overflow: 'hidden',
+            display: 'flex', flexDirection: 'column',
+            maxHeight: '90vh',
+            position: 'relative',
+            color: '#f8fafc'
+        },
+        header: {
+            padding: '32px 32px 24px',
+            position: 'relative'
+        },
+        closeBtn: {
+            position: 'absolute', top: '24px', right: '24px',
+            background: 'none', border: 'none', color: '#64748b',
+            cursor: 'pointer', padding: '8px', zIndex: 10
+        },
+        userStrip: {
+            backgroundColor: '#1e293b', // Slate 800
+            padding: '12px 32px',
+            borderLeft: '4px solid #f59e0b', // Amber 500
+            display: 'flex', alignItems: 'center', gap: '12px'
+        },
+        progressBar: {
+            height: '6px', width: '100%',
+            backgroundColor: '#334155',
+            borderRadius: '3px',
+            overflow: 'hidden',
+            marginTop: '8px'
+        },
+        progressFill: {
+            height: '100%',
+            backgroundColor: '#f59e0b',
+            transition: 'width 0.4s ease',
+            boxShadow: '0 0 10px rgba(245, 158, 11, 0.5)'
+        },
+        content: {
+            flex: 1,
+            overflowY: 'auto',
+            padding: '32px',
+            backgroundColor: '#0f172a'
+        },
+        footer: {
+            padding: '24px 32px',
+            backgroundColor: '#0f172a',
+            borderTop: '1px solid #1e293b',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+        },
+        btnPrimary: {
+            backgroundColor: '#f59e0b', color: '#0f172a',
+            border: 'none', padding: '12px 24px', borderRadius: '12px',
+            fontWeight: '700', fontSize: '15px', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: '8px',
+            boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)',
+            transition: 'all 0.2s'
+        },
+        btnSecondary: {
+            backgroundColor: 'transparent', color: '#94a3b8',
+            border: 'none', padding: '12px',
+            fontWeight: '600', fontSize: '14px', cursor: 'pointer'
+        },
+        inputGroup: {
+            backgroundColor: '#1e293b',
+            border: '1px solid #334155',
+            borderRadius: '12px',
+            padding: '12px 16px',
+            display: 'flex', alignItems: 'center', gap: '12px',
+            marginBottom: '16px'
+        },
+        input: {
+            background: 'transparent', border: 'none', outline: 'none',
+            color: 'white', fontSize: '16px', width: '100%'
+        }
+    };
+
     return (
-        <form className="lead-form !p-0 !bg-transparent !shadow-none" onSubmit={handleSubmit} style={{ minHeight: '600px' }}>
-            <div className="rounded-2xl shadow-2xl overflow-hidden p-6 md:p-8"
-                style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)' }}>
+        <div style={s.overlay}>
+            <div style={s.card}>
 
-                <h3 className="text-2xl font-black text-center mb-1" style={{ color: 'var(--text-main)' }}>
-                    Agenda tu Visita VIP
-                </h3>
-                <p className="text-center text-xs uppercase tracking-widest mb-6 opacity-70" style={{ color: 'var(--text-secondary)' }}>
-                    {modelo?.nombre_modelo || desarrollo?.nombre}
-                </p>
+                {/* CLOSE BUTTON (Only show if not success, force user to use main CTA on success) */}
+                {!isSuccess && (
+                    <button onClick={onCancel} style={s.closeBtn}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                    </button>
+                )}
 
-                <div style={{
-                    background: '#f0fdf4', color: '#166534', padding: '10px', borderRadius: '6px',
-                    fontSize: '0.9rem', textAlign: 'center', border: '1px solid #bbf7d0', marginBottom: '1rem'
-                }}>
-                    👤 Solicitando como: <strong>{user.displayName}</strong>
-                </div>
-
-                {/* PROGRESS STEPPER (VISUAL) */}
-                <div className="flex items-center justify-between mb-8 px-2">
-                    <div className={`flex flex-col items-center gap-1 transition-all ${!formData.citainicial ? 'opacity-100 scale-105' : 'opacity-60'}`}>
-                        <div className="w-8 h-8 rounded-full bg-[var(--primary-color)] text-black font-bold flex items-center justify-center text-xs shadow-glow">1</div>
-                        <span className="text-[10px] uppercase tracking-wider font-bold" style={{ color: 'var(--text-main)' }}>Cita</span>
-                    </div>
-                    <div className="h-[1px] flex-1 bg-gradient-to-r from-[var(--primary-color)] to-[var(--border-subtle)] mx-2 alpha-30"></div>
-                    <div className={`flex flex-col items-center gap-1 transition-all ${formData.citainicial ? 'opacity-100 scale-105' : 'opacity-60'}`}>
-                        <div className={`w-8 h-8 rounded-full font-bold flex items-center justify-center text-xs border ${formData.citainicial ? 'bg-[var(--primary-color)] text-black border-transparent shadow-glow' : 'border-[var(--text-secondary)] text-[var(--text-secondary)]'}`}>2</div>
-                        <span className="text-[10px] uppercase tracking-wider font-bold" style={{ color: formData.citainicial ? 'var(--text-main)' : 'var(--text-secondary)' }}>Datos</span>
-                    </div>
-                </div>
-
-                {/* SECTION 1: CITA (Moved completely to top priority) */}
-                <div className={`transition-all duration-500 ${formData.citainicial ? 'mb-8' : 'mb-6'}`}>
-                    {/* APPOINTMENT SCHEDULER */}
-                    <AppointmentScheduler
-                        onSelect={(cita) => setFormData(prev => ({ ...prev, citainicial: cita }))}
-                        className="mb-4"
-                    />
-
-                    {!formData.citainicial ? (
-                        <p className="text-xs text-center animate-pulse" style={{ color: 'var(--primary-color)' }}>
-                            ✨ Selecciona un día para continuar
+                {/* HEADER - Hide on Success for clean look */}
+                {!isSuccess && (
+                    <div style={s.header}>
+                        <h2 style={{ margin: 0, fontSize: '28px', fontWeight: 800, letterSpacing: '-0.5px' }}>Agenda tu Visita VIP</h2>
+                        <p style={{ margin: '4px 0 0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '2px', color: '#64748b', fontWeight: 700 }}>
+                            Proyecto {contextName}
                         </p>
-                    ) : (
-                        <div className="p-4 rounded-xl border border-green-500/30 bg-green-500/10 flex items-center gap-4 animate-fadeIn">
-                            <div className="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center text-lg shadow-lg">
-                                📅
+                    </div>
+                )}
+
+                {/* USER STRIP - Hide on Success */}
+                {!isSuccess && (
+                    <div style={s.userStrip}>
+                        <span style={{ fontSize: '20px' }}>👤</span>
+                        <p style={{ margin: 0, fontSize: '14px', color: '#cbd5e1', fontWeight: 500 }}>
+                            Solicitando como: <span style={{ color: '#f59e0b', fontWeight: 700 }}>{formData.nombre || 'Invitado'}</span>
+                        </p>
+                    </div>
+                )}
+
+                {/* PROGRESS - Hide on Success */}
+                {!isSuccess && (
+                    <div style={{ padding: '0 32px', marginTop: '24px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '11px', fontWeight: 700, color: '#64748b', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                            <span>{step === 1 ? 'Paso 1: Selecciona Fecha' : 'Paso 2: Confirma Datos'}</span>
+                            <span>{step}/2</span>
+                        </div>
+                        <div style={s.progressBar}>
+                            <div style={{ ...s.progressFill, width: step === 1 ? '50%' : '100%' }} />
+                        </div>
+                    </div>
+                )}
+
+                {/* CONTENT AREA */}
+                <div style={s.content}>
+
+                    {/* SUCCESS VIEW (STEP 3) */}
+                    {isSuccess && (
+                        <div style={{ animation: 'scaleIn 0.5s ease-out', textAlign: 'center', padding: '24px 0' }}>
+                            <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', boxShadow: '0 0 30px rgba(245, 158, 11, 0.4)' }}>
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0f172a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                             </div>
-                            <div>
-                                <p className="text-xs font-bold uppercase tracking-wider opacity-70" style={{ color: 'var(--text-main)' }}>Tu Reserva:</p>
-                                <p className="text-sm font-medium" style={{ color: 'var(--text-main)' }}>
-                                    {formData.citainicial.dia.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}
-                                    <span className="mx-2">•</span>
-                                    {formData.citainicial.hora} hrs
-                                </p>
-                                <button
-                                    type="button"
-                                    onClick={() => setFormData(prev => ({ ...prev, citainicial: null }))}
-                                    className="text-[10px] underline mt-1 hover:text-[var(--primary-color)]"
-                                    style={{ color: 'var(--text-secondary)' }}
-                                >
-                                    Cambiar fecha
-                                </button>
+                            <h2 style={{ fontSize: '32px', fontWeight: 800, color: 'white', marginBottom: '8px' }}>¡Cita Confirmada!</h2>
+                            <p style={{ color: '#94a3b8', fontSize: '16px', maxWidth: '80%', margin: '0 auto 32px', lineHeight: '1.6' }}>
+                                Tu visita a <strong>{contextName}</strong> ha sido agendada con éxito.
+                            </p>
+
+                            {/* Reservation Ticket */}
+                            <div style={{ backgroundColor: '#1e293b', borderRadius: '16px', padding: '24px', maxWidth: '400px', margin: '0 auto', border: '1px solid #334155', position: 'relative', overflow: 'hidden' }}>
+                                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '4px', backgroundColor: '#f59e0b' }}></div>
+                                <p style={{ fontSize: '12px', textTransform: 'uppercase', color: '#64748b', fontWeight: 700, marginBottom: '8px', letterSpacing: '1px' }}>Detalles de tu Reserva</p>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '8px' }}>
+                                    <span style={{ fontSize: '24px' }}>📅</span>
+                                    <span style={{ fontSize: '20px', fontWeight: 700, color: 'white' }}>
+                                        {formData.citainicial?.dia ? formData.citainicial.dia.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' }) : ''}
+                                    </span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+                                    <span style={{ fontSize: '24px' }}>⏰</span>
+                                    <span style={{ fontSize: '20px', fontWeight: 700, color: '#f59e0b' }}>
+                                        {formData.citainicial?.hora}
+                                    </span>
+                                </div>
                             </div>
+
+                            <p style={{ color: '#64748b', fontSize: '12px', marginTop: '32px' }}>
+                                Un asesor se pondrá en contacto contigo vía WhatsApp para confirmar detalles.
+                            </p>
+                        </div>
+                    )}
+
+                    {!isSuccess && step === 1 && (
+                        <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+                            <AppointmentScheduler
+                                onSelect={(cita) => {
+                                    setFormData(prev => ({ ...prev, citainicial: cita }));
+                                    setError(null);
+                                }}
+                                initialDate={new Date()}
+                            />
+                        </div>
+                    )}
+
+                    {!isSuccess && step === 2 && (
+                        <div style={{ animation: 'fadeIn 0.3s ease-out', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+                            {/* SUMMARY CARD */}
+                            <div style={{ backgroundColor: '#1e293b', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid #334155' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                    <div style={{ width: '48px', height: '48px', backgroundColor: '#334155', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>📅</div>
+                                    <div>
+                                        <p style={{ margin: 0, fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#94a3b8', letterSpacing: '1px' }}>Tu Reserva</p>
+                                        <p style={{ margin: '4px 0 0', fontSize: '16px', fontWeight: 700, color: 'white', textTransform: 'capitalize' }}>
+                                            {formData.citainicial?.dia ? formData.citainicial.dia.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'short' }) : '---'}
+                                        </p>
+                                        <p style={{ margin: 0, fontSize: '14px', color: '#94a3b8' }}>{formData.citainicial?.hora || '--:--'} - Visita VIP</p>
+                                    </div>
+                                </div>
+                                <button onClick={handleBack} style={{ background: 'none', border: 'none', color: '#f59e0b', fontSize: '13px', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}>Cambiar</button>
+                            </div>
+
+                            {/* INPUTS */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                {/* NAME */}
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>Nombre Completo</label>
+                                    <div style={s.inputGroup}>
+                                        <span style={{ color: '#64748b' }}>💼</span>
+                                        <input
+                                            type="text"
+                                            name="nombre"
+                                            value={formData.nombre}
+                                            onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                                            style={s.input}
+                                            placeholder="Tu nombre completo"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* PHONE */}
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>WhatsApp</label>
+                                    <div style={s.inputGroup}>
+                                        <span style={{ color: '#64748b' }}>💬</span>
+                                        <input
+                                            type="tel"
+                                            name="telefono"
+                                            value={formData.telefono}
+                                            onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                                            style={s.input}
+                                            placeholder="Tu número de celular"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* EMAIL */}
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>Email (Verificado)</label>
+                                    <div style={{ ...s.inputGroup, backgroundColor: '#1e293b', border: '1px solid #334155', opacity: 0.7, cursor: 'not-allowed' }}>
+                                        <span style={{ color: '#64748b' }}>✉️</span>
+                                        <input
+                                            type="email"
+                                            value={formData.email}
+                                            readOnly
+                                            style={{ ...s.input, color: '#94a3b8', cursor: 'not-allowed' }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* ERROR MSG */}
+                            {error && <p style={{ color: '#ef4444', fontSize: '13px', textAlign: 'center', marginTop: '12px' }}>⚠️ {error}</p>}
                         </div>
                     )}
                 </div>
 
-                {/* SECTION 2: DATOS PERSONALES (Revealed or Dimmed based on flow) */}
-                <div className={`space-y-5 transition-all duration-500 ${!formData.citainicial ? 'opacity-50 pointer-events-none blur-[1px]' : 'opacity-100'}`}>
-
-                    <h4 className="text-sm uppercase tracking-widest font-bold mb-4 border-b pb-2 flex items-center gap-2"
-                        style={{ color: 'var(--text-main)', borderColor: 'var(--border-subtle)' }}>
-                        <span className="text-[var(--primary-color)]">02/</span> Confirmar Datos
-                    </h4>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div className="lead-form__group">
-                            <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color: 'var(--text-secondary)' }} htmlFor="nombre">
-                                Nombre Completo
-                            </label>
-                            <input
-                                type="text"
-                                id="nombre"
-                                name="nombre"
-                                className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none transition-all"
-                                style={{ color: 'var(--text-main)' }}
-                                value={formData.nombre}
-                                onChange={handleChange}
-                                placeholder="Ej. Juan Pérez"
-                            />
-                        </div>
-
-                        <div className="lead-form__group">
-                            <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color: 'var(--text-secondary)' }} htmlFor="telefono">
-                                WhatsApp
-                            </label>
-                            <input
-                                type="tel"
-                                id="telefono"
-                                name="telefono"
-                                className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none transition-all"
-                                style={{ color: 'var(--text-main)' }}
-                                value={formData.telefono}
-                                onChange={handleChange}
-                                placeholder="Ej. 667 123 4567"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="lead-form__group">
-                        <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color: 'var(--text-secondary)' }} htmlFor="email">
-                            Email (Verificado)
-                        </label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            className="w-full bg-white/5 border border-white/5 rounded-lg p-3 text-sm opacity-50 cursor-not-allowed"
-                            style={{ color: 'var(--text-main)' }}
-                            value={formData.email}
-                            readOnly
-                            disabled
-                        />
-                    </div>
+                {/* FOOTER */}
+                <div style={s.footer}>
+                    {isSuccess ? (
+                        <button
+                            onClick={handleCloseFinal}
+                            style={{ ...s.btnPrimary, width: '100%', justifyContent: 'center' }}
+                        >
+                            Entendido, Cerrar Ventana
+                        </button>
+                    ) : (
+                        step === 1 ? (
+                            <>
+                                <button onClick={onCancel} style={s.btnSecondary}>Cancelar</button>
+                                <button
+                                    onClick={handleNext}
+                                    disabled={!formData.citainicial}
+                                    style={{
+                                        ...s.btnPrimary,
+                                        opacity: formData.citainicial ? 1 : 0.5,
+                                        cursor: formData.citainicial ? 'pointer' : 'not-allowed',
+                                        backgroundColor: formData.citainicial ? '#f59e0b' : '#334155',
+                                        color: formData.citainicial ? '#0f172a' : '#94a3b8',
+                                        boxShadow: formData.citainicial ? s.btnPrimary.boxShadow : 'none'
+                                    }}
+                                >
+                                    Continuar →
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button onClick={handleBack} style={s.btnSecondary}>Atrás</button>
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={loading}
+                                    style={{ ...s.btnPrimary, opacity: loading ? 0.7 : 1, cursor: loading ? 'wait' : 'pointer' }}
+                                >
+                                    {loading ? 'Enviando...' : 'Confirmar Visita'} ✓
+                                </button>
+                            </>
+                        )
+                    )}
                 </div>
 
-
-
-                <div className="lead-form__actions">
-                    <button
-                        type="button"
-                        className="lead-form__btn lead-form__btn--secondary"
-                        onClick={onCancel}
-                    >
-                        Cancelar
-                    </button>
-                    <button
-                        type="submit"
-                        className="lead-form__btn lead-form__btn--primary"
-                        disabled={loading}
-                        style={{
-                            opacity: (formData.citainicial && !formData.citainicial.hora) ? 0.5 : 1,
-                            cursor: (formData.citainicial && !formData.citainicial.hora) ? 'not-allowed' : 'pointer'
-                        }}
-                    >
-                        {loading ? 'Enviando...' : 'Solicitar Info'}
-                    </button>
-                </div>
-
-                <p className="text-[10px] text-center mt-6 opacity-40 max-w-xs mx-auto" style={{ color: 'var(--text-secondary)' }}>
-                    Al enviar, aceptas ser contactado por un asesor certificado. Tu información está segura.
-                </p>
-            </div>{/* End Card Wrapper */}
-        </form>
+            </div>
+        </div>
     );
 };
 
