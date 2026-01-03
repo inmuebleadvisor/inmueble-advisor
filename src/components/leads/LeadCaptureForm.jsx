@@ -7,6 +7,7 @@ import '../../styles/LeadCaptureForm.css'; // Now empty, kept for build safety
 
 const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
     const { user, userProfile, loginWithGoogle } = useUser();
+    const { leadAssignment } = useService(); // ✅ Inject Service
 
     // --- STATE ---
     const [step, setStep] = useState(1); // 1: Date, 2: Info
@@ -51,19 +52,39 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
         setError(null);
 
         try {
-            // Simulate API call for now (or connect real service if ready)
-            // await leadService.createLead({...}); 
-            // For this task, we assume success to validate UI flow first
+            // Prepare data for service
+            const datosCliente = {
+                nombre: formData.nombre,
+                telefono: formData.telefono,
+                email: formData.email
+            };
 
-            await new Promise(resolve => setTimeout(resolve, 1500)); // Fake network delay
+            // Generate Lead
+            const result = await leadAssignment.generarLeadAutomatico(
+                datosCliente,
+                desarrollo?.id, // Ensure these props exist
+                desarrollo?.nombre,
+                modelo?.nombre_modelo, // nullable
+                user?.uid,
+                desarrollo?.idDesarrollador, // nullable, service will lookup
+                modelo?.precio || 0,
+                {
+                    origen: 'web_cita_vip',
+                    citainicial: formData.citainicial
+                }
+            );
+
+            if (!result.success) {
+                throw new Error(result.error || "Error desconocido al generar el lead.");
+            }
 
             // Trigger Confetti
             confetti({
                 particleCount: 150,
                 spread: 70,
                 origin: { y: 0.7 },
-                zIndex: 10000, // Ensure it's above the modal (z-index 9999)
-                colors: ['#f59e0b', '#ffffff'] // Gold & White
+                zIndex: 10000,
+                colors: ['#f59e0b', '#ffffff']
             });
 
             // Show Success View instead of closing
