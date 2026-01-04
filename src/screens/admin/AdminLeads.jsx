@@ -23,12 +23,65 @@ const AdminLeads = () => {
         const desarrollo = desarrollos.find(d => String(d.id) === String(lead.desarrolloId));
         const devContact = desarrollo?.developerContact || {};
 
-        const mensaje = `Hola! Te comparto un nuevo LEAD para *${lead.nombreDesarrollo}*:%0A%0A` +
-            `👤 *Cliente:* ${lead.clienteDatos?.nombre}%0A` +
-            `📞 *Tel:* ${lead.clienteDatos?.telefono}%0A` +
-            `✉️ *Email:* ${lead.clienteDatos?.email}%0A` +
-            `🏠 *Interés:* ${lead.modeloInteres}%0A%0A` +
-            `Por favor, indícame a qué asesor se le asigna para dar seguimiento.`;
+        // 1. Get Client Profile Data
+        // Try to find by uid or clientUid
+        const clientUser = data.users.find(u => u.uid === lead.uid || u.uid === lead.clienteUid);
+        const perfil = clientUser?.perfilFinanciero || {};
+
+        // 2. Get Lead History (Other leads for same person)
+        const otherLeads = leads.filter(l =>
+            (l.uid === lead.uid || l.clienteUid === lead.clienteUid) &&
+            l.id !== lead.id
+        );
+
+        // Format Currency Helper
+        const fmtMoney = (amount) => {
+            if (!amount) return 'N/A';
+            return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(amount);
+        };
+
+        // Format Date Helper
+        const fmtDate = (timestamp) => {
+            if (!timestamp) return 'Por confirmar';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+        };
+
+        // --- CONSTRUCT MESSAGE ---
+        let mensaje = `Hola! Te comparto un nuevo LEAD para *${lead.nombreDesarrollo}*:%0A%0A`;
+
+        // A. Cita
+        if (lead.citainicial) {
+            mensaje += ` *Cita Agendada:*%0A` +
+                `${fmtDate(lead.citainicial.dia)} a las ${lead.citainicial.hora}%0A%0A`;
+        }
+
+        // B. Cliente
+        mensaje += ` *Cliente:* ${lead.clienteDatos?.nombre}%0A` +
+            ` *Tel:* ${lead.clienteDatos?.telefono}%0A` +
+            ` *Email:* ${lead.clienteDatos?.email}%0A%0A`;
+
+        // C. Interés
+        mensaje += ` *Modelo de Interés:* ${lead.modeloInteres || 'No especificado'}%0A`;
+
+        // D. Perfil Financiero (Si existe)
+        if (clientUser && perfil) {
+            mensaje += `%0A *Perfil Financiero:*%0A` +
+                `- Efvo. Inicial: ${fmtMoney(perfil.capitalInicial)}%0A` +
+                `- Capacidad Mensual: ${fmtMoney(perfil.mensualidadMaxima)}%0A` +
+                `- Habs. Deseadas: ${perfil.recamarasDeseadas || 'N/A'}%0A` +
+                `- Interés: ${perfil.interesInmediato === true ? 'Entrega Inmediata' : perfil.interesInmediato === false ? 'Preventa' : 'Indistinto'}%0A`;
+        }
+
+        // E. Historial (Cross-selling info)
+        if (otherLeads.length > 0) {
+            mensaje += `%0A *Historial de Interés:*%0A`;
+            otherLeads.slice(0, 3).forEach(l => { // Limit to 3 items
+                mensaje += `- ${l.nombreDesarrollo} (${l.status})%0A`;
+            });
+        }
+
+        mensaje += `%0A Por favor, indícame a qué asesor asignar.`;
 
         // Open WA
         const url = devContact.phone
