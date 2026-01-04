@@ -1,2 +1,177 @@
-/* Purged for VIP Modal Rebuild - Clean Slate */
-/* All styling is now handled via Tailwind utility classes and inline CSS variables in the component */
+/* Lead Capture Form - BEM Styles */
+
+.lead-capture-form__overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(9, 9, 11, 0.9); /* Very dark overlay */
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.lead-capture-form__card {
+    width: 100%;
+    max-width: 650px;
+    background-color: #0f172a; /* Slate 900 */
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    position: relative;
+    color: #f8fafc;
+}
+
+.lead-capture-form__header {
+    padding: 32px 32px 24px;
+    position: relative;
+}
+
+.lead-capture-form__close-btn {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 8px;
+    z-index: 10;
+}
+
+.lead-capture-form__user-strip {
+    background-color: #1e293b; /* Slate 800 */
+    padding: 12px 32px;
+    border-left: 4px solid #f59e0b; /* Amber 500 */
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.lead-capture-form__progress-bar {
+    height: 6px;
+    width: 100%;
+    background-color: #334155;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.lead-capture-form__progress-fill {
+    height: 100%;
+    background-color: #f59e0b;
+    transition: width 0.4s ease;
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+
+.lead-capture-form__content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px;
+    background-color: #0f172a;
+}
+
+.lead-capture-form__footer {
+    padding: 24px 32px;
+    background-color: #0f172a;
+    border-top: 1px solid #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.lead-capture-form__btn-primary {
+    background-color: #f59e0b;
+    color: #0f172a;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+    transition: all 0.2s;
+}
+
+.lead-capture-form__btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+
+.lead-capture-form__btn-primary:active {
+    transform: translateY(1px);
+}
+
+.lead-capture-form__btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #334155;
+    color: #94a3b8;
+    box-shadow: none;
+}
+
+.lead-capture-form__btn-secondary {
+    background-color: transparent;
+    color: #94a3b8;
+    border: none;
+    padding: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.lead-capture-form__btn-secondary:hover {
+    color: #f8fafc;
+}
+
+.lead-capture-form__input-group {
+    background-color: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+}
+
+.lead-capture-form__input-group:focus-within {
+    border-color: #f59e0b;
+}
+
+.lead-capture-form__input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: white;
+    font-size: 16px;
+    width: 100%;
+}
+
+.lead-capture-form__input::placeholder {
+    color: #64748b;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}

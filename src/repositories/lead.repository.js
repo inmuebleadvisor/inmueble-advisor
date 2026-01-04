@@ -46,7 +46,6 @@ export class LeadRepository {
             idModelo,
             idDesarrollo,
             idDesarrollador,
-            // Removed redundant top-level fields (email, nombre, telefono) in favor of clienteDatos
             precioReferencia: Number(precioReferencia) || 0,
             comisionPorcentaje: Number(comisionPorcentaje) || 0,
             status: "PENDIENTE",

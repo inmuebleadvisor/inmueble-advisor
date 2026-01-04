@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useService } from '../../hooks/useService';
-import AppointmentScheduler from '../common/AppointmentScheduler'; // Will reintegrate in next step
+import AppointmentScheduler from '../common/AppointmentScheduler';
 import { useUser } from '../../context/UserContext';
 import confetti from 'canvas-confetti';
-import '../../styles/LeadCaptureForm.css'; // Now empty, kept for build safety
+import '../../styles/LeadCaptureForm.css';
 
 const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
     const { user, userProfile, loginWithGoogle } = useUser();
-    const { leadAssignment } = useService(); // ✅ Inject Service
+    const { leadAssignment } = useService();
 
     // --- STATE ---
     const [step, setStep] = useState(1); // 1: Date, 2: Info
@@ -30,7 +30,6 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
     // Determine context for display
     const contextName = modelo?.nombre_modelo || desarrollo?.nombre || "Propiedad Exclusiva";
 
-    // --- EFFECT: Load User Data ---
     // --- EFFECT: Load User Data & Check Appointments ---
     useEffect(() => {
         if (user) {
@@ -106,7 +105,7 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                         origen: 'web_cita_vip',
                         urlOrigen: window.location.href,
                         citainicial: formData.citainicial,
-                        idModelo: modelo?.id || null, // ✅ Pass ID for top-level field
+                        idModelo: modelo?.id || null,
                         snapshot: {
                             idModelo: modelo?.id || null,
                             modeloNombre: modelo?.nombreModelo || modelo?.nombre_modelo || "N/A",
@@ -150,7 +149,6 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
 
     // Gated Content Check
     if (!user) {
-        // Return a simple dark themed gated view directly
         return (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4"
                 style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', backdropFilter: 'blur(8px)' }}>
@@ -170,109 +168,20 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
         );
     }
 
-    // --- INLINE STYLES FOR NO-TAILWIND ENVIRONMENT ---
-    const s = {
-        overlay: {
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(9, 9, 11, 0.9)', // Very dark overlay
-            backdropFilter: 'blur(8px)',
-            zIndex: 9999,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '16px',
-            animation: 'fadeIn 0.3s ease-out'
-        },
-        card: {
-            width: '100%', maxWidth: '650px',
-            backgroundColor: '#0f172a', // Slate 900
-            borderRadius: '24px',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.1)',
-            overflow: 'hidden',
-            display: 'flex', flexDirection: 'column',
-            maxHeight: '90vh',
-            position: 'relative',
-            color: '#f8fafc'
-        },
-        header: {
-            padding: '32px 32px 24px',
-            position: 'relative'
-        },
-        closeBtn: {
-            position: 'absolute', top: '24px', right: '24px',
-            background: 'none', border: 'none', color: '#64748b',
-            cursor: 'pointer', padding: '8px', zIndex: 10
-        },
-        userStrip: {
-            backgroundColor: '#1e293b', // Slate 800
-            padding: '12px 32px',
-            borderLeft: '4px solid #f59e0b', // Amber 500
-            display: 'flex', alignItems: 'center', gap: '12px'
-        },
-        progressBar: {
-            height: '6px', width: '100%',
-            backgroundColor: '#334155',
-            borderRadius: '3px',
-            overflow: 'hidden',
-            marginTop: '8px'
-        },
-        progressFill: {
-            height: '100%',
-            backgroundColor: '#f59e0b',
-            transition: 'width 0.4s ease',
-            boxShadow: '0 0 10px rgba(245, 158, 11, 0.5)'
-        },
-        content: {
-            flex: 1,
-            overflowY: 'auto',
-            padding: '32px',
-            backgroundColor: '#0f172a'
-        },
-        footer: {
-            padding: '24px 32px',
-            backgroundColor: '#0f172a',
-            borderTop: '1px solid #1e293b',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between'
-        },
-        btnPrimary: {
-            backgroundColor: '#f59e0b', color: '#0f172a',
-            border: 'none', padding: '12px 24px', borderRadius: '12px',
-            fontWeight: '700', fontSize: '15px', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: '8px',
-            boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)',
-            transition: 'all 0.2s'
-        },
-        btnSecondary: {
-            backgroundColor: 'transparent', color: '#94a3b8',
-            border: 'none', padding: '12px',
-            fontWeight: '600', fontSize: '14px', cursor: 'pointer'
-        },
-        inputGroup: {
-            backgroundColor: '#1e293b',
-            border: '1px solid #334155',
-            borderRadius: '12px',
-            padding: '12px 16px',
-            display: 'flex', alignItems: 'center', gap: '12px',
-            marginBottom: '16px'
-        },
-        input: {
-            background: 'transparent', border: 'none', outline: 'none',
-            color: 'white', fontSize: '16px', width: '100%'
-        }
-    };
-
     return (
-        <div style={s.overlay}>
-            <div style={s.card}>
+        <div className="lead-capture-form__overlay">
+            <div className="lead-capture-form__card">
 
-                {/* CLOSE BUTTON (Only show if not success, force user to use main CTA on success) */}
+                {/* CLOSE BUTTON */}
                 {!isSuccess && (
-                    <button onClick={onCancel} style={s.closeBtn}>
+                    <button onClick={onCancel} className="lead-capture-form__close-btn">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
                     </button>
                 )}
 
-                {/* HEADER - Hide on Success for clean look */}
+                {/* HEADER */}
                 {!isSuccess && (
-                    <div style={s.header}>
+                    <div className="lead-capture-form__header">
                         <h2 style={{ margin: 0, fontSize: '28px', fontWeight: 800, letterSpacing: '-0.5px' }}>Agenda tu Visita VIP</h2>
                         <p style={{ margin: '4px 0 0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '2px', color: '#64748b', fontWeight: 700 }}>
                             Proyecto {contextName}
@@ -280,9 +189,9 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                     </div>
                 )}
 
-                {/* USER STRIP - Hide on Success */}
+                {/* USER STRIP */}
                 {!isSuccess && (
-                    <div style={s.userStrip}>
+                    <div className="lead-capture-form__user-strip">
                         <span style={{ fontSize: '20px' }}>👤</span>
                         <p style={{ margin: 0, fontSize: '14px', color: '#cbd5e1', fontWeight: 500 }}>
                             Solicitando como: <span style={{ color: '#f59e0b', fontWeight: 700 }}>{formData.nombre || 'Invitado'}</span>
@@ -290,7 +199,7 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                     </div>
                 )}
 
-                {/* PROGRESS - Hide on Success */}
+                {/* PROGRESS */}
                 {!isSuccess && (
                     <div style={{ padding: '0 32px', marginTop: '24px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '11px', fontWeight: 700, color: '#64748b', letterSpacing: '1px', textTransform: 'uppercase' }}>
@@ -299,14 +208,14 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                             </span>
                             <span>{step}/2</span>
                         </div>
-                        <div style={s.progressBar}>
-                            <div style={{ ...s.progressFill, width: step === 1 ? '50%' : '100%' }} />
+                        <div className="lead-capture-form__progress-bar">
+                            <div className="lead-capture-form__progress-fill" style={{ width: step === 1 ? '50%' : '100%' }} />
                         </div>
                     </div>
                 )}
 
                 {/* CONTENT AREA */}
-                <div style={s.content}>
+                <div className="lead-capture-form__content">
 
                     {/* DUPLICATE WARNING VIEW */}
                     {!isSuccess && !isRescheduling && existingAppointment && (
@@ -316,7 +225,7 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                             </div>
                             <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'white', marginBottom: '8px' }}>Ya tienes una cita agendada</h3>
                             <p style={{ color: '#94a3b8', fontSize: '14px', maxWidth: '90%', margin: '0 auto 24px', lineHeight: '1.5' }}>
-                                Vemos que ya tienes una visita programada para <strong>{contextName}</strong>.
+                                Vemos que ya tienes una visita programada para <strong>{desarrollo?.nombre || 'este desarrollo'}</strong>.
                                 <br />No es necesario crear una nueva solicitud.
                             </p>
 
@@ -340,7 +249,8 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
                                 <button
                                     onClick={onCancel}
-                                    style={{ ...s.btnSecondary, backgroundColor: '#1e293b', borderRadius: '12px', padding: '12px 24px', color: 'white' }}
+                                    className="lead-capture-form__btn-secondary"
+                                    style={{ backgroundColor: '#1e293b', borderRadius: '12px', padding: '12px 24px', color: 'white' }}
                                 >
                                     Entendido, mantener cita
                                 </button>
@@ -349,7 +259,8 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                                         setIsRescheduling(true);
                                         setStep(1); // Go to Scheduler
                                     }}
-                                    style={{ ...s.btnPrimary, boxShadow: 'none' }}
+                                    className="lead-capture-form__btn-primary"
+                                    style={{ boxShadow: 'none' }}
                                 >
                                     Cambiar Día/Hora
                                 </button>
@@ -367,7 +278,7 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                                 {isRescheduling ? '¡Cita Actualizada!' : '¡Cita Confirmada!'}
                             </h2>
                             <p style={{ color: '#94a3b8', fontSize: '16px', maxWidth: '80%', margin: '0 auto 32px', lineHeight: '1.6' }}>
-                                Tu visita a <strong>{contextName}</strong> ha sido {isRescheduling ? 'reprogramada' : 'agendada'} con éxito.
+                                Tu visita a <strong>{desarrollo?.nombre || 'este desarrollo'}</strong> ha sido {isRescheduling ? 'reprogramada' : 'agendada'} con éxito.
                             </p>
 
                             {/* Reservation Ticket */}
@@ -429,14 +340,14 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                                 {/* NAME */}
                                 <div>
                                     <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>Nombre Completo</label>
-                                    <div style={s.inputGroup}>
+                                    <div className="lead-capture-form__input-group">
                                         <span style={{ color: '#64748b' }}>💼</span>
                                         <input
                                             type="text"
                                             name="nombre"
                                             value={formData.nombre}
                                             onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                                            style={s.input}
+                                            className="lead-capture-form__input"
                                             placeholder="Tu nombre completo"
                                         />
                                     </div>
@@ -445,14 +356,14 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                                 {/* PHONE */}
                                 <div>
                                     <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>WhatsApp</label>
-                                    <div style={s.inputGroup}>
+                                    <div className="lead-capture-form__input-group">
                                         <span style={{ color: '#64748b' }}>💬</span>
                                         <input
                                             type="tel"
                                             name="telefono"
                                             value={formData.telefono}
                                             onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                                            style={s.input}
+                                            className="lead-capture-form__input"
                                             placeholder="Tu número de celular"
                                         />
                                     </div>
@@ -461,13 +372,14 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                                 {/* EMAIL */}
                                 <div>
                                     <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>Email (Verificado)</label>
-                                    <div style={{ ...s.inputGroup, backgroundColor: '#1e293b', border: '1px solid #334155', opacity: 0.7, cursor: 'not-allowed' }}>
+                                    <div className="lead-capture-form__input-group" style={{ opacity: 0.7, cursor: 'not-allowed' }}>
                                         <span style={{ color: '#64748b' }}>✉️</span>
                                         <input
                                             type="email"
                                             value={formData.email}
                                             readOnly
-                                            style={{ ...s.input, color: '#94a3b8', cursor: 'not-allowed' }}
+                                            className="lead-capture-form__input"
+                                            style={{ color: '#94a3b8', cursor: 'not-allowed' }}
                                         />
                                     </div>
                                 </div>
@@ -480,28 +392,29 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                 </div>
 
                 {/* FOOTER */}
-                <div style={s.footer}>
+                <div className="lead-capture-form__footer">
                     {isSuccess ? (
                         <button
                             onClick={handleCloseFinal}
-                            style={{ ...s.btnPrimary, width: '100%', justifyContent: 'center' }}
+                            className="lead-capture-form__btn-primary"
+                            style={{ width: '100%', justifyContent: 'center' }}
                         >
                             Entendido, Cerrar Ventana
                         </button>
                     ) : (
                         step === 1 ? (
                             <>
-                                <button onClick={onCancel} style={s.btnSecondary}>Cancelar</button>
+                                <button onClick={onCancel} className="lead-capture-form__btn-secondary">Cancelar</button>
                                 <button
                                     onClick={handleNext}
                                     disabled={!formData.citainicial}
+                                    className="lead-capture-form__btn-primary"
                                     style={{
-                                        ...s.btnPrimary,
                                         opacity: formData.citainicial ? 1 : 0.5,
                                         cursor: formData.citainicial ? 'pointer' : 'not-allowed',
                                         backgroundColor: formData.citainicial ? '#f59e0b' : '#334155',
                                         color: formData.citainicial ? '#0f172a' : '#94a3b8',
-                                        boxShadow: formData.citainicial ? s.btnPrimary.boxShadow : 'none'
+                                        boxShadow: formData.citainicial ? undefined : 'none'
                                     }}
                                 >
                                     Continuar →
@@ -509,11 +422,12 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                             </>
                         ) : (
                             <>
-                                <button onClick={handleBack} style={s.btnSecondary}>Atrás</button>
+                                <button onClick={handleBack} className="lead-capture-form__btn-secondary">Atrás</button>
                                 <button
                                     onClick={handleSubmit}
                                     disabled={loading}
-                                    style={{ ...s.btnPrimary, opacity: loading ? 0.7 : 1, cursor: loading ? 'wait' : 'pointer' }}
+                                    className="lead-capture-form__btn-primary"
+                                    style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'wait' : 'pointer' }}
                                 >
                                     {loading ? 'Procesando...' : (isRescheduling ? 'Confirmar Cambio' : 'Confirmar Visita')} ✓
                                 </button>

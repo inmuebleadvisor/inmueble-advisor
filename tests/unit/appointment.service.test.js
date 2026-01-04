@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getAvailableSlots, getMaxScheduleDate } from './appointment.service';
+import { getAvailableSlots, getMaxScheduleDate } from '../../src/services/appointment.service';
 import { addHours, subHours, setHours, addDays, startOfDay } from 'date-fns';
 
 describe('Appointment Service - getAvailableSlots', () => {
