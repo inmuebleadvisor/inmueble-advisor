@@ -56,18 +56,18 @@ export const STATUS = {
 export const STATUS_LABELS = {
   [STATUS.DEV_IMMEDIATE]: 'Entrega Inmediata',
   [STATUS.DEV_PREALE]: 'Pre-Venta',
-  [STATUS.LEAD_NEW]: 'Nuevo',
+  [STATUS.LEAD_NEW]: 'Nuevo Lead',
   [STATUS.LEAD_CONTACTED]: 'Contactado',
-  [STATUS.LEAD_VISIT_SCHEDULED]: 'Visita Agendada',
-  [STATUS.LEAD_VISIT_CONFIRMED]: 'Visita Confirmada',
-  [STATUS.LEAD_VISITED]: 'Ya Visitó',
+  [STATUS.LEAD_VISIT_SCHEDULED]: 'Cita Agendada',
+  [STATUS.LEAD_VISIT_CONFIRMED]: 'Cita Confirmada',
+  [STATUS.LEAD_VISITED]: 'Visita Realizada',
   [STATUS.LEAD_RESERVED]: 'Apartado',
   [STATUS.LEAD_WON]: 'Vendido',
   [STATUS.LEAD_LOST]: 'Perdido',
   [STATUS.LEAD_CLOSED]: 'Escriturado',
-  [STATUS.LEAD_PENDING_ADMIN]: 'Pendiente Admin',
-  [STATUS.LEAD_PENDING_ASSIGNMENT]: 'Asignando (Bot)',
-  [STATUS.LEAD_PENDING_DEVELOPER_CONTACT]: 'Por Reportar al Dev',
-  [STATUS.LEAD_REPORTED]: 'Reportado al Dev',
-  [STATUS.LEAD_ASSIGNED_EXTERNAL]: 'Asignado a Externo'
+  [STATUS.LEAD_PENDING_ADMIN]: 'Pendiente Revisión',
+  [STATUS.LEAD_PENDING_ASSIGNMENT]: 'Procesando Asignación',
+  [STATUS.LEAD_PENDING_DEVELOPER_CONTACT]: 'Solicitud de Información',
+  [STATUS.LEAD_REPORTED]: 'Información Enviada',
+  [STATUS.LEAD_ASSIGNED_EXTERNAL]: 'En Seguimiento'
 };

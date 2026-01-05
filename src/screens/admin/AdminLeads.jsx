@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAdminData } from '../../hooks/useAdminData';
 import DataTable from '../../components/admin/DataTable';
-import { STATUS } from '../../config/constants';
+import { STATUS, STATUS_LABELS } from '../../config/constants';
 import { useService } from '../../hooks/useService';
 
 const AdminLeads = () => {
@@ -77,7 +77,8 @@ const AdminLeads = () => {
         if (otherLeads.length > 0) {
             mensaje += `%0A *Historial de Interés:*%0A`;
             otherLeads.slice(0, 3).forEach(l => { // Limit to 3 items
-                mensaje += `- ${l.nombreDesarrollo} (${l.status})%0A`;
+                const statusText = STATUS_LABELS[l.status] || l.status;
+                mensaje += `- ${l.nombreDesarrollo} (${statusText})%0A`;
             });
         }
 
@@ -180,7 +181,7 @@ const AdminLeads = () => {
                         fontSize: '0.75rem',
                         fontWeight: 'bold'
                     }}>
-                        {s}
+                        {STATUS_LABELS[s] || s}
                     </span>
                 );
             }
@@ -188,11 +189,13 @@ const AdminLeads = () => {
         {
             header: 'Acciones', render: row => (
                 <div style={{ display: 'flex', gap: '5px' }}>
-                    {row.status === 'PENDING_DEVELOPER_CONTACT' && (
-                        <button onClick={() => handleReport(row)} style={styles.actionBtnReport}>Reportar</button>
+                    {(row.status === 'PENDING_DEVELOPER_CONTACT' || row.status === 'REPORTED') && (
+                        <button onClick={() => handleReport(row)} className="action-btn action-btn--report">
+                            Reportar
+                        </button>
                     )}
-                    {(row.status === 'REPORTED' || row.status === 'ASSIGNED_EXTERNAL') && (
-                        <button onClick={() => openAssignModal(row)} style={styles.actionBtnAssign}>
+                    {(row.status === 'PENDING_DEVELOPER_CONTACT' || row.status === 'REPORTED' || row.status === 'ASSIGNED_EXTERNAL') && (
+                        <button onClick={() => openAssignModal(row)} className="action-btn action-btn--assign">
                             {row.status === 'ASSIGNED_EXTERNAL' ? 'Reasignar' : 'Asignar'}
                         </button>
                     )}
@@ -219,33 +222,33 @@ const AdminLeads = () => {
 
             {/* ASSIGNMENT MODAL */}
             {isModalOpen && (
-                <div style={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
-                    <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
-                        <div style={styles.modalHeader}>
-                            <h3>Asignar Lead: {selectedLead?.nombreDesarrollo}</h3>
-                            <button onClick={() => setIsModalOpen(false)} style={styles.closeBtn}>X</button>
+                <div className="admin-modal-overlay" onClick={() => setIsModalOpen(false)}>
+                    <div className="admin-modal" onClick={e => e.stopPropagation()}>
+                        <div className="admin-modal__header">
+                            <h3 className="admin-modal__title">Asignar Lead: {selectedLead?.nombreDesarrollo}</h3>
+                            <button onClick={() => setIsModalOpen(false)} className="admin-modal__close">×</button>
                         </div>
 
-                        <div style={styles.modalBody}>
+                        <div className="admin-modal__body">
                             {viewMode === 'LIST' ? (
                                 <>
-                                    <div style={{ marginBottom: '15px' }}>
+                                    <div className="admin-modal__text">
                                         <p>Selecciona un asesor existente o registra uno nuevo.</p>
                                     </div>
 
                                     {loadingAdvisors ? (
-                                        <div>Cargando asesores...</div>
+                                        <div className="loading-container" style={{ height: '100px' }}>Cargando asesores...</div>
                                     ) : (
-                                        <div style={styles.advisorsList}>
+                                        <div className="advisor-list">
                                             {advisors.length > 0 ? (
                                                 advisors.map(adv => (
-                                                    <div key={adv.id} style={styles.advisorItem} onClick={() => handleAssignExisting(adv)}>
-                                                        <div style={{ fontWeight: 'bold' }}>{adv.nombre}</div>
-                                                        <div style={{ fontSize: '0.85rem', color: '#64748b' }}>{adv.puesto} • {adv.whatsapp}</div>
+                                                    <div key={adv.id} className="advisor-item" onClick={() => handleAssignExisting(adv)}>
+                                                        <div className="advisor-item__name">{adv.nombre}</div>
+                                                        <div className="advisor-item__detail">{adv.puesto} • {adv.whatsapp}</div>
                                                     </div>
                                                 ))
                                             ) : (
-                                                <div style={{ padding: '20px', textAlign: 'center', color: '#64748b', background: '#f8fafc', borderRadius: '8px' }}>
+                                                <div className="advisor-list--empty">
                                                     No hay asesores registrados para este desarrollador aún.
                                                 </div>
                                             )}
@@ -254,18 +257,18 @@ const AdminLeads = () => {
 
                                     <button
                                         onClick={() => setViewMode('REGISTER')}
-                                        style={styles.registerBtn}
+                                        className="btn-accent btn-full"
                                     >
                                         + Registrar Nuevo Asesor
                                     </button>
                                 </>
                             ) : (
                                 <form onSubmit={handleRegisterAndAssign} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                    <h4>Nuevo Asesor para {selectedLead?.nombreDesarrollo}</h4>
+                                    <h4 className="admin-modal__title" style={{ fontSize: '1rem' }}>Nuevo Asesor para {selectedLead?.nombreDesarrollo}</h4>
                                     <input
                                         placeholder="Nombre Completo"
                                         required
-                                        style={styles.input}
+                                        className="admin-input"
                                         value={newAdvisorForm.nombre}
                                         onChange={e => setNewAdvisorForm({ ...newAdvisorForm, nombre: e.target.value })}
                                     />
@@ -273,23 +276,23 @@ const AdminLeads = () => {
                                         placeholder="WhatsApp (Solo números)"
                                         required
                                         pattern="\d+"
-                                        style={styles.input}
+                                        className="admin-input"
                                         value={newAdvisorForm.whatsapp}
                                         onChange={e => setNewAdvisorForm({ ...newAdvisorForm, whatsapp: e.target.value })}
                                     />
                                     <input
                                         placeholder="Email (Opcional)"
                                         type="email"
-                                        style={styles.input}
+                                        className="admin-input"
                                         value={newAdvisorForm.email}
                                         onChange={e => setNewAdvisorForm({ ...newAdvisorForm, email: e.target.value })}
                                     />
 
-                                    <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                                        <button type="button" onClick={() => setViewMode('LIST')} style={styles.cancelBtn}>
+                                    <div className="btn-group">
+                                        <button type="button" onClick={() => setViewMode('LIST')} className="btn-secondary" style={{ flex: 1 }}>
                                             Volver a Lista
                                         </button>
-                                        <button type="submit" disabled={submitting} style={styles.submitBtn}>
+                                        <button type="submit" disabled={submitting} className="btn-primary" style={{ flex: 1 }}>
                                             {submitting ? 'Guardando...' : 'Guardar y Asignar'}
                                         </button>
                                     </div>
@@ -301,45 +304,6 @@ const AdminLeads = () => {
             )}
         </div>
     );
-};
-
-const styles = {
-    actionBtnReport: { background: '#be123c', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' },
-    actionBtnAssign: { background: '#f97316', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' },
-
-    // Modal Styles (Inline for speed, ideally moved to CSS or Modal Component)
-    modalOverlay: {
-        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
-    },
-    modalContent: {
-        backgroundColor: 'white', padding: '20px', borderRadius: '8px', width: '90%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto'
-    },
-    modalHeader: {
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', borderBottom: '1px solid #e2e8f0', paddingBottom: '10px'
-    },
-    closeBtn: {
-        background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer'
-    },
-    advisorsList: {
-        display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px', maxHeight: '300px', overflowY: 'auto'
-    },
-    advisorItem: {
-        padding: '10px', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s',
-        ':hover': { backgroundColor: '#f1f5f9' } // Note: Inline styles don't support pseudo-classes generally without libs, but this is a rough indication.
-    },
-    registerBtn: {
-        width: '100%', padding: '12px', background: '#eab308', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer'
-    },
-    input: {
-        padding: '10px', borderRadius: '4px', border: '1px solid #cbd5e1'
-    },
-    submitBtn: {
-        flex: 1, padding: '10px', background: '#22c55e', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold'
-    },
-    cancelBtn: {
-        flex: 1, padding: '10px', background: '#94a3b8', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer'
-    }
 };
 
 export default AdminLeads;
