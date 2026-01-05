@@ -1,4 +1,6 @@
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../firebase/config';
 
 export class AuthService {
     /**
@@ -67,17 +69,36 @@ export class AuthService {
 
     /**
      * Convert current user to Advisor.
+     * Uses Cloud Function 'promoteToAdvisor' for security.
      */
     async convertToAdvisor(uid, currentRole, extraData) {
-        const newRole = currentRole === 'admin' ? 'admin' : 'asesor';
+        try {
+            const promoteToAdvisorFn = httpsCallable(functions, 'promoteToAdvisor');
 
-        await this.userRepository.updateUser(uid, {
-            role: newRole,
-            onboardingCompleto: true,
-            fechaRegistroAsesor: new Date().toISOString(),
-            ...extraData
-        });
+            // Call the Cloud Function. 
+            // Note: uid is not passed as it is retrieved from context.auth in the backend.
+            // We pass extraData if we decide to handle it later, though currently backend ignores it.
+            await promoteToAdvisorFn({ ...extraData });
 
-        return this.userRepository.getUserById(uid);
+            // Return updated profile
+            return this.userRepository.getUserById(uid);
+        } catch (error) {
+            console.error("Error calling promoteToAdvisor:", error);
+
+            // Mapping specific Firebase Functions errors to user-friendly messages
+            // https://firebase.google.com/docs/auth/admin/errors
+            if (error.code === 'functions/unauthenticated') {
+                throw new Error("Sesión expirada. Por favor, recarga e intenta nuevamente.");
+            }
+            if (error.code === 'functions/permission-denied') {
+                throw new Error("No tienes permisos para realizar esta acción.");
+            }
+            if (error.code === 'functions/internal') {
+                throw new Error("Ocurrió un error interno en el servidor. Intenta más tarde.");
+            }
+
+            // Fallback for other errors
+            throw new Error(error.message || "No se pudo actualizar el rol a Asesor.");
+        }
     }
 }

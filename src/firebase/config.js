@@ -5,6 +5,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth'; // Para el login
 import { getFirestore } from 'firebase/firestore';           // Para la base de datos
 import { getStorage } from 'firebase/storage';               // Para las fotos
+import { getFunctions } from 'firebase/functions';           // Para Cloud Functions
 import { getAnalytics, isSupported } from 'firebase/analytics'; // Opcional
 
 // 2. Leemos las "Llaves Secretas" del archivo .env.local
@@ -27,6 +28,7 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+export const functions = getFunctions(app);
 
 // Configuración opcional de Analytics (solo si el navegador lo soporta)
 export let analytics = null;
