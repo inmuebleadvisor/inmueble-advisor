@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { IMAGES } from '../../config/constants';
 import Carousel from './Carousel';
-import CaracteristicasBox from '../CaracteristicasBox';
+import CaracteristicasBox from '../common/CaracteristicasBox';
 import AmenidadesList from './AmenidadesList';
 import FinanciamientoWidget from './FinanciamientoWidget';
 import DevelopmentInfoSection from './DevelopmentInfoSection';

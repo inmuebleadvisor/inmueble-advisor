@@ -1,8 +1,8 @@
 // src/components/LeadCard.jsx
 import React from 'react';
 // ✅ Importamos las constantes para usar los códigos universales
-import { STATUS } from '../config/constants';
-import { useService } from '../hooks/useService'; // Import Hook
+import { STATUS } from '../../config/constants';
+import { useService } from '../../hooks/useService'; // Import Hook
 import './LeadCard.css';
 
 // --- DICCIONARIO DE ESTADOS (Usando las claves de STATUS) ---

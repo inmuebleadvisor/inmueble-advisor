@@ -15,8 +15,8 @@ import { FavoritesProvider } from './context/FavoritesContext';
 import { UI_OPCIONES } from './config/constants';
 
 // --- SEGURIDAD Y LAYOUT ---
-import ProtectedRoute from './components/ProtectedRoute';
-import Layout from './components/Layout';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import Layout from './layouts/MainLayout';
 
 // --- PANTALLAS (SCREENS) ---
 import Perfil from './screens/cliente/Perfil';
