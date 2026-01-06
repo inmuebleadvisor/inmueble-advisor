@@ -28,7 +28,8 @@ graph TD
 
 ---
 
-## 📚 Catálogo de Endpoints
+## 📚 Catálogo de Endpoints (Sincronizado)
+*Última verificación: Enero 2026 - Coincide textualmente con `src/interface`*
 
 ### 1. `promoteToAdvisor` (Callable)
 Eleva el rol del usuario actual a "Asesor", otorgando permisos de acceso al CRM.
@@ -113,4 +114,8 @@ firebase deploy --only functions
 4.  **Backend Vivo:** En la pestaña "Logs" de la consola, busca "Function execution started" tras probar desde el frontend.
 
 ---
+---
+### 💡 Nota Didáctica: Por qué Hexagonal?
+El uso de la **Arquitectura Hexagonal** en nuestras Cloud Functions permite que la lógica de negocio (el "Cerebro") sea independiente de las herramientas (el "Músculo"). Si en el futuro decidimos cambiar Firestore por otra base de datos, o Firebase Functions por otra plataforma de servidor, los archivos en `src/core/` no deberían cambiar en absoluto. Esto garantiza una aplicación robusta, fácil de testear (Unit Tests) y preparada para el futuro.
+
 **Arquitectura diseñada por Antigravity - Enero 2026**

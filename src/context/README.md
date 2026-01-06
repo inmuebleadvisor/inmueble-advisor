@@ -1,15 +1,26 @@
-# Global State (Context)
+# Global State (Contextos) 🌐
 
-This directory manages application-wide state using React Context API.
+Este directorio gestiona el estado global de la aplicación utilizando la API de Context de React.
 
-## When to use Context?
-Use Context for data that is considered "global" or needed by many components at different nesting levels, for example:
-*   User Authentication (`UserContext`)
-*   Theme/UI Preferences (`ThemeContext`)
-*   Shopping Cart / Favorites (`FavoritesContext`)
-*   Cached Data (`CatalogContext`)
+## ¿Cuándo usar Context?
+Usa Context solo para datos que sean verdaderamente "globales" o necesarios en muchos niveles de profundidad del árbol de componentes.
+-   **`AuthContext`**: Sesión del usuario actual.
+-   **`ThemeContext`**: Tema claro/oscuro.
+-   **`FavoritesContext`** (Opcional): Lista global de IDs favoritos para acceso rápido en la UI.
 
-## Best Practices
-1.  **Provider Pattern:** Export a `Provider` component that wraps the part of the app needing the state.
-2.  **Custom Hook Consumer:** Always export a custom hook (e.g., `useTheme`) to consume the context, rather than exporting the Context object directly. This allows validation and easier refactoring.
-3.  **Avoid Overuse:** Do not put ephemeral local state in Context to avoid unnecessary re-renders.
+## Mejores Prácticas
+
+1.  **Patrón Provider:** Exportar un componente `Provider` que envuelva la parte de la app que necesita el estado.
+2.  **Custom Hook Consumer:** Siempre exportar un hook personalizado (ej. `useAuth`) para consumir el contexto. NUNCA exportes el objeto `Context` crudo.
+    *   *Por qué?* Esto permite validar que el hook se use dentro del Provider correcto y facilita el refactoring.
+3.  **Evitar el "Context Hell":** No crees un contexto para todo. Si el estado solo vive en una página, usa `useState` o un Hook local.
+
+## Ejemplo
+```javascript
+// useAuth.js
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (!context) throw new Error("useAuth debe usarse dentro de AuthProvider");
+    return context;
+};
+```

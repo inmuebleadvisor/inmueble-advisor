@@ -22,7 +22,7 @@ Welcome to the `src` folder. This project follows a modified Clean Architecture 
 
 ### Layer 4: Infrastructure (`/services`, `/repositories`)
 *   **`services/`**: Communication with backend (Firebase, external APIs).
-*   **`repositories/`**: (Optional) Data transformation layer between API and App.
+*   **`repositories/`**: Data transformation layer between API and App.
 
 ---
 
