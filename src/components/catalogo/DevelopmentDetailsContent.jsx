@@ -1,11 +1,11 @@
 import React, { useState, useRef, useMemo } from 'react';
-import ImageLoader from '../shared/ImageLoader';
+import ImageLoader from '../ui/ImageLoader';
 import PropertyCard from './PropertyCard';
 import DevelopmentInfoSection from './DevelopmentInfoSection';
-import TrustBadges from '../common/TrustBadges';
-import StickyActionPanel from '../common/StickyActionPanel';
-import Delightbox from '../common/Delightbox';
-import FavoriteBtn from '../shared/FavoriteBtn';
+import TrustBadges from '../ui/TrustBadges';
+import StickyActionPanel from '../ui/StickyActionPanel';
+import Delightbox from '../ui/Delightbox';
+import FavoriteBtn from '../ui/FavoriteBtn';
 import { useStickyPanel } from '../../hooks/useStickyPanel';
 import '../../styles/components/DevelopmentDetails.css';
 // import Modal from '../shared/Modal'; // Removed: LeadCaptureForm is now self-contained

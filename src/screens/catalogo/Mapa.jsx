@@ -12,9 +12,9 @@ import { useFavorites } from '../../context/FavoritesContext';
 import { normalizar } from '../../utils/formatters';
 
 // Shared Components
-import SearchBar from '../../components/shared/SearchBar';
-import FilterBar from '../../components/shared/FilterBar';
-import FilterModal from '../../components/shared/FilterModal';
+import SearchBar from '../../components/ui/SearchBar';
+import FilterBar from '../../components/ui/FilterBar';
+import FilterModal from '../../components/ui/FilterModal';
 
 // Styles
 import '../../styles/Catalogo.css';

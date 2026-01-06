@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useServiceContext } from '../../context/ServiceContext';
-import Modal from '../../components/shared/Modal';
+import Modal from '../../components/ui/Modal';
 
 export default function AdvisorsDirectory() {
     const { externalAdvisor } = useServiceContext();
