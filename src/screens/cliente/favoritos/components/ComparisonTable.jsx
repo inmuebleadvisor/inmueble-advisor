@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import ImageLoader from '../../../../components/ui/ImageLoader';
+import ImageLoader from '../../../../components/common/ImageLoader';
 import styles from '../Favoritos.module.css';
 
 const LocalIcons = {

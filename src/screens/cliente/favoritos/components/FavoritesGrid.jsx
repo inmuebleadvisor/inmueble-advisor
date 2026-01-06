@@ -1,5 +1,5 @@
 import React from 'react';
-import ImageLoader from '../../../../components/ui/ImageLoader';
+import ImageLoader from '../../../../components/common/ImageLoader';
 import styles from '../Favoritos.module.css';
 
 // Note: Circular dependency issue if importing Icons from parent.

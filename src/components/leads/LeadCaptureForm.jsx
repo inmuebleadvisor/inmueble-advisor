@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useService } from '../../hooks/useService';
-import AppointmentScheduler from '../ui/AppointmentScheduler';
+import AppointmentScheduler from '../common/AppointmentScheduler';
 import { useUser } from '../../context/UserContext';
 import confetti from 'canvas-confetti';
 import '../../styles/LeadCaptureForm.css';

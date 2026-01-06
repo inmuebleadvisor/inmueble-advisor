@@ -3,7 +3,7 @@
 
 import React, { useMemo, useState } from 'react';
 import AmenidadesList from './AmenidadesList';
-import MapModal from '../ui/MapModal';
+import MapModal from '../modals/MapModal';
 
 
 // --- ICONOS ---

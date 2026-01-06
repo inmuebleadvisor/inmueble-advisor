@@ -1,6 +1,6 @@
 // src/components/catalogo/FilterBar.jsx
 import React from 'react';
-import { Icons } from './Icons';
+import { Icons } from '../common/Icons';
 import { formatoMoneda } from '../../utils/formatters';
 import { UI_OPCIONES } from '../../config/constants';
 import '../../styles/Catalogo.css';

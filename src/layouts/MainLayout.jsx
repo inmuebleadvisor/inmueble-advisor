@@ -4,10 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { useFavorites } from '../context/FavoritesContext';
-import WhatsAppButton from '../components/ui/WhatsAppButton/WhatsAppButton';
-import ThemeToggle from '../components/ui/ThemeToggle';
+import WhatsAppButton from '../components/common/WhatsAppButton/WhatsAppButton';
+import ThemeToggle from '../components/layout/ThemeToggle';
 import { useTheme } from '../context/ThemeContext';
-import SeasonalTheme from '../components/ui/SeasonalTheme';
+import SeasonalTheme from '../components/layout/SeasonalTheme';
 
 // --- ICONOS SVG ---
 const MenuIcons = {

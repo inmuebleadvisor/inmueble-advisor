@@ -8,9 +8,9 @@ import { useScrollReveal } from '../../hooks/useScrollReveal';
 
 // Components
 import PropertyCard from '../../components/catalogo/PropertyCard';
-import SearchBar from '../../components/ui/SearchBar';
-import FilterBar from '../../components/ui/FilterBar';
-import FilterModal from '../../components/ui/FilterModal';
+import SearchBar from '../../components/layout/SearchBar';
+import FilterBar from '../../components/layout/FilterBar';
+import FilterModal from '../../components/modals/FilterModal';
 
 // Styles
 import '../../styles/Catalogo.css';

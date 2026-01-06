@@ -1,8 +1,8 @@
 // src/components/Carousel.jsx
 // ÚLTIMA MODIFICACION: 02/12/2025
 import React, { useState, useRef } from 'react';
-import ImageLoader from '../ui/ImageLoader';
-import Delightbox from '../ui/Delightbox'; // Import Delightbox
+import ImageLoader from '../common/ImageLoader';
+import Delightbox from '../common/Delightbox'; // Import Delightbox
 import './Carousel.css';
 
 const Icons = {

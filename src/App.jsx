@@ -42,7 +42,7 @@ import AdvisorsDirectory from './screens/admin/AdvisorsDirectory';
 // 🗑️ DEPRECATED: import AdminDashboard from './screens/AdminDashboard'; (Removed)
 
 // ⭐ NUEVO: Modal de selección de ciudad
-import CitySelectorModal from './components/ui/CitySelectorModal';
+import CitySelectorModal from './components/modals/CitySelectorModal';
 
 function App() {
   // El orden de los Providers es estratégico. FavoritesProvider usa datos de User y Catalog.

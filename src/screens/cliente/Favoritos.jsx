@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 import { useFavoritesViewModel } from '../../hooks/useFavoritesViewModel';
 
 // Components
-import Modal from '../../components/ui/Modal';
+import Modal from '../../components/modals/Modal';
 import ModelDetailsContent from '../../components/catalogo/ModelDetailsContent';
 import DevelopmentDetailsContent from '../../components/catalogo/DevelopmentDetailsContent';
 import FavoritesGrid from './favoritos/components/FavoritesGrid';

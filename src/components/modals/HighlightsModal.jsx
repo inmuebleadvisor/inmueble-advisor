@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Modal from './Modal';
-import FavoriteBtn from './FavoriteBtn';
+import FavoriteBtn from '../common/FavoriteBtn';
 import { useFavorites } from '../../context/FavoritesContext';
 import { useUser } from '../../context/UserContext';
 import { normalizar } from '../../utils/formatters';

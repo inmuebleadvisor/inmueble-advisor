@@ -1,6 +1,6 @@
 import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firestore';
-import { mapModelo } from '../models/Modelo';
-import { mapDesarrollo } from '../models/Desarrollo';
+import { mapModelo } from '../types/Modelo';
+import { mapDesarrollo } from '../types/Desarrollo';
 
 const FIRESTORE_BATCH_LIMIT = 30;
 

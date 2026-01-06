@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
-import ImageLoader from '../ui/ImageLoader';
-import FavoriteBtn from '../ui/FavoriteBtn';
-import Delightbox from '../ui/Delightbox';
-import HighlightsModal from '../ui/HighlightsModal';
+import ImageLoader from '../common/ImageLoader';
+import FavoriteBtn from '../common/FavoriteBtn';
+import Delightbox from '../common/Delightbox';
+import HighlightsModal from '../modals/HighlightsModal';
 import { FINANZAS, IMAGES } from '../../config/constants';
 import { useState } from 'react';
 import './PropertyCard.css';

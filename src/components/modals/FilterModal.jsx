@@ -1,7 +1,7 @@
 // src/components/catalogo/FilterModal.jsx
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Icons } from './Icons';
+import { Icons } from '../common/Icons';
 import { formatoMoneda } from '../../utils/formatters';
 import { UI_OPCIONES } from '../../config/constants';
 import '../../styles/Catalogo.css';
