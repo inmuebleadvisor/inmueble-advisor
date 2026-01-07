@@ -11,7 +11,7 @@ Mientras que los **Servicios** manejan la lógica de negocio, los **Repositorios
 ## Catálogo de Repositorios Actuales
 -   **`CatalogRepository`**: Obtención de modelos de casas, prototipos y desarrollos. Convierte data cruda en objetos `Model`, `Development`.
 -   **`ExternalAdvisorRepository`**: Datos sobre asesores externos y agencias.
--   **`LeadRepository`**: Acceso a la colección de prospectos (leads) y sus estados.
+-   **`LeadRepository`**: Acceso a la colección de prospectos (leads). **Gestión automática del historial de estados (`statusHistory`).**
 -   **`UserRepository`**: CRUD de usuarios, gestión de favoritos y perfiles.
 
 ## 🛡️ La "Aduana de Datos" (Data Gatekeeper)

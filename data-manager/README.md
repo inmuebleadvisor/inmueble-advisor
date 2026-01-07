@@ -89,3 +89,11 @@ node index.js import properties ./datos_nuevos.json
 
 *   Asegúrate de que el archivo `service-account.json` esté presente y sea válido antes de ejecutar cualquier comando.
 *   Las operaciones de importación masiva pueden consumir cuota de lectura/escritura de Firestore.
+
+## 📊 Analytics Features
+
+### Historial de Precios (Price History)
+Durante la importación de `modelos`, el sistema detecta cambios en el precio base.
+*   **Acción:** Si el precio cambia, se crea un documento en la subcolección `modelos/{id}/price_history`.
+*   **Propósito:** Permitir la exportación granular a BigQuery para análisis de tendencias.
+*   **Schema:** `{ date: Timestamp, price: Number (old), newPrice: Number, available: Boolean }`.

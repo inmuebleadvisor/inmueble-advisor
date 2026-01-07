@@ -53,6 +53,13 @@ export class LeadRepository {
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
             statusHistory: [
+                /**
+                 * @type {Array<Object>}
+                 * @property {string} status - New status
+                 * @property {Timestamp} timestamp - When it happened
+                 * @property {string} note - Optional context
+                 * @property {string} changedBy - User ID or 'SYSTEM'
+                 */
                 {
                     status: "PENDIENTE",
                     timestamp: now,
@@ -101,19 +108,31 @@ export class LeadRepository {
 
     async updateLead(leadId, updateData) {
         const leadRef = doc(this.db, this.collectionName, leadId);
-        const dataWithTimestamp = {
+
+        let dataToUpdate = {
             ...updateData,
             updatedAt: serverTimestamp()
         };
 
-        // If status is being updated, ensure statusHistory is updated by the service or handle it here?
-        // The requirement says "Repo should not contain complex validation logic".
-        // Updating status history is often logic, but could be seen as data structure enforcement.
-        // For now, we expect the service to handle the `arrayUnion` for `statusHistory` if it calls a specific method,
-        // or passing the new history array if it updates it. 
-        // However, standard update just updates fields.
+        // Automatic Status History Tracking
+        // If the update contains a 'status', we append to the history.
+        if (updateData.status) {
+            const now = Timestamp.now();
+            const historyEvent = {
+                status: updateData.status,
+                timestamp: now,
+                note: updateData.note || "Estatus actualizado",
+                changedBy: updateData.changedBy || "SYSTEM"
+            };
 
-        await updateDoc(leadRef, dataWithTimestamp);
+            // Remove metadata fields from the main document update if they were passed just for history
+            delete dataToUpdate.note;
+            delete dataToUpdate.changedBy;
+
+            dataToUpdate.statusHistory = arrayUnion(historyEvent);
+        }
+
+        await updateDoc(leadRef, dataToUpdate);
         return true;
     }
 

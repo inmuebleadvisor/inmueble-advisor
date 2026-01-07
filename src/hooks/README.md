@@ -14,6 +14,7 @@ Hooks genéricos que resuelven problemas específicos y pueden usarse en múltip
 -   **`useService`**: Hook fundamental para consumir servicios del `ServiceProvider` con manejo de estados de carga y error.
 -   **`useForm`**: Manejo de formularios y validaciones.
 -   **`useAuth`**: Acceso rápido al contexto de usuario.
+-   **`useAnalytics`**: Abstracción del servicio de analítica (PostHog). Expone métodos `identifyUser` y `trackEvent`.
 
 ## Regla de Oro: Separación UI/Lógica
 Un componente de Vista (`screen`) no debería tener `useEffect` complejos ni lógica de estado masiva. Mueve esa lógica a un Custom Hook aquí.

@@ -123,11 +123,36 @@ export const importCollection = async (collectionName, filePath, options = {}) =
                                 const oldPrice = currentData.precios?.base;
 
                                 if (oldPrice && oldPrice !== finalData.precios.base) {
+                                    /**
+                                     * Subcollection: bigquery-price-history
+                                     * Purpose: Detailed tracking of price changes for analytics
+                                     * Schema:
+                                     * @property {Timestamp} date - When the change was detected
+                                     * @property {number} price - The PREVIOUS price
+                                     * @property {number} newPrice - The NEW imported price
+                                     * @property {boolean} available - Snapshot of availability
+                                     */
                                     const historyEntry = {
+                                        date: Timestamp.now(),
+                                        price: Number(oldPrice),
+                                        newPrice: Number(finalData.precios.base),
+                                        available: finalData.disponibilidad || true
+                                    };
+
+                                    // 1. Write to Subcollection (BigQuery Extension target)
+                                    // Use separate batch or immediate write? Batch is better but limits are strict.
+                                    // We are inside a loop with a main batch. 
+                                    // To keep it simple and safe, we can add this to the main batch if path is unique.
+                                    const historyRef = docRef.collection('bigquery-price-history').doc();
+                                    batch.set(historyRef, historyEntry);
+
+                                    // 2. Keep array for simple frontend graphs (Limited to last 10?)
+                                    // We keep the old array logic but cleaner
+                                    const legacyHistoryEntry = {
                                         fecha: Timestamp.now(),
                                         precio: Number(oldPrice)
                                     };
-                                    finalData.preciosHistoricos = FieldValue.arrayUnion(historyEntry);
+                                    finalData.preciosHistoricos = FieldValue.arrayUnion(legacyHistoryEntry);
 
                                     // Calc Real Growth
                                     let firstPrice = oldPrice;

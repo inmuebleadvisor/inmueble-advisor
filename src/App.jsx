@@ -13,6 +13,8 @@ import { FavoritesProvider } from './context/FavoritesContext';
 // ⭐ NUEVO: Configuración Global (Temas Estacionales)
 
 import { UI_OPCIONES } from './config/constants';
+import { PostHogProvider } from 'posthog-js/react'
+import posthog from './config/posthog';
 
 // --- SEGURIDAD Y LAYOUT ---
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -47,75 +49,77 @@ import CitySelectorModal from './components/modals/CitySelectorModal';
 function App() {
   // El orden de los Providers es estratégico. FavoritesProvider usa datos de User y Catalog.
   return (
-    <UserProvider>
+    <PostHogProvider client={posthog}>
+      <UserProvider>
 
-      <CatalogProvider>
-        {/* ⭐ AÑADIMOS EL NUEVO PROVEEDOR AQUÍ */}
-        <FavoritesProvider>
-          {/* ⭐ MODAL DE SELECCIÓN DE CIUDAD (Global) */}
-          <CitySelectorModal />
+        <CatalogProvider>
+          {/* ⭐ AÑADIMOS EL NUEVO PROVEEDOR AQUÍ */}
+          <FavoritesProvider>
+            {/* ⭐ MODAL DE SELECCIÓN DE CIUDAD (Global) */}
+            <CitySelectorModal />
 
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Layout />}>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Layout />}>
 
-                {/* 1. RUTA PÚBLICA (Home/Perfil de Cliente) */}
-                <Route index element={<Perfil />} />
-                <Route path="onboarding-cliente" element={<OnboardingCliente />} />
+                  {/* 1. RUTA PÚBLICA (Home/Perfil de Cliente) */}
+                  <Route index element={<Perfil />} />
+                  <Route path="onboarding-cliente" element={<OnboardingCliente />} />
 
-                {/* 2. LANDING / ONBOARDING / ACCOUNT ASESORES ELIMINADOS (Modelo Deprecado) */}
+                  {/* 2. LANDING / ONBOARDING / ACCOUNT ASESORES ELIMINADOS (Modelo Deprecado) */}
 
-                {/* 5. RUTAS DEL SISTEMA (Protegidas) */}
+                  {/* 5. RUTAS DEL SISTEMA (Protegidas) */}
 
-                <Route path="catalogo" element={<Catalogo />} />
+                  <Route path="catalogo" element={<Catalogo />} />
 
-                <Route path="mapa" element={<Mapa />} />
+                  <Route path="mapa" element={<Mapa />} />
 
-                {/* ⭐ NUEVA RUTA: Ruta para la pantalla de Comparador y Favoritos */}
-                <Route path="favoritos" element={
-                  <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
-                    <Favoritos />
-                  </ProtectedRoute>
-                } />
+                  {/* ⭐ NUEVA RUTA: Ruta para la pantalla de Comparador y Favoritos */}
+                  <Route path="favoritos" element={
+                    <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
+                      <Favoritos />
+                    </ProtectedRoute>
+                  } />
 
-                {/* 6. RUTAS DE DETALLE */}
-                <Route path="modelo/:id" element={
-                  <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
-                    <DetalleModelo />
-                  </ProtectedRoute>
-                } />
-                <Route path="desarrollo/:id" element={
-                  <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
-                    <DetalleDesarrollo />
-                  </ProtectedRoute>
-                } />
+                  {/* 6. RUTAS DE DETALLE */}
+                  <Route path="modelo/:id" element={
+                    <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
+                      <DetalleModelo />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="desarrollo/:id" element={
+                    <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
+                      <DetalleDesarrollo />
+                    </ProtectedRoute>
+                  } />
 
-                {/* 7. HERRAMIENTAS ADMINISTRATIVAS (Uso interno) */}
-                {/* Accede manualmente escribiendo /admin-export-tool en la URL */}
-                <Route path="admin-export-tool" element={<AdminDataExport />} />
+                  {/* 7. HERRAMIENTAS ADMINISTRATIVAS (Uso interno) */}
+                  {/* Accede manualmente escribiendo /admin-export-tool en la URL */}
+                  <Route path="admin-export-tool" element={<AdminDataExport />} />
 
-                {/* ✅ NUEVO SISTEMA DE ADMINISTRACIÓN (Layout Anidado) */}
-                <Route path="administrador" element={
-                  <ProtectedRoute requireAdmin={true}>
-                    <AdminLayout />
-                  </ProtectedRoute>
-                }>
-                  <Route index element={<AdminHome />} />
-                  <Route path="leads" element={<AdminLeads />} />
-                  <Route path="users" element={<AdminUsers />} />
-                  <Route path="asesores" element={<AdvisorsDirectory />} />
+                  {/* ✅ NUEVO SISTEMA DE ADMINISTRACIÓN (Layout Anidado) */}
+                  <Route path="administrador" element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminLayout />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<AdminHome />} />
+                    <Route path="leads" element={<AdminLeads />} />
+                    <Route path="users" element={<AdminUsers />} />
+                    <Route path="asesores" element={<AdvisorsDirectory />} />
+                  </Route>
+
+                  {/* 404 - Redirección por defecto */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+
                 </Route>
+              </Routes>
+            </BrowserRouter>
+          </FavoritesProvider> {/* ⭐ CERRAMOS EL NUEVO PROVEEDOR */}
+        </CatalogProvider>
 
-                {/* 404 - Redirección por defecto */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        </FavoritesProvider> {/* ⭐ CERRAMOS EL NUEVO PROVEEDOR */}
-      </CatalogProvider>
-
-    </UserProvider>
+      </UserProvider>
+    </PostHogProvider >
   );
 }
 
