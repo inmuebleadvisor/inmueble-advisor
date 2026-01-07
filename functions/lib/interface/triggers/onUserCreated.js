@@ -23,26 +23,27 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.promoteToAdvisor = void 0;
+exports.notifyNewUser = void 0;
 const functions = __importStar(require("firebase-functions/v1"));
-const FirebaseUserRepository_1 = require("../../infrastructure/repositories/FirebaseUserRepository");
-const PromoteUserUseCase_1 = require("../../core/usecases/PromoteUserUseCase");
-const userRepository = new FirebaseUserRepository_1.FirebaseUserRepository();
-const promoteUserUseCase = new PromoteUserUseCase_1.PromoteUserUseCase(userRepository);
-exports.promoteToAdvisor = functions.https.onCall(async (data, context) => {
-    // 1. Auth Guard
-    if (!context.auth) {
-        throw new functions.https.HttpsError('unauthenticated', 'The function must be called while authenticated.');
-    }
-    const uid = context.auth.uid;
-    // 2. Execute Use Case
+const logger = __importStar(require("firebase-functions/logger"));
+const NotifyNewUser_1 = require("../../core/usecases/NotifyNewUser");
+const TelegramService_1 = require("../../infrastructure/services/TelegramService");
+exports.notifyNewUser = functions
+    .runWith({ secrets: ["TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"] })
+    .auth.user()
+    .onCreate(async (user) => {
     try {
-        await promoteUserUseCase.execute(uid, uid);
-        return { success: true, message: 'User promoted successfully' };
+        const telegramService = new TelegramService_1.TelegramService();
+        const useCase = new NotifyNewUser_1.NotifyNewUser(telegramService);
+        await useCase.execute({
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName
+        });
+        logger.info(`Notification sent for user: ${user.uid}`);
     }
     catch (error) {
-        console.error("Error promoting user:", error);
-        throw new functions.https.HttpsError('internal', 'Unable to promote user');
+        logger.error("Error in notifyNewUser trigger:", error);
     }
 });
-//# sourceMappingURL=promoteToAdvisor.js.map
+//# sourceMappingURL=onUserCreated.js.map

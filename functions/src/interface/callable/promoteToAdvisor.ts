@@ -1,5 +1,5 @@
 
-import * as functions from 'firebase-functions';
+import * as functions from "firebase-functions/v1";
 import { FirebaseUserRepository } from '../../infrastructure/repositories/FirebaseUserRepository';
 import { PromoteUserUseCase } from '../../core/usecases/PromoteUserUseCase';
 
