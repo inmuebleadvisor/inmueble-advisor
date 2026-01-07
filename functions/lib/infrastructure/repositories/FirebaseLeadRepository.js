@@ -30,13 +30,34 @@ class FirebaseLeadRepository {
         this.db = admin.firestore();
     }
     async getLeadsByUserId(uid) {
-        // NOTE: avoiding orderBy('createdAt') to prevent "Missing Index" error in early dev.
-        // We fetch by UID and sort in memory.
-        const q = await this.db.collection('leads')
-            .where('uid', '==', uid)
-            .limit(20)
-            .get();
-        const leads = q.docs.map(d => (Object.assign({ id: d.id }, d.data())));
+        if (!uid)
+            return [];
+        const leadsMap = new Map();
+        const addToMap = (docs) => {
+            docs.forEach(d => {
+                if (!leadsMap.has(d.id)) {
+                    leadsMap.set(d.id, Object.assign({ id: d.id }, d.data()));
+                }
+            });
+        };
+        try {
+            // Query 1: By uid
+            const q1 = await this.db.collection('leads')
+                .where('uid', '==', uid)
+                .limit(20)
+                .get();
+            addToMap(q1.docs);
+            // Query 2: By clienteUid
+            const q2 = await this.db.collection('leads')
+                .where('clienteUid', '==', uid)
+                .limit(20)
+                .get();
+            addToMap(q2.docs);
+        }
+        catch (e) {
+            console.error("Error fetching lead history:", e);
+        }
+        const leads = Array.from(leadsMap.values());
         // In-memory sort: Newest first
         return leads.sort((a, b) => {
             var _a, _b;

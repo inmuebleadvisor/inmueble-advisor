@@ -5,14 +5,38 @@ export class FirebaseLeadRepository implements LeadRepository {
     private db = admin.firestore();
 
     async getLeadsByUserId(uid: string): Promise<any[]> {
-        // NOTE: avoiding orderBy('createdAt') to prevent "Missing Index" error in early dev.
-        // We fetch by UID and sort in memory.
-        const q = await this.db.collection('leads')
-            .where('uid', '==', uid)
-            .limit(20)
-            .get();
+        if (!uid) return [];
 
-        const leads = q.docs.map(d => ({ id: d.id, ...d.data() }));
+        const leadsMap = new Map<string, any>();
+
+        const addToMap = (docs: admin.firestore.QueryDocumentSnapshot[]) => {
+            docs.forEach(d => {
+                if (!leadsMap.has(d.id)) {
+                    leadsMap.set(d.id, { id: d.id, ...d.data() });
+                }
+            });
+        };
+
+        try {
+            // Query 1: By uid
+            const q1 = await this.db.collection('leads')
+                .where('uid', '==', uid)
+                .limit(20)
+                .get();
+            addToMap(q1.docs);
+
+            // Query 2: By clienteUid
+            const q2 = await this.db.collection('leads')
+                .where('clienteUid', '==', uid)
+                .limit(20)
+                .get();
+            addToMap(q2.docs);
+
+        } catch (e) {
+            console.error("Error fetching lead history:", e);
+        }
+
+        const leads = Array.from(leadsMap.values());
 
         // In-memory sort: Newest first
         return leads.sort((a: any, b: any) => {
