@@ -1,7 +1,16 @@
 import { db } from '../firebase/config';
 import { doc, getDoc, collection, query, limit, getDocs, orderBy } from 'firebase/firestore';
 
-export const DashboardService = {
+/**
+ * Service for fetching Dashboard Analytics.
+ * Follows Dependency Injection pattern.
+ */
+class DashboardServiceImpl {
+    constructor(firestoreDb) {
+        this.db = firestoreDb;
+        this.collectionName = 'dashboard_stats';
+    }
+
     /**
      * Retrieves the latest generated dashboard stats.
      * @returns {Promise<Object|null>} Stats object or null if not ready
@@ -9,7 +18,7 @@ export const DashboardService = {
     async getLatestStats() {
         try {
             // Try reading the convenience 'latest' doc
-            const docRef = doc(db, 'dashboard_stats', 'latest');
+            const docRef = doc(this.db, this.collectionName, 'latest');
             const snap = await getDoc(docRef);
 
             if (snap.exists()) {
@@ -17,7 +26,11 @@ export const DashboardService = {
             }
 
             // Fallback: Query by date desc if 'latest' pointer missing
-            const q = query(collection(db, 'dashboard_stats'), orderBy('date', 'desc'), limit(1));
+            const q = query(
+                collection(this.db, this.collectionName),
+                orderBy('date', 'desc'),
+                limit(1)
+            );
             const querySnap = await getDocs(q);
 
             if (!querySnap.empty) {
@@ -29,7 +42,7 @@ export const DashboardService = {
             console.error("❌ [DashboardService] Failed to fetch stats:", error);
             throw error;
         }
-    },
+    }
 
     /**
      * Retrieves stats for a specific historical date (for charts).
@@ -37,7 +50,7 @@ export const DashboardService = {
     async getDailyHistory(days = 7) {
         try {
             const q = query(
-                collection(db, 'dashboard_stats'),
+                collection(this.db, this.collectionName),
                 orderBy('date', 'desc'),
                 limit(days)
             );
@@ -48,4 +61,7 @@ export const DashboardService = {
             return [];
         }
     }
-};
+}
+
+// Export singleton instance with injected dependency
+export const DashboardService = new DashboardServiceImpl(db);

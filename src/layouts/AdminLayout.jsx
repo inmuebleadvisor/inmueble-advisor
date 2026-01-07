@@ -8,27 +8,15 @@ const AdminLayout = () => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     return (
-        <div className="admin-layout" style={{
-            display: 'flex',
-            height: '100vh',
-            backgroundColor: 'var(--bg-main)', // Using global theme var
-            color: 'var(--text-main)'
-        }}>
-            <AdminSidebar collapsed={isSidebarCollapsed} toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
+        <div className="admin-layout">
+            <AdminSidebar
+                collapsed={isSidebarCollapsed}
+                toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            />
 
-            <div className="admin-layout__content" style={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden'
-            }}>
+            <div className="admin-layout__content">
                 <AdminHeader />
-                <main style={{
-                    flex: 1,
-                    overflowY: 'auto',
-                    padding: '20px',
-                    position: 'relative'
-                }}>
+                <main className="admin-layout__main">
                     <Outlet />
                 </main>
             </div>
