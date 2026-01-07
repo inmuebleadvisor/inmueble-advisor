@@ -28,6 +28,8 @@ const functions = __importStar(require("firebase-functions/v1"));
 const logger = __importStar(require("firebase-functions/logger"));
 const NotifyNewLead_1 = require("../../core/usecases/NotifyNewLead");
 const TelegramService_1 = require("../../infrastructure/services/TelegramService");
+const FirebaseUserRepository_1 = require("../../infrastructure/repositories/FirebaseUserRepository");
+const FirebaseLeadRepository_1 = require("../../infrastructure/repositories/FirebaseLeadRepository");
 exports.onLeadCreated = functions
     .runWith({ secrets: ["TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"] })
     .firestore
@@ -41,7 +43,9 @@ exports.onLeadCreated = functions
             return;
         }
         const telegramService = new TelegramService_1.TelegramService();
-        const useCase = new NotifyNewLead_1.NotifyNewLead(telegramService);
+        const userRepo = new FirebaseUserRepository_1.FirebaseUserRepository();
+        const leadRepo = new FirebaseLeadRepository_1.FirebaseLeadRepository();
+        const useCase = new NotifyNewLead_1.NotifyNewLead(telegramService, userRepo, leadRepo);
         await useCase.execute(Object.assign({ id: leadId }, leadData));
         logger.info(`Notification sent for lead: ${leadId}`);
     }
