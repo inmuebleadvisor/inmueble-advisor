@@ -30,12 +30,20 @@ class FirebaseLeadRepository {
         this.db = admin.firestore();
     }
     async getLeadsByUserId(uid) {
+        // NOTE: avoiding orderBy('createdAt') to prevent "Missing Index" error in early dev.
+        // We fetch by UID and sort in memory.
         const q = await this.db.collection('leads')
             .where('uid', '==', uid)
-            .orderBy('createdAt', 'desc')
-            .limit(5)
+            .limit(20)
             .get();
-        return q.docs.map(d => (Object.assign({ id: d.id }, d.data())));
+        const leads = q.docs.map(d => (Object.assign({ id: d.id }, d.data())));
+        // In-memory sort: Newest first
+        return leads.sort((a, b) => {
+            var _a, _b;
+            const dateA = ((_a = a.createdAt) === null || _a === void 0 ? void 0 : _a.toMillis) ? a.createdAt.toMillis() : 0;
+            const dateB = ((_b = b.createdAt) === null || _b === void 0 ? void 0 : _b.toMillis) ? b.createdAt.toMillis() : 0;
+            return dateB - dateA;
+        });
     }
 }
 exports.FirebaseLeadRepository = FirebaseLeadRepository;
