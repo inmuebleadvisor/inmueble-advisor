@@ -29,27 +29,28 @@ graph TD
 ---
 
 ## 📚 Catálogo de Endpoints (Sincronizado)
-*Última verificación: Enero 2026 - Coincide textualmente con `src/interface`*
+*Última verificación: Enero 2026*
 
 ### 1. `promoteToAdvisor` (Callable)
 Eleva el rol del usuario actual a "Asesor", otorgando permisos de acceso al CRM.
-
-*   **Trigger:** Llamada directa desde el cliente (`httpsCallable`).
+*   **Trigger:** Llamada directa desde el cliente (`onCall`).
 *   **Entrada:** `{}` (El UID se obtiene del contexto de autenticación).
-*   **Reglas de Negocio:**
-    *   Requiere autenticación.
-    *   Si el usuario ya es `admin`, no hace nada.
-    *   Actualiza `role: 'asesor'`, `onboardingCompleto: true` y fecha de registro.
-*   **Errores:**
-    *   `unauthenticated`: Si no hay usuario logueado.
-    *   `internal`: Error de base de datos.
-    *   `permission-denied`: (Futuro) Si se infringen reglas de negocio.
+
+### 2. `scheduledDashboardStats` (Scheduler)
+Genera las estadísticas diarias del Dashboard Administrativo.
+*   **Trigger:** Automático, todos los días a las 00:00 (Midnight).
+*   **Lógica:** Consulta BigQuery (tablas `leads`, `users`, `events`) -> Agrega métricas -> Guarda en Firestore (`dashboard_stats/{YYYY-MM-DD}`).
+
+### 3. `triggerDashboardStats` (Callable)
+Disparador manual para recalcular las estadísticas del día actual. Útil para testing o actualizaciones forzadas.
+*   **Trigger:** Manual desde panel de administración.
+*   **Retorno:** Objeto con las estadísticas generadas.
 
 ---
 
-## 🔌 Guía de Extensión: Cómo crear una nueva función
+## 🔌 Guía de Extensión: Cómo crear una nueva función (Firebase V2)
 
-Sigue estos 3 pasos para mantener la arquitectura limpia:
+Sigue estos 3 pasos para mantener la arquitectura limpia usando la API moderna de Firebase:
 
 ### Paso 1: Definir la Entidad y Repositorio (Core)
 Si es una nueva entidad, créala en `src/core/entities/`. Define la *interfaz* del repositorio.
@@ -73,12 +74,27 @@ export class CreateProduct {
 
 ### Paso 3: Implementar y Exponer (Infra & Interface)
 1.  Implementa el repositorio en `src/infrastructure/repositories/`.
-2.  Crea la función en `src/interface/callable/` o `triggers/` e inyecta las dependencias.
+2.  Crea la función en `src/interface/` usando la sintaxis V2 (`onCall`, `onSchedule`, `onRequest`).
+```typescript
+// src/interface/callable/createProduct.ts
+import { onCall } from 'firebase-functions/v2/https';
+
+export const createProduct = onCall(async (request) => {
+    // request.data contiene los argumentos
+    const repo = new FirebaseProductRepository();
+    const useCase = new CreateProduct(repo);
+    return await useCase.execute(request.data);
+});
+```
 3.  Exporta la función en `src/index.ts`.
 
 ---
 
 ## 🛠️ Operaciones y Comandos
+
+### Requisitos Previos
+*   **Node.js 22** (LTS 2026)
+*   **Firebase CLI** actualizado (`npm install -g firebase-tools`)
 
 ### Instalación
 ```bash
@@ -92,14 +108,7 @@ Es necesario compilar TypeScript a JavaScript antes de desplegar o emular.
 npm run build
 ```
 
-### Ejecutar Logs
-Para ver qué está pasando en producción:
-```bash
-npm run logs
-```
-
 ### Despliegue (Deploy)
-Para subir los cambios a producción (asegúrate de haber compilado primero):
 ```bash
 firebase deploy --only functions
 ```

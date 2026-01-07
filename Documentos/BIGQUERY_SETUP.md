@@ -41,3 +41,37 @@ Una vez instaladas ambas extensiones, verifica en la consola de BigQuery:
 2.  **Datos:**
     *   Ejecuta `SELECT * FROM dist.table_precios_historicos_raw_latest LIMIT 10`
     *   Verifica que la columna `modelId` (o el nombre que usaste en las llaves) tenga datos válidos.
+
+---
+
+## 3. Instancia: Leads (`leads`)
+Sincronización de todos los leads para cálculo de comisiones, embudos y métricas de desarrollos.
+
+| Parámetro | Valor Configurado | Notas |
+| :--- | :--- | :--- |
+| **Collection path** | `leads` | |
+| **Dataset ID** | `firestore_export_leads` | |
+| **Table ID** | `leads` | |
+| **Time Partitioning** | `DAY` | Importante para filtrar por fecha de creación/actualización sin escanear toda la tabla. |
+
+## 4. Instancia: Usuarios (`users`)
+Sincronización de usuarios para métricas de "Usuarios Activos", "Nuevos Registros" y actividad de asesores.
+
+| Parámetro | Valor Configurado | Notas |
+| :--- | :--- | :--- |
+| **Collection path** | `users` | |
+| **Dataset ID** | `firestore_export_users` | *Nota:* Se configuró en un dataset independiente. |
+| **Table ID** | `users` | |
+| **Time Partitioning** | `DAY` | |
+
+## 5. Instancia: Eventos de Analítica (`analytic_events`)
+Sincronización de eventos de sesión, visitas a páginas y conversiones para cálculo de "Tiempo en sitio" y "Retención".
+
+| Parámetro | Valor Configurado | Notas |
+| :--- | :--- | :--- |
+| **Collection path** | `analytic_events` | |
+| **Dataset ID** | `firestore_export_analytics` | *Recomendado:* Usar un dataset separado para eventos de alto volumen. |
+| **Table ID** | `events` | |
+| **Time Partitioning** | `DAY` | **CRÍTICO:** Esta tabla crecerá muy rápido. El particionado es obligatorio. |
+
+

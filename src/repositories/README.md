@@ -9,6 +9,7 @@ Mientras que los **Servicios** manejan la lógica de negocio, los **Repositorios
 3.  **Tipado y Limpieza:** Asegurar que los datos que regresan a la aplicación tengan un formato consistente (ej. incluir el `uid` en el objeto).
 
 ## Catálogo de Repositorios Actuales
+-   **`AnalyticEventsRepository`**: Registro de eventos crudos (`SESSION_START`, `PAGE_VIEW`) en Firestore. Estos datos se sincronizan con BigQuery para análisis histórico.
 -   **`CatalogRepository`**: Obtención de modelos de casas, prototipos y desarrollos. Convierte data cruda en objetos `Model`, `Development`.
 -   **`ExternalAdvisorRepository`**: Datos sobre asesores externos y agencias.
 -   **`LeadRepository`**: Acceso a la colección de prospectos (leads). **Gestión automática del historial de estados (`statusHistory`).**

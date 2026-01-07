@@ -59,6 +59,7 @@ function App() {
             <CitySelectorModal />
 
             <BrowserRouter>
+              <AnalyticsTracker />
               <Routes>
                 <Route path="/" element={<Layout />}>
 
@@ -121,6 +122,34 @@ function App() {
       </UserProvider>
     </PostHogProvider >
   );
+}
+
+// ⭐ NUEVO: Componente interno para rastrear navegación
+// Debe estar DENTRO de BrowserRouter para usar useLocation
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { AnalyticsService } from './services/eventLogger.service';
+import { useUser } from './context/UserContext';
+
+function AnalyticsTracker() {
+  const location = useLocation();
+  const { user } = useUser();
+
+  // 1. Iniciar sesión al montar (y cuando el user cambia, p.ej. login)
+  useEffect(() => {
+    AnalyticsService.startSession(user, location.pathname);
+
+    return () => {
+      AnalyticsService.endSession();
+    };
+  }, [user]); // Reinicia sesión si cambia el usuario
+
+  // 2. Rastrear cambios de ruta
+  useEffect(() => {
+    AnalyticsService.trackPageView(location.pathname);
+  }, [location]);
+
+  return null;
 }
 
 export default App;

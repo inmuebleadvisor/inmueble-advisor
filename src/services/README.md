@@ -9,7 +9,8 @@ Esta carpeta contiene la lógica de negocio central de la aplicación. Aquí es 
 
 ## Catálogo de Servicios Actuales
 -   **`AdminService`**: Funciones administrativas y estadísticas globales.
--   **`AnalyticsService`**: Seguimiento de eventos y métricas de uso.
+-   **`AnalyticsService`**: (Frontend) Maneja el ciclo de vida de la sesión (Start/End) y el tracking de visitas (`AnalyticEventsRepository`).
+-   **`DashboardService`**: Consume las estadísticas pre-calculadas de la colección `dashboard_stats` para visualizar en el panel de admin.
 -   **`AppointmentService`**: Gestión de citas y calendario de visitas.
 -   **`AuthService`**: Maneja el login con Google, logout y promoción de roles (Asesores).
 -   **`CatalogService`**: Gestiona el catálogo de inmuebles, filtros y búsqueda.
