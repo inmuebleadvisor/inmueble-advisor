@@ -46,6 +46,16 @@ Disparador manual para recalcular las estadísticas del día actual. Útil para 
 *   **Trigger:** Manual desde panel de administración.
 *   **Retorno:** Objeto con las estadísticas generadas.
 
+### 4. `notifyNewUser` (Trigger)
+Envía una notificación a Telegram cuando se registra un nuevo usuario.
+*   **Trigger:** `auth.user().onCreate`
+*   **Secretos Requeridos:** `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`
+
+### 5. `onLeadCreated` (Trigger)
+Envía una notificación a Telegram cuando se genera un nuevo Lead.
+*   **Trigger:** Firestore `leads/{leadId}` onCreate
+*   **Secretos Requeridos:** `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`
+
 ---
 
 ## 🔌 Guía de Extensión: Cómo crear una nueva función (Firebase V2)

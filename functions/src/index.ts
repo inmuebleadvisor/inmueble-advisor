@@ -10,3 +10,4 @@ if (!admin.apps.length) {
 // export { promoteToAdvisor } from './interface/callable/promoteToAdvisor';
 export { scheduledDashboardStats, triggerDashboardStats } from './interface/triggers/scheduledDashboardStats';
 export { notifyNewUser } from './interface/triggers/onUserCreated';
+export { onLeadCreated } from './interface/triggers/onLeadCreated';
