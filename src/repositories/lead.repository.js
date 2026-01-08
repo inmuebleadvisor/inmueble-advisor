@@ -161,7 +161,7 @@ export class LeadRepository {
      * @returns {Promise<Object|null>} The lead with the active appointment or null.
      */
     async findActiveAppointment(uid, idDesarrollo) {
-        console.log("🔍 [TheRepository] findActiveAppointment checking:", { uid, idDesarrollo });
+        // console.log("🔍 [TheRepository] findActiveAppointment checking:", { uid, idDesarrollo });
 
         // We query by user and development. 
         // We avoid querying by date directly to prevent Need Index errors during development.
@@ -176,7 +176,7 @@ export class LeadRepository {
         try {
             const snap = await getDocs(q);
             const now = new Date();
-            console.log(`🔍 [TheRepository] Found ${snap.docs.length} leads for this dev. Checking dates against ${now.toISOString()}...`);
+            // console.log(`🔍 [TheRepository] Found ${snap.docs.length} leads for this dev. Checking dates against ${now.toISOString()}...`);
 
             for (const d of snap.docs) {
                 const data = d.data();
@@ -185,14 +185,14 @@ export class LeadRepository {
                     // Handle Firestore Timestamp or Date object
                     const appointmentDate = data.citainicial.dia.toDate ? data.citainicial.dia.toDate() : new Date(data.citainicial.dia);
 
-                    console.log(`🔍 [TheRepository] checking lead ${d.id}: Date=${appointmentDate.toISOString()}`);
+                    // console.log(`🔍 [TheRepository] checking lead ${d.id}: Date=${appointmentDate.toISOString()}`);
 
                     if (appointmentDate > now) {
-                        console.log("✅ [TheRepository] Active appointment found:", d.id);
+                        // console.log("✅ [TheRepository] Active appointment found:", d.id);
                         return { id: d.id, ...data };
                     }
                 } else {
-                    console.log(`🔍 [TheRepository] Lead ${d.id} has no valid citainicial data.`);
+                    // console.log(`🔍 [TheRepository] Lead ${d.id} has no valid citainicial data.`);
                 }
             }
         } catch (err) {
@@ -200,7 +200,7 @@ export class LeadRepository {
             throw err; // Re-throw to be caught by service
         }
 
-        console.log("❌ [TheRepository] No active appointment found.");
+        // console.log("❌ [TheRepository] No active appointment found.");
         return null;
     }
 }

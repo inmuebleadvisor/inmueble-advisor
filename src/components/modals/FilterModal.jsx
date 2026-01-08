@@ -20,7 +20,7 @@ export default function FilterModal({
     useEffect(() => {
         if (isOpen) {
             const savedScroll = window.scrollY || document.documentElement.scrollTop;
-            console.log(`[SCROLL DEBUG] Open Filters. Saving position: ${savedScroll}px`);
+            // console.log(`[SCROLL DEBUG] Open Filters. Saving position: ${savedScroll}px`);
             window.__tempFilterScroll = savedScroll;
             document.body.style.overflow = 'hidden';
         } else {
@@ -28,7 +28,7 @@ export default function FilterModal({
             // If we are closing (and strictly if we have a saved position)
             if (window.__tempFilterScroll !== undefined) {
                 const target = window.__tempFilterScroll;
-                console.log(`[SCROLL DEBUG] Close Filters. Restoring to: ${target}px`);
+                // console.log(`[SCROLL DEBUG] Close Filters. Restoring to: ${target}px`);
                 window.scrollTo(0, target);
 
                 setTimeout(() => window.scrollTo(0, target), 50);

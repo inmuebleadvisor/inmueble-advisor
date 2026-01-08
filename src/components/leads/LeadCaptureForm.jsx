@@ -43,13 +43,13 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
             }));
 
             // Check for existing active appointment
-            console.log("🔍 [UI] Checking appointment for dev:", desarrollo?.id);
+            // console.log("🔍 [UI] Checking appointment for dev:", desarrollo?.id);
             if (desarrollo?.id) {
                 const checkAppointment = async () => {
                     setLoading(true);
-                    console.log("🔍 [UI] Invoking service...");
+                    // console.log("🔍 [UI] Invoking service...");
                     const { hasAppointment, appointment } = await leadAssignment.checkActiveAppointment(user.uid, desarrollo.id);
-                    console.log("🔍 [UI] Result:", { hasAppointment, appointment });
+                    // console.log("🔍 [UI] Result:", { hasAppointment, appointment });
                     if (hasAppointment) {
                         setExistingAppointment(appointment);
                     }

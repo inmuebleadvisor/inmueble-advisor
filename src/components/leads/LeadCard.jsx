@@ -3,6 +3,8 @@ import React from 'react';
 // ✅ Importamos las constantes para usar los códigos universales
 import { STATUS } from '../../config/constants';
 import { useService } from '../../hooks/useService'; // Import Hook
+import { useUser } from '../../context/UserContext';
+import { formatDate, getTiempoTranscurrido } from '../../utils/formatters';
 import './LeadCard.css';
 
 // --- DICCIONARIO DE ESTADOS (Usando las claves de STATUS) ---
@@ -37,41 +39,13 @@ const Icons = {
 
 export default function LeadCard({ lead, onAction }) {
   const { crm } = useService();
+  const { user } = useUser();
   // Configuración visual según el estado actual. Usamos la clave del lead como índice.
   // PORQUÉ: Si el status del lead no coincide con ninguna clave de ESTADOS, 
   // se usa un fallback seguro (STATUS.LEAD_NEW).
   const configEstado = ESTADOS[lead.status] || ESTADOS[STATUS.LEAD_NEW];
 
-  // Formato de fecha amigable (Added simplified mock function if not available, or assume it works)
-  // Assuming formatDate is globally available or imported, but it wasn't in the original imports?
-  // Original code tried to use formatDate in line 114 but defined getTiempoTranscurrido in line 44.
-  // I will assume formatDate was missing or intended to be getTiempoTranscurrido or similar.
-  // Wait, line 114 uses formatDate(lead.fechaCreacion). But formatDate is NOT defined in original file.
-  // I will replace it with a simple creation date formatter or just reuse getTiempoTranscurrido if appropriate,
-  // but better to fix the reference error if it existed. I'll define a helper.
-  const formatDate = (date) => {
-    if (!date) return '';
-    if (date.toDate) return date.toDate().toLocaleDateString();
-    return new Date(date).toLocaleDateString();
-  };
 
-  const getTiempoTranscurrido = (fecha) => {
-    // PORQUÉ: Verificamos si es un Timestamp de Firestore (objeto con .toDate) 
-    // o una cadena (ej. el historial antiguo).
-    if (!fecha) return 'Reciente';
-
-    let targetDate;
-    if (fecha.toDate) { // Si es un Timestamp de Firestore
-      targetDate = fecha.toDate();
-    } else { // Si es una cadena ISO (ej. el historial)
-      targetDate = new Date(fecha);
-    }
-
-    const diff = new Date() - targetDate;
-    const horas = Math.floor(diff / (1000 * 60 * 60));
-    if (horas < 24) return `Hace ${horas}h`;
-    return `Hace ${Math.floor(horas / 24)}d`;
-  };
 
   return (
     <div className="lead-card">
@@ -154,7 +128,7 @@ export default function LeadCard({ lead, onAction }) {
                     disabled={alcanzado} // Una vez marcado, safe
                     onChange={() => {
                       if (confirm(`¿Confirmas que se alcanzó el hito: ${hito}?`)) {
-                        crm.registrarHito(lead.id, hito, 'admin_user'); // TODO: Pass real user ID
+                        crm.registrarHito(lead.id, hito, user ? user.uid : 'unknown_user');
                         // Trigger callback or force refresh if needed
                       }
                     }}

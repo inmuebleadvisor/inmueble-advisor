@@ -36,7 +36,7 @@ export const CatalogProvider = ({ children }) => {
         // 1. Carga Inteligente: Si no hay ciudad filtro, NO cargamos modelos masivos.
         // Esto mantiene la carga inicial ligera hasta que el usuario elija en el modal.
         if (!selectedCity) {
-          console.log("⏳ Esperando selección de ciudad (Carga de modelos pausada)...");
+          // console.log("⏳ Esperando selección de ciudad (Carga de modelos pausada)...");
           // Aún cargamos configuración y desarrollos (ligero) para el sistema
           const [desarrollosData, amenidadesData, settings] = await Promise.all([
             catalogService.obtenerInventarioDesarrollos(),
@@ -47,7 +47,7 @@ export const CatalogProvider = ({ children }) => {
           amenidadesResult = amenidadesData;
           settingsResult = settings;
         } else {
-          console.log("🔄 Iniciando carga de catálogo filtrado (Ciudad: " + selectedCity + ")...");
+          // console.log("🔄 Iniciando carga de catálogo filtrado (Ciudad: " + selectedCity + ")...");
           const [modelosData, desarrollosData, amenidadesData, settings] = await Promise.all([
             catalogService.obtenerDatosUnificados(selectedCity),
             catalogService.obtenerInventarioDesarrollos(),
@@ -154,7 +154,7 @@ export const CatalogProvider = ({ children }) => {
         setDesarrollos(filteredDevs);
         setAmenidades(amenidadesResult);
 
-        console.log(`✅ Catálogo cargado (Filtrado): ${filteredModels.length} modelos, ${filteredDevs.length} desarrollos.`);
+        // console.log(`✅ Catálogo cargado (Filtrado): ${filteredModels.length} modelos, ${filteredDevs.length} desarrollos.`);
 
       } catch (error) {
         console.error("❌ Error crítico cargando catálogo:", error);
