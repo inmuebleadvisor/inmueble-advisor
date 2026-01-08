@@ -106,10 +106,10 @@ export class LeadAssignmentService {
         },
         // ✅ TRACKING INJECTION
         metaEventId: contextData.metaEventId,
-        fbp: contextData.fbp,
-        fbc: contextData.fbc,
-        clientUserAgent: contextData.clientUserAgent,
-        clientIp: contextData.clientIp,
+        fbp: contextData.fbp || null,
+        fbc: contextData.fbc || null,
+        clientUserAgent: contextData.clientUserAgent || null,
+        clientIp: contextData.clientIp || null,
 
         idDesarrollo: String(idDesarrollo), // Ensure mapped to correct field
         idModelo: contextData.idModelo || null, // ✅ Mapped from context
