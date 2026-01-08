@@ -5,7 +5,7 @@ import { doc, getDoc, collection, query, limit, getDocs, orderBy } from 'firebas
  * Service for fetching Dashboard Analytics.
  * Follows Dependency Injection pattern.
  */
-class DashboardServiceImpl {
+export class DashboardServiceImpl {
     constructor(firestoreDb) {
         this.db = firestoreDb;
         this.collectionName = 'dashboard_stats';

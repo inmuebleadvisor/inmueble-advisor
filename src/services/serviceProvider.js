@@ -24,6 +24,9 @@ import { FavoritesService } from './favorites.service';
 
 // 1. Instantiate Repositories
 import { CatalogRepository } from '../repositories/catalog.repository';
+// Refactored Imports for DI
+import { DashboardServiceImpl } from './dashboard.service';
+import { AdminService } from './admin.service';
 
 const leadRepository = new LeadRepository(db);
 const userRepository = new UserRepository(db);
@@ -46,6 +49,10 @@ export const crmService = new CrmService(leadRepository, externalAdvisorService)
 export const leadAssignmentService = new LeadAssignmentService(leadRepository, clientService, catalogRepository);
 export const favoritesService = new FavoritesService(userRepository);
 
+// New Services
+export const dashboardService = new DashboardServiceImpl(db);
+export const adminService = new AdminService(userRepository, leadRepository, catalogRepository);
+
 // 3. Export Registry
 export const services = {
     config: configService,
@@ -55,5 +62,7 @@ export const services = {
     client: clientService,
     crm: crmService,
     leadAssignment: leadAssignmentService,
-    favorites: favoritesService
+    favorites: favoritesService,
+    dashboard: dashboardService,
+    admin: adminService
 };

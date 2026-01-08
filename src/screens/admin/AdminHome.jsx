@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { DashboardService } from '../../services/dashboard.service';
+import { useService } from '../../hooks/useService';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
     LineChart, Line
@@ -7,6 +7,7 @@ import {
 import { Users, UserPlus, Timer, Layout, DollarSign, Calendar } from 'lucide-react';
 
 const AdminHome = () => {
+    const { dashboard } = useService();
     const [stats, setStats] = useState(null);
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -20,12 +21,12 @@ const AdminHome = () => {
         setLoading(true);
         try {
             // 1. Fetch latest snapshot
-            const current = await DashboardService.getLatestStats();
+            const current = await dashboard.getLatestStats();
             setStats(current);
 
             // 2. Fetch history for charts (mocked length based on filter)
             const daysMap = { '7d': 7, '30d': 30, '12m': 12 }; // 12m logic would need monthly aggregation
-            const hist = await DashboardService.getDailyHistory(daysMap[dateFilter] || 7);
+            const hist = await dashboard.getDailyHistory(daysMap[dateFilter] || 7);
 
             // Reverse to show oldest -> newest
             setHistory(hist.reverse());

@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { getAllDesarrollos, getAllLeads, getAllUsers } from '../services/admin.service';
+import { useService } from './useService';
 
 /**
  * Hook para centralizar la obtención de datos del Dashboard Admin.
  * @returns {Object} { data: { users, leads, desarrollos }, loading, error, refresh }
  */
 export const useAdminData = () => {
+    const { admin } = useService();
     const [data, setData] = useState({
         users: [],
         leads: [],
@@ -19,9 +20,9 @@ export const useAdminData = () => {
         setError(null);
         try {
             const [usersData, leadsData, devData] = await Promise.all([
-                getAllUsers(),
-                getAllLeads(),
-                getAllDesarrollos()
+                admin.getAllUsers(),
+                admin.getAllLeads(),
+                admin.getAllDesarrollos()
             ]);
 
             setData({

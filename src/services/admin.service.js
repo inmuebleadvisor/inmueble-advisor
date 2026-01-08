@@ -1,70 +1,71 @@
-import { db } from '../firebase/config';
+
 import { UserRepository } from '../repositories/user.repository';
 import { LeadRepository } from '../repositories/lead.repository';
 import { CatalogRepository } from '../repositories/catalog.repository';
 
-const userRepository = new UserRepository(db);
-const leadRepository = new LeadRepository(db);
-const catalogRepository = new CatalogRepository(db);
-
 /**
- * Servicio para la Gestión Administrativa
- * Responsabilidad: Acceso a datos globales (Usuarios, Leads, Inventario) y control de permisos.
+ * Service for Administrative Management
+ * Responsibility: Access to global data (Users, Leads, Inventory) and permission control.
  */
-
-// --- 1. GETTERS DE DATOS GLOBALES ---
-
-/**
- * Obtiene todos los usuarios (Asesores y Clientes)
- */
-export const getAllUsers = async () => {
-    try {
-        return await userRepository.getAllUsers();
-    } catch (error) {
-        console.error("Error fetching all users:", error);
-        return [];
+export class AdminService {
+    /**
+     * @param {UserRepository} userRepository 
+     * @param {LeadRepository} leadRepository 
+     * @param {CatalogRepository} catalogRepository 
+     */
+    constructor(userRepository, leadRepository, catalogRepository) {
+        this.userRepository = userRepository;
+        this.leadRepository = leadRepository;
+        this.catalogRepository = catalogRepository;
     }
-};
 
-/**
- * Obtiene todos los leads para métricas generales
- */
-export const getAllLeads = async () => {
-    try {
-        return await leadRepository.getAllLeads();
-    } catch (error) {
-        console.error("Error fetching all leads:", error);
-        return [];
+    // --- 1. GLOBAL DATA GETTERS ---
+
+    /**
+     * Get all users (Advisors and Clients)
+     */
+    async getAllUsers() {
+        try {
+            return await this.userRepository.getAllUsers();
+        } catch (error) {
+            console.error("Error fetching all users:", error);
+            return [];
+        }
     }
-};
 
-/**
- * Obtiene todos los desarrollos
- */
-export const getAllDesarrollos = async () => {
-    try {
-        return await catalogRepository.getAllDesarrollos();
-    } catch (error) {
-        console.error("Error fetching desarrollos:", error);
-        return [];
+    /**
+     * Get all leads for general metrics
+     */
+    async getAllLeads() {
+        try {
+            return await this.leadRepository.getAllLeads();
+        } catch (error) {
+            console.error("Error fetching all leads:", error);
+            return [];
+        }
     }
-};
 
-/**
- * Obtiene todos los modelos (para reportes globales)
- */
-export const getAllModelos = async () => {
-    try {
-        return await catalogRepository.getAllModelos();
-    } catch (error) {
-        console.error("Error fetching modelos:", error);
-        return [];
+    /**
+     * Get all developments
+     */
+    async getAllDesarrollos() {
+        try {
+            return await this.catalogRepository.getAllDesarrollos();
+        } catch (error) {
+            console.error("Error fetching desarrollos:", error);
+            return [];
+        }
     }
-};
 
-
-// --- 2. ACCIONES DE CONTROL ---
-
-// 🗑️ DELETED: toggleAdvisorInventory, updateAdvisorMetrics (Obsolete)
-
-
+    /**
+     * Get all models (for global reports)
+     */
+    async getAllModelos() {
+        try {
+            return await this.catalogRepository.getAllModelos();
+        } catch (error) {
+            console.error("Error fetching modelos:", error);
+            return [];
+        }
+    }
+}

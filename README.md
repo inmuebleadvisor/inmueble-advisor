@@ -31,6 +31,7 @@ To start the development server:
 npm run dev
 ```
 
+
 ### Build
 
 To build for production:
@@ -38,6 +39,14 @@ To build for production:
 ```bash
 npm run build
 ```
+
+## ⚙️ Configuration
+
+### External Services Verification
+
+- **Facebook Domain Verification**: A meta tag has been added to `index.html` to verify the domain with Meta (Facebook) services.
+    - Tag: `<meta name="facebook-domain-verification" content="..." />`
+    - Location: `public/index.html` (or root `index.html` in Vite).
 
 ## 🏗️ Architecture
 

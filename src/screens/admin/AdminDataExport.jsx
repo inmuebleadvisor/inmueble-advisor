@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-// ÚLTIMA MODIFICACION: 31/12/2025 - Refactor w/ Services & Utils
-import { getAllDesarrollos, getAllModelos } from '../../services/admin.service';
+// ÚLTIMA MODIFICACION: 08/01/2026 - Refactor w/ Dependency Injection
+import { useService } from '../../hooks/useService';
 import { cleanField, parseCoordinate, parseDate, downloadCSV } from '../../utils/exportUtils';
 
 /**
@@ -10,6 +10,7 @@ import { cleanField, parseCoordinate, parseDate, downloadCSV } from '../../utils
  * Refactorizado para usar Service Layer y Utils comprtidos.
  */
 const AdminDataExport = () => {
+  const { admin } = useService();
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({ msg: '', type: '' });
 
@@ -21,7 +22,7 @@ const AdminDataExport = () => {
 
     try {
       // 1. Petición a Service Layer
-      const docs = await getAllDesarrollos();
+      const docs = await admin.getAllDesarrollos();
 
       // 2. Definición de Columnas (Headers vs DATOSESTRUCTURA.md)
       const headers = [
@@ -102,7 +103,7 @@ const AdminDataExport = () => {
     setStatus({ msg: '⏳ Descargando Modelos... esto puede tardar si hay muchos.', type: 'info' });
 
     try {
-      const docs = await getAllModelos();
+      const docs = await admin.getAllModelos();
 
       const headers = [
         "id",
