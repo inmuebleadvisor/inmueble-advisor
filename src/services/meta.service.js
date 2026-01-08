@@ -80,7 +80,7 @@ export class MetaService {
 
             // Syntax: fbq('track', eventName, params, options)
             window.fbq('track', eventName, params, options);
-            console.log(`📡 [MetaService] Tracked ${eventName}`, params, options);
+            console.log(`📡 [Meta Pixel] Sending Browser Payload (${eventName}):`, { params, options });
         } else {
             console.warn("⚠️ [MetaService] fbq not defined. Pixel might be blocked.");
         }

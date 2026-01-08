@@ -87,6 +87,9 @@ export class MetaAdsService {
                 payload.test_event_code = META_CONFIG.TEST_EVENT_CODE;
             }
 
+            // DEBUG: Print full payload
+            console.log("🛠️ [Meta CAPI] Sending Payload:", JSON.stringify(payload, null, 2));
+
             const response = await axios.post(this.baseUrl, payload);
 
             if (response.data && response.data.error) {
