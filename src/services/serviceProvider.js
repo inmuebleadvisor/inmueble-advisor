@@ -1,4 +1,10 @@
 
+/**
+ * @deprecated
+ * LEGACY SERVICE LOCATOR
+ * This file is being phased out in favor of React Context (dependency injection).
+ * Avoid adding new services here.
+ */
 import { db, auth, googleProvider } from '../firebase/config';
 
 // Repositories

@@ -2,7 +2,7 @@
 // ÚLTIMA MODIFICACION: 02/12/2025
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { catalogService, configService } from '../services/serviceProvider';
+import { useService } from '../hooks/useService'; // ✅ DI Hook
 import { useUser } from './UserContext'; // Importamos UserContext
 
 const CatalogContext = createContext();
@@ -13,6 +13,7 @@ export const useCatalog = () => {
 
 export const CatalogProvider = ({ children }) => {
   const { selectedCity } = useUser(); // Obtenemos la ciudad seleccionada
+  const { catalog: catalogService, config: configService } = useService(); // ✅ SERVICE INJECTION
   const [modelos, setModelos] = useState([]);
   const [desarrollos, setDesarrollos] = useState([]);
   const [amenidades, setAmenidades] = useState([]);

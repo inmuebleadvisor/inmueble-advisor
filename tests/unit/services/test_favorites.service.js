@@ -1,4 +1,4 @@
-import { FavoritesService } from './favorites.service';
+import { FavoritesService } from '../../../src/services/favorites.service';
 
 const mockRepo = {
     addFavorite: vi.fn(),

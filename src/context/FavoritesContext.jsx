@@ -2,7 +2,7 @@
 // ÚLTIMA MODIFICACION: 30/12/2025 - Refactorización DI
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUser } from './UserContext';
-import { favoritesService } from '../services/serviceProvider';
+import { useService } from '../hooks/useService';
 
 const FavoritesContext = createContext();
 
@@ -10,6 +10,7 @@ export const useFavorites = () => useContext(FavoritesContext);
 
 export const FavoritesProvider = ({ children }) => {
   const { user } = useUser();
+  const { favorites: favoritesService } = useService();
   const [favoritosIds, setFavoritosIds] = useState([]); // Array de IDs de modelos
 
   // 1. EFECTO: Sincronización Estricta (Nube -> App)

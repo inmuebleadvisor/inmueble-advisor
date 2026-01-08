@@ -4,6 +4,10 @@ import { STATUS } from '../config/constants';
 /**
  * SERVICIO DE GENERACIÓN DE LEADS (FRONTEND - OPTIMIZADO)
  */
+/**
+ * Service for Lead Generation and Orchestration.
+ * Orchestrates Client creation, Commission calculation, and Lead persistence.
+ */
 export class LeadAssignmentService {
   /**
    * @param {import('../repositories/lead.repository').LeadRepository} leadRepository 
@@ -16,6 +20,22 @@ export class LeadAssignmentService {
     this.catalogRepository = catalogRepository;
   }
 
+  /**
+   * Orchestrates the creation of a new Lead.
+   * 1. Finds or Creates Client User.
+   * 2. Resolves Development and Developer data.
+   * 3. Calculates Commission.
+   * 4. Persists Lead.
+   * @param {Object} datosCliente 
+   * @param {string} idDesarrollo 
+   * @param {string} nombreDesarrollo 
+   * @param {string} modeloInteres 
+   * @param {string|null} providedUid 
+   * @param {string|null} idDesarrollador 
+   * @param {number} precioReferencia 
+   * @param {Object} contextData 
+   * @returns {Promise<{success: boolean, leadId?: string, error?: string}>}
+   */
   async generarLeadAutomatico(datosCliente, idDesarrollo, nombreDesarrollo, modeloInteres, providedUid = null, idDesarrollador = null, precioReferencia = 0, contextData = {}) {
     try {
       // 1. GESTIÓN DE USUARIO (Link User-Lead)

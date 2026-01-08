@@ -1,6 +1,6 @@
 
-import { LeadAssignmentService } from './leadAssignmentService.js'; // corrected .js import if environment needs it, or assume extensions
-import { STATUS } from '../config/constants';
+import { LeadAssignmentService } from '../../../src/services/leadAssignmentService.js'; // corrected .js import if environment needs it, or assume extensions
+import { STATUS } from '../../../src/config/constants';
 
 const mockLeadRepo = {
     createLead: vi.fn()

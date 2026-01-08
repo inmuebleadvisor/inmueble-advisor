@@ -2,6 +2,10 @@
 // src/services/favorites.service.js
 // REFACTORIZADO: Ene 2026 - Clase con Inyección de Dependencias
 
+/**
+ * Service for User Favorites.
+ * Facades UserRepository for favorites management.
+ */
 export class FavoritesService {
   /**
    * @param {Object} userRepository - Repositorio de usuarios

@@ -4,6 +4,10 @@ import { CatalogRepository } from '../repositories/catalog.repository';
 
 const FALLBACK_IMG = IMAGES.FALLBACK_PROPERTY;
 
+/**
+ * Service for handling Catalog Data (Developments and Models).
+ * Manages caching and retrieval of inventory.
+ */
 export class CatalogService {
   constructor(db) {
     this.repository = new CatalogRepository(db);
@@ -12,6 +16,11 @@ export class CatalogService {
     this.cacheDesarrollos = null;
   }
 
+  /**
+   * Retrieves unified models with optional city filtering.
+   * @param {string|null} ciudadFilter - City name to filter by
+   * @returns {Promise<Array>} List of models
+   */
   async obtenerDatosUnificados(ciudadFilter = null) {
     if (this.cacheModelos && this.lastCityCached === ciudadFilter) return this.cacheModelos;
 
@@ -56,6 +65,10 @@ export class CatalogService {
     }
   }
 
+  /**
+   * Gets a list of distinct cities available in the inventory.
+   * @returns {Promise<string[]>} Sorted list of city names
+   */
   async obtenerCiudadesDisponibles() {
     const desarrollos = await this.obtenerInventarioDesarrollos();
     const ciudades = new Set();
@@ -68,6 +81,10 @@ export class CatalogService {
     return Array.from(ciudades).sort();
   }
 
+  /**
+   * Retrieves all developments (cached).
+   * @returns {Promise<Array>} List of developments
+   */
   async obtenerInventarioDesarrollos() {
     if (this.cacheDesarrollos) return this.cacheDesarrollos;
     try {
@@ -110,6 +127,11 @@ export class CatalogService {
     }
   }
 
+  /**
+   * Enriches the advisor's personal inventory list with full catalog data.
+   * @param {Array} listaInventarioUsuario - List of minimal inventory items from user profile
+   * @returns {Promise<Array>} Hydrated inventory list
+   */
   async hidratarInventarioAsesor(listaInventarioUsuario) {
     if (!listaInventarioUsuario || listaInventarioUsuario.length === 0) return [];
     const catalogo = await this.obtenerInventarioDesarrollos();
@@ -138,6 +160,14 @@ export class CatalogService {
   }
 
   // Static Pure Logic Methods
+  /**
+   * Pure logic to filter catalog items based on criteria.
+   * @param {Array} dataMaestra - List of models
+   * @param {Array} desarrollos - List of developments
+   * @param {Object} filters - Filter criteria
+   * @param {string} searchTerm - Search query
+   * @returns {Array} Filtered list
+   */
   static filterCatalog(dataMaestra, desarrollos, filters, searchTerm) {
     if (!dataMaestra) return [];
     const term = normalizar(searchTerm);

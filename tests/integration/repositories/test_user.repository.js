@@ -1,4 +1,4 @@
-import { UserRepository } from './user.repository';
+import { UserRepository } from '../../../src/repositories/user.repository';
 import { getDoc, setDoc, doc } from 'firebase/firestore';
 
 // Mocks for Firebase Firestore

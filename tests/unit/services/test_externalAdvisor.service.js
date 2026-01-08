@@ -1,5 +1,5 @@
 
-import { ExternalAdvisorService } from './externalAdvisor.service';
+import { ExternalAdvisorService } from '../../../src/services/externalAdvisor.service';
 
 // Mock dependencies
 const mockExternalAdvisorRepo = {

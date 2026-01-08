@@ -1,5 +1,5 @@
 
-import { LeadRepository } from './lead.repository';
+import { LeadRepository } from '../../../src/repositories/lead.repository';
 import { Timestamp } from 'firebase/firestore';
 
 // Mock dependencies
@@ -65,7 +65,8 @@ describe('LeadRepository', () => {
                     idDesarrollo: 'dev1',
                     idDesarrollador: 'developer1',
                     status: 'PENDIENTE',
-                    statusHistory: expect.any(Array)
+                    _statusReason: "Lead generado por el sistema",
+                    _changedBy: "SYSTEM"
                 })
             );
             expect(result).toBe('new-lead-id');
@@ -80,7 +81,8 @@ describe('LeadRepository', () => {
                 undefined, // doc ref
                 expect.objectContaining({
                     status: 'CONTACTADO',
-                    statusHistory: expect.anything() // arrayUnion result
+                    _statusReason: 'Called user',
+                    _changedBy: 'SYSTEM'
                 })
             );
         });

@@ -1,4 +1,8 @@
 
+/**
+ * Service for managing External Advisors (Developers' Sales Reps).
+ * Handles registration and directory listing.
+ */
 export class ExternalAdvisorService {
     constructor(externalAdvisorRepository, catalogRepository) {
         this.repository = externalAdvisorRepository;
@@ -63,6 +67,11 @@ export class ExternalAdvisorService {
             };
         });
     }
+    /**
+     * Gets advisors for a specific developer.
+     * @param {string} developerId 
+     * @returns {Promise<Array>} List of advisors
+     */
     async getByDeveloper(developerId) {
         if (!developerId) return [];
         return await this.repository.getAdvisorsByDeveloper(developerId);

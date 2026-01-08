@@ -1,4 +1,4 @@
-import { AuthService } from './auth.service';
+import { AuthService } from '../../../src/services/auth.service';
 
 const mockAuth = {};
 const mockGoogleProvider = {};

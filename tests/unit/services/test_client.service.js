@@ -1,4 +1,4 @@
-import { ClientService } from './client.service';
+import { ClientService } from '../../../src/services/client.service';
 
 const mockRepo = {
     findUserByEmail: vi.fn(),

@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
-import { catalogService } from '../../services/serviceProvider';
+import { useService } from '../../hooks/useService';
 import { useCatalog } from '../../context/CatalogContext';
 
 import DevelopmentDetailsContent from '../../components/catalogo/DevelopmentDetailsContent';
@@ -13,6 +13,7 @@ export default function DetalleDesarrollo() {
   const { id } = useParams();
   const { trackBehavior } = useUser();
   const { loadingCatalog } = useCatalog();
+  const { catalog: catalogService } = useService(); // ✅ SERVICE INJECTION
   const navigate = useNavigate();
 
   // --- ESTADOS ---

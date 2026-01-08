@@ -6,6 +6,10 @@ import { STATUS } from '../config/constants';
  * SERVICIO CRM (LEADS)
  * Responsabilidad: Gestión del embudo de ventas y estados de leads.
  */
+/**
+ * Service for CRM Logic (Lead Lifecycle).
+ * Manages Sales Funnel and Lead Status transitions.
+ */
 export class CrmService {
   /**
    * @param {import('../repositories/lead.repository').LeadRepository} leadRepository 
@@ -31,6 +35,12 @@ export class CrmService {
 
   /**
    * Actualiza el estado de un lead en el embudo (ej. de 'nuevo' a 'contactado').
+   */
+  /**
+   * Updates a lead's status in the funnel.
+   * @param {string} leadId 
+   * @param {string} nuevoEstado 
+   * @param {Object} datosExtra - Metadata like lost reason or won amount
    */
   async actualizarEstadoLead(leadId, nuevoEstado, datosExtra = {}) {
     try {
@@ -140,6 +150,13 @@ export class CrmService {
   /**
    * Calcula la comisión estimada.
    * Static because it's pure logic, no dependencies.
+   */
+  /**
+   * Calculates estimated commission based on base price and policy.
+   * Pure logic.
+   * @param {number} precioBase 
+   * @param {Object} commissionPolicy - { porcentaje: number }
+   * @returns {number} Estimated commission
    */
   calcularComisionEstimada(precioBase, commissionPolicy) {
     if (!precioBase || !commissionPolicy?.porcentaje) return 0;

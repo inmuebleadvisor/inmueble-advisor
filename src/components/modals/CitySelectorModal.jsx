@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { catalogService } from '../../services/serviceProvider';
+import { useService } from '../../hooks/useService';
 import { useUser } from '../../context/UserContext';
 import './CitySelectorModal.css'; // Asumimos estilos básicos o reutilizamos modal existente
 
 const CitySelectorModal = () => {
     const { selectedCity, updateSelectedCity } = useUser();
+    const { catalog: catalogService } = useService(); // ✅ SERVICE INJECTION
     const [ciudades, setCiudades] = useState([]);
     const [loading, setLoading] = useState(true);
     const [tempSelection, setTempSelection] = useState(null);

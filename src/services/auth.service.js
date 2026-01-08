@@ -2,6 +2,10 @@ import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebase/config';
 
+/**
+ * Service for handling Authentication and User Profile management.
+ * Facades Firebase Auth and User Repository.
+ */
 export class AuthService {
     /**
      * @param {import('firebase/auth').Auth} auth
@@ -63,6 +67,9 @@ export class AuthService {
         }
     }
 
+    /**
+     * Signs out the current user.
+     */
     async logout() {
         await signOut(this.auth);
     }

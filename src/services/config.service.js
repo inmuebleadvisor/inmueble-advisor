@@ -10,6 +10,10 @@ const DEFAULT_SETTINGS = {
     hideEmptyDevs: false
 };
 
+/**
+ * Service for managing Global Configuration (Platform Settings).
+ * Stores settings in Firestore 'settings/global_config'.
+ */
 export class ConfigService {
     constructor(db) {
         this.db = db;

@@ -52,22 +52,10 @@ export class LeadRepository {
             idAsesorAsignado: null,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
-            statusHistory: [
-                /**
-                 * @type {Array<Object>}
-                 * @property {string} status - New status
-                 * @property {Timestamp} timestamp - When it happened
-                 * @property {string} note - Optional context
-                 * @property {string} changedBy - User ID or 'SYSTEM'
-                 */
-                {
-                    status: "PENDIENTE",
-                    timestamp: now,
-                    note: "Lead generado por el sistema",
-                    changedBy: "SYSTEM"
-                }
-            ],
-            ...extraData // ✅ Persist dynamic fields (snapshot, origen, etc)
+            // ❌ REMOVED: statusHistory. logic centralized in Backend Trigger.
+            _statusReason: "Lead generado por el sistema", // Trigger will consume this
+            _changedBy: "SYSTEM", // Trigger will consume this
+            ...extraData
         };
 
         const docRef = await addDoc(collection(this.db, this.collectionName), newLead);
@@ -117,19 +105,24 @@ export class LeadRepository {
         // Automatic Status History Tracking
         // If the update contains a 'status', we append to the history.
         if (updateData.status) {
-            const now = Timestamp.now();
-            const historyEvent = {
-                status: updateData.status,
-                timestamp: now,
-                note: updateData.note || "Estatus actualizado",
-                changedBy: updateData.changedBy || "SYSTEM"
-            };
+            // ✅ CHANGED: We now map metadata to transient fields.
+            // The Backend Trigger will detect status change & consume these.
 
-            // Remove metadata fields from the main document update if they were passed just for history
-            delete dataToUpdate.note;
-            delete dataToUpdate.changedBy;
+            if (updateData.note) {
+                dataToUpdate._statusReason = updateData.note;
+                delete dataToUpdate.note; // Clean from main object
+            } else {
+                dataToUpdate._statusReason = "Estatus actualizado";
+            }
 
-            dataToUpdate.statusHistory = arrayUnion(historyEvent);
+            if (updateData.changedBy) {
+                dataToUpdate._changedBy = updateData.changedBy;
+                delete dataToUpdate.changedBy; // Clean from main object
+            } else {
+                dataToUpdate._changedBy = "SYSTEM";
+            }
+
+            // Note: We DO NOT touch statusHistory here anymore.
         }
 
         await updateDoc(leadRef, dataToUpdate);
@@ -144,18 +137,14 @@ export class LeadRepository {
      */
     async updateStatus(leadId, newStatus, eventMetadata) {
         const leadRef = doc(this.db, this.collectionName, leadId);
-        const now = Timestamp.now();
-        const historyEvent = {
-            status: newStatus,
-            timestamp: now,
-            note: eventMetadata.note || "Estatus actualizado",
-            changedBy: eventMetadata.changedBy || "SYSTEM"
-        };
+        // ✅ Refactored: We update 'status' + transient fields.
+        // Trigger handles the history.
 
         await updateDoc(leadRef, {
             status: newStatus,
             updatedAt: serverTimestamp(),
-            statusHistory: arrayUnion(historyEvent)
+            _statusReason: eventMetadata.note || "Estatus actualizado",
+            _changedBy: eventMetadata.changedBy || "SYSTEM"
         });
         return true;
     }

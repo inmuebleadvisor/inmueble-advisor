@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
-import { catalogService, clientService } from '../../services/serviceProvider';
+import { useService } from '../../hooks/useService';
 import { FINANZAS } from '../../config/constants';
 // Firestore imports eliminados por refactoring (DI Principle)
 import '../../styles/Onboarding.css'; // Importamos estilos dedicados
@@ -14,6 +14,7 @@ const STORAGE_KEY = 'inmueble_advisor_onboarding_cliente_temp';
 
 export default function OnboardingCliente() {
     const navigate = useNavigate();
+    const { catalog: catalogService, client: clientService } = useService(); // ✅ SERVICE INJECTION
     const { loginWithGoogle, trackBehavior, user, loadingUser } = useUser();
 
     // --- 1. ESTADOS (Persistencia) ---

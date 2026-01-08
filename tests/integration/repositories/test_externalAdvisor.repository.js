@@ -1,5 +1,5 @@
 
-import { ExternalAdvisorRepository } from './externalAdvisor.repository';
+import { ExternalAdvisorRepository } from '../../../src/repositories/externalAdvisor.repository';
 
 // Mock dependencies
 const mockDb = {};

@@ -1,6 +1,6 @@
 
-import { CrmService } from './crm.service';
-import { STATUS } from '../config/constants';
+import { CrmService } from '../../../src/services/crm.service';
+import { STATUS } from '../../../src/config/constants';
 
 // Mocks
 const mockLeadRepo = {

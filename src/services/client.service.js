@@ -7,6 +7,10 @@
  * - Evitar duplicidad de usuarios basada en Email o Teléfono.
  */
 
+/**
+ * Service for managing Client Users (Lead-User Link).
+ * Ensures every Lead is linked to a unique User.
+ */
 export class ClientService {
     /**
      * @param {import('../repositories/user.repository').UserRepository} userRepository 
@@ -19,6 +23,13 @@ export class ClientService {
      * Busca un cliente existente por Email o Teléfono.
      * Prioridad: 1. Email (Exacto), 2. Teléfono (Normalizado).
      * @returns {Promise<{uid: string, ...data} | null>}
+     */
+    /**
+     * Finds an existing client by Email or Phone.
+     * Priority: 1. Email (Exact), 2. Phone (Cleaned).
+     * @param {string} email - User email
+     * @param {string} phone - User phone
+     * @returns {Promise<{uid: string, ...data} | null>} User document or null
      */
     async findClientByContact(email, phone) {
         // 1. Buscar por Email
@@ -59,6 +70,11 @@ export class ClientService {
     /**
      * Crea un nuevo Usuario con rol "cliente".
      */
+    /**
+     * Creates a new User with role "cliente".
+     * @param {Object} userData - { nombre, email, telefono }
+     * @returns {Promise<Object>} Created user
+     */
     async createClient(userData) {
         try {
             const newUser = {
@@ -80,6 +96,11 @@ export class ClientService {
 
     /**
      * Actualiza los datos de contacto de un cliente existente si son más recientes.
+     */
+    /**
+     * Updates client contact details.
+     * @param {string} uid - User ID
+     * @param {Object} newData - Data to update
      */
     async updateClientContact(uid, newData) {
         try {
