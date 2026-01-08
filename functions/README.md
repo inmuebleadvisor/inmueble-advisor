@@ -62,7 +62,31 @@ Centraliza la lógica de actualización de leads y rastreo de eventos críticos.
 *   **Funcionalidad:**
     1.  **Historial de Estatus:** Registra cambios de estado en `statusHistory`.
     2.  **Meta CAPI (Schedule):** Detecta cuando se confirma una cita (`citainicial`) y envía el evento `Schedule` a la API de Conversiones de Meta (Server-Side) para asegurar la deduplicación y evitar bloqueadores de anuncios.
-*   **Integración:** Utiliza `MetaAdsService` con hashing SHA256 para PII.
+*   **Integración:** Utiliza `MetaAdsService` con hashing SHA256 para PII (Email, Phone, Name).
+
+### ⚙️ Configuración de Meta CAPI
+
+Para habilitar el rastreo Server-Side correcto:
+
+1.  **Credenciales:**
+    Las constantes se encuentran en `src/core/constants/meta.ts`.
+    *   `PIXEL_ID`
+    *   `ACCESS_TOKEN` (Debe tener permisos de `leads_access`).
+    *   `API_VERSION`: **v19.0**.
+
+2.  **Modo de Prueba (Test Events):**
+    Para ver eventos en tiempo real en el Administrador de Eventos de Meta:
+    *   Obtén el código de prueba en **Events Manager > Test Events**.
+    *   Colócalo en `TEST_EVENT_CODE` dentro de `src/core/constants/meta.ts`.
+    *   *Nota: Recuerda limpiar esta variable o dejarla vacía para producción pura.*
+
+3.  **Logs de Depuración:**
+    *   **Frontend (Navegador):** Busca logs con el prefijo `📡 [Meta Pixel]`.
+    *   **Backend (Firebase Console):** Busca logs con el prefijo `🛠️ [Meta CAPI]`.
+        *   Estos logs muestran el payload completo JSON enviado a Meta, incluyendo los datos de usuario con **SHA256 Hashing**.
+
+---
+
 
 ---
 
