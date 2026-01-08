@@ -72,11 +72,15 @@ export class MetaService {
     track(eventName, data = {}, eventId = null) {
         if (typeof window !== 'undefined' && window.fbq) {
             const params = { ...data };
+            const options = {};
+
             if (eventId) {
-                params.eventID = eventId;
+                options.eventID = eventId;
             }
-            window.fbq('track', eventName, params);
-            console.log(`📡 [MetaService] Tracked ${eventName}`, params);
+
+            // Syntax: fbq('track', eventName, params, options)
+            window.fbq('track', eventName, params, options);
+            console.log(`📡 [MetaService] Tracked ${eventName}`, params, options);
         } else {
             console.warn("⚠️ [MetaService] fbq not defined. Pixel might be blocked.");
         }

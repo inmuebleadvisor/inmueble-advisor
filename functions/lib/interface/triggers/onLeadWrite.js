@@ -38,7 +38,7 @@ const MetaAdsService_1 = require("../../infrastructure/services/MetaAdsService")
 exports.onLeadWrite = functions.firestore
     .document("leads/{leadId}")
     .onWrite(async (change, context) => {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     // 1. Exit if deleted
     if (!change.after.exists)
         return;
@@ -65,21 +65,25 @@ exports.onLeadWrite = functions.firestore
     // Logic: specific check for "citainicial.dia" existence
     if ((!oldCita && newCita && newCita.dia) || (oldCita && newCita && !oldCita.dia && newCita.dia)) {
         const metaService = new MetaAdsService_1.MetaAdsService();
-        const msEventId = afterData.metaEventId;
-        const scheduleEventId = msEventId ? `${msEventId}_schedule` : `schedule_${leadId}`;
+        const msEventId = afterData.metaEventId || afterData.eventId;
+        // Ensure we have a valid event ID for deduplication. If not provided by frontend, we generate one but deduplication might fail.
+        const scheduleEventId = msEventId || `schedule_${leadId}`;
         try {
-            await metaService.sendEvent('Schedule', scheduleEventId, {
-                em: afterData.email || ((_a = afterData.clienteDatos) === null || _a === void 0 ? void 0 : _a.email),
-                ph: afterData.telefono || ((_b = afterData.clienteDatos) === null || _b === void 0 ? void 0 : _b.telefono),
-                fn: afterData.nombre || ((_c = afterData.clienteDatos) === null || _c === void 0 ? void 0 : _c.nombre),
-                client_user_agent: afterData.clientUserAgent,
-                fbp: afterData.fbp,
-                fbc: afterData.fbc,
-                external_id: afterData.uid
+            await metaService.sendEvent('Schedule', {
+                email: afterData.email || ((_a = afterData.clienteDatos) === null || _a === void 0 ? void 0 : _a.email),
+                phone: afterData.telefono || ((_b = afterData.clienteDatos) === null || _b === void 0 ? void 0 : _b.telefono),
+                firstName: afterData.nombre || ((_c = afterData.clienteDatos) === null || _c === void 0 ? void 0 : _c.nombre),
+                lastName: afterData.apellido || ((_d = afterData.clienteDatos) === null || _d === void 0 ? void 0 : _d.apellido),
+                clientIp: afterData.clientIp || afterData.ip,
+                userAgent: afterData.clientUserAgent || afterData.userAgent,
+                fbc: afterData.fbc || afterData._fbc,
+                fbp: afterData.fbp || afterData._fbp,
+                zipCode: afterData.zipCode || afterData.codigoPostal
             }, {
-                content_name: afterData.nombreDesarrollo || 'Cita',
-                status: 'scheduled'
-            });
+                content_name: afterData.nombreDesarrollo || 'Cita Inmueble Advisor',
+                status: 'scheduled',
+                content_category: 'Vivienda Nueva'
+            }, scheduleEventId);
         }
         catch (err) {
             logger.error("[MetaCAPI] Failed to send Schedule event", err);

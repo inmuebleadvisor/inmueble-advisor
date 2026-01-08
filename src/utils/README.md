@@ -4,7 +4,7 @@ Funciones auxiliares puras y helpers para la aplicación.
 
 ## Archivos
 
-*   **`formatters.js`**: Formateo de moneda, fechas y textos.
+*   **`formatters.js`**: Formateo de moneda, fechas (`formatDate`, `getTiempoTranscurrido`) y textos.
 *   **`dataHelpers.js`**: Transformación de estructuras de datos (ej. mapeo de respuestas API).
 *   **`exportUtils.js`**: Lógica para exportación de reportes (CSV/Excel).
 

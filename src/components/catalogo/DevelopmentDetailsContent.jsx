@@ -7,6 +7,7 @@ import StickyActionPanel from '../layout/StickyActionPanel';
 import Delightbox from '../common/Delightbox';
 import FavoriteBtn from '../common/FavoriteBtn';
 import { useStickyPanel } from '../../hooks/useStickyPanel';
+import { useService } from '../../hooks/useService';
 import '../../styles/components/DevelopmentDetails.css';
 // import Modal from '../shared/Modal'; // Removed: LeadCaptureForm is now self-contained
 import LeadCaptureForm from '../leads/LeadCaptureForm';
@@ -32,6 +33,17 @@ export default function DevelopmentDetailsContent({
 
     // 1. Control de visibilidad del ActionPanel usando Custom Hook
     const showActionPanel = useStickyPanel(headerRef);
+    const { meta: metaService } = useService();
+
+    // Meta Pixel: Contact (Track when form opens)
+    React.useEffect(() => {
+        if (isLeadFormOpen) {
+            metaService.track('Contact', {
+                content_name: desarrollo.nombre,
+                content_category: 'Vivienda Nueva'
+            });
+        }
+    }, [isLeadFormOpen, desarrollo.nombre, metaService]);
 
     const galeriaImagenes = useMemo(() => {
         if (!desarrollo || !desarrollo.multimedia) return [];

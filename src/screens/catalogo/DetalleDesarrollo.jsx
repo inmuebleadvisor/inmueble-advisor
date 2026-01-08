@@ -13,7 +13,7 @@ export default function DetalleDesarrollo() {
   const { id } = useParams();
   const { trackBehavior } = useUser();
   const { loadingCatalog } = useCatalog();
-  const { catalog: catalogService } = useService(); // ✅ SERVICE INJECTION
+  const { catalog: catalogService, meta: metaService } = useService(); // ✅ SERVICE INJECTION
   const navigate = useNavigate();
 
   // --- ESTADOS ---
@@ -33,6 +33,13 @@ export default function DetalleDesarrollo() {
 
         if (data) {
           trackBehavior('view_development', { id: id, name: data.nombre });
+          // Meta Pixel: ViewContent
+          metaService.track('ViewContent', {
+            content_name: data.nombre,
+            content_category: 'Vivienda Nueva',
+            content_ids: [id],
+            content_type: 'product'
+          });
         }
       } catch (error) {
         console.error("Error cargando desarrollo:", error);

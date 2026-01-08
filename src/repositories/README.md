@@ -12,7 +12,7 @@ Mientras que los **Servicios** manejan la lógica de negocio, los **Repositorios
 -   **`AnalyticEventsRepository`**: Registro de eventos crudos (`SESSION_START`, `PAGE_VIEW`) en Firestore. Estos datos se sincronizan con BigQuery para análisis histórico.
 -   **`CatalogRepository`**: Obtención de modelos de casas, prototipos y desarrollos. Convierte data cruda en objetos `Model`, `Development`.
 -   **`ExternalAdvisorRepository`**: Datos sobre asesores externos y agencias.
--   **`LeadRepository`**: Acceso a la colección de prospectos (leads). **Gestión automática del historial de estados (`statusHistory`).**
+-   **`LeadRepository`**: Acceso a la colección de prospectos (leads). **Gestión automática del historial de estados (`statusHistory`).** *Nota: Optimizado para reducir ruido en logs (`console.log` comentados).*
 -   **`UserRepository`**: CRUD de usuarios, gestión de favoritos y perfiles.
 
 ## 🛡️ La "Aduana de Datos" (Data Gatekeeper)

@@ -30,7 +30,6 @@ const NotifyNewLead_1 = require("../../core/usecases/NotifyNewLead");
 const TelegramService_1 = require("../../infrastructure/services/TelegramService");
 const FirebaseUserRepository_1 = require("../../infrastructure/repositories/FirebaseUserRepository");
 const FirebaseLeadRepository_1 = require("../../infrastructure/repositories/FirebaseLeadRepository");
-const MetaAdsService_1 = require("../../infrastructure/services/MetaAdsService");
 exports.onLeadCreated = functions
     .runWith({ secrets: ["TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"] })
     .firestore
@@ -46,32 +45,8 @@ exports.onLeadCreated = functions
         const telegramService = new TelegramService_1.TelegramService();
         const userRepo = new FirebaseUserRepository_1.FirebaseUserRepository();
         const leadRepo = new FirebaseLeadRepository_1.FirebaseLeadRepository();
-        const metaService = new MetaAdsService_1.MetaAdsService();
         const useCase = new NotifyNewLead_1.NotifyNewLead(telegramService, userRepo, leadRepo);
-        // 1. Send CAPI Event (Contact) - Non-blocking preferred but await is safer for Cloud Functions lifecycle
-        if (leadData.metaEventId) {
-            try {
-                await metaService.sendEvent('Contact', leadData.metaEventId, {
-                    em: leadData.email,
-                    ph: leadData.telefono,
-                    fn: leadData.nombre,
-                    ln: leadData.apellido,
-                    client_user_agent: leadData.clientUserAgent,
-                    fbp: leadData.fbp,
-                    fbc: leadData.fbc,
-                    external_id: leadData.uid
-                }, {
-                    content_name: leadData.idDesarrollo || 'Lead Gen',
-                    content_category: 'Housing',
-                    value: 0,
-                    currency: 'MXN'
-                });
-            }
-            catch (metaError) {
-                logger.error("Failed to send Meta CAPI event:", metaError);
-                // Don't fail the main trigger
-            }
-        }
+        // Meta CAPI logic moved to onLeadWrite to Centralize Schedule event handling and avoid duplication.
         await useCase.execute(Object.assign({ id: leadId }, leadData));
         logger.info(`Notification sent for lead: ${leadId}`);
     }

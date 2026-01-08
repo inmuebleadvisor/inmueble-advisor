@@ -45,26 +45,30 @@ export const onLeadWrite = functions.firestore
         // Logic: specific check for "citainicial.dia" existence
         if ((!oldCita && newCita && newCita.dia) || (oldCita && newCita && !oldCita.dia && newCita.dia)) {
             const metaService = new MetaAdsService();
-            const msEventId = afterData.metaEventId;
-            const scheduleEventId = msEventId ? `${msEventId}_schedule` : `schedule_${leadId}`;
+            const msEventId = afterData.metaEventId || afterData.eventId;
+            // Ensure we have a valid event ID for deduplication. If not provided by frontend, we generate one but deduplication might fail.
+            const scheduleEventId = msEventId || `schedule_${leadId}`;
 
             try {
                 await metaService.sendEvent(
                     'Schedule',
-                    scheduleEventId,
                     {
-                        em: afterData.email || afterData.clienteDatos?.email,
-                        ph: afterData.telefono || afterData.clienteDatos?.telefono,
-                        fn: afterData.nombre || afterData.clienteDatos?.nombre,
-                        client_user_agent: afterData.clientUserAgent,
-                        fbp: afterData.fbp,
-                        fbc: afterData.fbc,
-                        external_id: afterData.uid
+                        email: afterData.email || afterData.clienteDatos?.email,
+                        phone: afterData.telefono || afterData.clienteDatos?.telefono,
+                        firstName: afterData.nombre || afterData.clienteDatos?.nombre,
+                        lastName: afterData.apellido || afterData.clienteDatos?.apellido,
+                        clientIp: afterData.clientIp || afterData.ip,
+                        userAgent: afterData.clientUserAgent || afterData.userAgent,
+                        fbc: afterData.fbc || afterData._fbc,
+                        fbp: afterData.fbp || afterData._fbp,
+                        zipCode: afterData.zipCode || afterData.codigoPostal
                     },
                     {
-                        content_name: afterData.nombreDesarrollo || 'Cita',
-                        status: 'scheduled'
-                    }
+                        content_name: afterData.nombreDesarrollo || 'Cita Inmueble Advisor',
+                        status: 'scheduled',
+                        content_category: 'Vivienda Nueva'
+                    },
+                    scheduleEventId
                 );
             } catch (err) {
                 logger.error("[MetaCAPI] Failed to send Schedule event", err);

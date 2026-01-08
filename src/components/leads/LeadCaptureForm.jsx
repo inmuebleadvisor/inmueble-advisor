@@ -108,17 +108,11 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                 // NEW LEAD FLOW
 
                 // 1. Track Browser Events (Hybrid Deduplication)
-                // Event: Contact (Lead Generation)
-                metaService.track('Contact', {
-                    content_name: desarrollo?.nombre,
-                    content_category: 'Housing'
-                }, metaEventId);
-
                 // Event: Schedule (Appointment) - Driven by the same action
                 metaService.track('Schedule', {
                     content_name: desarrollo?.nombre,
                     status: 'scheduled'
-                }, `${metaEventId}_schedule`);
+                }, metaEventId);
 
                 result = await leadAssignment.generarLeadAutomatico(
                     datosCliente,

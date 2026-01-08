@@ -56,7 +56,16 @@ Envía una notificación a Telegram cuando se genera un nuevo Lead.
 *   **Trigger:** Firestore `leads/{leadId}` onCreate
 *   **Secretos Requeridos:** `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`
 
+### 6. `onLeadWrite` (Trigger - Update)
+Centraliza la lógica de actualización de leads y rastreo de eventos críticos.
+*   **Trigger:** Firestore `leads/{leadId}` onWrite.
+*   **Funcionalidad:**
+    1.  **Historial de Estatus:** Registra cambios de estado en `statusHistory`.
+    2.  **Meta CAPI (Schedule):** Detecta cuando se confirma una cita (`citainicial`) y envía el evento `Schedule` a la API de Conversiones de Meta (Server-Side) para asegurar la deduplicación y evitar bloqueadores de anuncios.
+*   **Integración:** Utiliza `MetaAdsService` con hashing SHA256 para PII.
+
 ---
+
 
 ## 🔌 Guía de Extensión: Cómo crear una nueva función (Firebase V2)
 

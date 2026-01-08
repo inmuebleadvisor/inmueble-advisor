@@ -1,58 +1,63 @@
 import { expect } from 'chai';
 import * as sinon from 'sinon';
-import { MetaAdsService } from '../../src/infrastructure/services/MetaAdsService';
+import axios from 'axios';
+import { MetaAdsService } from './MetaAdsService';
 
 describe('MetaAdsService (Backend)', () => {
     let service: MetaAdsService;
-    let fetchStub: sinon.SinonStub;
+    let axiosPostStub: sinon.SinonStub;
 
     beforeEach(() => {
         service = new MetaAdsService();
-        // Mock global fetch
-        fetchStub = sinon.stub(global, 'fetch');
+        axiosPostStub = sinon.stub(axios, 'post');
     });
 
     afterEach(() => {
-        fetchStub.restore();
+        axiosPostStub.restore();
     });
 
     it('should hash PII data correctly', () => {
-        // Access private method via casting if needed or test public side effect
-        // Using 'any' to access private method for testing purpose strictly
-        const hashed = (service as any).hash('test@example.com');
-        // echo -n 'test@example.com' | shasum -a 256
+        // Access private method via casting
+        const hashed = (service as any).hashData('test@example.com');
+        // SHA256 of 'test@example.com' (trimmed, lowercase)
         expect(hashed).to.equal('973dfe463ec85785f5f95af5e392116873fd6881afbc0a18eb0a473a5a849204');
     });
 
-    it('should process user data normalization and hashing', () => {
-        const raw = {
-            em: ' Test@Example.com ',
-            ph: ' +52 (55) 1234 5678 ',
-            fn: ' Juan '
-        };
-        const processed = (service as any).processUserData(raw);
+    it('should send event to Meta CAPI with correct payload', async () => {
+        axiosPostStub.resolves({ data: { events_received: 1 } });
 
-        expect(processed.em).to.equal('973dfe463ec85785f5f95af5e392116873fd6881afbc0a18eb0a473a5a849204'); // trimmed & lowercase
-        expect(processed.ph).to.not.equal(' +52 (55) 1234 5678 '); // should be hashed
-        // Verify phone normalization logic if implemented (usually strip non-digits)
+        const userData = {
+            email: 'test@example.com',
+            phone: '+521234567890'
+        };
+        const customData = { value: 100 };
+        const eventId = 'ev-123';
+
+        await service.sendEvent('Schedule', userData, customData, eventId);
+
+        expect(axiosPostStub.calledOnce).to.be.true;
+        const [url, payload] = axiosPostStub.firstCall.args;
+
+        expect(url).to.include('graph.facebook.com');
+
+        const eventData = payload.data[0];
+        expect(eventData.event_name).to.equal('Schedule');
+        expect(eventData.event_id).to.equal(eventId);
+        expect(eventData.action_source).to.equal('website');
+
+        // Hashing check
+        expect(eventData.user_data.em[0]).to.equal('973dfe463ec85785f5f95af5e392116873fd6881afbc0a18eb0a473a5a849204');
+        expect(eventData.user_data.ph).to.exist;
     });
 
-    it('should send event to Meta Graph API', async () => {
-        fetchStub.resolves({
-            ok: true,
-            json: async () => ({ events_received: 1 })
-        } as Response);
+    it('should handle API errors gracefully', async () => {
+        axiosPostStub.resolves({ data: { error: { message: 'Meta Error' } } });
+        // Or reject
+        // axiosPostStub.rejects(new Error('Network Error'));
 
-        await service.sendEvent('Contact', 'event-123', { em: 'test@test.com' });
-
-        expect(fetchStub.calledOnce).to.be.true;
-        const args = fetchStub.firstCall.args;
-        expect(args[0]).to.include('graph.facebook.com');
-        expect(args[1].method).to.equal('POST');
-
-        const body = JSON.parse(args[1].body);
-        expect(body.data[0].event_name).to.equal('Contact');
-        expect(body.data[0].event_id).to.equal('event-123');
-        expect(body.data[0].user_data.em).to.be.a('string'); // hashed
+        // Current implementation logs error but doesn't throw (caught inside). 
+        // We verify it calls axios and finishes without crashing process.
+        await service.sendEvent('Schedule', {}, {}, 'ev-err');
+        expect(axiosPostStub.calledOnce).to.be.true;
     });
 });
