@@ -53,6 +53,10 @@ export const favoritesService = new FavoritesService(userRepository);
 export const dashboardService = new DashboardServiceImpl(db);
 export const adminService = new AdminService(userRepository, leadRepository, catalogRepository);
 
+// Tracking Services
+import { MetaService } from './meta.service';
+export const metaService = new MetaService();
+
 // 3. Export Registry
 export const services = {
     config: configService,
@@ -64,5 +68,6 @@ export const services = {
     leadAssignment: leadAssignmentService,
     favorites: favoritesService,
     dashboard: dashboardService,
-    admin: adminService
+    admin: adminService,
+    meta: metaService
 };

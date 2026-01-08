@@ -1,6 +1,7 @@
 import * as functions from "firebase-functions/v1";
 import * as logger from "firebase-functions/logger";
 import * as admin from 'firebase-admin';
+import { MetaAdsService } from "../../infrastructure/services/MetaAdsService";
 
 /**
  * Trigger: onLeadWrite
@@ -36,8 +37,42 @@ export const onLeadWrite = functions.firestore
         // Has transient fields to clean?
         const hasTransientFields = statusReason !== undefined || changedBy !== undefined;
 
+        // 2a. Handle Appointment Scheduling (Meta CAPI)
+        // Check if a new appointment was confirmed/set
+        const oldCita = beforeData?.citainicial;
+        const newCita = afterData.citainicial;
+
+        // Logic: specific check for "citainicial.dia" existence
+        if ((!oldCita && newCita && newCita.dia) || (oldCita && newCita && !oldCita.dia && newCita.dia)) {
+            const metaService = new MetaAdsService();
+            const msEventId = afterData.metaEventId;
+            const scheduleEventId = msEventId ? `${msEventId}_schedule` : `schedule_${leadId}`;
+
+            try {
+                await metaService.sendEvent(
+                    'Schedule',
+                    scheduleEventId,
+                    {
+                        em: afterData.email || afterData.clienteDatos?.email,
+                        ph: afterData.telefono || afterData.clienteDatos?.telefono,
+                        fn: afterData.nombre || afterData.clienteDatos?.nombre,
+                        client_user_agent: afterData.clientUserAgent,
+                        fbp: afterData.fbp,
+                        fbc: afterData.fbc,
+                        external_id: afterData.uid
+                    },
+                    {
+                        content_name: afterData.nombreDesarrollo || 'Cita',
+                        status: 'scheduled'
+                    }
+                );
+            } catch (err) {
+                logger.error("[MetaCAPI] Failed to send Schedule event", err);
+            }
+        }
+
         if (!isStatusChanged && !hasTransientFields) {
-            return; // Nothing to do
+            return; // Nothing to do regarding History
         }
 
         const updates: any = {};
@@ -66,15 +101,6 @@ export const onLeadWrite = functions.firestore
         // Apply updates if any
         if (Object.keys(updates).length > 0) {
             try {
-                // Use update to avoid infinite loops?
-                // Writing to the same document triggers onWrite again.
-                // We must be careful.
-                // Infinite loop protection:
-                // If we are ONLY deleting transient fields, and status didn't change, 
-                // the next run will find !isStatusChanged and !hasTransientFields (since we deleted them).
-                // If we are appending history, the next run will see status SAME, and no transient fields.
-                // So it should be safe.
-
                 await change.after.ref.update(updates);
             } catch (error) {
                 logger.error(`[LeadHistory] Error updating lead ${leadId}:`, error);

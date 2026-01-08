@@ -20,6 +20,7 @@ Esta carpeta contiene la lógica de negocio central de la aplicación. Aquí es 
 -   **`ExternalAdvisorService`**: Gestión de asesores externos y convenios.
 -   **`FavoritesService`**: Maneja la lista de propiedades favoritas del usuario.
 -   **`LeadAssignmentService`**: Algoritmos para asignar interesados a asesores.
+-   **`MetaService`**: (Frontend) Maneja la inicialización del Pixel, rastreo de eventos y generación de `event_id` para deduplicación híbrida.
 -   **`SeasonService`**: Gestión de temporadas y precios dinámicos.
 
 ## Cómo Crear un Nuevo Servicio

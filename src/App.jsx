@@ -2,10 +2,10 @@
 
 // ÚLTIMA MODIFICACION: 02/12/2025
 import React, { Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
 // --- CONTEXTOS GLOBALES ---
-import { UserProvider } from './context/UserContext';
+import { UserProvider, useUser } from './context/UserContext';
 // Contexto para la data de catálogo (optimización de lectura)
 import { CatalogProvider } from './context/CatalogContext';
 // ⭐ NUEVO: Contexto de Favoritos, necesario para la nueva funcionalidad
@@ -17,38 +17,44 @@ import { ServiceProvider } from './context/ServiceContext';
 import { UI_OPCIONES } from './config/constants';
 import { PostHogProvider } from 'posthog-js/react'
 import posthog from './config/posthog';
+import { metaService } from './services/serviceProvider';
+import { AnalyticsService } from './services/eventLogger.service';
+import { useEffect } from 'react';
 
 // --- SEGURIDAD Y LAYOUT ---
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Layout from './layouts/MainLayout';
 
-// --- PANTALLAS (SCREENS) ---
+// Screens - Cliente
 import Perfil from './screens/cliente/Perfil';
-import Catalogo from './screens/catalogo/Catalogo';
-import DetalleModelo from './screens/catalogo/DetalleModelo';
-import DetalleDesarrollo from './screens/catalogo/DetalleDesarrollo';
-import Mapa from './screens/catalogo/Mapa';
-// 🗑️ DELETED: LandingAsesores, OnboardingAsesor, AccountAsesor
-// ⭐ NUEVO: Pantalla de Onboarding Cliente (migración UX)
 import OnboardingCliente from './screens/cliente/OnboardingCliente';
-// ⭐ NUEVO: Pantalla de Comparador y Favoritos (implementado en el plan)
 import Favoritos from './screens/cliente/Favoritos';
 
-// ⭐ HERRAMIENTA ADMIN: Importamos la pantalla de exportación
+// Screens - Catalogo
+import Catalogo from './screens/catalogo/Catalogo';
+import Mapa from './screens/catalogo/Mapa';
+import DetalleModelo from './screens/catalogo/DetalleModelo';
+import DetalleDesarrollo from './screens/catalogo/DetalleDesarrollo';
+
+// Screens - Admin
 import AdminDataExport from './screens/admin/AdminDataExport';
-// ⭐ NUEVO: Panel de Administrador (Sin link, acceso directo)
-// ⭐ NUEVO MODULO DE ADMINISTRADOR
-import AdminLayout from './layouts/AdminLayout';
 import AdminHome from './screens/admin/AdminHome';
 import AdminLeads from './screens/admin/AdminLeads';
 import AdminUsers from './screens/admin/AdminUsers';
 import AdvisorsDirectory from './screens/admin/AdvisorsDirectory';
-// 🗑️ DEPRECATED: import AdminDashboard from './screens/AdminDashboard'; (Removed)
 
-// ⭐ NUEVO: Modal de selección de ciudad
+// Layouts & Modals
+import AdminLayout from './layouts/AdminLayout';
 import CitySelectorModal from './components/modals/CitySelectorModal';
 
+const META_PIXEL_ID = "25721482294159393";
+
 function App() {
+  // Inicializar Meta Pixel
+  useEffect(() => {
+    metaService.init(META_PIXEL_ID);
+  }, []);
+
   // El orden de los Providers es estratégico. FavoritesProvider usa datos de User y Catalog.
   return (
     <PostHogProvider client={posthog}>
@@ -130,10 +136,7 @@ function App() {
 
 // ⭐ NUEVO: Componente interno para rastrear navegación
 // Debe estar DENTRO de BrowserRouter para usar useLocation
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { AnalyticsService } from './services/eventLogger.service';
-import { useUser } from './context/UserContext';
+
 
 function AnalyticsTracker() {
   const location = useLocation();

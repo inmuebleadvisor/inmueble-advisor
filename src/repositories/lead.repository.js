@@ -32,7 +32,11 @@ export class LeadRepository {
             idDesarrollador,
             precioReferencia,
             comisionPorcentaje,
-            ...extraData // ✅ Capture any additional fields (snapshot, origen, etc)
+            metaEventId,      // ✅ Meta CAPI Deduplication ID
+            fbp,              // ✅ Meta Browser ID
+            fbc,              // ✅ Meta Click ID
+            clientUserAgent,  // ✅ Audit
+            ...extraData      // ✅ Capture any additional fields
         } = leadData;
 
         if (!idDesarrollo || !idDesarrollador) {

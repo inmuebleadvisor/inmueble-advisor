@@ -4,10 +4,11 @@ import AppointmentScheduler from '../common/AppointmentScheduler';
 import { useUser } from '../../context/UserContext';
 import confetti from 'canvas-confetti';
 import '../../styles/LeadCaptureForm.css';
+import '../../styles/LeadCaptureForm.css';
 
 const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
     const { user, userProfile, loginWithGoogle } = useUser();
-    const { leadAssignment } = useService();
+    const { leadAssignment, meta: metaService } = useService();
 
     // --- STATE ---
     const [step, setStep] = useState(1); // 1: Date, 2: Info
@@ -85,14 +86,40 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
             // Generate Lead OR Reschedule
             let result;
 
+            // ✅ META TRACKING: Generate Deduplication ID
+            const metaEventId = metaService.generateEventId();
+            const fbp = metaService.getFbp();
+            const fbc = metaService.getFbc();
+            const clientUserAgent = navigator.userAgent;
+
             if (isRescheduling && existingAppointment) {
                 // RESCHEDULE FLOW
                 result = await leadAssignment.rescheduleAppointment(
                     existingAppointment.id,
                     formData.citainicial
                 );
+                // Track Schedule Update? Maybe just Schedule.
+                metaService.track('Schedule', {
+                    content_name: desarrollo?.nombre,
+                    status: 'rescheduled'
+                }, `${metaEventId}_schedule`);
+
             } else {
                 // NEW LEAD FLOW
+
+                // 1. Track Browser Events (Hybrid Deduplication)
+                // Event: Contact (Lead Generation)
+                metaService.track('Contact', {
+                    content_name: desarrollo?.nombre,
+                    content_category: 'Housing'
+                }, metaEventId);
+
+                // Event: Schedule (Appointment) - Driven by the same action
+                metaService.track('Schedule', {
+                    content_name: desarrollo?.nombre,
+                    status: 'scheduled'
+                }, `${metaEventId}_schedule`);
+
                 result = await leadAssignment.generarLeadAutomatico(
                     datosCliente,
                     desarrollo?.id,
@@ -106,6 +133,12 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                         urlOrigen: window.location.href,
                         citainicial: formData.citainicial,
                         idModelo: modelo?.id || null,
+                        // ✅ PASS TRACKING DATA
+                        metaEventId,
+                        fbp,
+                        fbc,
+                        clientUserAgent,
+
                         snapshot: {
                             idModelo: modelo?.id || null,
                             modeloNombre: modelo?.nombreModelo || modelo?.nombre_modelo || "N/A",

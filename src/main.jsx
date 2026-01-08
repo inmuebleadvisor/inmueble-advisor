@@ -6,6 +6,7 @@ import { ThemeProvider } from './context/ThemeContext'
 import { ServiceProvider } from './context/ServiceContext'
 import App from './App.jsx'
 
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ServiceProvider>
