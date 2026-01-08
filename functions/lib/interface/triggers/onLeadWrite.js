@@ -62,8 +62,18 @@ exports.onLeadWrite = functions.firestore
     // Check if a new appointment was confirmed/set
     const oldCita = beforeData === null || beforeData === void 0 ? void 0 : beforeData.citainicial;
     const newCita = afterData.citainicial;
-    // Logic: specific check for "citainicial.dia" existence
-    if ((!oldCita && newCita && newCita.dia) || (oldCita && newCita && !oldCita.dia && newCita.dia)) {
+    // DEBUG LOGS for Meta CAPI
+    logger.info(`[MetaCAPI] Checking Trigger for Lead ${leadId}.`, {
+        oldCitaDia: oldCita === null || oldCita === void 0 ? void 0 : oldCita.dia,
+        newCitaDia: newCita === null || newCita === void 0 ? void 0 : newCita.dia,
+        hasMetaId: !!afterData.metaEventId
+    });
+    // Logic: specific check for "citainicial.dia" existence or CHANGE
+    // If a date exists now, and it's different from before (or didn't exist before)
+    const hasNewDate = !!(newCita === null || newCita === void 0 ? void 0 : newCita.dia);
+    const isDateChanged = (newCita === null || newCita === void 0 ? void 0 : newCita.dia) !== (oldCita === null || oldCita === void 0 ? void 0 : oldCita.dia);
+    if (hasNewDate && isDateChanged) {
+        logger.info(`[MetaCAPI] Triggering Schedule Event for Lead ${leadId}`);
         const metaService = new MetaAdsService_1.MetaAdsService();
         const msEventId = afterData.metaEventId || afterData.eventId;
         // Ensure we have a valid event ID for deduplication. If not provided by frontend, we generate one but deduplication might fail.
@@ -88,6 +98,9 @@ exports.onLeadWrite = functions.firestore
         catch (err) {
             logger.error("[MetaCAPI] Failed to send Schedule event", err);
         }
+    }
+    else {
+        logger.info("[MetaCAPI] Condition not met. Skipping event.");
     }
     if (!isStatusChanged && !hasTransientFields) {
         return; // Nothing to do regarding History

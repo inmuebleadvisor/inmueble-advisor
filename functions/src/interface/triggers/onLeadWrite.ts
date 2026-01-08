@@ -42,8 +42,21 @@ export const onLeadWrite = functions.firestore
         const oldCita = beforeData?.citainicial;
         const newCita = afterData.citainicial;
 
-        // Logic: specific check for "citainicial.dia" existence
-        if ((!oldCita && newCita && newCita.dia) || (oldCita && newCita && !oldCita.dia && newCita.dia)) {
+        // DEBUG LOGS for Meta CAPI
+        logger.info(`[MetaCAPI] Checking Trigger for Lead ${leadId}.`, {
+            oldCitaDia: oldCita?.dia,
+            newCitaDia: newCita?.dia,
+            hasMetaId: !!afterData.metaEventId
+        });
+
+        // Logic: specific check for "citainicial.dia" existence or CHANGE
+        // If a date exists now, and it's different from before (or didn't exist before)
+        const hasNewDate = !!newCita?.dia;
+        const isDateChanged = newCita?.dia !== oldCita?.dia;
+
+        if (hasNewDate && isDateChanged) {
+            logger.info(`[MetaCAPI] Triggering Schedule Event for Lead ${leadId}`);
+
             const metaService = new MetaAdsService();
             const msEventId = afterData.metaEventId || afterData.eventId;
             // Ensure we have a valid event ID for deduplication. If not provided by frontend, we generate one but deduplication might fail.
@@ -70,9 +83,11 @@ export const onLeadWrite = functions.firestore
                     },
                     scheduleEventId
                 );
-            } catch (err) {
+            } catch (err: any) {
                 logger.error("[MetaCAPI] Failed to send Schedule event", err);
             }
+        } else {
+            logger.info("[MetaCAPI] Condition not met. Skipping event.");
         }
 
         if (!isStatusChanged && !hasTransientFields) {
