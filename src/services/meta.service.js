@@ -46,12 +46,25 @@ export class MetaService {
             }(window, document, 'script',
                 'https://connect.facebook.net/en_US/fbevents.js');
 
+            this.pixelId = pixelId; // Store for re-init
             window.fbq('init', pixelId);
             window.fbq('track', 'PageView');
             this.initialized = true;
             console.log(`✅ [MetaService] Pixel Initialized: ${pixelId}`);
         }
         /* eslint-enable */
+    }
+
+    /**
+     * Updates Pixel with User Data (Advanced Matching).
+     * @param {Object} userData - { em, ph, fn, ln, ... }
+     */
+    setUserData(userData) {
+        if (typeof window !== 'undefined' && window.fbq && this.pixelId) {
+            // Re-init with userData is the standard way for SPA updates
+            window.fbq('init', this.pixelId, userData);
+            console.log("👤 [MetaService] User Data Set (Advanced Matching):", Object.keys(userData));
+        }
     }
 
     /**

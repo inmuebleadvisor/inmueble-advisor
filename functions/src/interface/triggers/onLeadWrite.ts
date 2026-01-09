@@ -59,14 +59,17 @@ export const onLeadWrite = functions.firestore
             const lastName = afterData.apellido || afterData.clienteDatos?.apellido || afterData.apellidos;
 
             // Tracking IDs from Frontend (Critical for Deduplication)
-            // 'metaEventId' is explicitly passed from LeadCaptureForm.jsx
-            const eventId = afterData.metaEventId || afterData.eventId || `schedule_${leadId}`;
+            // 'metaEventId' MUST be explicitly passed from LeadCaptureForm.jsx
+            const eventId = afterData.metaEventId;
 
-            if (!afterData.metaEventId) {
-                logger.warn(`[MetaCAPI] Warning: 'metaEventId' missing from lead ${leadId}. Deduplication may fail.`);
+            if (!eventId) {
+                logger.warn(`[MetaCAPI] ERROR: 'metaEventId' missing from lead ${leadId}. Deduplication WILL FAIL.`);
+            } else {
+                logger.info(`[MetaCAPI] Triggering Schedule Event for Lead ${leadId}. EventID: ${eventId}`);
             }
 
-            logger.info(`[MetaCAPI] Triggering Schedule Event for Lead ${leadId}. EventID: ${eventId}`);
+            // Only proceed if we have an ID to deduplicate against
+            const finalEventId = eventId || `schedule_${leadId}`; // Kept as last resort backup but log says it will fail sync.
 
             const metaService = new MetaAdsService();
 
@@ -91,7 +94,7 @@ export const onLeadWrite = functions.firestore
                         currency: 'MXN',
                         value: afterData.snapshot?.precioAtCapture || 0
                     },
-                    eventId
+                    finalEventId
                 );
             } catch (err: any) {
                 logger.error("[MetaCAPI] Failed to send Schedule event", err);

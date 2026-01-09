@@ -86,11 +86,21 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
             // Generate Lead OR Reschedule
             let result;
 
-            // ✅ META TRACKING: Generate Deduplication ID
+            // ✅ META TRACKING: STRICT FLOW
             const metaEventId = metaService.generateEventId();
             const fbp = metaService.getFbp();
             const fbc = metaService.getFbc();
             const clientUserAgent = navigator.userAgent;
+
+            // Prepare PII for Advanced Matching (Browser)
+            const pii = {
+                em: formData.email,
+                ph: formData.telefono,
+                fn: formData.nombre?.split(' ')[0] || '',
+                ln: formData.nombre?.split(' ').slice(1).join(' ') || ''
+            };
+            // 1. Set User Data for Browser Pixel (Advanced Matching)
+            metaService.setUserData(pii);
 
             if (isRescheduling && existingAppointment) {
                 // RESCHEDULE FLOW
@@ -98,17 +108,17 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                     existingAppointment.id,
                     formData.citainicial
                 );
-                // Track Schedule Update? Maybe just Schedule.
+                // Track Schedule Update
                 metaService.track('Schedule', {
                     content_name: desarrollo?.nombre,
                     status: 'rescheduled'
-                }, `${metaEventId}_schedule`);
+                }, `${metaEventId}_reschedule`);
 
             } else {
                 // NEW LEAD FLOW
 
-                // 1. Track Browser Events (Hybrid Deduplication)
-                // Event: Schedule (Appointment) - Driven by the same action
+                // 2. Track Browser Event (Hybrid Deduplication)
+                // Event: Schedule (Appointment)
                 metaService.track('Schedule', {
                     content_name: desarrollo?.nombre,
                     status: 'scheduled'
