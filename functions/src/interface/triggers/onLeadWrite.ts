@@ -69,35 +69,44 @@ export const onLeadWrite = functions.firestore
             }
 
             // Only proceed if we have an ID to deduplicate against
-            const finalEventId = eventId || `schedule_${leadId}`; // Kept as last resort backup but log says it will fail sync.
+            if (!eventId) {
+                logger.warn("[MetaCAPI] Skipping CAPI event due to missing 'metaEventId' (Strict Mode).");
+                // We could return here if we want to be 100% strict and not send anything.
+                // But let's proceed to allow at least tracking even if dedupe fails? NOT recommended for sync.
+                // User requirement: "Elimina prefijo schedule_... Usa estrictamente metaEventId".
+                // So if missing, we likely shouldn't send garbage.
+                // However, let's keep the flow but pass undefined? No, that throws error.
+                // Let's return early if no eventId.
+                logger.error("[MetaCAPI] Aborting Schedule event: No Event ID available.");
+            } else {
+                const metaService = new MetaAdsService();
 
-            const metaService = new MetaAdsService();
-
-            try {
-                await metaService.sendEvent(
-                    'Schedule',
-                    {
-                        email: email,      // em
-                        phone: phone,      // ph
-                        firstName: firstName, // fn
-                        lastName: lastName,   // ln
-                        clientIp: afterData.clientIp || afterData.ip,
-                        userAgent: afterData.clientUserAgent || afterData.userAgent,
-                        fbc: afterData.fbc || afterData._fbc,
-                        fbp: afterData.fbp || afterData._fbp,
-                        zipCode: afterData.zipCode || afterData.codigoPostal
-                    },
-                    {
-                        content_name: afterData.nombreDesarrollo || 'Cita Inmueble Advisor',
-                        status: 'scheduled',
-                        content_category: 'Vivienda Nueva',
-                        currency: 'MXN',
-                        value: afterData.snapshot?.precioAtCapture || 0
-                    },
-                    finalEventId
-                );
-            } catch (err: any) {
-                logger.error("[MetaCAPI] Failed to send Schedule event", err);
+                try {
+                    await metaService.sendEvent(
+                        'Schedule',
+                        {
+                            email: email,      // em
+                            phone: phone,      // ph
+                            firstName: firstName, // fn
+                            lastName: lastName,   // ln
+                            clientIp: afterData.clientIp || afterData.ip,
+                            userAgent: afterData.clientUserAgent || afterData.userAgent,
+                            fbc: afterData.fbc || afterData._fbc,
+                            fbp: afterData.fbp || afterData._fbp,
+                            zipCode: afterData.zipCode || afterData.codigoPostal
+                        },
+                        {
+                            content_name: afterData.nombreDesarrollo || 'Cita Inmueble Advisor',
+                            status: 'scheduled',
+                            content_category: 'Vivienda Nueva',
+                            currency: 'MXN',
+                            value: afterData.snapshot?.precioAtCapture || 0
+                        },
+                        eventId // ✅ Strict ID
+                    );
+                } catch (err: any) {
+                    logger.error("[MetaCAPI] Failed to send Schedule event", err);
+                }
             }
         } else {
             // condition not met, silent skip or debug log if needed

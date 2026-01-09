@@ -59,6 +59,13 @@ export class LeadRepository {
             // ❌ REMOVED: statusHistory. logic centralized in Backend Trigger.
             _statusReason: "Lead generado por el sistema", // Trigger will consume this
             _changedBy: "SYSTEM", // Trigger will consume this
+
+            // ✅ PERSIST TRACKING DATA
+            metaEventId,
+            fbp,
+            fbc,
+            clientUserAgent,
+
             ...extraData
         };
 
