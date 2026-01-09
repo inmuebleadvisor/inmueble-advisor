@@ -38,15 +38,19 @@ export const onLeadWrite = functions.firestore
         const hasTransientFields = statusReason !== undefined || changedBy !== undefined;
 
         // 2a. Handle Appointment Scheduling (Meta CAPI)
-        // Check if a new appointment was confirmed/set
-        const oldCita = beforeData?.citainicial;
-        const newCita = afterData.citainicial;
+        // Check if a new appointment was confirmed/set - IDEMPOTENT CHECK
+        // We only trigger if the 'metaEventId' has changed or is newly added.
+        // This handles:
+        // 1. New Lead (beforeData is empty -> new ID)
+        // 2. Reschedule (Frontend generates new ID -> ID changes)
+        // 3. Admin Update/History Update (ID stays same -> NO trigger)
 
-        // Logic: specific check for "citainicial.dia" existence or CHANGE
-        const hasNewDate = !!newCita?.dia;
-        const isDateChanged = newCita?.dia !== oldCita?.dia;
+        const oldEventId = beforeData?.metaEventId;
+        const newEventId = afterData.metaEventId;
 
-        if (hasNewDate && isDateChanged) {
+        const isNewConversionEvent = newEventId && (newEventId !== oldEventId);
+
+        if (isNewConversionEvent) {
 
             // STRICT EXTRACTION for Meta Quality (em, ph, fn, ln)
             // Priority: Root fields -> clienteDatos -> known aliases (correo, celular)
@@ -57,7 +61,7 @@ export const onLeadWrite = functions.firestore
 
             // Tracking IDs from Frontend (Critical for Deduplication)
             // 'metaEventId' MUST be explicitly passed from LeadCaptureForm.jsx
-            const eventId = afterData.metaEventId;
+            const eventId = newEventId; // We already checked validation below, but let's be strict in var usage
 
             // STRICT VALIDATION
             if (!eventId) {

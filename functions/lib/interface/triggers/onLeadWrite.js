@@ -59,13 +59,16 @@ exports.onLeadWrite = functions.firestore
     // Has transient fields to clean?
     const hasTransientFields = statusReason !== undefined || changedBy !== undefined;
     // 2a. Handle Appointment Scheduling (Meta CAPI)
-    // Check if a new appointment was confirmed/set
-    const oldCita = beforeData === null || beforeData === void 0 ? void 0 : beforeData.citainicial;
-    const newCita = afterData.citainicial;
-    // Logic: specific check for "citainicial.dia" existence or CHANGE
-    const hasNewDate = !!(newCita === null || newCita === void 0 ? void 0 : newCita.dia);
-    const isDateChanged = (newCita === null || newCita === void 0 ? void 0 : newCita.dia) !== (oldCita === null || oldCita === void 0 ? void 0 : oldCita.dia);
-    if (hasNewDate && isDateChanged) {
+    // Check if a new appointment was confirmed/set - IDEMPOTENT CHECK
+    // We only trigger if the 'metaEventId' has changed or is newly added.
+    // This handles:
+    // 1. New Lead (beforeData is empty -> new ID)
+    // 2. Reschedule (Frontend generates new ID -> ID changes)
+    // 3. Admin Update/History Update (ID stays same -> NO trigger)
+    const oldEventId = beforeData === null || beforeData === void 0 ? void 0 : beforeData.metaEventId;
+    const newEventId = afterData.metaEventId;
+    const isNewConversionEvent = newEventId && (newEventId !== oldEventId);
+    if (isNewConversionEvent) {
         // STRICT EXTRACTION for Meta Quality (em, ph, fn, ln)
         // Priority: Root fields -> clienteDatos -> known aliases (correo, celular)
         const email = afterData.email || ((_a = afterData.clienteDatos) === null || _a === void 0 ? void 0 : _a.email) || afterData.correo;
@@ -74,7 +77,7 @@ exports.onLeadWrite = functions.firestore
         const lastName = afterData.apellido || ((_d = afterData.clienteDatos) === null || _d === void 0 ? void 0 : _d.apellido) || afterData.apellidos;
         // Tracking IDs from Frontend (Critical for Deduplication)
         // 'metaEventId' MUST be explicitly passed from LeadCaptureForm.jsx
-        const eventId = afterData.metaEventId;
+        const eventId = newEventId; // We already checked validation below, but let's be strict in var usage
         // STRICT VALIDATION
         if (!eventId) {
             logger.error(`[MetaCAPI] ABORTING Schedule Event for Lead ${leadId}: 'metaEventId' is missing. Deduplication would fail.`);
