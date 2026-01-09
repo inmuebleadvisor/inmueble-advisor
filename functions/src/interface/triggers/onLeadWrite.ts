@@ -58,19 +58,40 @@ export const onLeadWrite = functions.firestore
         if (hasNewDate && isDateChanged) {
             logger.info(`[MetaCAPI] Triggering Schedule Event for Lead ${leadId}`);
 
+            // Enhanced Extraction for Data Breadth
+            const rawEmail = afterData.email || afterData.clienteDatos?.email || afterData.correo || afterData.clienteDatos?.correo;
+            const rawPhone = afterData.telefono || afterData.clienteDatos?.telefono || afterData.celular || afterData.clienteDatos?.celular;
+            const rawFirstName = afterData.nombre || afterData.clienteDatos?.nombre;
+            const rawLastName = afterData.apellido || afterData.clienteDatos?.apellido || afterData.apellidos || afterData.clienteDatos?.apellidos;
+
+            // DEBUG LOG for User Quality Match
+            logger.info("DEBUG: Raw User Data Extraction for Meta CAPI", {
+                email: rawEmail || 'MISSING',
+                phone: rawPhone || 'MISSING',
+                firstName: rawFirstName || 'MISSING',
+                lastName: rawLastName || 'MISSING',
+                sourceData: {
+                    rootEmail: afterData.email,
+                    rootPhone: afterData.telefono,
+                    rootNombre: afterData.nombre,
+                    rootApellido: afterData.apellido,
+                    nested: afterData.clienteDatos
+                }
+            });
+
             const metaService = new MetaAdsService();
             const msEventId = afterData.metaEventId || afterData.eventId;
-            // Ensure we have a valid event ID for deduplication. If not provided by frontend, we generate one but deduplication might fail.
+            // Ensure we have a valid event ID for deduplication. If not provided by frontend, we generate one.
             const scheduleEventId = msEventId || `schedule_${leadId}`;
 
             try {
                 await metaService.sendEvent(
                     'Schedule',
                     {
-                        email: afterData.email || afterData.clienteDatos?.email,
-                        phone: afterData.telefono || afterData.clienteDatos?.telefono,
-                        firstName: afterData.nombre || afterData.clienteDatos?.nombre,
-                        lastName: afterData.apellido || afterData.clienteDatos?.apellido,
+                        email: rawEmail,
+                        phone: rawPhone,
+                        firstName: rawFirstName,
+                        lastName: rawLastName,
                         clientIp: afterData.clientIp || afterData.ip,
                         userAgent: afterData.clientUserAgent || afterData.userAgent,
                         fbc: afterData.fbc || afterData._fbc,
