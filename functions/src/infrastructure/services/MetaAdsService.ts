@@ -91,7 +91,8 @@ export class MetaAdsService {
             }
 
             // DEBUG: Print full payload
-            console.log("🛠️ [Meta CAPI] Sending Payload:", JSON.stringify(payload, null, 2));
+            console.log("🛠️ [Meta CAPI] Sending Payload to:", this.baseUrl);
+            console.dir(payload, { depth: null, colors: true });
 
             const response = await axios.post(this.baseUrl, payload);
 
