@@ -39,59 +39,45 @@ export const onLeadWrite = functions.firestore
 
         // 2a. Handle Appointment Scheduling (Meta CAPI)
         // Check if a new appointment was confirmed/set
-        // Force Deploy: 2026-01-08-FIX-V2
+        // 2a. Handle Appointment Scheduling (Meta CAPI)
+        // Check if a new appointment was confirmed/set
+        // Force Deploy: 2026-01-08-FIX-V3 (Strict PII & Deduplication)
         const oldCita = beforeData?.citainicial;
         const newCita = afterData.citainicial;
 
-        // DEBUG LOGS for Meta CAPI
-        logger.info(`[MetaCAPI] Checking Trigger for Lead ${leadId}.`, {
-            oldCitaDia: oldCita?.dia,
-            newCitaDia: newCita?.dia,
-            hasMetaId: !!afterData.metaEventId
-        });
-
         // Logic: specific check for "citainicial.dia" existence or CHANGE
-        // If a date exists now, and it's different from before (or didn't exist before)
         const hasNewDate = !!newCita?.dia;
         const isDateChanged = newCita?.dia !== oldCita?.dia;
 
         if (hasNewDate && isDateChanged) {
-            logger.info(`[MetaCAPI] Triggering Schedule Event for Lead ${leadId}`);
 
-            // Enhanced Extraction for Data Breadth
-            const rawEmail = afterData.email || afterData.clienteDatos?.email || afterData.correo || afterData.clienteDatos?.correo;
-            const rawPhone = afterData.telefono || afterData.clienteDatos?.telefono || afterData.celular || afterData.clienteDatos?.celular;
-            const rawFirstName = afterData.nombre || afterData.clienteDatos?.nombre;
-            const rawLastName = afterData.apellido || afterData.clienteDatos?.apellido || afterData.apellidos || afterData.clienteDatos?.apellidos;
+            // STRICT EXTRACTION for Meta Quality (em, ph, fn, ln)
+            // Priority: Root fields -> clienteDatos -> known aliases (correo, celular)
+            const email = afterData.email || afterData.clienteDatos?.email || afterData.correo;
+            const phone = afterData.telefono || afterData.clienteDatos?.telefono || afterData.celular;
+            const firstName = afterData.nombre || afterData.clienteDatos?.nombre;
+            const lastName = afterData.apellido || afterData.clienteDatos?.apellido || afterData.apellidos;
 
-            // DEBUG LOG for User Quality Match
-            logger.info("DEBUG: Raw User Data Extraction for Meta CAPI", {
-                email: rawEmail || 'MISSING',
-                phone: rawPhone || 'MISSING',
-                firstName: rawFirstName || 'MISSING',
-                lastName: rawLastName || 'MISSING',
-                sourceData: {
-                    rootEmail: afterData.email,
-                    rootPhone: afterData.telefono,
-                    rootNombre: afterData.nombre,
-                    rootApellido: afterData.apellido,
-                    nested: afterData.clienteDatos
-                }
-            });
+            // Tracking IDs from Frontend (Critical for Deduplication)
+            // 'metaEventId' is explicitly passed from LeadCaptureForm.jsx
+            const eventId = afterData.metaEventId || afterData.eventId || `schedule_${leadId}`;
+
+            if (!afterData.metaEventId) {
+                logger.warn(`[MetaCAPI] Warning: 'metaEventId' missing from lead ${leadId}. Deduplication may fail.`);
+            }
+
+            logger.info(`[MetaCAPI] Triggering Schedule Event for Lead ${leadId}. EventID: ${eventId}`);
 
             const metaService = new MetaAdsService();
-            const msEventId = afterData.metaEventId || afterData.eventId;
-            // Ensure we have a valid event ID for deduplication. If not provided by frontend, we generate one.
-            const scheduleEventId = msEventId || `schedule_${leadId}`;
 
             try {
                 await metaService.sendEvent(
                     'Schedule',
                     {
-                        email: rawEmail,
-                        phone: rawPhone,
-                        firstName: rawFirstName,
-                        lastName: rawLastName,
+                        email: email,      // em
+                        phone: phone,      // ph
+                        firstName: firstName, // fn
+                        lastName: lastName,   // ln
                         clientIp: afterData.clientIp || afterData.ip,
                         userAgent: afterData.clientUserAgent || afterData.userAgent,
                         fbc: afterData.fbc || afterData._fbc,
@@ -101,15 +87,17 @@ export const onLeadWrite = functions.firestore
                     {
                         content_name: afterData.nombreDesarrollo || 'Cita Inmueble Advisor',
                         status: 'scheduled',
-                        content_category: 'Vivienda Nueva'
+                        content_category: 'Vivienda Nueva',
+                        currency: 'MXN',
+                        value: afterData.snapshot?.precioAtCapture || 0
                     },
-                    scheduleEventId
+                    eventId
                 );
             } catch (err: any) {
                 logger.error("[MetaCAPI] Failed to send Schedule event", err);
             }
         } else {
-            logger.info("[MetaCAPI] Condition not met. Skipping event.");
+            // condition not met, silent skip or debug log if needed
         }
 
         if (!isStatusChanged && !hasTransientFields) {
