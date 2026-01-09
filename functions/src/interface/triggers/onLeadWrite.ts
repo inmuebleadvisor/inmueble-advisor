@@ -63,6 +63,10 @@ export const onLeadWrite = functions.firestore
             // 'metaEventId' MUST be explicitly passed from LeadCaptureForm.jsx
             const eventId = newEventId; // We already checked validation below, but let's be strict in var usage
 
+            // Extract Source URL (Parity with Pixel)
+            // Priority: urlOrigen -> url -> landingUrl
+            const eventSourceUrl = afterData.urlOrigen || afterData.url || afterData.landingUrl;
+
             // STRICT VALIDATION
             if (!eventId) {
                 logger.error(`[MetaCAPI] ABORTING Schedule Event for Lead ${leadId}: 'metaEventId' is missing. Deduplication would fail.`);
@@ -92,7 +96,8 @@ export const onLeadWrite = functions.firestore
                             currency: 'MXN',
                             value: afterData.snapshot?.precioAtCapture || 0
                         },
-                        eventId // ✅ Strict ID
+                        eventId, // ✅ Strict ID
+                        eventSourceUrl // ✅ Action Source URL
                     );
                 } catch (err: any) {
                     logger.error("[MetaCAPI] Failed to send Schedule event", err);

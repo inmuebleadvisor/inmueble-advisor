@@ -52,8 +52,9 @@ class MetaAdsService {
      * @param userData User data for matching (PII will be hashed)
      * @param customData Custom properties for the event
      * @param eventId Unique ID for deduplication
+     * @param eventSourceUrl The URL where the event occurred (optional but recommended)
      */
-    async sendEvent(eventName, userData, customData = {}, eventId) {
+    async sendEvent(eventName, userData, customData = {}, eventId, eventSourceUrl) {
         var _a;
         try {
             const payload = Object.assign({ data: [
@@ -61,6 +62,7 @@ class MetaAdsService {
                         event_name: eventName,
                         event_time: Math.floor(Date.now() / 1000),
                         action_source: 'website',
+                        event_source_url: eventSourceUrl,
                         event_id: eventId,
                         user_data: {
                             em: userData.email ? [this.hashData(userData.email)] : undefined,

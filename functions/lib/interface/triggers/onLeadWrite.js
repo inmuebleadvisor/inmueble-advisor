@@ -78,6 +78,9 @@ exports.onLeadWrite = functions.firestore
         // Tracking IDs from Frontend (Critical for Deduplication)
         // 'metaEventId' MUST be explicitly passed from LeadCaptureForm.jsx
         const eventId = newEventId; // We already checked validation below, but let's be strict in var usage
+        // Extract Source URL (Parity with Pixel)
+        // Priority: urlOrigen -> url -> landingUrl
+        const eventSourceUrl = afterData.urlOrigen || afterData.url || afterData.landingUrl;
         // STRICT VALIDATION
         if (!eventId) {
             logger.error(`[MetaCAPI] ABORTING Schedule Event for Lead ${leadId}: 'metaEventId' is missing. Deduplication would fail.`);
@@ -102,7 +105,8 @@ exports.onLeadWrite = functions.firestore
                     content_category: 'Vivienda Nueva',
                     currency: 'MXN',
                     value: ((_e = afterData.snapshot) === null || _e === void 0 ? void 0 : _e.precioAtCapture) || 0
-                }, eventId // ✅ Strict ID
+                }, eventId, // ✅ Strict ID
+                eventSourceUrl // ✅ Action Source URL
                 );
             }
             catch (err) {

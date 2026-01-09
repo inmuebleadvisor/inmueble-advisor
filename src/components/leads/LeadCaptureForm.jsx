@@ -121,6 +121,9 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                 // Event: Schedule (Appointment)
                 metaService.track('Schedule', {
                     content_name: desarrollo?.nombre,
+                    content_category: 'Vivienda Nueva',
+                    currency: 'MXN',
+                    value: modelo?.precios?.base || modelo?.precio || 0,
                     status: 'scheduled'
                 }, metaEventId);
 
