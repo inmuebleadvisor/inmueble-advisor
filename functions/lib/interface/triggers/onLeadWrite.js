@@ -38,7 +38,7 @@ const MetaAdsService_1 = require("../../infrastructure/services/MetaAdsService")
 exports.onLeadWrite = functions.firestore
     .document("leads/{leadId}")
     .onWrite(async (change, context) => {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     // 1. Exit if deleted
     if (!change.after.exists)
         return;
@@ -60,48 +60,55 @@ exports.onLeadWrite = functions.firestore
     const hasTransientFields = statusReason !== undefined || changedBy !== undefined;
     // 2a. Handle Appointment Scheduling (Meta CAPI)
     // Check if a new appointment was confirmed/set
-    // Force Deploy: 2026-01-08-FIX-V2
     const oldCita = beforeData === null || beforeData === void 0 ? void 0 : beforeData.citainicial;
     const newCita = afterData.citainicial;
-    // DEBUG LOGS for Meta CAPI
-    logger.info(`[MetaCAPI] Checking Trigger for Lead ${leadId}.`, {
-        oldCitaDia: oldCita === null || oldCita === void 0 ? void 0 : oldCita.dia,
-        newCitaDia: newCita === null || newCita === void 0 ? void 0 : newCita.dia,
-        hasMetaId: !!afterData.metaEventId
-    });
     // Logic: specific check for "citainicial.dia" existence or CHANGE
-    // If a date exists now, and it's different from before (or didn't exist before)
     const hasNewDate = !!(newCita === null || newCita === void 0 ? void 0 : newCita.dia);
     const isDateChanged = (newCita === null || newCita === void 0 ? void 0 : newCita.dia) !== (oldCita === null || oldCita === void 0 ? void 0 : oldCita.dia);
     if (hasNewDate && isDateChanged) {
-        logger.info(`[MetaCAPI] Triggering Schedule Event for Lead ${leadId}`);
-        const metaService = new MetaAdsService_1.MetaAdsService();
-        const msEventId = afterData.metaEventId || afterData.eventId;
-        // Ensure we have a valid event ID for deduplication. If not provided by frontend, we generate one but deduplication might fail.
-        const scheduleEventId = msEventId || `schedule_${leadId}`;
-        try {
-            await metaService.sendEvent('Schedule', {
-                email: afterData.email || ((_a = afterData.clienteDatos) === null || _a === void 0 ? void 0 : _a.email),
-                phone: afterData.telefono || ((_b = afterData.clienteDatos) === null || _b === void 0 ? void 0 : _b.telefono),
-                firstName: afterData.nombre || ((_c = afterData.clienteDatos) === null || _c === void 0 ? void 0 : _c.nombre),
-                lastName: afterData.apellido || ((_d = afterData.clienteDatos) === null || _d === void 0 ? void 0 : _d.apellido),
-                clientIp: afterData.clientIp || afterData.ip,
-                userAgent: afterData.clientUserAgent || afterData.userAgent,
-                fbc: afterData.fbc || afterData._fbc,
-                fbp: afterData.fbp || afterData._fbp,
-                zipCode: afterData.zipCode || afterData.codigoPostal
-            }, {
-                content_name: afterData.nombreDesarrollo || 'Cita Inmueble Advisor',
-                status: 'scheduled',
-                content_category: 'Vivienda Nueva'
-            }, scheduleEventId);
+        // STRICT EXTRACTION for Meta Quality (em, ph, fn, ln)
+        // Priority: Root fields -> clienteDatos -> known aliases (correo, celular)
+        const email = afterData.email || ((_a = afterData.clienteDatos) === null || _a === void 0 ? void 0 : _a.email) || afterData.correo;
+        const phone = afterData.telefono || ((_b = afterData.clienteDatos) === null || _b === void 0 ? void 0 : _b.telefono) || afterData.celular;
+        const firstName = afterData.nombre || ((_c = afterData.clienteDatos) === null || _c === void 0 ? void 0 : _c.nombre);
+        const lastName = afterData.apellido || ((_d = afterData.clienteDatos) === null || _d === void 0 ? void 0 : _d.apellido) || afterData.apellidos;
+        // Tracking IDs from Frontend (Critical for Deduplication)
+        // 'metaEventId' MUST be explicitly passed from LeadCaptureForm.jsx
+        const eventId = afterData.metaEventId;
+        // STRICT VALIDATION
+        if (!eventId) {
+            logger.error(`[MetaCAPI] ABORTING Schedule Event for Lead ${leadId}: 'metaEventId' is missing. Deduplication would fail.`);
         }
-        catch (err) {
-            logger.error("[MetaCAPI] Failed to send Schedule event", err);
+        else {
+            logger.info(`[MetaCAPI] Triggering Schedule Event for Lead ${leadId}. EventID: ${eventId}`);
+            const metaService = new MetaAdsService_1.MetaAdsService();
+            try {
+                await metaService.sendEvent('Schedule', {
+                    email: email,
+                    phone: phone,
+                    firstName: firstName,
+                    lastName: lastName,
+                    clientIp: afterData.clientIp || afterData.ip,
+                    userAgent: afterData.clientUserAgent || afterData.userAgent,
+                    fbc: afterData.fbc || afterData._fbc,
+                    fbp: afterData.fbp || afterData._fbp,
+                    zipCode: afterData.zipCode || afterData.codigoPostal
+                }, {
+                    content_name: afterData.nombreDesarrollo || 'Cita Inmueble Advisor',
+                    status: 'scheduled',
+                    content_category: 'Vivienda Nueva',
+                    currency: 'MXN',
+                    value: ((_e = afterData.snapshot) === null || _e === void 0 ? void 0 : _e.precioAtCapture) || 0
+                }, eventId // ✅ Strict ID
+                );
+            }
+            catch (err) {
+                logger.error("[MetaCAPI] Failed to send Schedule event", err);
+            }
         }
     }
     else {
-        logger.info("[MetaCAPI] Condition not met. Skipping event.");
+        // condition not met, silent skip or debug log if needed
     }
     if (!isStatusChanged && !hasTransientFields) {
         return; // Nothing to do regarding History

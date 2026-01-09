@@ -39,9 +39,6 @@ export const onLeadWrite = functions.firestore
 
         // 2a. Handle Appointment Scheduling (Meta CAPI)
         // Check if a new appointment was confirmed/set
-        // 2a. Handle Appointment Scheduling (Meta CAPI)
-        // Check if a new appointment was confirmed/set
-        // Force Deploy: 2026-01-08-FIX-V3 (Strict PII & Deduplication)
         const oldCita = beforeData?.citainicial;
         const newCita = afterData.citainicial;
 
@@ -62,23 +59,12 @@ export const onLeadWrite = functions.firestore
             // 'metaEventId' MUST be explicitly passed from LeadCaptureForm.jsx
             const eventId = afterData.metaEventId;
 
+            // STRICT VALIDATION
             if (!eventId) {
-                logger.warn(`[MetaCAPI] ERROR: 'metaEventId' missing from lead ${leadId}. Deduplication WILL FAIL.`);
+                logger.error(`[MetaCAPI] ABORTING Schedule Event for Lead ${leadId}: 'metaEventId' is missing. Deduplication would fail.`);
             } else {
                 logger.info(`[MetaCAPI] Triggering Schedule Event for Lead ${leadId}. EventID: ${eventId}`);
-            }
 
-            // Only proceed if we have an ID to deduplicate against
-            if (!eventId) {
-                logger.warn("[MetaCAPI] Skipping CAPI event due to missing 'metaEventId' (Strict Mode).");
-                // We could return here if we want to be 100% strict and not send anything.
-                // But let's proceed to allow at least tracking even if dedupe fails? NOT recommended for sync.
-                // User requirement: "Elimina prefijo schedule_... Usa estrictamente metaEventId".
-                // So if missing, we likely shouldn't send garbage.
-                // However, let's keep the flow but pass undefined? No, that throws error.
-                // Let's return early if no eventId.
-                logger.error("[MetaCAPI] Aborting Schedule event: No Event ID available.");
-            } else {
                 const metaService = new MetaAdsService();
 
                 try {
