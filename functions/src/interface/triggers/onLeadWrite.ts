@@ -39,6 +39,7 @@ export const onLeadWrite = functions.firestore
 
         // 2a. Handle Appointment Scheduling (Meta CAPI)
         // Check if a new appointment was confirmed/set
+        // Force Deploy: 2026-01-08-FIX-V2
         const oldCita = beforeData?.citainicial;
         const newCita = afterData.citainicial;
 

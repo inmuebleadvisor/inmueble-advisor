@@ -60,6 +60,7 @@ exports.onLeadWrite = functions.firestore
     const hasTransientFields = statusReason !== undefined || changedBy !== undefined;
     // 2a. Handle Appointment Scheduling (Meta CAPI)
     // Check if a new appointment was confirmed/set
+    // Force Deploy: 2026-01-08-FIX-V2
     const oldCita = beforeData === null || beforeData === void 0 ? void 0 : beforeData.citainicial;
     const newCita = afterData.citainicial;
     // DEBUG LOGS for Meta CAPI
