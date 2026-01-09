@@ -23,14 +23,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onLeadWrite = exports.onLeadCreated = exports.notifyNewUser = exports.triggerDashboardStats = exports.scheduledDashboardStats = void 0;
+exports.onLeadWrite = exports.onLeadCreated = exports.notifyNewUser = exports.triggerDashboardStats = exports.scheduledDashboardStats = exports.promoteToAdvisor = void 0;
 const admin = __importStar(require("firebase-admin"));
 // Initialize Firebase Admin SDK once
 if (!admin.apps.length) {
     admin.initializeApp();
 }
 // Export Callables
-// export { promoteToAdvisor } from './interface/callable/promoteToAdvisor';
+var promoteToAdvisor_1 = require("./interface/callable/promoteToAdvisor");
+Object.defineProperty(exports, "promoteToAdvisor", { enumerable: true, get: function () { return promoteToAdvisor_1.promoteToAdvisor; } });
 var scheduledDashboardStats_1 = require("./interface/triggers/scheduledDashboardStats");
 Object.defineProperty(exports, "scheduledDashboardStats", { enumerable: true, get: function () { return scheduledDashboardStats_1.scheduledDashboardStats; } });
 Object.defineProperty(exports, "triggerDashboardStats", { enumerable: true, get: function () { return scheduledDashboardStats_1.triggerDashboardStats; } });
