@@ -89,9 +89,13 @@ class MetaAdsService {
                 // @ts-ignore
                 payload.test_event_code = meta_1.META_CONFIG.TEST_EVENT_CODE;
             }
-            // DEBUG: Print full payload
-            console.log("🛠️ [Meta CAPI] Sending Payload to:", this.baseUrl);
-            console.dir(payload, { depth: null, colors: true });
+            // DEBUG: Force stringify for GCP Logging visibility
+            const payloadString = JSON.stringify(payload, null, 2);
+            console.log(`🛠️ [Meta CAPI] Payload Content for ${eventName}:`, payloadString);
+            // Sanity Check
+            if (!payload.data[0].event_id) {
+                console.error("⛔ [FATAL] 'event_id' is MISSING in the generated payload!");
+            }
             const response = await axios_1.default.post(this.baseUrl, payload);
             if (response.data && response.data.error) {
                 console.error('Meta CAPI Error Response:', response.data.error);
