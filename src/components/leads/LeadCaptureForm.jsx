@@ -110,7 +110,8 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                     fbp,
                     fbc,
                     clientUserAgent: navigator.userAgent,
-                    urlOrigen: window.location.href // ✅ Fix URL Freshness
+                    urlOrigen: window.location.href, // ✅ Fix URL Freshness
+                    conversionStatus: 'rescheduled' // ✅ Pass Status
                 };
 
                 result = await leadAssignment.rescheduleAppointment(
@@ -125,7 +126,7 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                     currency: 'MXN',
                     value: modelo?.precios?.base || modelo?.precio || 0,
                     status: 'rescheduled'
-                }, `${metaEventId}_reschedule`);
+                }, metaEventId); // ✅ REMOVED SUFFIX for Deduplication
 
             } else {
                 // NEW LEAD FLOW
@@ -172,7 +173,8 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                             idModelo: modelo?.id || null,
                             modeloNombre: modelo?.nombreModelo || modelo?.nombre_modelo || "N/A",
                             desarrolloNombre: desarrollo?.nombre || "N/A",
-                            precioAtCapture: modelo?.precios?.base || modelo?.precio || 0
+                            precioAtCapture: modelo?.precios?.base || modelo?.precio || 0,
+                            conversionStatus: 'scheduled' // ✅ Pass Status
                         }
                     }
                 );

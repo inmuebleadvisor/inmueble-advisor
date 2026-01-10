@@ -112,7 +112,8 @@ export const onLeadWrite = functions.firestore
                         eventId: eventId,
                         eventSourceUrl: eventSourceUrl,
                         conversionValue: afterData.snapshot?.precioAtCapture || 0,
-                        contentName: afterData.nombreDesarrollo || 'Cita Inmueble Advisor'
+                        contentName: afterData.nombreDesarrollo || 'Cita Inmueble Advisor',
+                        status: afterData.conversionStatus || afterData.snapshot?.conversionStatus || 'scheduled' // ✅ Pass Status
                     });
                 } catch (err: any) {
                     logger.error("[MetaCAPI] Failed to execute RegisterConversion", err);

@@ -17,6 +17,7 @@ interface ConversionInput {
     conversionValue?: number;
     currency?: string;
     contentName?: string;
+    status?: string; // ✅ New Param
 }
 
 export class RegisterConversion {
@@ -47,10 +48,10 @@ export class RegisterConversion {
             eventId: input.eventId,
             eventSourceUrl: input.eventSourceUrl,
             customData: {
-                content_name: input.contentName || 'Convertion',
+                content_name: input.contentName || 'Conversion', // ✅ Fix Typo
                 currency: input.currency || 'MXN',
                 value: input.conversionValue || 0,
-                status: 'scheduled', // Context specific, strictly strictly speaking this makes this use case coupled to "Schedule" but it's fine for now.
+                status: input.status || 'scheduled', // ✅ Dynamic Status
                 content_category: 'Vivienda Nueva'
             }
         };

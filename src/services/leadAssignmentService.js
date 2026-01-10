@@ -123,7 +123,8 @@ export class LeadAssignmentService {
         urlOrigen: contextData.urlOrigen || null,
         snapshot: contextData.snapshot || {}, // ✅ Persist Snapshot
         asesorUid: 'MANUAL_B2B_PROCESS',
-        citainicial: contextData.citainicial || null // ✅ Appointment scheduling
+        citainicial: contextData.citainicial || null, // ✅ Appointment scheduling
+        conversionStatus: 'scheduled' // ✅ Default for new leads
       };
 
       // 2. Guardamos usando Repositorio
@@ -179,6 +180,7 @@ export class LeadAssignmentService {
       if (contextData.fbc) updates.fbc = contextData.fbc;
       if (contextData.clientUserAgent) updates.clientUserAgent = contextData.clientUserAgent;
       if (contextData.urlOrigen) updates.urlOrigen = contextData.urlOrigen; // Ensure URL is fresh
+      if (contextData.conversionStatus) updates.conversionStatus = contextData.conversionStatus; // ✅ Persist Status
 
       await this.leadRepository.updateLead(leadId, updates);
 
