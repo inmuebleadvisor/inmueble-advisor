@@ -23,6 +23,11 @@ export const UI_OPCIONES = {
   REQUIRE_AUTH_FOR_DETAILS: true
 };
 
+// --- META ADS CONFIGURATION ---
+export const META_CONFIG = {
+  TEST_EVENT_CODE: 'TEST87275' // ⚠️ Para pruebas. Borrar en producción.
+};
+
 // ==========================================
 // ✅ CÓDIGOS DE ESTADO (Contrato con la BD) - USAR ESTAS CONSTANTES
 // ==========================================

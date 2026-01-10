@@ -17,8 +17,12 @@ const generateUUID = () => {
 };
 
 export class MetaService {
-    constructor() {
+    /**
+     * @param {Object} config - Configuration object (e.g. { TEST_EVENT_CODE })
+     */
+    constructor(config = {}) {
         this.initialized = false;
+        this.testEventCode = config.TEST_EVENT_CODE || '';
     }
 
     /**
@@ -89,6 +93,11 @@ export class MetaService {
 
             if (eventId) {
                 options.eventID = eventId;
+            }
+
+            // Inject Test Event Code if configured (Display purpose mainly for Browser)
+            if (this.testEventCode) {
+                params.test_event_code = this.testEventCode;
             }
 
             // Syntax: fbq('track', eventName, params, options)

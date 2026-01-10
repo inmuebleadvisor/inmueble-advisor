@@ -55,7 +55,8 @@ export const adminService = new AdminService(userRepository, leadRepository, cat
 
 // Tracking Services
 import { MetaService } from './meta.service';
-export const metaService = new MetaService();
+import { META_CONFIG } from '../config/constants';
+export const metaService = new MetaService(META_CONFIG);
 
 // 3. Export Registry
 export const services = {

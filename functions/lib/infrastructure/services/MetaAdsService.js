@@ -49,13 +49,37 @@ class MetaAdsService {
     /**
      * Sends an event to Meta CAPI.
      * @param eventName The name of the event (e.g., 'Schedule', 'Contact')
-     * @param userData User data for matching (PII will be hashed)
+     * @param userData TrackingUserData for matching (PII will be hashed)
      * @param customData Custom properties for the event
      * @param eventId Unique ID for deduplication
      * @param eventSourceUrl The URL where the event occurred (optional but recommended)
      */
-    async sendEvent(eventName, userData, customData = {}, eventId, eventSourceUrl) {
+    async sendEvent(event, ...args) {
+        // Adapt legacy signature to interface if needed, or enforce interface
+        // We will support the interface structure mainly.
         var _a;
+        let eventName;
+        let userData;
+        let customData;
+        let eventId;
+        let eventSourceUrl;
+        if (typeof event === 'object') {
+            // It's the TrackingEvent object
+            const trackingEvent = event;
+            eventName = trackingEvent.eventName;
+            userData = trackingEvent.userData;
+            customData = trackingEvent.customData || {};
+            eventId = trackingEvent.eventId;
+            eventSourceUrl = trackingEvent.eventSourceUrl;
+        }
+        else {
+            // Legacy signature support (for existing tests/calls if any remain)
+            eventName = event;
+            userData = args[0];
+            customData = args[1] || {};
+            eventId = args[2];
+            eventSourceUrl = args[3];
+        }
         try {
             const payload = Object.assign({ data: [
                     {

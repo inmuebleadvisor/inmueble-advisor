@@ -28,6 +28,7 @@ const functions = __importStar(require("firebase-functions/v1"));
 const logger = __importStar(require("firebase-functions/logger"));
 const admin = __importStar(require("firebase-admin"));
 const MetaAdsService_1 = require("../../infrastructure/services/MetaAdsService");
+const RegisterConversion_1 = require("../../core/usecases/RegisterConversion");
 /**
  * Trigger: onLeadWrite
  * Description: Centralizes the "Status History" logic.
@@ -101,15 +102,12 @@ exports.onLeadWrite = functions.firestore
         }
         else {
             const metaService = new MetaAdsService_1.MetaAdsService();
-            const payloadData = {
-                eventName: 'Schedule',
-                email, phone, firstName, lastName,
-                eventId, eventSourceUrl
-            };
+            const registerConversion = new RegisterConversion_1.RegisterConversion(metaService);
             // ✅ STANDARDIZED SYNC LOG
-            logger.info(`[Meta Sync] Server Payload:`, payloadData);
+            logger.info(`[Meta Sync] Processing Conversion via UseCase: RegisterConversion`);
             try {
-                await metaService.sendEvent('Schedule', {
+                await registerConversion.execute({
+                    leadId: leadId,
                     email: email,
                     phone: phone,
                     firstName: firstName,
@@ -118,19 +116,16 @@ exports.onLeadWrite = functions.firestore
                     userAgent: afterData.clientUserAgent || afterData.userAgent,
                     fbc: afterData.fbc || afterData._fbc,
                     fbp: afterData.fbp || afterData._fbp,
-                    zipCode: afterData.zipCode || afterData.codigoPostal
-                }, {
-                    content_name: afterData.nombreDesarrollo || 'Cita Inmueble Advisor',
-                    status: 'scheduled',
-                    content_category: 'Vivienda Nueva',
-                    currency: 'MXN',
-                    value: ((_e = afterData.snapshot) === null || _e === void 0 ? void 0 : _e.precioAtCapture) || 0
-                }, eventId, // ✅ Strict ID
-                eventSourceUrl // ✅ Action Source URL
-                );
+                    zipCode: afterData.zipCode || afterData.codigoPostal,
+                    eventName: 'Schedule',
+                    eventId: eventId,
+                    eventSourceUrl: eventSourceUrl,
+                    conversionValue: ((_e = afterData.snapshot) === null || _e === void 0 ? void 0 : _e.precioAtCapture) || 0,
+                    contentName: afterData.nombreDesarrollo || 'Cita Inmueble Advisor'
+                });
             }
             catch (err) {
-                logger.error("[MetaCAPI] Failed to send Schedule event", err);
+                logger.error("[MetaCAPI] Failed to execute RegisterConversion", err);
             }
         }
     }
