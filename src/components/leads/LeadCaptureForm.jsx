@@ -3,7 +3,7 @@ import { useService } from '../../hooks/useService';
 import AppointmentScheduler from '../common/AppointmentScheduler';
 import { useUser } from '../../context/UserContext';
 import confetti from 'canvas-confetti';
-import '../../styles/LeadCaptureForm.css';
+import { getFunctions, httpsCallable } from 'firebase/functions'; // ✅ CAPI Import
 import '../../styles/LeadCaptureForm.css';
 
 const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
@@ -173,6 +173,7 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                         fbp,
                         fbc,
                         clientUserAgent,
+                        clientIp: null, // IP is automatic in Callable
 
                         snapshot: {
                             idModelo: modelo?.id || null,
@@ -183,6 +184,38 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                         }
                     }
                 );
+
+                // 3. ☁️ META CAPI: Invoke Cloud Function Explicitly
+                if (result.success && result.leadId) {
+                    try {
+                        const functionsInstance = getFunctions();
+                        const onLeadCreatedMETA = httpsCallable(functionsInstance, 'onLeadCreatedMETA');
+
+                        console.log("☁️ [Meta CAPI] Invoking Cloud Function...", { leadId: result.leadId });
+
+                        // Fire and Forget (don't await strictly to not block UI)
+                        onLeadCreatedMETA({
+                            leadId: result.leadId,
+                            leadData: {
+                                ...datosCliente,
+                                metaEventId,
+                                fbp,
+                                fbc,
+                                clientUserAgent,
+                                urlOrigen: window.location.href,
+                                nombreDesarrollo: desarrollo?.nombre,
+                                snapshot: { precioAtCapture: modelo?.precios?.base || modelo?.precio || 0 }
+                            }
+                        }).then((resp) => {
+                            console.log("☁️ [Meta CAPI] Success:", resp.data);
+                        }).catch((metaErr) => {
+                            console.error("☁️ [Meta CAPI] Failed:", metaErr);
+                        });
+
+                    } catch (e) {
+                        console.error("☁️ [Meta CAPI] Invocation Error:", e);
+                    }
+                }
             }
 
             if (!result.success) {
