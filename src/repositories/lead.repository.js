@@ -12,6 +12,7 @@ import {
     Timestamp,
     arrayUnion
 } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions'; // ✅ Import Functions
 
 export class LeadRepository {
     constructor(db) {
@@ -59,21 +60,32 @@ export class LeadRepository {
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
             // ❌ REMOVED: statusHistory. logic centralized in Backend Trigger.
-            _statusReason: "Lead generado por el sistema", // Trigger will consume this
-            _changedBy: "SYSTEM", // Trigger will consume this
-
-            // ✅ PERSIST TRACKING DATA
-            metaEventId,
-            fbp,
-            fbc,
-            clientUserAgent,
-            urlOrigen,
-            origen,
-
             ...extraData
         };
 
         const docRef = await addDoc(collection(this.db, this.collectionName), newLead);
+
+        // ✅ NEW: Explicitly notify Meta (Server-Side)
+        // We do this asynchronously/await depending on if we want to block UI.
+        // Usually we don't want to block the user flow for analytics, but we log errors.
+        try {
+            const functions = getFunctions();
+            const notifyMeta = httpsCallable(functions, 'onLeadCreatedMETA');
+
+            // We pass the ID and the data we just created.
+            notifyMeta({
+                leadId: docRef.id,
+                leadData: newLead
+            }).then((result) => {
+                // console.log("📡 [LeadRepository] Meta Notification Sent:", result.data);
+            }).catch((err) => {
+                console.error("⚠️ [LeadRepository] Meta Notification Failed:", err);
+            });
+
+        } catch (e) {
+            console.error("⚠️ [LeadRepository] Failed to init Meta Function call", e);
+        }
+
         return docRef.id;
     }
 
@@ -123,21 +135,7 @@ export class LeadRepository {
             // ✅ CHANGED: We now map metadata to transient fields.
             // The Backend Trigger will detect status change & consume these.
 
-            if (updateData.note) {
-                dataToUpdate._statusReason = updateData.note;
-                delete dataToUpdate.note; // Clean from main object
-            } else {
-                dataToUpdate._statusReason = "Estatus actualizado";
-            }
-
-            if (updateData.changedBy) {
-                dataToUpdate._changedBy = updateData.changedBy;
-                delete dataToUpdate.changedBy; // Clean from main object
-            } else {
-                dataToUpdate._changedBy = "SYSTEM";
-            }
-
-            // Note: We DO NOT touch statusHistory here anymore.
+            // Note: History disabled temporarily per user request.
         }
 
         await updateDoc(leadRef, dataToUpdate);
@@ -157,9 +155,7 @@ export class LeadRepository {
 
         await updateDoc(leadRef, {
             status: newStatus,
-            updatedAt: serverTimestamp(),
-            _statusReason: eventMetadata.note || "Estatus actualizado",
-            _changedBy: eventMetadata.changedBy || "SYSTEM"
+            updatedAt: serverTimestamp()
         });
         return true;
     }
