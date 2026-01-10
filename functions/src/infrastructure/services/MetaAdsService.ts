@@ -25,6 +25,21 @@ export class MetaAdsService implements TrackingService {
     }
 
     /**
+     * Normalizes phone number to digits only and adds country code if missing.
+     * Default: Mexico (52) for 10-digit numbers.
+     * @param phone The input phone string
+     */
+    private normalizePhone(phone: string): string {
+        if (!phone) return '';
+        const digits = phone.replace(/\D/g, '');
+        // Assumption: If 10 digits, it's a Mexico number without code. Add 52.
+        if (digits.length === 10) {
+            return `52${digits}`;
+        }
+        return digits;
+    }
+
+    /**
      * Sends an event to Meta CAPI.
      * @param eventName The name of the event (e.g., 'Schedule', 'Contact')
      * @param userData TrackingUserData for matching (PII will be hashed)
@@ -70,7 +85,8 @@ export class MetaAdsService implements TrackingService {
                         event_id: eventId,
                         user_data: {
                             em: userData.email ? [this.hashData(userData.email)] : undefined,
-                            ph: userData.phone ? [this.hashData(userData.phone)] : undefined,
+                            // ✅ Apply Normalization before Hashing
+                            ph: userData.phone ? [this.hashData(this.normalizePhone(userData.phone))] : undefined,
                             fn: userData.firstName ? [this.hashData(userData.firstName)] : undefined,
                             ln: userData.lastName ? [this.hashData(userData.lastName)] : undefined,
                             zp: userData.zipCode ? [this.hashData(userData.zipCode)] : undefined,
@@ -99,12 +115,16 @@ export class MetaAdsService implements TrackingService {
             if (META_CONFIG.TEST_EVENT_CODE) {
                 // @ts-ignore
                 payload.test_event_code = META_CONFIG.TEST_EVENT_CODE;
+                console.debug(`🧪 [Meta CAPI] TEST MODE ACTIVE. Code: ${META_CONFIG.TEST_EVENT_CODE}`);
             }
 
             // Sanity Check
             if (!payload.data[0].event_id) {
                 console.error("⛔ [FATAL] 'event_id' is MISSING in the generated payload!");
             }
+
+            // ✅ Debug Log: Show full JSON being sent
+            console.debug(`📦 [Meta CAPI] Payload for '${eventName}':`, JSON.stringify(payload, null, 2));
 
             const response = await axios.post(this.baseUrl, payload);
 

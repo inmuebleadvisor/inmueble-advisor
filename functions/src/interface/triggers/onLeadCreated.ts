@@ -32,7 +32,7 @@ export const onLeadCreated = functions
                 ...leadData
             } as any);
 
-            logger.info(`Notification sent for lead: ${leadId}`);
+
         } catch (error) {
             logger.error("Error in onLeadCreated trigger:", error);
         }

@@ -92,10 +92,15 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
             const fbc = metaService.getFbc();
             const clientUserAgent = navigator.userAgent;
 
+            // Normalize Phone for Meta Match Quality
+            const rawPhone = formData.telefono || '';
+            const cleanPhone = rawPhone.replace(/\D/g, '');
+            const normalizedPhone = cleanPhone.length === 10 ? `52${cleanPhone}` : cleanPhone;
+
             // Prepare PII for Advanced Matching (Browser)
             const pii = {
                 em: formData.email,
-                ph: formData.telefono,
+                ph: normalizedPhone, // ✅ Normalized
                 fn: formData.nombre?.split(' ')[0] || '',
                 ln: formData.nombre?.split(' ').slice(1).join(' ') || ''
             };

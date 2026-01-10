@@ -17,6 +17,9 @@ Handles server-side event tracking for Meta (Facebook) Conversion API (CAPI).
 
 - **Configuration:**
   - Relies on `META_CONFIG` from `src/core/constants/meta.ts` for Pixel ID and Access Token.
+  - **IMPORTANT:** Automatically normalizes phone numbers.
+    > [!IMPORTANT]
+    > Se asumirá el código de país **52 (México)** por defecto para números de 10 dígitos. Si la aplicación recibe tráfico internacional significativo, deberíamos requerir el código de país en el formulario.
 
 ### 2. `TelegramService`
 **Implements:** `NotificationPort`
