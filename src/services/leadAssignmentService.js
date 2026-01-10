@@ -165,12 +165,22 @@ export class LeadAssignmentService {
    * Reschedules an existing appointment.
    * @param {string} leadId 
    * @param {Object} newCita { dia: Date, hora: string }
+   * @param {Object} contextData { metaEventId, fbp, fbc, userAgent, clientIp }
    */
-  async rescheduleAppointment(leadId, newCita) {
+  async rescheduleAppointment(leadId, newCita, contextData = {}) {
     try {
-      await this.leadRepository.updateLead(leadId, {
+      const updates = {
         citainicial: newCita
-      });
+      };
+
+      // ✅ Update Tracking Data on Reschedule
+      if (contextData.metaEventId) updates.metaEventId = contextData.metaEventId;
+      if (contextData.fbp) updates.fbp = contextData.fbp;
+      if (contextData.fbc) updates.fbc = contextData.fbc;
+      if (contextData.clientUserAgent) updates.clientUserAgent = contextData.clientUserAgent;
+      if (contextData.urlOrigen) updates.urlOrigen = contextData.urlOrigen; // Ensure URL is fresh
+
+      await this.leadRepository.updateLead(leadId, updates);
 
       // Add history event
       await this.leadRepository.updateStatus(leadId, STATUS.LEAD_PENDING_DEVELOPER_CONTACT, {

@@ -104,13 +104,26 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
 
             if (isRescheduling && existingAppointment) {
                 // RESCHEDULE FLOW
+                // Tracking Metada for CAPI updates
+                const trackingData = {
+                    metaEventId,
+                    fbp,
+                    fbc,
+                    clientUserAgent: navigator.userAgent,
+                    urlOrigen: window.location.href // ✅ Fix URL Freshness
+                };
+
                 result = await leadAssignment.rescheduleAppointment(
                     existingAppointment.id,
-                    formData.citainicial
+                    formData.citainicial,
+                    trackingData // ✅ Pass Tracking Context
                 );
                 // Track Schedule Update
                 metaService.track('Schedule', {
                     content_name: desarrollo?.nombre,
+                    content_category: 'Vivienda Nueva',
+                    currency: 'MXN',
+                    value: modelo?.precios?.base || modelo?.precio || 0,
                     status: 'rescheduled'
                 }, `${metaEventId}_reschedule`);
 
