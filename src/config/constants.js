@@ -25,7 +25,7 @@ export const UI_OPCIONES = {
 
 // --- META ADS CONFIGURATION ---
 export const META_CONFIG = {
-  TEST_EVENT_CODE: 'TEST87275' // ⚠️ Para pruebas. Borrar en producción.
+  TEST_EVENT_CODE: 'TEST11293' // ⚠️ Para pruebas. Borrar en producción.
 };
 
 // ==========================================
