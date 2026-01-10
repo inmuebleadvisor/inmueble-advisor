@@ -131,14 +131,23 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                 // NEW LEAD FLOW
 
                 // 2. Track Browser Event (Hybrid Deduplication)
-                // Event: Schedule (Appointment)
-                metaService.track('Schedule', {
-                    content_name: desarrollo?.nombre,
-                    content_category: 'Vivienda Nueva',
-                    currency: 'MXN',
-                    value: modelo?.precios?.base || modelo?.precio || 0,
-                    status: 'scheduled'
-                }, metaEventId);
+
+                const browserPayload = {
+                    eventName: 'Schedule',
+                    eventId: metaEventId,
+                    params: {
+                        content_name: desarrollo?.nombre,
+                        content_category: 'Vivienda Nueva',
+                        currency: 'MXN',
+                        value: modelo?.precios?.base || modelo?.precio || 0,
+                        status: 'scheduled'
+                    }
+                };
+
+                // ✅ STANDARDIZED SYNC LOG
+                console.log(`[Meta Sync] Browser Payload:`, browserPayload);
+
+                metaService.track('Schedule', browserPayload.params, metaEventId);
 
                 result = await leadAssignment.generarLeadAutomatico(
                     datosCliente,

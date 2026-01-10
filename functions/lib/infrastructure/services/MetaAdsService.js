@@ -89,9 +89,6 @@ class MetaAdsService {
                 // @ts-ignore
                 payload.test_event_code = meta_1.META_CONFIG.TEST_EVENT_CODE;
             }
-            // DEBUG: Force stringify for GCP Logging visibility
-            const payloadString = JSON.stringify(payload, null, 2);
-            console.log(`🛠️ [Meta CAPI] Payload Content for ${eventName}:`, payloadString);
             // Sanity Check
             if (!payload.data[0].event_id) {
                 console.error("⛔ [FATAL] 'event_id' is MISSING in the generated payload!");

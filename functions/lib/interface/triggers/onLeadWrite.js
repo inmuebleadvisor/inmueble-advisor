@@ -73,8 +73,16 @@ exports.onLeadWrite = functions.firestore
         // Priority: Root fields -> clienteDatos -> known aliases (correo, celular)
         const email = afterData.email || ((_a = afterData.clienteDatos) === null || _a === void 0 ? void 0 : _a.email) || afterData.correo;
         const phone = afterData.telefono || ((_b = afterData.clienteDatos) === null || _b === void 0 ? void 0 : _b.telefono) || afterData.celular;
-        const firstName = afterData.nombre || ((_c = afterData.clienteDatos) === null || _c === void 0 ? void 0 : _c.nombre);
-        const lastName = afterData.apellido || ((_d = afterData.clienteDatos) === null || _d === void 0 ? void 0 : _d.apellido) || afterData.apellidos;
+        // Name Splitting Logic (Parity with Frontend)
+        let firstName = afterData.nombre || ((_c = afterData.clienteDatos) === null || _c === void 0 ? void 0 : _c.nombre);
+        let lastName = afterData.apellido || ((_d = afterData.clienteDatos) === null || _d === void 0 ? void 0 : _d.apellido) || afterData.apellidos;
+        if (firstName && !lastName) {
+            const parts = firstName.trim().split(' ');
+            if (parts.length > 1) {
+                firstName = parts[0];
+                lastName = parts.slice(1).join(' ');
+            }
+        }
         // Tracking IDs from Frontend (Critical for Deduplication)
         // 'metaEventId' MUST be explicitly passed from LeadCaptureForm.jsx
         const eventId = newEventId; // We already checked validation below, but let's be strict in var usage
@@ -86,8 +94,14 @@ exports.onLeadWrite = functions.firestore
             logger.error(`[MetaCAPI] ABORTING Schedule Event for Lead ${leadId}: 'metaEventId' is missing. Deduplication would fail.`);
         }
         else {
-            logger.info(`[MetaCAPI] Triggering Schedule Event for Lead ${leadId}. EventID: ${eventId}`);
             const metaService = new MetaAdsService_1.MetaAdsService();
+            const payloadData = {
+                eventName: 'Schedule',
+                email, phone, firstName, lastName,
+                eventId, eventSourceUrl
+            };
+            // ✅ STANDARDIZED SYNC LOG
+            logger.info(`[Meta Sync] Server Payload:`, payloadData);
             try {
                 await metaService.sendEvent('Schedule', {
                     email: email,

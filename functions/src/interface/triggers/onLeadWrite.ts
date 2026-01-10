@@ -56,8 +56,18 @@ export const onLeadWrite = functions.firestore
             // Priority: Root fields -> clienteDatos -> known aliases (correo, celular)
             const email = afterData.email || afterData.clienteDatos?.email || afterData.correo;
             const phone = afterData.telefono || afterData.clienteDatos?.telefono || afterData.celular;
-            const firstName = afterData.nombre || afterData.clienteDatos?.nombre;
-            const lastName = afterData.apellido || afterData.clienteDatos?.apellido || afterData.apellidos;
+
+            // Name Splitting Logic (Parity with Frontend)
+            let firstName = afterData.nombre || afterData.clienteDatos?.nombre;
+            let lastName = afterData.apellido || afterData.clienteDatos?.apellido || afterData.apellidos;
+
+            if (firstName && !lastName) {
+                const parts = firstName.trim().split(' ');
+                if (parts.length > 1) {
+                    firstName = parts[0];
+                    lastName = parts.slice(1).join(' ');
+                }
+            }
 
             // Tracking IDs from Frontend (Critical for Deduplication)
             // 'metaEventId' MUST be explicitly passed from LeadCaptureForm.jsx
@@ -71,9 +81,16 @@ export const onLeadWrite = functions.firestore
             if (!eventId) {
                 logger.error(`[MetaCAPI] ABORTING Schedule Event for Lead ${leadId}: 'metaEventId' is missing. Deduplication would fail.`);
             } else {
-                logger.info(`[MetaCAPI] Triggering Schedule Event for Lead ${leadId}. EventID: ${eventId}`);
 
                 const metaService = new MetaAdsService();
+                const payloadData = {
+                    eventName: 'Schedule',
+                    email, phone, firstName, lastName,
+                    eventId, eventSourceUrl
+                };
+
+                // ✅ STANDARDIZED SYNC LOG
+                logger.info(`[Meta Sync] Server Payload:`, payloadData);
 
                 try {
                     await metaService.sendEvent(
