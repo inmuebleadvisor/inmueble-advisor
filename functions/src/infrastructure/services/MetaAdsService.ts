@@ -1,20 +1,11 @@
 import axios from 'axios';
 import * as crypto from 'crypto';
 import { META_CONFIG } from '../../core/constants/meta';
+import { TrackingService, TrackingEvent, TrackingUserData } from '../../core/interfaces/TrackingService';
 
-interface UserData {
-    email?: string;
-    phone?: string;
-    firstName?: string;
-    lastName?: string;
-    zipCode?: string;
-    clientIp?: string;
-    userAgent?: string;
-    fbc?: string;
-    fbp?: string;
-}
 
-export class MetaAdsService {
+
+export class MetaAdsService implements TrackingService {
     private readonly baseUrl: string;
 
     constructor() {
@@ -36,18 +27,38 @@ export class MetaAdsService {
     /**
      * Sends an event to Meta CAPI.
      * @param eventName The name of the event (e.g., 'Schedule', 'Contact')
-     * @param userData User data for matching (PII will be hashed)
+     * @param userData TrackingUserData for matching (PII will be hashed)
      * @param customData Custom properties for the event
      * @param eventId Unique ID for deduplication
      * @param eventSourceUrl The URL where the event occurred (optional but recommended)
      */
-    async sendEvent(
-        eventName: string,
-        userData: UserData,
-        customData: Record<string, any> = {},
-        eventId: string,
-        eventSourceUrl?: string
-    ): Promise<void> {
+    async sendEvent(event: TrackingEvent | string, ...args: any[]): Promise<void> {
+        // Adapt legacy signature to interface if needed, or enforce interface
+        // We will support the interface structure mainly.
+
+        let eventName: string;
+        let userData: TrackingUserData;
+        let customData: Record<string, any>;
+        let eventId: string;
+        let eventSourceUrl: string | undefined;
+
+        if (typeof event === 'object') {
+            // It's the TrackingEvent object
+            const trackingEvent = event as TrackingEvent;
+            eventName = trackingEvent.eventName;
+            userData = trackingEvent.userData;
+            customData = trackingEvent.customData || {};
+            eventId = trackingEvent.eventId;
+            eventSourceUrl = trackingEvent.eventSourceUrl;
+        } else {
+            // Legacy signature support (for existing tests/calls if any remain)
+            eventName = event;
+            userData = args[0];
+            customData = args[1] || {};
+            eventId = args[2];
+            eventSourceUrl = args[3];
+        }
+
         try {
             const payload = {
                 data: [
@@ -55,7 +66,7 @@ export class MetaAdsService {
                         event_name: eventName,
                         event_time: Math.floor(Date.now() / 1000),
                         action_source: 'website',
-                        event_source_url: eventSourceUrl, // ✅ Added URL
+                        event_source_url: eventSourceUrl,
                         event_id: eventId,
                         user_data: {
                             em: userData.email ? [this.hashData(userData.email)] : undefined,

@@ -2,6 +2,7 @@ import * as functions from "firebase-functions/v1";
 import * as logger from "firebase-functions/logger";
 import * as admin from 'firebase-admin';
 import { MetaAdsService } from "../../infrastructure/services/MetaAdsService";
+import { RegisterConversion } from "../../core/usecases/RegisterConversion";
 
 /**
  * Trigger: onLeadWrite
@@ -77,47 +78,44 @@ export const onLeadWrite = functions.firestore
             // Priority: urlOrigen -> url -> landingUrl
             const eventSourceUrl = afterData.urlOrigen || afterData.url || afterData.landingUrl;
 
+            // DEBUG URL
+            logger.info(`[MetaCAPI] URL Resolution:`, {
+                urlOrigen: afterData.urlOrigen,
+                url: afterData.url,
+                resolved: eventSourceUrl
+            });
+
             // STRICT VALIDATION
             if (!eventId) {
                 logger.error(`[MetaCAPI] ABORTING Schedule Event for Lead ${leadId}: 'metaEventId' is missing. Deduplication would fail.`);
             } else {
 
                 const metaService = new MetaAdsService();
-                const payloadData = {
-                    eventName: 'Schedule',
-                    email, phone, firstName, lastName,
-                    eventId, eventSourceUrl
-                };
+                const registerConversion = new RegisterConversion(metaService);
 
                 // ✅ STANDARDIZED SYNC LOG
-                logger.info(`[Meta Sync] Server Payload:`, payloadData);
+                logger.info(`[Meta Sync] Processing Conversion via UseCase: RegisterConversion`);
 
                 try {
-                    await metaService.sendEvent(
-                        'Schedule',
-                        {
-                            email: email,      // em
-                            phone: phone,      // ph
-                            firstName: firstName, // fn
-                            lastName: lastName,   // ln
-                            clientIp: afterData.clientIp || afterData.ip,
-                            userAgent: afterData.clientUserAgent || afterData.userAgent,
-                            fbc: afterData.fbc || afterData._fbc,
-                            fbp: afterData.fbp || afterData._fbp,
-                            zipCode: afterData.zipCode || afterData.codigoPostal
-                        },
-                        {
-                            content_name: afterData.nombreDesarrollo || 'Cita Inmueble Advisor',
-                            status: 'scheduled',
-                            content_category: 'Vivienda Nueva',
-                            currency: 'MXN',
-                            value: afterData.snapshot?.precioAtCapture || 0
-                        },
-                        eventId, // ✅ Strict ID
-                        eventSourceUrl // ✅ Action Source URL
-                    );
+                    await registerConversion.execute({
+                        leadId: leadId,
+                        email: email,
+                        phone: phone,
+                        firstName: firstName,
+                        lastName: lastName,
+                        clientIp: afterData.clientIp || afterData.ip,
+                        userAgent: afterData.clientUserAgent || afterData.userAgent,
+                        fbc: afterData.fbc || afterData._fbc,
+                        fbp: afterData.fbp || afterData._fbp,
+                        zipCode: afterData.zipCode || afterData.codigoPostal,
+                        eventName: 'Schedule',
+                        eventId: eventId,
+                        eventSourceUrl: eventSourceUrl,
+                        conversionValue: afterData.snapshot?.precioAtCapture || 0,
+                        contentName: afterData.nombreDesarrollo || 'Cita Inmueble Advisor'
+                    });
                 } catch (err: any) {
-                    logger.error("[MetaCAPI] Failed to send Schedule event", err);
+                    logger.error("[MetaCAPI] Failed to execute RegisterConversion", err);
                 }
             }
         } else {

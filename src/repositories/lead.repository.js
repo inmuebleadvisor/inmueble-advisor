@@ -36,6 +36,8 @@ export class LeadRepository {
             fbp,              // ✅ Meta Browser ID
             fbc,              // ✅ Meta Click ID
             clientUserAgent,  // ✅ Audit
+            urlOrigen,        // ✅ URL Tracking
+            origen,           // ✅ Source Tracking
             ...extraData      // ✅ Capture any additional fields
         } = leadData;
 
@@ -65,6 +67,8 @@ export class LeadRepository {
             fbp,
             fbc,
             clientUserAgent,
+            urlOrigen,
+            origen,
 
             ...extraData
         };

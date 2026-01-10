@@ -89,6 +89,12 @@ exports.onLeadWrite = functions.firestore
         // Extract Source URL (Parity with Pixel)
         // Priority: urlOrigen -> url -> landingUrl
         const eventSourceUrl = afterData.urlOrigen || afterData.url || afterData.landingUrl;
+        // DEBUG URL
+        logger.info(`[MetaCAPI] URL Resolution:`, {
+            urlOrigen: afterData.urlOrigen,
+            url: afterData.url,
+            resolved: eventSourceUrl
+        });
         // STRICT VALIDATION
         if (!eventId) {
             logger.error(`[MetaCAPI] ABORTING Schedule Event for Lead ${leadId}: 'metaEventId' is missing. Deduplication would fail.`);
