@@ -38,12 +38,19 @@ export default function DetalleDesarrollo() {
           // 1. Generate Unique Event ID for Deduplication
           const eventId = metaService.generateEventId();
 
+          // Calculate Value (Min Price)
+          const minPrice = data.modelos?.length > 0
+            ? Math.min(...data.modelos.map(m => m.precioNumerico || 0))
+            : 0;
+
           // 2. Meta Pixel: ViewContent
           metaService.track('ViewContent', {
             content_name: data.nombre,
             content_category: 'Vivienda Nueva',
             content_ids: [id],
-            content_type: 'product'
+            content_type: 'product',
+            value: minPrice,
+            currency: 'MXN'
           }, eventId); // Pass eventId
 
           // 3. Server-Side CAPI: ViewContent (Intent)
@@ -81,6 +88,9 @@ export default function DetalleDesarrollo() {
                   // Content Context
                   nombreDesarrollo: data.nombre,
                   urlOrigen: window.location.href,
+                  // Price Context
+                  value: minPrice,
+                  currency: 'MXN',
                   // Technical Context
                   fbp: metaService.getFbp(),
                   fbc: metaService.getFbc(),
@@ -95,6 +105,7 @@ export default function DetalleDesarrollo() {
               });
             } catch (e) {
               console.warn("[Meta CAPI] Failed to capture ViewContent intent", e);
+              // Fail silently, don't block UI
             }
           };
           trackCAPI();

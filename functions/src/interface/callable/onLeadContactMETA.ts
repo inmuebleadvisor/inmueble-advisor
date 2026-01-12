@@ -23,10 +23,10 @@ export const onLeadContactMETA = onCall({ cors: true }, async (request) => {
 
     logger.info(`[MetaCAPI-Contact] Received '${eventName}' (ID: ${metaEventId})`);
 
-    // Extract Data for Meta
+    // Extract Data for Meta (Robust Fallbacks)
     // Note: For 'Contact', we might not have email/phone yet unless user is logged in.
-    const email = leadData?.email || leadData?.clienteDatos?.email;
-    const phone = leadData?.telefono || leadData?.clienteDatos?.telefono;
+    const email = leadData?.email || leadData?.clienteDatos?.email || leadData?.correo;
+    const phone = leadData?.telefono || leadData?.clienteDatos?.telefono || leadData?.celular;
 
     // Name Splitting Logic (Standardized)
     let firstName = leadData?.nombre || leadData?.clienteDatos?.nombre;
@@ -52,10 +52,10 @@ export const onLeadContactMETA = onCall({ cors: true }, async (request) => {
                 phone: phone,
                 firstName: firstName,
                 lastName: lastName,
-                clientIp: request.rawRequest.ip || leadData?.clientIp,
-                userAgent: request.rawRequest.headers['user-agent'] || leadData?.clientUserAgent,
-                fbc: leadData?.fbc,
-                fbp: leadData?.fbp,
+                clientIp: request.rawRequest.ip || leadData?.clientIp || leadData?.ip,
+                userAgent: request.rawRequest.headers['user-agent'] || leadData?.clientUserAgent || leadData?.userAgent,
+                fbc: leadData?.fbc || leadData?._fbc,
+                fbp: leadData?.fbp || leadData?._fbp,
                 zipCode: leadData?.zipCode
             },
             eventSourceUrl: leadData?.urlOrigen,

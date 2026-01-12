@@ -31,9 +31,9 @@ export const onLeadIntentMETA = onCall({ cors: true }, async (request) => {
 
     logger.info(`[MetaCAPI-ViewContent] Received intent '${eventName}' (ID: ${metaEventId})`);
 
-    // 2. Extract Data for Meta
-    const email = leadData?.email || leadData?.clienteDatos?.email;
-    const phone = leadData?.telefono || leadData?.clienteDatos?.telefono;
+    // 2. Extract Data for Meta (Robust Fallbacks)
+    const email = leadData?.email || leadData?.clienteDatos?.email || leadData?.correo;
+    const phone = leadData?.telefono || leadData?.clienteDatos?.telefono || leadData?.celular;
 
     // Name Splitting Logic (Standardized)
     let firstName = leadData?.nombre || leadData?.clienteDatos?.nombre;
@@ -59,16 +59,18 @@ export const onLeadIntentMETA = onCall({ cors: true }, async (request) => {
                 phone: phone,
                 firstName: firstName,
                 lastName: lastName,
-                clientIp: request.rawRequest.ip || leadData?.clientIp,
-                userAgent: request.rawRequest.headers['user-agent'] || leadData?.clientUserAgent,
-                fbc: leadData?.fbc,
-                fbp: leadData?.fbp,
+                clientIp: request.rawRequest.ip || leadData?.clientIp || leadData?.ip,
+                userAgent: request.rawRequest.headers['user-agent'] || leadData?.clientUserAgent || leadData?.userAgent,
+                fbc: leadData?.fbc || leadData?._fbc,
+                fbp: leadData?.fbp || leadData?._fbp,
                 zipCode: leadData?.zipCode
             },
             eventSourceUrl: leadData?.urlOrigen,
             customData: {
                 content_name: leadData?.nombreDesarrollo,
                 content_category: 'Vivienda Nueva',
+                value: leadData?.value || 0,
+                currency: leadData?.currency || 'MXN',
                 ...leadData?.customData
             }
         });

@@ -39,6 +39,10 @@ El sistema sigue un modelo de **Deduplicación Estricta**:
 ### C. Cloud Functions (CAPI)
 - **Ubicación**: `functions/src/interface/callable/*`
 - **Función**: Reciben el evento del frontend y lo reenvían a Meta Graph API.
+- **Robustez**: Implementan lógica de respaldo para alias de datos:
+    - **Email**: `email` || `clienteDatos.email` || `correo`
+    - **Teléfono**: `telefono` || `clienteDatos.telefono` || `celular`
+    - **Cookies**: `fbp` || `_fbp`, `fbc` || `_fbc`
 - **Seguridad**: Manejan tokens de acceso de servidor y normalizan datos de usuario (SHA256 hash automático por SDK o manual si es raw).
 
 ## 4. Configuración Requerida
