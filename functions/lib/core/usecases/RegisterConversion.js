@@ -28,10 +28,10 @@ class RegisterConversion {
             eventId: input.eventId,
             eventSourceUrl: input.eventSourceUrl,
             customData: {
-                content_name: input.contentName || 'Convertion',
+                content_name: input.contentName || 'Conversion',
                 currency: input.currency || 'MXN',
                 value: input.conversionValue || 0,
-                status: 'scheduled',
+                status: input.status || 'scheduled',
                 content_category: 'Vivienda Nueva'
             }
         };

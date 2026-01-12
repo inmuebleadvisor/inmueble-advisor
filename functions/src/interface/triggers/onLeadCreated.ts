@@ -25,7 +25,7 @@ export const onLeadCreated = functions
 
             const useCase = new NotifyNewLead(telegramService, userRepo, leadRepo);
 
-            // Meta CAPI logic moved to onLeadWrite to Centralize Schedule event handling and avoid duplication.
+
 
             await useCase.execute({
                 id: leadId,

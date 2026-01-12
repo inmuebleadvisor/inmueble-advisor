@@ -39,7 +39,7 @@ export const onLeadCreatedMETA = onCall(async (request) => {
     const email = leadData.email || leadData.clienteDatos?.email || leadData.correo;
     const phone = leadData.telefono || leadData.clienteDatos?.telefono || leadData.celular;
 
-    // Name Splitting Logic (Parity with previous onLeadWrite)
+    // Name Splitting Logic
     let firstName = leadData.nombre || leadData.clienteDatos?.nombre;
     let lastName = leadData.apellido || leadData.clienteDatos?.apellido || leadData.apellidos;
 
