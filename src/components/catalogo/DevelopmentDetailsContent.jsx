@@ -53,7 +53,8 @@ export default function DevelopmentDetailsContent({
         const trackCAPI = async () => {
             try {
                 const functionsInstance = getFunctions();
-                const onLeadIntentMETA = httpsCallable(functionsInstance, 'onLeadIntentMETA');
+                // ✅ Call specialized function for PageView
+                const onLeadPageViewMETA = httpsCallable(functionsInstance, 'onLeadPageViewMETA');
 
                 // 🛡️ Safe PII Extraction (Reuse Logic)
                 const email = userProfile?.email || user?.email;
@@ -72,9 +73,9 @@ export default function DevelopmentDetailsContent({
                 }
 
                 console.log("[Meta CAPI] Sending 'PageView' intent...");
-                await onLeadIntentMETA({
+                await onLeadPageViewMETA({
                     metaEventId: eventId,
-                    eventName: 'PageView',
+                    // eventName: 'PageView', // Not needed, implicitly handled by function
                     leadData: {
                         nombreDesarrollo: desarrollo.nombre,
                         urlOrigen: window.location.href,
@@ -111,7 +112,8 @@ export default function DevelopmentDetailsContent({
             const trackCAPI = async () => {
                 try {
                     const functionsInstance = getFunctions();
-                    const onLeadIntentMETA = httpsCallable(functionsInstance, 'onLeadIntentMETA');
+                    // ✅ Call specialized function for Contact
+                    const onLeadContactMETA = httpsCallable(functionsInstance, 'onLeadContactMETA');
 
                     // 🛡️ Safe PII Extraction (Reuse Logic)
                     const email = userProfile?.email || user?.email;
@@ -130,9 +132,9 @@ export default function DevelopmentDetailsContent({
                     }
 
                     console.log("[Meta CAPI] Sending 'Contact' intent...");
-                    await onLeadIntentMETA({
+                    await onLeadContactMETA({
                         metaEventId: eventId,
-                        eventName: 'Contact',
+                        // eventName: 'Contact', // Not needed, implicitly handled by function
                         leadData: {
                             nombreDesarrollo: desarrollo.nombre,
                             urlOrigen: window.location.href,

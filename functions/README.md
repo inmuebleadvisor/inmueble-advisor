@@ -65,13 +65,26 @@ Notifica explícitamente a Meta cuando un lead ha sido creado exitosamente. Sust
 *   **Integración:** Utiliza `MetaAdsService` con hashing SHA256 para PII (Email, Phone, Name).
 
 ### 7. `onLeadIntentMETA` (Callable)
-Rastrea eventos de "Alta Intención" (High Intent) que ocurren *antes* de la conversión final, permitiendo capturar señales valiosas incluso si el lead no completa el formulario.
-*   **Trigger:** Llamada directa desde el cliente en momentos clave (ej. Abrir modal, Ver Detalle).
-*   **Eventos Soportados:** `ViewContent`, `Contact`, `InitiateCheckout`, `PageView`.
+Rastrea eventos de "Visualización de Contenido" (ViewContent).
+*   **Trigger:** Al terminar de cargar los detalles de un desarrollo.
+*   **Evento:** `ViewContent` (Estricto).
 *   **Funcionalidad:**
-    *   Recibe un `metaEventId` generado por el cliente para deduplicación.
-    *   Envía el evento a Meta CAPI inmediatamente (Fire & Forget).
-    *   Permite rastreo híbrido robusto resistente a AdBlockers.
+    *   Recibe un `metaEventId` generado por el cliente.
+    *   Envía el evento a Meta CAPI inmediatamente.
+
+### 8. `onLeadContactMETA` (Callable)
+Rastrea la intención de contacto del usuario.
+*   **Trigger:** Al hacer clic en botones de "Agendar", "Contactar" o abrir el formulario.
+*   **Evento:** `Contact`.
+*   **Funcionalidad:**
+    *   Captura la intención de contacto antes de que se complete el formulario.
+
+### 9. `onLeadPageViewMETA` (Callable)
+Rastrea las visitas a páginas clave (Server-Side).
+*   **Trigger:** Al montar componentes de vista (ej. `DevelopmentDetails`).
+*   **Evento:** `PageView`.
+*   **Funcionalidad:**
+    *   Complementa al Pixel de navegador para asegurar el 100% de cobertura de tráfico.
 
 ### ⚙️ Configuración de Meta CAPI
 

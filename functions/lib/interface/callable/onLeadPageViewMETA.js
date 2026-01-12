@@ -23,40 +23,34 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onLeadIntentMETA = void 0;
+exports.onLeadPageViewMETA = void 0;
 const https_1 = require("firebase-functions/v2/https");
-// import * as functions from "firebase-functions/v1"; // Unused
 const logger = __importStar(require("firebase-functions/logger"));
 const MetaAdsService_1 = require("../../infrastructure/services/MetaAdsService");
 /**
- * Callable: onLeadIntentMETA
- * Description: Explicitly triggered by the Frontend when a high-intent action occurs (e.g., Opening the Scheduler).
- * This allows tracking users even if they haven't submitted the full lead form yet (Contact Event).
+ * Callable: onLeadPageViewMETA
+ * Description: Explicitly triggered by the Frontend when a user views a page.
+ * Responsibilities:
+ * 1. Validates the request.
+ * 2. Sends the 'PageView' event to Meta CAPI.
  *
- * @param request { metaEventId, eventName, leadData: { ... } }
+ * @param request { metaEventId, leadData: { ... } }
  */
-exports.onLeadIntentMETA = (0, https_1.onCall)({ cors: true }, async (request) => {
-    // 1. Validation (Relaxed for Intent - allow unauthenticated)
+exports.onLeadPageViewMETA = (0, https_1.onCall)({ cors: true }, async (request) => {
     var _a, _b, _c, _d;
-    const { metaEventId, eventName, leadData } = request.data;
-    // STRICT VALIDATION: Only ViewContent allowed
-    if (eventName !== 'ViewContent') {
-        logger.warn(`[MetaCAPI-ViewContent] Invalid usage. Function is now restricted to 'ViewContent' only. Received: ${eventName}`);
-        // Fail gracefully or throw error depending on strictness needed. 
-        // Returning success=false allows client to know it used the wrong endpoint.
-        return { success: false, reason: "endpoint_deprecated_for_this_event_use_specialized_function" };
-    }
+    const { metaEventId, leadData } = request.data;
+    const eventName = 'PageView';
     if (!metaEventId) {
-        logger.warn(`[MetaCAPI-ViewContent] Invalid intent request. Missing 'metaEventId'.`);
+        logger.warn(`[MetaCAPI-PageView] Invalid request. Missing 'metaEventId'.`);
         return { success: false, reason: "invalid_args" };
     }
-    logger.info(`[MetaCAPI-ViewContent] Received intent '${eventName}' (ID: ${metaEventId})`);
-    // 2. Extract Data for Meta
+    logger.info(`[MetaCAPI-PageView] Received '${eventName}' (ID: ${metaEventId})`);
+    // Extract Data for Meta
     const email = (leadData === null || leadData === void 0 ? void 0 : leadData.email) || ((_a = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _a === void 0 ? void 0 : _a.email);
     const phone = (leadData === null || leadData === void 0 ? void 0 : leadData.telefono) || ((_b = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _b === void 0 ? void 0 : _b.telefono);
     const firstName = (leadData === null || leadData === void 0 ? void 0 : leadData.nombre) || ((_c = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _c === void 0 ? void 0 : _c.nombre);
     const lastName = (leadData === null || leadData === void 0 ? void 0 : leadData.apellido) || ((_d = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _d === void 0 ? void 0 : _d.apellido);
-    // 3. Execution
+    // Execution
     const metaService = new MetaAdsService_1.MetaAdsService();
     try {
         await metaService.sendEvent({
@@ -76,12 +70,12 @@ exports.onLeadIntentMETA = (0, https_1.onCall)({ cors: true }, async (request) =
             eventSourceUrl: leadData === null || leadData === void 0 ? void 0 : leadData.urlOrigen,
             customData: Object.assign({ content_name: leadData === null || leadData === void 0 ? void 0 : leadData.nombreDesarrollo, content_category: 'Vivienda Nueva' }, leadData === null || leadData === void 0 ? void 0 : leadData.customData)
         });
-        logger.info(`[MetaCAPI-ViewContent] Successfully processed intent '${eventName}' for ${metaEventId}`);
+        logger.info(`[MetaCAPI-PageView] Successfully processed '${eventName}' for ${metaEventId}`);
         return { success: true };
     }
     catch (err) {
-        logger.error(`[MetaCAPI-ViewContent] Error processing intent ${metaEventId}:`, err);
+        logger.error(`[MetaCAPI-PageView] Error processing ${metaEventId}:`, err);
         return { success: false, error: err.message };
     }
 });
-//# sourceMappingURL=onLeadIntentMETA.js.map
+//# sourceMappingURL=onLeadPageViewMETA.js.map

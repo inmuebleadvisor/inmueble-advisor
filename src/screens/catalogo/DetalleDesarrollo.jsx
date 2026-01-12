@@ -71,7 +71,7 @@ export default function DetalleDesarrollo() {
               console.log("[Meta CAPI] Sending 'ViewContent' intent...");
               await onLeadIntentMETA({
                 metaEventId: eventId,
-                eventName: 'ViewContent',
+                eventName: 'ViewContent', // STRICTLY REQUIRED
                 leadData: {
                   // Content Context
                   nombreDesarrollo: data.nombre,

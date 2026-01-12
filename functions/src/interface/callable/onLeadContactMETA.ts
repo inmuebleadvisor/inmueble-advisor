@@ -1,43 +1,36 @@
 import { onCall } from "firebase-functions/v2/https";
-// import * as functions from "firebase-functions/v1"; // Unused
-
 import * as logger from "firebase-functions/logger";
 import { MetaAdsService } from "../../infrastructure/services/MetaAdsService";
 
 /**
- * Callable: onLeadIntentMETA
- * Description: Explicitly triggered by the Frontend when a high-intent action occurs (e.g., Opening the Scheduler).
- * This allows tracking users even if they haven't submitted the full lead form yet (Contact Event).
+ * Callable: onLeadContactMETA
+ * Description: Explicitly triggered by the Frontend when a user initiates contact (e.g., clicking "Agendar").
+ * Responsibilities:
+ * 1. Validates the request (must contain 'Contact' intent).
+ * 2. Sends the 'Contact' event to Meta CAPI.
  * 
- * @param request { metaEventId, eventName, leadData: { ... } }
+ * @param request { metaEventId, leadData: { ... } }
  */
-export const onLeadIntentMETA = onCall({ cors: true }, async (request) => {
-    // 1. Validation (Relaxed for Intent - allow unauthenticated)
+export const onLeadContactMETA = onCall({ cors: true }, async (request) => {
 
-    const { metaEventId, eventName, leadData } = request.data;
-
-    // STRICT VALIDATION: Only ViewContent allowed
-    if (eventName !== 'ViewContent') {
-        logger.warn(`[MetaCAPI-ViewContent] Invalid usage. Function is now restricted to 'ViewContent' only. Received: ${eventName}`);
-        // Fail gracefully or throw error depending on strictness needed. 
-        // Returning success=false allows client to know it used the wrong endpoint.
-        return { success: false, reason: "endpoint_deprecated_for_this_event_use_specialized_function" };
-    }
+    const { metaEventId, leadData } = request.data;
+    const eventName = 'Contact';
 
     if (!metaEventId) {
-        logger.warn(`[MetaCAPI-ViewContent] Invalid intent request. Missing 'metaEventId'.`);
+        logger.warn(`[MetaCAPI-Contact] Invalid request. Missing 'metaEventId'.`);
         return { success: false, reason: "invalid_args" };
     }
 
-    logger.info(`[MetaCAPI-ViewContent] Received intent '${eventName}' (ID: ${metaEventId})`);
+    logger.info(`[MetaCAPI-Contact] Received '${eventName}' (ID: ${metaEventId})`);
 
-    // 2. Extract Data for Meta
+    // Extract Data for Meta
+    // Note: For 'Contact', we might not have email/phone yet unless user is logged in.
     const email = leadData?.email || leadData?.clienteDatos?.email;
     const phone = leadData?.telefono || leadData?.clienteDatos?.telefono;
     const firstName = leadData?.nombre || leadData?.clienteDatos?.nombre;
     const lastName = leadData?.apellido || leadData?.clienteDatos?.apellido;
 
-    // 3. Execution
+    // Execution
     const metaService = new MetaAdsService();
 
     try {
@@ -63,11 +56,11 @@ export const onLeadIntentMETA = onCall({ cors: true }, async (request) => {
             }
         });
 
-        logger.info(`[MetaCAPI-ViewContent] Successfully processed intent '${eventName}' for ${metaEventId}`);
+        logger.info(`[MetaCAPI-Contact] Successfully processed '${eventName}' for ${metaEventId}`);
         return { success: true };
 
     } catch (err: any) {
-        logger.error(`[MetaCAPI-ViewContent] Error processing intent ${metaEventId}:`, err);
+        logger.error(`[MetaCAPI-Contact] Error processing ${metaEventId}:`, err);
         return { success: false, error: err.message };
     }
 });
