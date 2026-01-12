@@ -23,10 +23,11 @@ El sistema sigue un modelo de **Deduplicación Estricta**:
 - **Ubicación**: `src/components/common/MetaTracker.jsx`
 - **Función**: Escucha `useLocation` para disparar `PageView` automáticamente.
 - **Lógica**:
-    1. Genera UUID (`metaEventId`).
-    2. Extrae PII del `UserContext` (si existe).
-    3. Dispara Pixel (`fbq track PageView`).
-    4. Invoca Cloud Function `onLeadPageViewMETA`.
+    1. **Debounce / Espera (500ms)**: Espera medio segundo tras el cambio de ruta para asegurar que `UserContext` haya propagado la sesión del usuario (evita Race Conditions).
+    2. Genera UUID (`metaEventId`).
+    3. Extrae PII y `external_id` (UID) frescos del estado (`useRef`).
+    4. Dispara Pixel (`fbq track PageView`) con Advanced Matching.
+    5. Invoca Cloud Function `onLeadPageViewMETA`.
 
 ### B. `MetaService` (Servicio Frontend)
 - **Ubicación**: `src/services/meta.service.js`

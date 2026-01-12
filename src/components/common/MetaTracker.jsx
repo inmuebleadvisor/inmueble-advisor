@@ -17,45 +17,61 @@ const MetaTracker = () => {
     const { meta: metaService } = useService();
     const { user, userProfile } = useUser();
 
-    // Prevent double firing in React.StrictMode local dev, though for prod useEffect dependency is enough.
-    // We want to track every unique location key.
+    // ✅ REFS: Keep latest user state available for the async timeout
+    const userRef = useRef(user);
+    const userProfileRef = useRef(userProfile);
+
+    // Update refs on every render so the timeout always sees the "future" state
+    userRef.current = user;
+    userProfileRef.current = userProfile;
+
+    // Tracker for last location to prevent duplicates
     const lastTrackedKey = useRef(null);
 
     useEffect(() => {
-        // ✅ Ensure Pixel is Initialized (Race Condition Fix)
+        // ✅ Ensure Pixel is Initialized
         if (!metaService.initialized) {
             metaService.init(META_CONFIG.PIXEL_ID);
         }
 
-        // Avoid duplicate tracking for the same exact location state/key
+        // Avoid duplicate tracking for the same key
         if (lastTrackedKey.current === location.key) return;
         lastTrackedKey.current = location.key;
 
-        const trackPageView = async () => {
+        // 🕒 DEBOUNCE: Wait 500ms for UserContext to settle (Race Condition Fix)
+        // This ensures that if a login/navigation happens simultaneously, we capture the user ID.
+        const timerId = setTimeout(async () => {
             try {
+                // Read from Refs to get the LATEST state at execution time
+                const currentUser = userRef.current;
+                const currentProfile = userProfileRef.current;
+
                 // 1. Generate Unique ID for Deduplication
                 const eventId = metaService.generateEventId();
                 const currentUrl = window.location.href;
 
                 // 2. Prepare User Data (PII)
-                const email = userProfile?.email || user?.email;
-                const phone = userProfile?.telefono;
-                const firstName = userProfile?.nombre || user?.displayName?.split(' ')[0];
-                const lastName = userProfile?.apellido || user?.displayName?.split(' ').slice(1).join(' ');
+                const email = currentProfile?.email || currentUser?.email;
+                const phone = currentProfile?.telefono;
+                const firstName = currentProfile?.nombre || currentUser?.displayName?.split(' ')[0];
+                const lastName = currentProfile?.apellido || currentUser?.displayName?.split(' ').slice(1).join(' ');
+                const uid = currentUser?.uid;
 
                 // Phone Normalization (Standardized)
-                const rawPhone = userProfile?.telefono || '';
+                const rawPhone = currentProfile?.telefono || '';
                 const cleanPhone = rawPhone.replace(/\D/g, '');
                 const normalizedPhone = cleanPhone.length === 10 ? `52${cleanPhone}` : cleanPhone;
 
-                // 3. Update Pixel Access Token / User Data for Advanced Matching (Browser)
-                if (email || normalizedPhone || user?.uid) {
+                console.log(`📡 [Meta Unified] Preparing PageView for ${location.pathname}`, { uid, email });
+
+                // 3. Update Pixel Access Token / User Data (Browser)
+                if (email || normalizedPhone || uid) {
                     metaService.setUserData({
                         em: email,
                         ph: normalizedPhone,
                         fn: firstName,
                         ln: lastName,
-                        external_id: user?.uid // ✅ External ID (UID)
+                        external_id: uid // ✅ External ID
                     });
                 }
 
@@ -66,9 +82,7 @@ const MetaTracker = () => {
                 const functionsInstance = getFunctions();
                 const onLeadPageViewMETA = httpsCallable(functionsInstance, 'onLeadPageViewMETA');
 
-                console.log(`[Meta Unified] Tracking PageView: ${location.pathname} (ID: ${eventId})`);
-
-                // Fire and forget CAPI to not block UI
+                // Fire and forget CAPI
                 onLeadPageViewMETA({
                     metaEventId: eventId,
                     leadData: {
@@ -78,21 +92,10 @@ const MetaTracker = () => {
                         fbc: metaService.getFbc(),
                         // PII for CAPI
                         email,
-                        phone: phone, // Removed normalizedPhone - wait, checking original variable name
-                        // Original was: telefono: normalizedPhone
-                        // Checking previous context... "telefono: normalizedPhone"
-                        // I will assume the tool expects me to replace the block.
-                        // Wait, I need to be careful with variable names.
-                        // Original:
-                        // telefono: normalizedPhone,
-                        // nombre: firstName,
-                        // apellido: lastName
-                        //
-                        // Replacement:
                         telefono: normalizedPhone,
                         nombre: firstName,
                         apellido: lastName,
-                        external_id: user?.uid // ✅ External ID (UID)
+                        external_id: uid
                     }
                 }).catch(err => {
                     console.warn("[Meta Unified] CAPI PageView failed", err);
@@ -101,14 +104,12 @@ const MetaTracker = () => {
             } catch (error) {
                 console.error("[Meta Unified] Tracking error:", error);
             }
-        };
+        }, 500); // 500ms Settle Time
 
-        trackPageView();
+        // Cleanup: Clear timeout if user navigates away quickly (prevents firing for skipped pages)
+        return () => clearTimeout(timerId);
 
-    }, [location.key, metaService, user, userProfile, location.pathname]);
-    // Intentionally depend on location.key to track history changes properly
-    // user/userProfile might change late, but usually we care about the navigation event itself.
-    // If user logs in mid-page, we generally don't re-fire PageView unless they navigate.
+    }, [location.key, metaService]); // Only trigger on location change
 
     return null;
 };
