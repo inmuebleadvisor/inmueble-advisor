@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as crypto from 'crypto';
 import { META_CONFIG } from '../../core/constants/meta';
-import { TrackingService, TrackingEvent, TrackingUserData } from '../../core/interfaces/TrackingService';
+import { TrackingService, TrackingEvent } from '../../core/interfaces/TrackingService';
 
 
 
@@ -47,32 +47,8 @@ export class MetaAdsService implements TrackingService {
      * @param eventId Unique ID for deduplication
      * @param eventSourceUrl The URL where the event occurred (optional but recommended)
      */
-    async sendEvent(event: TrackingEvent | string, ...args: any[]): Promise<void> {
-        // Adapt legacy signature to interface if needed, or enforce interface
-        // We will support the interface structure mainly.
-
-        let eventName: string;
-        let userData: TrackingUserData;
-        let customData: Record<string, any>;
-        let eventId: string;
-        let eventSourceUrl: string | undefined;
-
-        if (typeof event === 'object') {
-            // It's the TrackingEvent object
-            const trackingEvent = event as TrackingEvent;
-            eventName = trackingEvent.eventName;
-            userData = trackingEvent.userData;
-            customData = trackingEvent.customData || {};
-            eventId = trackingEvent.eventId;
-            eventSourceUrl = trackingEvent.eventSourceUrl;
-        } else {
-            // Legacy signature support (for existing tests/calls if any remain)
-            eventName = event;
-            userData = args[0];
-            customData = args[1] || {};
-            eventId = args[2];
-            eventSourceUrl = args[3];
-        }
+    async sendEvent(event: TrackingEvent): Promise<void> {
+        const { eventName, userData, customData = {}, eventId, eventSourceUrl } = event;
 
         try {
             const payload = {
@@ -99,22 +75,11 @@ export class MetaAdsService implements TrackingService {
                     },
                 ],
                 access_token: META_CONFIG.ACCESS_TOKEN,
-                // Add test_event_code if available
+                // ✅ Test Mode - Only active if TEST_EVENT_CODE is set
                 ...(META_CONFIG.TEST_EVENT_CODE ? { test_event_code: META_CONFIG.TEST_EVENT_CODE } : {}),
             };
 
-            // If test event code exists, we should append it to the data or as a query param? 
-            // Meta CAPI documentation says it goes in the payload generally, 
-            // but let's check if we need to put it inside the 'data' array or top level?
-            // Usually it's top level parameter `test_event_code` alongside `data` and `access_token`
-            // Re-checking standard implementations: it's a parameter in the POST body alongside `data`.
-
-            // Wait, Axios body is just the object.
-
-            // Note: If TEST_EVENT_CODE is set, we append to payload.
             if (META_CONFIG.TEST_EVENT_CODE) {
-                // @ts-ignore
-                payload.test_event_code = META_CONFIG.TEST_EVENT_CODE;
                 console.debug(`🧪 [Meta CAPI] TEST MODE ACTIVE. Code: ${META_CONFIG.TEST_EVENT_CODE}`);
             }
 
@@ -137,8 +102,6 @@ export class MetaAdsService implements TrackingService {
 
         } catch (error: any) {
             console.error('Failed to send Meta CAPI event:', error.response?.data || error.message);
-            // We verify if we should throw or just log. Generally we don't want to break the lead flow if tracking fails,
-            // but we want to know about it.
         }
     }
 }

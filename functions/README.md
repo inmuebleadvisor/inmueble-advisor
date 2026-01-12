@@ -78,7 +78,7 @@ Para habilitar el rastreo Server-Side correcto:
     Para ver eventos en tiempo real en el Administrador de Eventos de Meta:
     *   Obtén el código de prueba en **Events Manager > Test Events**.
     *   Colócalo en `TEST_EVENT_CODE` dentro de `src/core/constants/meta.ts`.
-    *   *Nota: Recuerda limpiar esta variable o dejarla vacía para producción pura.*
+    *   **IMPORTANT - Eliminación para Producción:** El `TEST_EVENT_CODE` está actualmente definido en archivos de constantes. Para el despliegue final en producción, DEBES limpiar este valor (dejarlo como una cadena vacía o eliminar la clave) tanto en `functions/src/core/constants/meta.ts` como en `src/config/constants.js` para evitar que los eventos se envíen a la herramienta "Test Events" en lugar del conjunto de datos real.
 
 3.  **Logs de Depuración:**
     *   **Frontend (Navegador):** Busca logs con el prefijo `📡 [Meta Pixel]`.
