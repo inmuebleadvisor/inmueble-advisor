@@ -64,6 +64,15 @@ Notifica explícitamente a Meta cuando un lead ha sido creado exitosamente. Sust
     *   Garantiza que el evento se envíe una única vez por creación de cita.
 *   **Integración:** Utiliza `MetaAdsService` con hashing SHA256 para PII (Email, Phone, Name).
 
+### 7. `onLeadIntentMETA` (Callable)
+Rastrea eventos de "Alta Intención" (High Intent) que ocurren *antes* de la conversión final, permitiendo capturar señales valiosas incluso si el lead no completa el formulario.
+*   **Trigger:** Llamada directa desde el cliente en momentos clave (ej. Abrir modal, Ver Detalle).
+*   **Eventos Soportados:** `ViewContent`, `Contact`, `InitiateCheckout`, `PageView`.
+*   **Funcionalidad:**
+    *   Recibe un `metaEventId` generado por el cliente para deduplicación.
+    *   Envía el evento a Meta CAPI inmediatamente (Fire & Forget).
+    *   Permite rastreo híbrido robusto resistente a AdBlockers.
+
 ### ⚙️ Configuración de Meta CAPI
 
 Para habilitar el rastreo Server-Side correcto:

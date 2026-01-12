@@ -45,7 +45,7 @@ exports.onLeadIntentMETA = (0, https_1.onCall)({ cors: true }, async (request) =
         return { success: false, reason: "invalid_args" };
     }
     // Only allow specific intent events to prevent abuse
-    const ALLOWED_INTENTS = ['Contact', 'ViewContent', 'InitiateCheckout'];
+    const ALLOWED_INTENTS = ['Contact', 'ViewContent', 'InitiateCheckout', 'PageView'];
     if (!ALLOWED_INTENTS.includes(eventName)) {
         logger.warn(`[MetaCAPI] Blocked unknown event: ${eventName}`);
         return { success: false, reason: "event_not_allowed" };

@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { getFunctions, httpsCallable } from 'firebase/functions'; // CAPI Support
 import { useUser } from '../../context/UserContext';
 import { useService } from '../../hooks/useService';
 import { useCatalog } from '../../context/CatalogContext';
@@ -33,13 +34,45 @@ export default function DetalleDesarrollo() {
 
         if (data) {
           trackBehavior('view_development', { id: id, name: data.nombre });
-          // Meta Pixel: ViewContent
+
+          // 1. Generate Unique Event ID for Deduplication
+          const eventId = metaService.generateEventId();
+
+          // 2. Meta Pixel: ViewContent
           metaService.track('ViewContent', {
             content_name: data.nombre,
             content_category: 'Vivienda Nueva',
             content_ids: [id],
             content_type: 'product'
-          });
+          }, eventId); // Pass eventId
+
+          // 3. Server-Side CAPI: ViewContent (Intent)
+          const trackCAPI = async () => {
+            try {
+              const functionsInstance = getFunctions();
+              const onLeadIntentMETA = httpsCallable(functionsInstance, 'onLeadIntentMETA');
+
+              console.log("[Meta CAPI] Sending 'ViewContent' intent...");
+              await onLeadIntentMETA({
+                metaEventId: eventId,
+                eventName: 'ViewContent',
+                leadData: {
+                  nombreDesarrollo: data.nombre,
+                  urlOrigen: window.location.href,
+                  fbp: metaService.getFbp(),
+                  fbc: metaService.getFbc(),
+                  clientUserAgent: navigator.userAgent,
+                  customData: {
+                    content_ids: [id],
+                    content_type: 'product'
+                  }
+                }
+              });
+            } catch (e) {
+              console.warn("[Meta CAPI] Failed to capture ViewContent intent", e);
+            }
+          };
+          trackCAPI();
         }
       } catch (error) {
         console.error("Error cargando desarrollo:", error);

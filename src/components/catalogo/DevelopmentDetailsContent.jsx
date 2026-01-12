@@ -11,6 +11,7 @@ import { useService } from '../../hooks/useService';
 import '../../styles/components/DevelopmentDetails.css';
 // import Modal from '../shared/Modal'; // Removed: LeadCaptureForm is now self-contained
 import LeadCaptureForm from '../leads/LeadCaptureForm';
+import { getFunctions, httpsCallable } from 'firebase/functions'; // CAPI: PageView/Contact Intent
 
 // Icons
 const Icons = {
@@ -35,6 +36,42 @@ export default function DevelopmentDetailsContent({
     const showActionPanel = useStickyPanel(headerRef);
     const { meta: metaService } = useService();
 
+    // Meta Pixel & CAPI: PageView (On Mount)
+    React.useEffect(() => {
+        // 1. Generate Unique Event ID for Deduplication
+        const eventId = metaService.generateEventId();
+
+        // 2. Browser Pixel Track
+        metaService.track('PageView', {
+            content_name: desarrollo.nombre,
+            content_category: 'Vivienda Nueva'
+        }, eventId); // Pass eventId
+
+        // 3. Server-Side CAPI Track
+        const trackCAPI = async () => {
+            try {
+                const functionsInstance = getFunctions();
+                const onLeadIntentMETA = httpsCallable(functionsInstance, 'onLeadIntentMETA');
+
+                console.log("[Meta CAPI] Sending 'PageView' intent...");
+                await onLeadIntentMETA({
+                    metaEventId: eventId,
+                    eventName: 'PageView',
+                    leadData: {
+                        nombreDesarrollo: desarrollo.nombre,
+                        urlOrigen: window.location.href,
+                        fbp: metaService.getFbp(),
+                        fbc: metaService.getFbc(),
+                        clientUserAgent: navigator.userAgent
+                    }
+                });
+            } catch (e) {
+                console.warn("[Meta CAPI] Failed to capture PageView intent", e);
+            }
+        };
+        trackCAPI();
+    }, [desarrollo.nombre, metaService]);
+
     // Meta Pixel & CAPI: Contact (Track when form opens)
     React.useEffect(() => {
         if (isLeadFormOpen) {
@@ -50,10 +87,6 @@ export default function DevelopmentDetailsContent({
             // 3. Server-Side CAPI Track (Fire & Forget)
             const trackCAPI = async () => {
                 try {
-                    // Dynamic Import for Firebase Functions to avoid top-level bloat if possible, 
-                    // but standard import is fine. We need to import it at top.
-                    // Assuming 'getFunctions' and 'httpsCallable' are available or need import.
-                    const { getFunctions, httpsCallable } = await import('firebase/functions');
                     const functionsInstance = getFunctions();
                     const onLeadIntentMETA = httpsCallable(functionsInstance, 'onLeadIntentMETA');
 
