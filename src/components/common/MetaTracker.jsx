@@ -1,16 +1,20 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { getFunctions, httpsCallable } from 'firebase/functions';
+import { getAuth } from 'firebase/auth'; // ✅ Direct SDK Access for Verification
 import { useService } from '../../hooks/useService';
 import { useUser } from '../../context/UserContext';
-import { META_CONFIG } from '../../config/constants'; // ✅ Import Config
+import { META_CONFIG } from '../../config/constants';
 
 /**
  * MetaTracker
  * 
  * Centralized component to handle PageView events.
  * Listens to route changes and fires both Browser (Pixel) and Server (CAPI) events.
- * Ensures PII is sent if the user is logged in.
+ * 
+ * ⚡ SMART WAIT IMPLEMENTATION (2026-01-12):
+ * Solves the race condition where navigation happens before UserContext is populated.
+ * It checks the low-level Firebase Auth SDK to see if a user exists vs. Context state.
  */
 const MetaTracker = () => {
     const location = useLocation();
@@ -21,7 +25,7 @@ const MetaTracker = () => {
     const userRef = useRef(user);
     const userProfileRef = useRef(userProfile);
 
-    // Update refs on every render so the timeout always sees the "future" state
+    // Update refs on every render
     userRef.current = user;
     userProfileRef.current = userProfile;
 
@@ -38,31 +42,69 @@ const MetaTracker = () => {
         if (lastTrackedKey.current === location.key) return;
         lastTrackedKey.current = location.key;
 
-        // 🕒 DEBOUNCE: Wait 500ms for UserContext to settle (Race Condition Fix)
-        // This ensures that if a login/navigation happens simultaneously, we capture the user ID.
-        const timerId = setTimeout(async () => {
-            try {
-                // Read from Refs to get the LATEST state at execution time
-                const currentUser = userRef.current;
-                const currentProfile = userProfileRef.current;
+        // 🕵️‍♂️ SMART WAIT LOGIC
+        // We define a recursive function to retry checking for the user if the SDK indicates they are logged in.
+        let attempt = 0;
+        const maxAttempts = 5; // 5 * 500ms = 2.5 seconds max wait
 
+        const tryTrackPageView = async () => {
+            attempt++;
+
+            // 1. Get current Context State
+            const currentUser = userRef.current;
+            const currentProfile = userProfileRef.current;
+
+            // 2. Check Low-Level Auth SDK State
+            const auth = getAuth();
+            const sdkUser = auth.currentUser;
+
+            // 🚨 RACE CONDITION CHECK:
+            // If Context is empty (currentUser == null) BUT SDK has a user (sdkUser != null),
+            // it means Context makes a fetch (React state lag). We must WAIT.
+            const isContextLagging = !currentUser && sdkUser;
+
+            if (isContextLagging && attempt <= maxAttempts) {
+                console.log(`⏳ [Meta Unified] Context Lag Detected (Attempt ${attempt}/${maxAttempts}). Waiting for UserContext sync...`);
+                setTimeout(tryTrackPageView, 500); // Retry in 500ms
+                return;
+            }
+
+            // --- PROCEED TO TRACKING ---
+
+            if (isContextLagging && attempt > maxAttempts) {
+                console.warn("⚠️ [Meta Unified] Timeout waiting for UserContext. Proceeding with potentially limited data.");
+            }
+
+            try {
                 // 1. Generate Unique ID for Deduplication
                 const eventId = metaService.generateEventId();
                 const currentUrl = window.location.href;
 
                 // 2. Prepare User Data (PII)
-                const email = currentProfile?.email || currentUser?.email;
-                const phone = currentProfile?.telefono;
-                const firstName = currentProfile?.nombre || currentUser?.displayName?.split(' ')[0];
-                const lastName = currentProfile?.apellido || currentUser?.displayName?.split(' ').slice(1).join(' ');
-                const uid = currentUser?.uid;
+                const email = currentProfile?.email || currentUser?.email || sdkUser?.email; // Fallback to SDK email if absolutely necessary
 
-                // Phone Normalization (Standardized)
+                // Name splitting fallback
+                let firstName = currentProfile?.nombre;
+                let lastName = currentProfile?.apellido;
+
+                if (!firstName && currentUser?.displayName) {
+                    firstName = currentUser.displayName.split(' ')[0];
+                    lastName = currentUser.displayName.split(' ').slice(1).join(' ');
+                }
+
+                // Phone Normalization
                 const rawPhone = currentProfile?.telefono || '';
                 const cleanPhone = rawPhone.replace(/\D/g, '');
                 const normalizedPhone = cleanPhone.length === 10 ? `52${cleanPhone}` : cleanPhone;
 
-                console.log(`📡 [Meta Unified] Preparing PageView for ${location.pathname}`, { uid, email });
+                // ID Prefer Context, then SDK (though if we are here, Context usually is ready or we timed out)
+                const uid = currentUser?.uid || sdkUser?.uid;
+
+                console.log(`📡 [Meta Unified] Tracking PageView for ${location.pathname}`, {
+                    attempt,
+                    hasUid: !!uid,
+                    source: currentUser ? 'Context' : (sdkUser ? 'SDK Fallback' : 'Guest')
+                });
 
                 // 3. Update Pixel Access Token / User Data (Browser)
                 if (email || normalizedPhone || uid) {
@@ -71,7 +113,7 @@ const MetaTracker = () => {
                         ph: normalizedPhone,
                         fn: firstName,
                         ln: lastName,
-                        external_id: uid // ✅ External ID
+                        external_id: uid
                     });
                 }
 
@@ -104,12 +146,14 @@ const MetaTracker = () => {
             } catch (error) {
                 console.error("[Meta Unified] Tracking error:", error);
             }
-        }, 500); // 500ms Settle Time
+        };
 
-        // Cleanup: Clear timeout if user navigates away quickly (prevents firing for skipped pages)
-        return () => clearTimeout(timerId);
+        // Start the check (Initial 500ms delay to allow standard settling)
+        const initialTimer = setTimeout(tryTrackPageView, 500);
 
-    }, [location.key, metaService]); // Only trigger on location change
+        return () => clearTimeout(initialTimer);
+
+    }, [location.key, metaService]);
 
     return null;
 };
