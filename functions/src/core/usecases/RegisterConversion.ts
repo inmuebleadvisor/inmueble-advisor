@@ -11,13 +11,14 @@ interface ConversionInput {
     fbc?: string;
     fbp?: string;
     zipCode?: string;
+    external_id?: string; // ✅ New Param
     eventName: string;
     eventId: string;
     eventSourceUrl?: string;
     conversionValue?: number;
     currency?: string;
     contentName?: string;
-    status?: string; // ✅ New Param
+    status?: string;
 }
 
 export class RegisterConversion {
@@ -39,7 +40,8 @@ export class RegisterConversion {
             userAgent: input.userAgent,
             fbc: input.fbc,
             fbp: input.fbp,
-            zipCode: input.zipCode
+            zipCode: input.zipCode,
+            external_id: input.external_id // ✅ Map it
         };
 
         const event: TrackingEvent = {

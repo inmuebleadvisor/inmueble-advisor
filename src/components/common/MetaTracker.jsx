@@ -49,12 +49,13 @@ const MetaTracker = () => {
                 const normalizedPhone = cleanPhone.length === 10 ? `52${cleanPhone}` : cleanPhone;
 
                 // 3. Update Pixel Access Token / User Data for Advanced Matching (Browser)
-                if (email || normalizedPhone) {
+                if (email || normalizedPhone || user?.uid) {
                     metaService.setUserData({
                         em: email,
                         ph: normalizedPhone,
                         fn: firstName,
-                        ln: lastName
+                        ln: lastName,
+                        external_id: user?.uid // ✅ External ID (UID)
                     });
                 }
 
@@ -77,9 +78,21 @@ const MetaTracker = () => {
                         fbc: metaService.getFbc(),
                         // PII for CAPI
                         email,
+                        phone: phone, // Removed normalizedPhone - wait, checking original variable name
+                        // Original was: telefono: normalizedPhone
+                        // Checking previous context... "telefono: normalizedPhone"
+                        // I will assume the tool expects me to replace the block.
+                        // Wait, I need to be careful with variable names.
+                        // Original:
+                        // telefono: normalizedPhone,
+                        // nombre: firstName,
+                        // apellido: lastName
+                        //
+                        // Replacement:
                         telefono: normalizedPhone,
                         nombre: firstName,
-                        apellido: lastName
+                        apellido: lastName,
+                        external_id: user?.uid // ✅ External ID (UID)
                     }
                 }).catch(err => {
                     console.warn("[Meta Unified] CAPI PageView failed", err);

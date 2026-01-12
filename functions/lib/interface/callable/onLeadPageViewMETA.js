@@ -74,7 +74,8 @@ exports.onLeadPageViewMETA = (0, https_1.onCall)({ cors: true }, async (request)
                 userAgent: request.rawRequest.headers['user-agent'] || (leadData === null || leadData === void 0 ? void 0 : leadData.clientUserAgent) || (leadData === null || leadData === void 0 ? void 0 : leadData.userAgent),
                 fbc: (leadData === null || leadData === void 0 ? void 0 : leadData.fbc) || (leadData === null || leadData === void 0 ? void 0 : leadData._fbc),
                 fbp: (leadData === null || leadData === void 0 ? void 0 : leadData.fbp) || (leadData === null || leadData === void 0 ? void 0 : leadData._fbp),
-                zipCode: leadData === null || leadData === void 0 ? void 0 : leadData.zipCode
+                zipCode: leadData === null || leadData === void 0 ? void 0 : leadData.zipCode,
+                external_id: leadData === null || leadData === void 0 ? void 0 : leadData.external_id // ✅ External ID
             },
             eventSourceUrl: leadData === null || leadData === void 0 ? void 0 : leadData.urlOrigen,
             customData: Object.assign({ content_name: leadData === null || leadData === void 0 ? void 0 : leadData.nombreDesarrollo, content_category: 'Vivienda Nueva' }, leadData === null || leadData === void 0 ? void 0 : leadData.customData)

@@ -78,6 +78,7 @@ export const onLeadCreatedMETA = onCall(async (request) => {
             fbc: leadData.fbc || leadData._fbc,
             fbp: leadData.fbp || leadData._fbp,
             zipCode: leadData.zipCode || leadData.codigoPostal,
+            external_id: leadData.external_id, // ✅ External ID
             eventName: 'Schedule', // Hardcoded as this is strictly for New Appointments
             eventId: eventId,
             eventSourceUrl: eventSourceUrl,

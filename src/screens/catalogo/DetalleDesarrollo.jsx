@@ -71,12 +71,13 @@ export default function DetalleDesarrollo() {
               const normalizedPhone = cleanPhone.length === 10 ? `52${cleanPhone}` : cleanPhone;
 
               // 🍪 PII for Browser Pixel (Advanced Matching)
-              if (email || normalizedPhone) {
+              if (email || normalizedPhone || user?.uid) {
                 metaService.setUserData({
                   em: email,
                   ph: normalizedPhone,
                   fn: firstName,
-                  ln: lastName
+                  ln: lastName,
+                  external_id: user?.uid // ✅ External ID (UID)
                 });
               }
 
@@ -100,6 +101,7 @@ export default function DetalleDesarrollo() {
                   telefono: normalizedPhone,
                   nombre: firstName,
                   apellido: lastName,
+                  external_id: user?.uid // ✅ External ID (UID)
                   // Note: IP is auto-captured by Callable
                 }
               });

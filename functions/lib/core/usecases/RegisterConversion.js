@@ -20,7 +20,8 @@ class RegisterConversion {
             userAgent: input.userAgent,
             fbc: input.fbc,
             fbp: input.fbp,
-            zipCode: input.zipCode
+            zipCode: input.zipCode,
+            external_id: input.external_id // ✅ Map it
         };
         const event = {
             eventName: input.eventName,

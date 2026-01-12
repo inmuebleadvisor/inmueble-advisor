@@ -8,6 +8,7 @@ export interface TrackingUserData {
     userAgent?: string;
     fbc?: string;
     fbp?: string;
+    external_id?: string;
 }
 
 export interface TrackingEvent {

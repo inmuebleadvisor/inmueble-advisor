@@ -87,6 +87,7 @@ exports.onLeadCreatedMETA = (0, https_1.onCall)(async (request) => {
             fbc: leadData.fbc || leadData._fbc,
             fbp: leadData.fbp || leadData._fbp,
             zipCode: leadData.zipCode || leadData.codigoPostal,
+            external_id: leadData.external_id,
             eventName: 'Schedule',
             eventId: eventId,
             eventSourceUrl: eventSourceUrl,

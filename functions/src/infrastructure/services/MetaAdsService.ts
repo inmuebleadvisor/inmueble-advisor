@@ -70,6 +70,7 @@ export class MetaAdsService implements TrackingService {
                             client_user_agent: userData.userAgent,
                             fbc: userData.fbc,
                             fbp: userData.fbp,
+                            external_id: userData.external_id ? [userData.external_id] : undefined, // ✅ External ID (No Hash)
                         },
                         custom_data: customData,
                     },

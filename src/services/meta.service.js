@@ -61,7 +61,7 @@ export class MetaService {
 
     /**
      * Updates Pixel with User Data (Advanced Matching).
-     * @param {Object} userData - { em, ph, fn, ln, ... }
+     * @param {Object} userData - { em, ph, fn, ln, external_id, ... }
      */
     setUserData(userData) {
         if (typeof window !== 'undefined' && window.fbq && this.pixelId) {

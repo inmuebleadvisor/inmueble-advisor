@@ -102,7 +102,8 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                 em: formData.email,
                 ph: normalizedPhone, // ✅ Normalized
                 fn: formData.nombre?.split(' ')[0] || '',
-                ln: formData.nombre?.split(' ').slice(1).join(' ') || ''
+                ln: formData.nombre?.split(' ').slice(1).join(' ') || '',
+                external_id: user?.uid // ✅ External ID (UID)
             };
             // 1. Set User Data for Browser Pixel (Advanced Matching)
             metaService.setUserData(pii);
@@ -116,7 +117,8 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                     fbc,
                     clientUserAgent: navigator.userAgent,
                     urlOrigen: window.location.href, // ✅ Fix URL Freshness
-                    conversionStatus: 'rescheduled' // ✅ Pass Status
+                    conversionStatus: 'rescheduled', // ✅ Pass Status
+                    external_id: user?.uid // ✅ External ID
                 };
 
                 result = await leadAssignment.rescheduleAppointment(
@@ -174,6 +176,7 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                         fbc,
                         clientUserAgent,
                         clientIp: null, // IP is automatic in Callable
+                        external_id: user?.uid, // ✅ External ID
 
                         snapshot: {
                             idModelo: modelo?.id || null,
@@ -204,7 +207,8 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                                 clientUserAgent,
                                 urlOrigen: window.location.href,
                                 nombreDesarrollo: desarrollo?.nombre,
-                                snapshot: { precioAtCapture: modelo?.precios?.base || modelo?.precio || 0 }
+                                snapshot: { precioAtCapture: modelo?.precios?.base || modelo?.precio || 0 },
+                                external_id: user?.uid // ✅ External ID
                             }
                         }).then((resp) => {
                             console.log("☁️ [Meta CAPI] Success:", resp.data);

@@ -56,7 +56,8 @@ export const onLeadPageViewMETA = onCall({ cors: true }, async (request) => {
                 userAgent: request.rawRequest.headers['user-agent'] || leadData?.clientUserAgent || leadData?.userAgent,
                 fbc: leadData?.fbc || leadData?._fbc,
                 fbp: leadData?.fbp || leadData?._fbp,
-                zipCode: leadData?.zipCode
+                zipCode: leadData?.zipCode,
+                external_id: leadData?.external_id // ✅ External ID
             },
             eventSourceUrl: leadData?.urlOrigen,
             customData: {
