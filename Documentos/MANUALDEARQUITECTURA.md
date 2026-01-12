@@ -1,4 +1,4 @@
-📘 Manual de Arquitectura para Inmueble Advisor.
+    📘 Manual de Arquitectura para Inmueble Advisor.
 
 Este manual establece las reglas y directrices esenciales para el diseño de sistemas de gran escala, priorizando la modularidad, la escalabilidad y la colaboración eficiente con herramientas de Agent Coding.
 
@@ -93,18 +93,3 @@ Regla: Toda decisión arquitectónica significativa debe documentarse formalment
 Formato Recomendado: Architecture Decision Record (ADR). Un ADR explica el contexto, la decisión tomada, las alternativas consideradas y las consecuencias.
 
 Propósito: Proporciona un registro histórico y contextual que es vital para la incorporación de nuevos miembros (humanos o IA) y para justificar el diseño del sistema.
-
-V. Optimización de Frontend
-Estas reglas aseguran que la aplicación cliente sea performante y escale correctamente sin afectar la experiencia de usuario.
-
-9. Code Splitting y Carga Perezosa
-Regla: El bundle de la aplicación no debe ser monolítico. Se debe configurar el build system (Vite) para dividir el código en "chunks" lógicos.
-
-Implementación en Vite:
-Utilizar `build.rollupOptions.output.manualChunks` para separar librerías pesadas:
-- `vendor-react`: Librerías del núcleo de React.
-- `firebase`: SDKs de Firebase.
-- `ui-libs`: Librerías de interfaz pesadas (mapas, gráficos).
-- `analytics`: Librerías de rastreo.
-
-Objetivo: Mantener el tamaño de los chunks individuales por debajo de 1MB para facilitar el caching y la carga paralela.

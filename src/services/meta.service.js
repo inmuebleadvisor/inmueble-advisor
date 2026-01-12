@@ -52,7 +52,7 @@ export class MetaService {
 
             this.pixelId = pixelId; // Store for re-init
             window.fbq('init', pixelId);
-            window.fbq('track', 'PageView');
+            // window.fbq('track', 'PageView'); // Removed: Controlled by MetaTracker (Router)
             this.initialized = true;
             console.log(`✅ [MetaService] Pixel Initialized: ${pixelId}`);
         }

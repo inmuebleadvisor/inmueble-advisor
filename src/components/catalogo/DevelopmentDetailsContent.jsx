@@ -38,63 +38,9 @@ export default function DevelopmentDetailsContent({
     const { meta: metaService } = useService();
     const { user, userProfile } = useUser(); // ✅ Get User Context
 
-    // Meta Pixel & CAPI: PageView (On Mount)
-    React.useEffect(() => {
-        // 1. Generate Unique Event ID for Deduplication
-        const eventId = metaService.generateEventId();
+    // Meta Pixel & CAPI: PageView -> MOVED TO MetaTracker (Global)
+    // Legacy Code Removed
 
-        // 2. Browser Pixel Track
-        metaService.track('PageView', {
-            content_name: desarrollo.nombre,
-            content_category: 'Vivienda Nueva'
-        }, eventId); // Pass eventId
-
-        // 3. Server-Side CAPI Track
-        const trackCAPI = async () => {
-            try {
-                const functionsInstance = getFunctions();
-                // ✅ Call specialized function for PageView
-                const onLeadPageViewMETA = httpsCallable(functionsInstance, 'onLeadPageViewMETA');
-
-                // 🛡️ Safe PII Extraction (Reuse Logic)
-                const email = userProfile?.email || user?.email;
-                const phone = userProfile?.telefono;
-                const firstName = userProfile?.nombre || user?.displayName?.split(' ')[0];
-                const lastName = userProfile?.apellido || user?.displayName?.split(' ').slice(1).join(' ');
-
-                // 🍪 PII for Browser Pixel (Advanced Matching)
-                if (email || phone) {
-                    metaService.setUserData({
-                        em: email,
-                        ph: phone,
-                        fn: firstName,
-                        ln: lastName
-                    });
-                }
-
-                console.log("[Meta CAPI] Sending 'PageView' intent...");
-                await onLeadPageViewMETA({
-                    metaEventId: eventId,
-                    // eventName: 'PageView', // Not needed, implicitly handled by function
-                    leadData: {
-                        nombreDesarrollo: desarrollo.nombre,
-                        urlOrigen: window.location.href,
-                        fbp: metaService.getFbp(),
-                        fbc: metaService.getFbc(),
-                        clientUserAgent: navigator.userAgent,
-                        // 👤 User Context
-                        email: email,
-                        telefono: phone,
-                        nombre: firstName,
-                        apellido: lastName
-                    }
-                });
-            } catch (e) {
-                console.warn("[Meta CAPI] Failed to capture PageView intent", e);
-            }
-        };
-        trackCAPI();
-    }, [desarrollo.nombre, metaService, user, userProfile]); // ✅ Add dependencies
 
     // Meta Pixel & CAPI: Contact (Track when form opens)
     React.useEffect(() => {

@@ -49,8 +49,11 @@ import CitySelectorModal from './components/modals/CitySelectorModal';
 
 const META_PIXEL_ID = "25721482294159393";
 
+// ⭐ NUEVO: Tracker Unificado de Meta
+import MetaTracker from './components/common/MetaTracker';
+
 function App() {
-  // Inicializar Meta Pixel
+  // Inicializar Meta Pixel (Solo configuración base, el tracker maneja los eventos)
   useEffect(() => {
     metaService.init(META_PIXEL_ID);
   }, []);
@@ -68,6 +71,7 @@ function App() {
               <CitySelectorModal />
 
               <BrowserRouter>
+                <MetaTracker /> {/* ✅ Rastreo Unificado de PageView */}
                 <AnalyticsTracker />
                 <Routes>
                   <Route path="/" element={<Layout />}>
