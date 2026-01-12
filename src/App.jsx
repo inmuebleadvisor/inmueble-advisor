@@ -47,15 +47,17 @@ import AdvisorsDirectory from './screens/admin/AdvisorsDirectory';
 import AdminLayout from './layouts/AdminLayout';
 import CitySelectorModal from './components/modals/CitySelectorModal';
 
-const META_PIXEL_ID = "25721482294159393";
+
 
 // ⭐ NUEVO: Tracker Unificado de Meta
 import MetaTracker from './components/common/MetaTracker';
+import { META_CONFIG } from './config/constants';
 
 function App() {
   // Inicializar Meta Pixel (Solo configuración base, el tracker maneja los eventos)
+  // Aunque MetaTracker ya lo hace, mantenerlo aquí asegura que esté listo para otros eventos si MetaTracker no montó aún.
   useEffect(() => {
-    metaService.init(META_PIXEL_ID);
+    metaService.init(META_CONFIG.PIXEL_ID);
   }, []);
 
   // El orden de los Providers es estratégico. FavoritesProvider usa datos de User y Catalog.

@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { useService } from '../../hooks/useService';
 import { useUser } from '../../context/UserContext';
+import { META_CONFIG } from '../../config/constants'; // ✅ Import Config
 
 /**
  * MetaTracker
@@ -21,6 +22,11 @@ const MetaTracker = () => {
     const lastTrackedKey = useRef(null);
 
     useEffect(() => {
+        // ✅ Ensure Pixel is Initialized (Race Condition Fix)
+        if (!metaService.initialized) {
+            metaService.init(META_CONFIG.PIXEL_ID);
+        }
+
         // Avoid duplicate tracking for the same exact location state/key
         if (lastTrackedKey.current === location.key) return;
         lastTrackedKey.current = location.key;
@@ -37,11 +43,16 @@ const MetaTracker = () => {
                 const firstName = userProfile?.nombre || user?.displayName?.split(' ')[0];
                 const lastName = userProfile?.apellido || user?.displayName?.split(' ').slice(1).join(' ');
 
+                // Phone Normalization (Standardized)
+                const rawPhone = userProfile?.telefono || '';
+                const cleanPhone = rawPhone.replace(/\D/g, '');
+                const normalizedPhone = cleanPhone.length === 10 ? `52${cleanPhone}` : cleanPhone;
+
                 // 3. Update Pixel Access Token / User Data for Advanced Matching (Browser)
-                if (email || phone) {
+                if (email || normalizedPhone) {
                     metaService.setUserData({
                         em: email,
-                        ph: phone,
+                        ph: normalizedPhone,
                         fn: firstName,
                         ln: lastName
                     });
@@ -66,7 +77,7 @@ const MetaTracker = () => {
                         fbc: metaService.getFbc(),
                         // PII for CAPI
                         email,
-                        telefono: phone,
+                        telefono: normalizedPhone,
                         nombre: firstName,
                         apellido: lastName
                     }

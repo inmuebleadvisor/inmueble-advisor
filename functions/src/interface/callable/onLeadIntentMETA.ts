@@ -34,8 +34,18 @@ export const onLeadIntentMETA = onCall({ cors: true }, async (request) => {
     // 2. Extract Data for Meta
     const email = leadData?.email || leadData?.clienteDatos?.email;
     const phone = leadData?.telefono || leadData?.clienteDatos?.telefono;
-    const firstName = leadData?.nombre || leadData?.clienteDatos?.nombre;
-    const lastName = leadData?.apellido || leadData?.clienteDatos?.apellido;
+
+    // Name Splitting Logic (Standardized)
+    let firstName = leadData?.nombre || leadData?.clienteDatos?.nombre;
+    let lastName = leadData?.apellido || leadData?.clienteDatos?.apellido;
+
+    if (firstName && !lastName) {
+        const parts = firstName.trim().split(' ');
+        if (parts.length > 1) {
+            firstName = parts[0];
+            lastName = parts.slice(1).join(' ');
+        }
+    }
 
     // 3. Execution
     const metaService = new MetaAdsService();

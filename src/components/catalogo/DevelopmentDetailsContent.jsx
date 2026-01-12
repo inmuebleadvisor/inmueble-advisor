@@ -63,15 +63,20 @@ export default function DevelopmentDetailsContent({
 
                     // 🛡️ Safe PII Extraction (Reuse Logic)
                     const email = userProfile?.email || user?.email;
-                    const phone = userProfile?.telefono;
+                    // const phone = userProfile?.telefono; // RAW Removed
                     const firstName = userProfile?.nombre || user?.displayName?.split(' ')[0];
                     const lastName = userProfile?.apellido || user?.displayName?.split(' ').slice(1).join(' ');
 
+                    // Phone Normalization (Standardized)
+                    const rawPhone = userProfile?.telefono || '';
+                    const cleanPhone = rawPhone.replace(/\D/g, '');
+                    const normalizedPhone = cleanPhone.length === 10 ? `52${cleanPhone}` : cleanPhone;
+
                     // 🍪 PII for Browser Pixel (Advanced Matching)
-                    if (email || phone) {
+                    if (email || normalizedPhone) {
                         metaService.setUserData({
                             em: email,
-                            ph: phone,
+                            ph: normalizedPhone,
                             fn: firstName,
                             ln: lastName
                         });
@@ -89,7 +94,7 @@ export default function DevelopmentDetailsContent({
                             clientUserAgent: navigator.userAgent,
                             // 👤 User Context
                             email: email,
-                            telefono: phone,
+                            telefono: normalizedPhone,
                             nombre: firstName,
                             apellido: lastName
                         }
