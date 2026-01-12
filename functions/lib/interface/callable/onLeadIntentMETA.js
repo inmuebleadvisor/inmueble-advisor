@@ -28,6 +28,7 @@ const https_1 = require("firebase-functions/v2/https");
 // import * as functions from "firebase-functions/v1"; // Unused
 const logger = __importStar(require("firebase-functions/logger"));
 const MetaAdsService_1 = require("../../infrastructure/services/MetaAdsService");
+const ipUtils_1 = require("../../core/utils/ipUtils");
 /**
  * Callable: onLeadIntentMETA
  * Description: Explicitly triggered by the Frontend when a high-intent action occurs (e.g., Opening the Scheduler).
@@ -51,11 +52,19 @@ exports.onLeadIntentMETA = (0, https_1.onCall)({ cors: true }, async (request) =
         return { success: false, reason: "invalid_args" };
     }
     logger.info(`[MetaCAPI-ViewContent] Received intent '${eventName}' (ID: ${metaEventId})`);
-    // 2. Extract Data for Meta
-    const email = (leadData === null || leadData === void 0 ? void 0 : leadData.email) || ((_a = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _a === void 0 ? void 0 : _a.email);
-    const phone = (leadData === null || leadData === void 0 ? void 0 : leadData.telefono) || ((_b = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _b === void 0 ? void 0 : _b.telefono);
-    const firstName = (leadData === null || leadData === void 0 ? void 0 : leadData.nombre) || ((_c = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _c === void 0 ? void 0 : _c.nombre);
-    const lastName = (leadData === null || leadData === void 0 ? void 0 : leadData.apellido) || ((_d = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _d === void 0 ? void 0 : _d.apellido);
+    // 2. Extract Data for Meta (Robust Fallbacks)
+    const email = (leadData === null || leadData === void 0 ? void 0 : leadData.email) || ((_a = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _a === void 0 ? void 0 : _a.email) || (leadData === null || leadData === void 0 ? void 0 : leadData.correo);
+    const phone = (leadData === null || leadData === void 0 ? void 0 : leadData.telefono) || ((_b = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _b === void 0 ? void 0 : _b.telefono) || (leadData === null || leadData === void 0 ? void 0 : leadData.celular);
+    // Name Splitting Logic (Standardized)
+    let firstName = (leadData === null || leadData === void 0 ? void 0 : leadData.nombre) || ((_c = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _c === void 0 ? void 0 : _c.nombre);
+    let lastName = (leadData === null || leadData === void 0 ? void 0 : leadData.apellido) || ((_d = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _d === void 0 ? void 0 : _d.apellido);
+    if (firstName && !lastName) {
+        const parts = firstName.trim().split(' ');
+        if (parts.length > 1) {
+            firstName = parts[0];
+            lastName = parts.slice(1).join(' ');
+        }
+    }
     // 3. Execution
     const metaService = new MetaAdsService_1.MetaAdsService();
     try {
@@ -67,14 +76,14 @@ exports.onLeadIntentMETA = (0, https_1.onCall)({ cors: true }, async (request) =
                 phone: phone,
                 firstName: firstName,
                 lastName: lastName,
-                clientIp: request.rawRequest.ip || (leadData === null || leadData === void 0 ? void 0 : leadData.clientIp),
-                userAgent: request.rawRequest.headers['user-agent'] || (leadData === null || leadData === void 0 ? void 0 : leadData.clientUserAgent),
-                fbc: leadData === null || leadData === void 0 ? void 0 : leadData.fbc,
-                fbp: leadData === null || leadData === void 0 ? void 0 : leadData.fbp,
+                clientIp: (0, ipUtils_1.extractClientIp)(request, leadData),
+                userAgent: request.rawRequest.headers['user-agent'] || (leadData === null || leadData === void 0 ? void 0 : leadData.clientUserAgent) || (leadData === null || leadData === void 0 ? void 0 : leadData.userAgent),
+                fbc: (leadData === null || leadData === void 0 ? void 0 : leadData.fbc) || (leadData === null || leadData === void 0 ? void 0 : leadData._fbc),
+                fbp: (leadData === null || leadData === void 0 ? void 0 : leadData.fbp) || (leadData === null || leadData === void 0 ? void 0 : leadData._fbp),
                 zipCode: leadData === null || leadData === void 0 ? void 0 : leadData.zipCode
             },
             eventSourceUrl: leadData === null || leadData === void 0 ? void 0 : leadData.urlOrigen,
-            customData: Object.assign({ content_name: leadData === null || leadData === void 0 ? void 0 : leadData.nombreDesarrollo, content_category: 'Vivienda Nueva' }, leadData === null || leadData === void 0 ? void 0 : leadData.customData)
+            customData: Object.assign({ content_name: leadData === null || leadData === void 0 ? void 0 : leadData.nombreDesarrollo, content_category: 'Vivienda Nueva', value: (leadData === null || leadData === void 0 ? void 0 : leadData.value) || 0, currency: (leadData === null || leadData === void 0 ? void 0 : leadData.currency) || 'MXN' }, leadData === null || leadData === void 0 ? void 0 : leadData.customData)
         });
         logger.info(`[MetaCAPI-ViewContent] Successfully processed intent '${eventName}' for ${metaEventId}`);
         return { success: true };

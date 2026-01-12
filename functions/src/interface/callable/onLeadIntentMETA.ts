@@ -3,6 +3,7 @@ import { onCall } from "firebase-functions/v2/https";
 
 import * as logger from "firebase-functions/logger";
 import { MetaAdsService } from "../../infrastructure/services/MetaAdsService";
+import { extractClientIp } from "../../core/utils/ipUtils";
 
 /**
  * Callable: onLeadIntentMETA
@@ -59,7 +60,7 @@ export const onLeadIntentMETA = onCall({ cors: true }, async (request) => {
                 phone: phone,
                 firstName: firstName,
                 lastName: lastName,
-                clientIp: request.rawRequest.ip || leadData?.clientIp || leadData?.ip,
+                clientIp: extractClientIp(request, leadData),
                 userAgent: request.rawRequest.headers['user-agent'] || leadData?.clientUserAgent || leadData?.userAgent,
                 fbc: leadData?.fbc || leadData?._fbc,
                 fbp: leadData?.fbp || leadData?._fbp,

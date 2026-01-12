@@ -29,6 +29,7 @@ const functions = __importStar(require("firebase-functions/v1")); // ✅ Import 
 const logger = __importStar(require("firebase-functions/logger"));
 const MetaAdsService_1 = require("../../infrastructure/services/MetaAdsService");
 const RegisterConversion_1 = require("../../core/usecases/RegisterConversion");
+const ipUtils_1 = require("../../core/utils/ipUtils");
 /**
  * Callable: onLeadCreatedMETA
  * Description: Explicitly triggered by the Frontend after a successful lead creation.
@@ -81,7 +82,7 @@ exports.onLeadCreatedMETA = (0, https_1.onCall)(async (request) => {
             phone: phone,
             firstName: firstName,
             lastName: lastName,
-            clientIp: leadData.clientIp || leadData.ip,
+            clientIp: (0, ipUtils_1.extractClientIp)(request, leadData),
             userAgent: leadData.clientUserAgent || leadData.userAgent,
             fbc: leadData.fbc || leadData._fbc,
             fbp: leadData.fbp || leadData._fbp,

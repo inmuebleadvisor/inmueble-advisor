@@ -3,6 +3,7 @@ import * as functions from "firebase-functions/v1"; // ✅ Import v1 for HttpsEr
 import * as logger from "firebase-functions/logger";
 import { MetaAdsService } from "../../infrastructure/services/MetaAdsService";
 import { RegisterConversion } from "../../core/usecases/RegisterConversion";
+import { extractClientIp } from "../../core/utils/ipUtils";
 
 /**
  * Callable: onLeadCreatedMETA
@@ -72,7 +73,7 @@ export const onLeadCreatedMETA = onCall(async (request) => {
             phone: phone,
             firstName: firstName,
             lastName: lastName,
-            clientIp: leadData.clientIp || leadData.ip,
+            clientIp: extractClientIp(request, leadData),
             userAgent: leadData.clientUserAgent || leadData.userAgent,
             fbc: leadData.fbc || leadData._fbc,
             fbp: leadData.fbp || leadData._fbp,
