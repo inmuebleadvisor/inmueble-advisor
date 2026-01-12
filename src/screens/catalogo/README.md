@@ -15,12 +15,14 @@ Pantalla de detalle para un desarrollo específico.
   - Implementa **Meta CAPI** para eventos de navegación (`ViewContent`).
   - Genera un `eventId` único para deduplicación entre Pixel y Server.
   - Utiliza `onLeadIntentMETA` (Firebase Callable) para enviar señales de alta intención directamente desde el backend.
+  - **Match Quality:** Enriquece la señal enviando datos del usuario logueado (Email, Teléfono, Nombre) protegidos mediante hash en el servidor.
 
 ### `DevelopmentDetailsContent.jsx`
 Componente visual interno de `DetalleDesarrollo`.
 - **Analítica (Hybrid Tracking):**
   - Implementa **Meta CAPI** para el evento `PageView`.
   - Genera su propio `eventId` para asegurar la cobertura incluso si la navegación SPA no dispara el pixel del navegador correctamente o es bloqueado.
+  - **Match Quality:** Enriquece los eventos `PageView` y `Contact` con PII de usuario autenticado.
 
 ### `Catalogo.jsx`
 Pantalla principal del listado de desarrollos.

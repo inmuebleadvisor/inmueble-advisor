@@ -12,6 +12,7 @@ import '../../styles/components/DevelopmentDetails.css';
 // import Modal from '../shared/Modal'; // Removed: LeadCaptureForm is now self-contained
 import LeadCaptureForm from '../leads/LeadCaptureForm';
 import { getFunctions, httpsCallable } from 'firebase/functions'; // CAPI: PageView/Contact Intent
+import { useUser } from '../../context/UserContext'; // ✅ Import User Context
 
 // Icons
 const Icons = {
@@ -35,6 +36,7 @@ export default function DevelopmentDetailsContent({
     // 1. Control de visibilidad del ActionPanel usando Custom Hook
     const showActionPanel = useStickyPanel(headerRef);
     const { meta: metaService } = useService();
+    const { user, userProfile } = useUser(); // ✅ Get User Context
 
     // Meta Pixel & CAPI: PageView (On Mount)
     React.useEffect(() => {
@@ -53,6 +55,22 @@ export default function DevelopmentDetailsContent({
                 const functionsInstance = getFunctions();
                 const onLeadIntentMETA = httpsCallable(functionsInstance, 'onLeadIntentMETA');
 
+                // 🛡️ Safe PII Extraction (Reuse Logic)
+                const email = userProfile?.email || user?.email;
+                const phone = userProfile?.telefono;
+                const firstName = userProfile?.nombre || user?.displayName?.split(' ')[0];
+                const lastName = userProfile?.apellido || user?.displayName?.split(' ').slice(1).join(' ');
+
+                // 🍪 PII for Browser Pixel (Advanced Matching)
+                if (email || phone) {
+                    metaService.setUserData({
+                        em: email,
+                        ph: phone,
+                        fn: firstName,
+                        ln: lastName
+                    });
+                }
+
                 console.log("[Meta CAPI] Sending 'PageView' intent...");
                 await onLeadIntentMETA({
                     metaEventId: eventId,
@@ -62,7 +80,12 @@ export default function DevelopmentDetailsContent({
                         urlOrigen: window.location.href,
                         fbp: metaService.getFbp(),
                         fbc: metaService.getFbc(),
-                        clientUserAgent: navigator.userAgent
+                        clientUserAgent: navigator.userAgent,
+                        // 👤 User Context
+                        email: email,
+                        telefono: phone,
+                        nombre: firstName,
+                        apellido: lastName
                     }
                 });
             } catch (e) {
@@ -70,7 +93,7 @@ export default function DevelopmentDetailsContent({
             }
         };
         trackCAPI();
-    }, [desarrollo.nombre, metaService]);
+    }, [desarrollo.nombre, metaService, user, userProfile]); // ✅ Add dependencies
 
     // Meta Pixel & CAPI: Contact (Track when form opens)
     React.useEffect(() => {
@@ -90,6 +113,22 @@ export default function DevelopmentDetailsContent({
                     const functionsInstance = getFunctions();
                     const onLeadIntentMETA = httpsCallable(functionsInstance, 'onLeadIntentMETA');
 
+                    // 🛡️ Safe PII Extraction (Reuse Logic)
+                    const email = userProfile?.email || user?.email;
+                    const phone = userProfile?.telefono;
+                    const firstName = userProfile?.nombre || user?.displayName?.split(' ')[0];
+                    const lastName = userProfile?.apellido || user?.displayName?.split(' ').slice(1).join(' ');
+
+                    // 🍪 PII for Browser Pixel (Advanced Matching)
+                    if (email || phone) {
+                        metaService.setUserData({
+                            em: email,
+                            ph: phone,
+                            fn: firstName,
+                            ln: lastName
+                        });
+                    }
+
                     console.log("[Meta CAPI] Sending 'Contact' intent...");
                     await onLeadIntentMETA({
                         metaEventId: eventId,
@@ -99,7 +138,12 @@ export default function DevelopmentDetailsContent({
                             urlOrigen: window.location.href,
                             fbp: metaService.getFbp(),
                             fbc: metaService.getFbc(),
-                            clientUserAgent: navigator.userAgent
+                            clientUserAgent: navigator.userAgent,
+                            // 👤 User Context
+                            email: email,
+                            telefono: phone,
+                            nombre: firstName,
+                            apellido: lastName
                         }
                     });
                 } catch (e) {

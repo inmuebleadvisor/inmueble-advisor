@@ -12,7 +12,7 @@ import DevelopmentDetailsContent from '../../components/catalogo/DevelopmentDeta
 
 export default function DetalleDesarrollo() {
   const { id } = useParams();
-  const { trackBehavior } = useUser();
+  const { user, userProfile, trackBehavior } = useUser(); // ✅ Get User Context
   const { loadingCatalog } = useCatalog();
   const { catalog: catalogService, meta: metaService } = useService(); // ✅ SERVICE INJECTION
   const navigate = useNavigate();
@@ -52,20 +52,40 @@ export default function DetalleDesarrollo() {
               const functionsInstance = getFunctions();
               const onLeadIntentMETA = httpsCallable(functionsInstance, 'onLeadIntentMETA');
 
+              // 🛡️ Safe PII Extraction
+              const email = userProfile?.email || user?.email; // Prefer profile (DB) over Auth
+              const phone = userProfile?.telefono;
+              const firstName = userProfile?.nombre || user?.displayName?.split(' ')[0];
+              const lastName = userProfile?.apellido || user?.displayName?.split(' ').slice(1).join(' ');
+
+              // 🍪 PII for Browser Pixel (Advanced Matching)
+              if (email || phone) {
+                metaService.setUserData({
+                  em: email,
+                  ph: phone,
+                  fn: firstName,
+                  ln: lastName
+                });
+              }
+
               console.log("[Meta CAPI] Sending 'ViewContent' intent...");
               await onLeadIntentMETA({
                 metaEventId: eventId,
                 eventName: 'ViewContent',
                 leadData: {
+                  // Content Context
                   nombreDesarrollo: data.nombre,
                   urlOrigen: window.location.href,
+                  // Technical Context
                   fbp: metaService.getFbp(),
                   fbc: metaService.getFbc(),
                   clientUserAgent: navigator.userAgent,
-                  customData: {
-                    content_ids: [id],
-                    content_type: 'product'
-                  }
+                  // 👤 User Context (For Match Quality)
+                  email: email,
+                  telefono: phone,
+                  nombre: firstName,
+                  apellido: lastName,
+                  // Note: IP is auto-captured by Callable
                 }
               });
             } catch (e) {
