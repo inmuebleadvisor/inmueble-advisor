@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onLeadCreatedMETA = exports.onLeadCreated = exports.notifyNewUser = exports.triggerDashboardStats = exports.scheduledDashboardStats = exports.promoteToAdvisor = void 0;
+exports.onLeadIntentMETA = exports.onLeadCreatedMETA = exports.onLeadCreated = exports.notifyNewUser = exports.triggerDashboardStats = exports.scheduledDashboardStats = exports.promoteToAdvisor = void 0;
 const admin = __importStar(require("firebase-admin"));
 // Initialize Firebase Admin SDK once
 if (!admin.apps.length) {
@@ -41,4 +41,6 @@ var onLeadCreated_1 = require("./interface/triggers/onLeadCreated");
 Object.defineProperty(exports, "onLeadCreated", { enumerable: true, get: function () { return onLeadCreated_1.onLeadCreated; } });
 var onLeadCreatedMETA_1 = require("./interface/callable/onLeadCreatedMETA");
 Object.defineProperty(exports, "onLeadCreatedMETA", { enumerable: true, get: function () { return onLeadCreatedMETA_1.onLeadCreatedMETA; } });
+var onLeadIntentMETA_1 = require("./interface/callable/onLeadIntentMETA");
+Object.defineProperty(exports, "onLeadIntentMETA", { enumerable: true, get: function () { return onLeadIntentMETA_1.onLeadIntentMETA; } });
 //# sourceMappingURL=index.js.map

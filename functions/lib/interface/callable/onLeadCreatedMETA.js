@@ -54,7 +54,7 @@ exports.onLeadCreatedMETA = (0, https_1.onCall)(async (request) => {
     // Priority: Root fields -> clienteDatos -> known aliases
     const email = leadData.email || ((_a = leadData.clienteDatos) === null || _a === void 0 ? void 0 : _a.email) || leadData.correo;
     const phone = leadData.telefono || ((_b = leadData.clienteDatos) === null || _b === void 0 ? void 0 : _b.telefono) || leadData.celular;
-    // Name Splitting Logic (Parity with previous onLeadWrite)
+    // Name Splitting Logic
     let firstName = leadData.nombre || ((_c = leadData.clienteDatos) === null || _c === void 0 ? void 0 : _c.nombre);
     let lastName = leadData.apellido || ((_d = leadData.clienteDatos) === null || _d === void 0 ? void 0 : _d.apellido) || leadData.apellidos;
     if (firstName && !lastName) {

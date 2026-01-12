@@ -35,13 +35,45 @@ export default function DevelopmentDetailsContent({
     const showActionPanel = useStickyPanel(headerRef);
     const { meta: metaService } = useService();
 
-    // Meta Pixel: Contact (Track when form opens)
+    // Meta Pixel & CAPI: Contact (Track when form opens)
     React.useEffect(() => {
         if (isLeadFormOpen) {
+            // 1. Generate Unique Event ID for Deduplication
+            const eventId = metaService.generateEventId();
+
+            // 2. Browser Pixel Track
             metaService.track('Contact', {
                 content_name: desarrollo.nombre,
                 content_category: 'Vivienda Nueva'
-            });
+            }, eventId); // Pass eventId
+
+            // 3. Server-Side CAPI Track (Fire & Forget)
+            const trackCAPI = async () => {
+                try {
+                    // Dynamic Import for Firebase Functions to avoid top-level bloat if possible, 
+                    // but standard import is fine. We need to import it at top.
+                    // Assuming 'getFunctions' and 'httpsCallable' are available or need import.
+                    const { getFunctions, httpsCallable } = await import('firebase/functions');
+                    const functionsInstance = getFunctions();
+                    const onLeadIntentMETA = httpsCallable(functionsInstance, 'onLeadIntentMETA');
+
+                    console.log("[Meta CAPI] Sending 'Contact' intent...");
+                    await onLeadIntentMETA({
+                        metaEventId: eventId,
+                        eventName: 'Contact',
+                        leadData: {
+                            nombreDesarrollo: desarrollo.nombre,
+                            urlOrigen: window.location.href,
+                            fbp: metaService.getFbp(),
+                            fbc: metaService.getFbc(),
+                            clientUserAgent: navigator.userAgent
+                        }
+                    });
+                } catch (e) {
+                    console.warn("[Meta CAPI] Failed to capture Contact intent", e);
+                }
+            };
+            trackCAPI();
         }
     }, [isLeadFormOpen, desarrollo.nombre, metaService]);
 

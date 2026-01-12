@@ -46,7 +46,6 @@ exports.onLeadCreated = functions
         const userRepo = new FirebaseUserRepository_1.FirebaseUserRepository();
         const leadRepo = new FirebaseLeadRepository_1.FirebaseLeadRepository();
         const useCase = new NotifyNewLead_1.NotifyNewLead(telegramService, userRepo, leadRepo);
-        // Meta CAPI logic moved to onLeadWrite to Centralize Schedule event handling and avoid duplication.
         await useCase.execute(Object.assign({ id: leadId }, leadData));
     }
     catch (error) {

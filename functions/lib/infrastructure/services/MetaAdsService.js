@@ -69,32 +69,9 @@ class MetaAdsService {
      * @param eventId Unique ID for deduplication
      * @param eventSourceUrl The URL where the event occurred (optional but recommended)
      */
-    async sendEvent(event, ...args) {
-        // Adapt legacy signature to interface if needed, or enforce interface
-        // We will support the interface structure mainly.
+    async sendEvent(event) {
         var _a;
-        let eventName;
-        let userData;
-        let customData;
-        let eventId;
-        let eventSourceUrl;
-        if (typeof event === 'object') {
-            // It's the TrackingEvent object
-            const trackingEvent = event;
-            eventName = trackingEvent.eventName;
-            userData = trackingEvent.userData;
-            customData = trackingEvent.customData || {};
-            eventId = trackingEvent.eventId;
-            eventSourceUrl = trackingEvent.eventSourceUrl;
-        }
-        else {
-            // Legacy signature support (for existing tests/calls if any remain)
-            eventName = event;
-            userData = args[0];
-            customData = args[1] || {};
-            eventId = args[2];
-            eventSourceUrl = args[3];
-        }
+        const { eventName, userData, customData = {}, eventId, eventSourceUrl } = event;
         try {
             const payload = Object.assign({ data: [
                     {
@@ -118,16 +95,7 @@ class MetaAdsService {
                         custom_data: customData,
                     },
                 ], access_token: meta_1.META_CONFIG.ACCESS_TOKEN }, (meta_1.META_CONFIG.TEST_EVENT_CODE ? { test_event_code: meta_1.META_CONFIG.TEST_EVENT_CODE } : {}));
-            // If test event code exists, we should append it to the data or as a query param? 
-            // Meta CAPI documentation says it goes in the payload generally, 
-            // but let's check if we need to put it inside the 'data' array or top level?
-            // Usually it's top level parameter `test_event_code` alongside `data` and `access_token`
-            // Re-checking standard implementations: it's a parameter in the POST body alongside `data`.
-            // Wait, Axios body is just the object.
-            // Note: If TEST_EVENT_CODE is set, we append to payload.
             if (meta_1.META_CONFIG.TEST_EVENT_CODE) {
-                // @ts-ignore
-                payload.test_event_code = meta_1.META_CONFIG.TEST_EVENT_CODE;
                 console.debug(`🧪 [Meta CAPI] TEST MODE ACTIVE. Code: ${meta_1.META_CONFIG.TEST_EVENT_CODE}`);
             }
             // Sanity Check
@@ -145,8 +113,6 @@ class MetaAdsService {
         }
         catch (error) {
             console.error('Failed to send Meta CAPI event:', ((_a = error.response) === null || _a === void 0 ? void 0 : _a.data) || error.message);
-            // We verify if we should throw or just log. Generally we don't want to break the lead flow if tracking fails,
-            // but we want to know about it.
         }
     }
 }
