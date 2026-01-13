@@ -55,12 +55,13 @@ export class MetaService {
             // 🚨 DISABLE AUTO-TRACKING (SPA Fix)
             // Required to prevent Meta from firing its own PageView events without eventID.
             // We handle this manually in MetaTracker.jsx.
-            window.fbq.disablePushState = true;
+            // TEMPORARILY DISABLED FOR DEBUGGING
+            // window.fbq.disablePushState = true;
 
             window.fbq('init', pixelId);
             // window.fbq('track', 'PageView'); // Removed: Controlled by MetaTracker (Router)
             this.initialized = true;
-            console.log(`✅ [MetaService] Pixel Initialized: ${pixelId} (Auto-Tracking Disabled)`);
+            console.log(`✅ [MetaService] Pixel Initialized: ${pixelId} (Auto-Tracking Disabled: PAUSED)`);
         }
         /* eslint-enable */
     }
