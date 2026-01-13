@@ -93,6 +93,8 @@ export class MetaService {
 
             if (eventId) {
                 options.eventID = eventId;
+            } else if (eventName === 'PageView') {
+                console.warn("⚠️ [MetaService] Tracking PageView WITHOUT EventID! This will cause deduplication failure.");
             }
 
             // Inject Test Event Code if configured (Display purpose mainly for Browser)
@@ -102,7 +104,11 @@ export class MetaService {
 
             // Syntax: fbq('track', eventName, params, options)
             window.fbq('track', eventName, params, options);
-            console.log(`📡 [Meta Pixel] Sending Browser Payload (${eventName}):`, { params, options });
+
+            console.log(`📡 [Meta Pixel] Fired ${eventName}`, {
+                eventId: eventId || 'MISSING',
+                params
+            });
         } else {
             console.warn("⚠️ [MetaService] fbq not defined. Pixel might be blocked.");
         }

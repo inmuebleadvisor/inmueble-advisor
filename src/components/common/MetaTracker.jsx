@@ -32,7 +32,12 @@ const MetaTracker = () => {
     // Tracker for last location to prevent duplicates
     const lastTrackedKey = useRef(null);
 
+    // ✅ REF: Track if component is mounted to prevent memory leaks / ghost runs
+    const isMounted = useRef(false);
+
     useEffect(() => {
+        isMounted.current = true;
+
         // ✅ Ensure Pixel is Initialized
         if (!metaService.initialized) {
             metaService.init(META_CONFIG.PIXEL_ID);
@@ -43,11 +48,13 @@ const MetaTracker = () => {
         lastTrackedKey.current = location.key;
 
         // 🕵️‍♂️ SMART WAIT LOGIC
-        // We define a recursive function to retry checking for the user if the SDK indicates they are logged in.
         let attempt = 0;
-        const maxAttempts = 5; // 5 * 500ms = 2.5 seconds max wait
+        const maxAttempts = 5;
+        let timerId = null; // Store timer ID for cleanup
 
         const tryTrackPageView = async () => {
+            if (!isMounted.current) return; // Prevent run if unmounted
+
             attempt++;
 
             // 1. Get current Context State
@@ -58,18 +65,14 @@ const MetaTracker = () => {
             const auth = getAuth();
             const sdkUser = auth.currentUser;
 
-            // 🚨 RACE CONDITION CHECK:
-            // If Context is empty (currentUser == null) BUT SDK has a user (sdkUser != null),
-            // it means Context makes a fetch (React state lag). We must WAIT.
+            // 🚨 RACE CONDITION CHECK
             const isContextLagging = !currentUser && sdkUser;
 
             if (isContextLagging && attempt <= maxAttempts) {
                 console.log(`⏳ [Meta Unified] Context Lag Detected (Attempt ${attempt}/${maxAttempts}). Waiting for UserContext sync...`);
-                setTimeout(tryTrackPageView, 500); // Retry in 500ms
+                timerId = setTimeout(tryTrackPageView, 500);
                 return;
             }
-
-            // --- PROCEED TO TRACKING ---
 
             if (isContextLagging && attempt > maxAttempts) {
                 console.warn("⚠️ [Meta Unified] Timeout waiting for UserContext. Proceeding with potentially limited data.");
@@ -81,9 +84,8 @@ const MetaTracker = () => {
                 const currentUrl = window.location.href;
 
                 // 2. Prepare User Data (PII)
-                const email = currentProfile?.email || currentUser?.email || sdkUser?.email; // Fallback to SDK email if absolutely necessary
+                const email = currentProfile?.email || currentUser?.email || sdkUser?.email;
 
-                // Name splitting fallback
                 let firstName = currentProfile?.nombre;
                 let lastName = currentProfile?.apellido;
 
@@ -97,16 +99,15 @@ const MetaTracker = () => {
                 const cleanPhone = rawPhone.replace(/\D/g, '');
                 const normalizedPhone = cleanPhone.length === 10 ? `52${cleanPhone}` : cleanPhone;
 
-                // ID Prefer Context, then SDK (though if we are here, Context usually is ready or we timed out)
                 const uid = currentUser?.uid || sdkUser?.uid;
 
-                console.log(`📡 [Meta Unified] Tracking PageView for ${location.pathname}`, {
-                    attempt,
-                    hasUid: !!uid,
-                    source: currentUser ? 'Context' : (sdkUser ? 'SDK Fallback' : 'Guest')
-                });
+                console.groupCollapsed(`📡 [Meta Unified] Tracking PageView: ${location.pathname}`);
+                console.log("Event ID:", eventId);
+                console.log("User Source:", currentUser ? 'Context' : (sdkUser ? 'SDK Fallback' : 'Guest'));
+                console.log("UID:", uid);
+                console.groupEnd();
 
-                // 3. Update Pixel Access Token / User Data (Browser)
+                // 3. Update Pixel Access Token / User Data
                 if (email || normalizedPhone || uid) {
                     metaService.setUserData({
                         em: email,
@@ -118,13 +119,17 @@ const MetaTracker = () => {
                 }
 
                 // 4. Track Browser Event (Pixel)
-                metaService.track('PageView', {}, eventId);
+                // Explicitly verify we are passing the eventId
+                if (eventId) {
+                    metaService.track('PageView', {}, eventId);
+                } else {
+                    console.error("❌ [Meta Unified] Generated Event ID is null! This should not happen.");
+                }
 
                 // 5. Track Server Event (CAPI)
                 const functionsInstance = getFunctions();
                 const onLeadPageViewMETA = httpsCallable(functionsInstance, 'onLeadPageViewMETA');
 
-                // Fire and forget CAPI
                 onLeadPageViewMETA({
                     metaEventId: eventId,
                     leadData: {
@@ -132,7 +137,6 @@ const MetaTracker = () => {
                         clientUserAgent: navigator.userAgent,
                         fbp: metaService.getFbp(),
                         fbc: metaService.getFbc(),
-                        // PII for CAPI
                         email,
                         telefono: normalizedPhone,
                         nombre: firstName,
@@ -148,10 +152,13 @@ const MetaTracker = () => {
             }
         };
 
-        // Start the check (Initial 500ms delay to allow standard settling)
-        const initialTimer = setTimeout(tryTrackPageView, 500);
+        // Start the check
+        timerId = setTimeout(tryTrackPageView, 500);
 
-        return () => clearTimeout(initialTimer);
+        return () => {
+            isMounted.current = false;
+            if (timerId) clearTimeout(timerId);
+        };
 
     }, [location.key, metaService]);
 
