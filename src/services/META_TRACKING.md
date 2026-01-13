@@ -34,6 +34,7 @@ El sistema sigue un modelo de **Deduplicación Estricta**:
 - **Función**: Facade para el objeto `window.fbq`.
 - **Métodos**:
     - `init(pixelId)`: Configura el Pixel (sin trackeo automático).
+        > **Importante**: Se establece `window.fbq.disablePushState = true` para deshabilitar el rastreo automático de URL de Meta. Esto es crítico para poder inyectar manualmente el `metaEventId` en cada `PageView` y lograr la deduplicación con CAPI.
     - `track(event, params, id)`: Envía eventos al navegador.
     - `setUserData(userData)`: Configura *Advanced Matching* en el navegador.
 
