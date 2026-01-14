@@ -34,7 +34,7 @@ El sistema sigue un modelo de **Deduplicación Estricta**:
 - **Función**: Facade para el objeto `window.fbq`.
 - **Métodos**:
     - `init(pixelId)`: Configura el Pixel (sin trackeo automático).
-        > **Importante**: Se establece `window.fbq.disablePushState = true` para deshabilitar el rastreo automático de URL de Meta. Esto es crítico para poder inyectar manualmente el `metaEventId` en cada `PageView` y lograr la deduplicación con CAPI.
+        > **Importante**: Se establece `window.fbq.disablePushState = true` para deshabilitar el rastreo automático de URL de Meta. Además, se añade `window.fbq('set', 'autoConfig', false, pixelId)` para desactivar eventos automáticos heurísticos (ej. `SubscribedButtonClick`). Esto es crítico para tener control total del rastreo y asegurar la deduplicación con CAPI.
     - `track(event, params, id)`: Envía eventos al navegador.
     - `setUserData(userData)`: Configura *Advanced Matching* en el navegador.
 
@@ -64,7 +64,7 @@ firebase functions:config:set meta.pixel_id="25721482294159393" meta.access_toke
 ### Modo Pruebas
 Para verificar los eventos en tiempo real en la consola de "Eventos de Prueba" de Meta:
 
-1. Configurar `TEST_EVENT_CODE` en las constantes (ej. `"TEST1234"`).
+1. Configurar `TEST_EVENT_CODE` en las constantes (ej. `"TEST21374"`).
 2. El `MetaService` inyectará este código en cada evento.
 
 ### Verificación Manual

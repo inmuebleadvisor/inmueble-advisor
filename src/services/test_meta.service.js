@@ -22,13 +22,16 @@ describe('MetaService', () => {
     });
 
     describe('init', () => {
-        it('should properly initialize the pixel and disable pushState', () => {
+        it('should properly initialize the pixel, disable pushState, and disable autoConfig', () => {
             const pixelId = '1234567890';
 
             metaService.init(pixelId);
 
             // Verify disablePushState is set to true (CRITICAL FIX)
             expect(window.fbq.disablePushState).toBe(true);
+
+            // Verify autoConfig is disabled (Prevents SubscribedButtonClick)
+            expect(window.fbq).toHaveBeenCalledWith('set', 'autoConfig', false, pixelId);
 
             // Verify init call
             expect(window.fbq).toHaveBeenCalledWith('init', pixelId);
@@ -49,15 +52,32 @@ describe('MetaService', () => {
         it('should track an event with eventID', () => {
             const eventName = 'PageView';
             const data = { page_path: '/test' };
-            const eventId = 'test-uuid-123';
+            const eventID = 'test-uuid-123';
 
-            metaService.track(eventName, data, eventId);
+            metaService.track(eventName, data, eventID);
 
             expect(window.fbq).toHaveBeenCalledWith(
                 'track',
                 eventName,
                 data,
-                { eventID: eventId }
+                { eventID: eventID }
+            );
+        });
+
+        it('should include test_event_code in params if configured', () => {
+            const testCode = 'TEST21374';
+            const metaServiceWithTest = new MetaService({ TEST_EVENT_CODE: testCode });
+            const eventName = 'PageView';
+            const data = { page_path: '/test' };
+            const eventID = 'test-uuid-123';
+
+            metaServiceWithTest.track(eventName, data, eventID);
+
+            expect(window.fbq).toHaveBeenCalledWith(
+                'track',
+                eventName,
+                { ...data, test_event_code: testCode },
+                { eventID: eventID }
             );
         });
 
@@ -66,7 +86,7 @@ describe('MetaService', () => {
 
             metaService.track('PageView', {});
 
-            expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Tracking PageView WITHOUT EventID'));
+            expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Tracking PageView WITHOUT eventID'));
         });
     });
 

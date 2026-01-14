@@ -80,7 +80,7 @@ const MetaTracker = () => {
 
             try {
                 // 1. Generate Unique ID for Deduplication
-                const eventId = metaService.generateEventId();
+                const metaEventId = metaService.generateEventId();
                 const currentUrl = window.location.href;
 
                 // 2. Prepare User Data (PII)
@@ -101,12 +101,6 @@ const MetaTracker = () => {
 
                 const uid = currentUser?.uid || sdkUser?.uid;
 
-                console.groupCollapsed(`📡 [Meta Unified] Tracking PageView: ${location.pathname}`);
-                console.log("Event ID:", eventId);
-                console.log("User Source:", currentUser ? 'Context' : (sdkUser ? 'SDK Fallback' : 'Guest'));
-                console.log("UID:", uid);
-                console.groupEnd();
-
                 // 3. Update Pixel Access Token / User Data
                 if (email || normalizedPhone || uid) {
                     metaService.setUserData({
@@ -119,9 +113,17 @@ const MetaTracker = () => {
                 }
 
                 // 4. Track Browser Event (Pixel)
-                // Explicitly verify we are passing the eventId
-                if (eventId) {
-                    metaService.track('PageView', {}, eventId);
+                const browserPayload = {
+                    eventName: 'PageView',
+                    eventID: metaEventId, // ✅ Use uppercase D for absolute consistency
+                    params: {} // Standard for PageView
+                };
+
+                // ✅ STANDARDIZED SYNC LOG (Mirroring Schedule)
+                console.log(`[Meta Sync] Browser Payload:`, browserPayload);
+
+                if (metaEventId) {
+                    metaService.track('PageView', browserPayload.params, metaEventId);
                 } else {
                     console.error("❌ [Meta Unified] Generated Event ID is null! This should not happen.");
                 }
@@ -131,7 +133,7 @@ const MetaTracker = () => {
                 const onLeadPageViewMETA = httpsCallable(functionsInstance, 'onLeadPageViewMETA');
 
                 onLeadPageViewMETA({
-                    metaEventId: eventId,
+                    metaEventId,
                     leadData: {
                         urlOrigen: currentUrl,
                         clientUserAgent: navigator.userAgent,

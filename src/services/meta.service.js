@@ -52,16 +52,15 @@ export class MetaService {
 
             this.pixelId = pixelId; // Store for re-init
 
-            // 🚨 DISABLE AUTO-TRACKING (SPA Fix)
-            // Required to prevent Meta from firing its own PageView events without eventID.
-            // We handle this manually in MetaTracker.jsx.
-            // TEMPORARILY DISABLED FOR DEBUGGING
-            // window.fbq.disablePushState = true;
+            // 🚨 DISABLE AUTO-TRACKING (SPA & Interaction Fix)
+            // 1. disablePushState: Prevents Meta from firing PageView on URL changes.
+            // 2. autoConfig false: Prevents "SubscribedButtonClick" and other automatic heuristics.
+            window.fbq.disablePushState = true;
+            window.fbq('set', 'autoConfig', false, pixelId);
 
             window.fbq('init', pixelId);
-            // window.fbq('track', 'PageView'); // Removed: Controlled by MetaTracker (Router)
             this.initialized = true;
-            console.log(`✅ [MetaService] Pixel Initialized: ${pixelId} (Auto-Tracking Disabled: PAUSED)`);
+            console.log(`✅ [MetaService] Pixel Initialized: ${pixelId} (Auto-Tracking & Auto-Events Disabled)`);
         }
         /* eslint-enable */
     }
@@ -91,17 +90,17 @@ export class MetaService {
      * Tracks a standard event.
      * @param {string} eventName - e.g. "ViewContent", "Contact", "Schedule"
      * @param {Object} data - Event parameters (content_name, value, etc.)
-     * @param {string} eventId - Unique ID for deduplication
+     * @param {string} eventID - Unique ID for deduplication
      */
-    track(eventName, data = {}, eventId = null) {
+    track(eventName, data = {}, eventID = null) {
         if (typeof window !== 'undefined' && window.fbq) {
             const params = { ...data };
             const options = {};
 
-            if (eventId) {
-                options.eventID = eventId;
+            if (eventID) {
+                options.eventID = eventID;
             } else if (eventName === 'PageView') {
-                console.warn("⚠️ [MetaService] Tracking PageView WITHOUT EventID! This will cause deduplication failure.");
+                console.warn("⚠️ [MetaService] Tracking PageView WITHOUT eventID! This will cause deduplication failure.");
             }
 
             // Inject Test Event Code if configured (Display purpose mainly for Browser)
@@ -112,10 +111,11 @@ export class MetaService {
             // Syntax: fbq('track', eventName, params, options)
             window.fbq('track', eventName, params, options);
 
-            console.log(`📡 [Meta Pixel] Fired ${eventName}`, {
-                eventId: eventId || 'MISSING',
-                params
-            });
+            console.groupCollapsed(`📡 [Meta Pixel] Fired ${eventName}`);
+            console.log("Arguments passed to fbq:", ['track', eventName, params, options]);
+            console.log("Event ID (Options):", options.eventID);
+            console.log("Params:", params);
+            console.groupEnd();
         } else {
             console.warn("⚠️ [MetaService] fbq not defined. Pixel might be blocked.");
         }
