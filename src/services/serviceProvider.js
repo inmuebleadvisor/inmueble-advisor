@@ -54,9 +54,13 @@ export const dashboardService = new DashboardServiceImpl(db);
 export const adminService = new AdminService(userRepository, leadRepository, catalogRepository);
 
 // Tracking Services
+// Tracking Services
 import { MetaService } from './meta.service';
 import { META_CONFIG } from '../config/constants';
-export const metaService = new MetaService(META_CONFIG);
+import { getFunctions } from 'firebase/functions'; // ✅ CAPI Support
+
+const functions = getFunctions();
+export const metaService = new MetaService(META_CONFIG, functions);
 
 // 3. Export Registry
 export const services = {

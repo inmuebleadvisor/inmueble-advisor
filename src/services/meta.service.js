@@ -19,10 +19,12 @@ const generateUUID = () => {
 export class MetaService {
     /**
      * @param {Object} config - Configuration object (e.g. { TEST_EVENT_CODE })
+     * @param {Object} functionsInstance - Firebase Functions instance (Injected)
      */
-    constructor(config = {}) {
+    constructor(config = {}, functionsInstance = null) {
         this.initialized = false;
         this.testEventCode = config.TEST_EVENT_CODE || '';
+        this.functions = functionsInstance;
     }
 
     /**
@@ -56,7 +58,8 @@ export class MetaService {
             // 1. disablePushState: Prevents Meta from firing PageView on URL changes.
             // 2. autoConfig false: Prevents "SubscribedButtonClick" and other automatic heuristics.
             window.fbq.disablePushState = true;
-            window.fbq('set', 'autoConfig', false, pixelId);
+            window.fbq('set', 'autoConfig', false, pixelId); // Disable for specific pixel
+            window.fbq('set', 'autoConfig', false); // Disable globally (Safety Net)
 
             window.fbq('init', pixelId);
             this.initialized = true;
@@ -141,5 +144,67 @@ export class MetaService {
         const parts = value.split(`; _fbc=`);
         if (parts.length === 2) return parts.pop().split(';').shift();
         return null;
+    }
+
+    // ============================================
+    // CAPI Methods (Server-Side)
+    // ============================================
+
+    /**
+     * Internal helper to call Cloud Functions.
+     */
+    async _callCAPI(functionName, payload) {
+        if (!this.functions) {
+            console.warn(`⚠️ [MetaService] CAPI call skipped. 'functions' not injected.`);
+            return;
+        }
+
+        try {
+            // Import dynamically only when needed
+            const { httpsCallable } = await import('firebase/functions');
+
+            const callable = httpsCallable(this.functions, functionName);
+            await callable(payload);
+            console.log(`☁️ [MetaService] CAPI '${functionName}' called successfully.`);
+        } catch (error) {
+            console.error(`❌ [MetaService] CAPI '${functionName}' failed:`, error);
+        }
+    }
+
+    /**
+     * Sends PageView to CAPI.
+     * Replaces independent logic in MetaTracker.
+     */
+    async trackPageViewCAPI(eventId, leadData) {
+        if (!eventId) {
+            console.error("[MetaService] Missing eventId for CAPI PageView");
+            return;
+        }
+        return this._callCAPI('onLeadPageViewMETA', {
+            metaEventId: eventId,
+            leadData: leadData
+        });
+    }
+
+    /**
+     * Sends ViewContent (Intent) to CAPI.
+     * Replaces DetalleDesarrollo logic.
+     */
+    async trackIntentCAPI(eventId, leadData) {
+        if (!eventId) return;
+        return this._callCAPI('onLeadIntentMETA', {
+            metaEventId: eventId,
+            eventName: 'ViewContent',
+            leadData: leadData
+        });
+    }
+
+    /**
+     * Sends Conversion (Schedule/Contact) to CAPI.
+     * Replaces LeadCaptureForm logic.
+     * @param {string} type - 'onLeadContactMETA' or 'onLeadCreatedMETA'
+     */
+    async trackConversionCAPI(type, payload) {
+        return this._callCAPI(type, payload);
     }
 }

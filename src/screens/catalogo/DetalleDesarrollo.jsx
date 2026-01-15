@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getFunctions, httpsCallable } from 'firebase/functions'; // CAPI Support
+import { useParams, useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
 import { useService } from '../../hooks/useService';
 import { useCatalog } from '../../context/CatalogContext';
@@ -54,14 +54,11 @@ export default function DetalleDesarrollo() {
           }, eventId); // Pass eventId
 
           // 3. Server-Side CAPI: ViewContent (Intent)
+          // 3. Server-Side CAPI: ViewContent (Intent)
           const trackCAPI = async () => {
             try {
-              const functionsInstance = getFunctions();
-              const onLeadIntentMETA = httpsCallable(functionsInstance, 'onLeadIntentMETA');
-
               // 🛡️ Safe PII Extraction
               const email = userProfile?.email || user?.email; // Prefer profile (DB) over Auth
-              const phone = userProfile?.telefono;
               const firstName = userProfile?.nombre || user?.displayName?.split(' ')[0];
               const lastName = userProfile?.apellido || user?.displayName?.split(' ').slice(1).join(' ');
 
@@ -82,28 +79,26 @@ export default function DetalleDesarrollo() {
               }
 
               console.log("[Meta CAPI] Sending 'ViewContent' intent...");
-              await onLeadIntentMETA({
-                metaEventId: eventId,
-                eventName: 'ViewContent', // STRICTLY REQUIRED
-                leadData: {
-                  // Content Context
-                  nombreDesarrollo: data.nombre,
-                  urlOrigen: window.location.href,
-                  // Price Context
-                  value: minPrice,
-                  currency: 'MXN',
-                  // Technical Context
-                  fbp: metaService.getFbp(),
-                  fbc: metaService.getFbc(),
-                  clientUserAgent: navigator.userAgent,
-                  // 👤 User Context (For Match Quality)
-                  email: email,
-                  telefono: normalizedPhone,
-                  nombre: firstName,
-                  apellido: lastName,
-                  external_id: user?.uid // ✅ External ID (UID)
-                  // Note: IP is auto-captured by Callable
-                }
+
+              // Refactored Service Call
+              await metaService.trackIntentCAPI(eventId, {
+                // Content Context
+                nombreDesarrollo: data.nombre,
+                urlOrigen: window.location.href,
+                // Price Context
+                value: minPrice,
+                currency: 'MXN',
+                // Technical Context
+                fbp: metaService.getFbp(),
+                fbc: metaService.getFbc(),
+                clientUserAgent: navigator.userAgent,
+                // 👤 User Context (For Match Quality)
+                email: email,
+                telefono: normalizedPhone,
+                nombre: firstName,
+                apellido: lastName,
+                external_id: user?.uid // ✅ External ID (UID)
+                // Note: IP is auto-captured by Callable
               });
             } catch (e) {
               console.warn("[Meta CAPI] Failed to capture ViewContent intent", e);

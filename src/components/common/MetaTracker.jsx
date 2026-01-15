@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { getFunctions, httpsCallable } from 'firebase/functions';
 import { getAuth } from 'firebase/auth'; // ✅ Direct SDK Access for Verification
 import { useService } from '../../hooks/useService';
 import { useUser } from '../../context/UserContext';
@@ -129,22 +128,17 @@ const MetaTracker = () => {
                 }
 
                 // 5. Track Server Event (CAPI)
-                const functionsInstance = getFunctions();
-                const onLeadPageViewMETA = httpsCallable(functionsInstance, 'onLeadPageViewMETA');
-
-                onLeadPageViewMETA({
-                    metaEventId,
-                    leadData: {
-                        urlOrigen: currentUrl,
-                        clientUserAgent: navigator.userAgent,
-                        fbp: metaService.getFbp(),
-                        fbc: metaService.getFbc(),
-                        email,
-                        telefono: normalizedPhone,
-                        nombre: firstName,
-                        apellido: lastName,
-                        external_id: uid
-                    }
+                // Use Refactored MetaService CAPI Method
+                metaService.trackPageViewCAPI(metaEventId, {
+                    urlOrigen: currentUrl,
+                    clientUserAgent: navigator.userAgent,
+                    fbp: metaService.getFbp(),
+                    fbc: metaService.getFbc(),
+                    email,
+                    telefono: normalizedPhone,
+                    nombre: firstName,
+                    apellido: lastName,
+                    external_id: uid
                 }).catch(err => {
                     console.warn("[Meta Unified] CAPI PageView failed", err);
                 });

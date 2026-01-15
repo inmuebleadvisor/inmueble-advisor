@@ -11,6 +11,9 @@ class SeasonService {
      * @returns {Object|null} The active season object or null if none active.
      */
     getCurrentSeason(date = new Date()) {
+        // 1. Check Master Switch
+        if (!SEASONAL_CONFIG.isEnabled) return null;
+
         const month = date.getMonth() + 1; // 0-indexed
         const day = date.getDate();
 

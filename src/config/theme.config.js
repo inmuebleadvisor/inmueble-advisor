@@ -20,6 +20,9 @@ export const THEME_CONFIG = {
 };
 
 export const SEASONAL_CONFIG = {
+    // Master Switch: Poner en false para desactivar TODAS las temporadas manualmente
+    isEnabled: false,
+
     /**
      * LISTA DE TEMPORADAS
      * El sistema revisará esta lista de arriba a abajo.

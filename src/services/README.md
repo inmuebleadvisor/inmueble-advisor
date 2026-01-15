@@ -21,7 +21,7 @@ Esta carpeta contiene la lógica de negocio central de la aplicación. Aquí es 
 -   **`FavoritesService`**: Maneja la lista de propiedades favoritas del usuario.
 -   **`LeadAssignmentService`**: Algoritmos para asignar interesados a asesores.
 -   **`MetaService`**: (Frontend) Maneja el Pixel y la orquestación híbrida (Pixel + CAPI). **[Ver Documentación Detallada](./META_TRACKING.md)**.
--   **`SeasonService`**: Gestión de temporadas y precios dinámicos.
+-   **`SeasonService`**: Gestión de temas estacionales y assets visuales. Incluye control maestro `isEnabled` en configuración para desactivación manual.
 
 ## Cómo Crear un Nuevo Servicio
 1.  Crea la clase en este directorio (ej. `PaymentService.js`).

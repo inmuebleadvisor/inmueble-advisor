@@ -1,5 +1,4 @@
-import { onCall } from "firebase-functions/v2/https";
-import * as functions from "firebase-functions/v1"; // ✅ Import v1 for HttpsError compatibility or use v2 equivalent
+import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import { MetaAdsService } from "../../infrastructure/services/MetaAdsService";
 import { RegisterConversion } from "../../core/usecases/RegisterConversion";
@@ -17,7 +16,7 @@ import { extractClientIp } from "../../core/utils/ipUtils";
 export const onLeadCreatedMETA = onCall(async (request) => {
     // 1. Validation
     if (!request.auth) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
             'unauthenticated',
             'The function must be called while authenticated.'
         );
@@ -26,7 +25,7 @@ export const onLeadCreatedMETA = onCall(async (request) => {
     const { leadId, leadData } = request.data;
 
     if (!leadId || !leadData) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
             'invalid-argument',
             'The function must be called with "leadId" and "leadData" arguments.'
         );

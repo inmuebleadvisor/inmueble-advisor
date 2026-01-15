@@ -3,7 +3,6 @@ import { useService } from '../../hooks/useService';
 import AppointmentScheduler from '../common/AppointmentScheduler';
 import { useUser } from '../../context/UserContext';
 import confetti from 'canvas-confetti';
-import { getFunctions, httpsCallable } from 'firebase/functions'; // ✅ CAPI Import
 import '../../styles/LeadCaptureForm.css';
 
 const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
@@ -191,13 +190,11 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                 // 3. ☁️ META CAPI: Invoke Cloud Function Explicitly
                 if (result.success && result.leadId) {
                     try {
-                        const functionsInstance = getFunctions();
-                        const onLeadCreatedMETA = httpsCallable(functionsInstance, 'onLeadCreatedMETA');
-
                         console.log("☁️ [Meta CAPI] Invoking Cloud Function...", { leadId: result.leadId });
 
                         // Fire and Forget (don't await strictly to not block UI)
-                        onLeadCreatedMETA({
+                        // Refactored Service Call
+                        metaService.trackConversionCAPI('onLeadCreatedMETA', {
                             leadId: result.leadId,
                             leadData: {
                                 ...datosCliente,
@@ -211,7 +208,7 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                                 external_id: user?.uid // ✅ External ID
                             }
                         }).then((resp) => {
-                            console.log("☁️ [Meta CAPI] Success:", resp.data);
+                            console.log("☁️ [Meta CAPI] Success:", resp?.data); // Adjusted check just in case
                         }).catch((metaErr) => {
                             console.error("☁️ [Meta CAPI] Failed:", metaErr);
                         });

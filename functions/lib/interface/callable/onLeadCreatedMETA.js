@@ -25,7 +25,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.onLeadCreatedMETA = void 0;
 const https_1 = require("firebase-functions/v2/https");
-const functions = __importStar(require("firebase-functions/v1")); // ✅ Import v1 for HttpsError compatibility or use v2 equivalent
 const logger = __importStar(require("firebase-functions/logger"));
 const MetaAdsService_1 = require("../../infrastructure/services/MetaAdsService");
 const RegisterConversion_1 = require("../../core/usecases/RegisterConversion");
@@ -43,11 +42,11 @@ exports.onLeadCreatedMETA = (0, https_1.onCall)(async (request) => {
     var _a, _b, _c, _d, _e;
     // 1. Validation
     if (!request.auth) {
-        throw new functions.https.HttpsError('unauthenticated', 'The function must be called while authenticated.');
+        throw new https_1.HttpsError('unauthenticated', 'The function must be called while authenticated.');
     }
     const { leadId, leadData } = request.data;
     if (!leadId || !leadData) {
-        throw new functions.https.HttpsError('invalid-argument', 'The function must be called with "leadId" and "leadData" arguments.');
+        throw new https_1.HttpsError('invalid-argument', 'The function must be called with "leadId" and "leadData" arguments.');
     }
     logger.info(`[MetaCAPI] Received explicit notification for Lead ${leadId}`);
     // 2. Extract Data for Meta
