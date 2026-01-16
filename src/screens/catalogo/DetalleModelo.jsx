@@ -42,6 +42,13 @@ export default function DetalleModelo() {
 
 
 
+  // 0. SCROLL RESTORATION (Standard)
+  useEffect(() => {
+    // With Remount Strategy, this runs once on "mount" which is perfect.
+    // Instant behavior ensures no visual jump.
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, []); // Run ONCE on mount (because we force remount on ID change)
+
   // 1. EFECTO PRINCIPAL: CARGA Y VINCULACIÓN DE DATOS
   useEffect(() => {
     if (loadingCatalog) return;
@@ -81,7 +88,7 @@ export default function DetalleModelo() {
     }
 
 
-    window.scrollTo(0, 0);
+
   }, [id, loadingCatalog, getModeloById, getDesarrolloById, modelos]);
 
   if (loadingCatalog) return <div style={styles.centerContainer}><p>Cargando catálogo...</p></div>;

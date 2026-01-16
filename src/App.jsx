@@ -46,6 +46,7 @@ import AdvisorsDirectory from './screens/admin/AdvisorsDirectory';
 // Layouts & Modals
 import AdminLayout from './layouts/AdminLayout';
 import CitySelectorModal from './components/modals/CitySelectorModal';
+import RouteRemounter from './components/layout/RouteRemounter'; // ✅ Force Remount Wrapper
 
 
 
@@ -100,12 +101,16 @@ function App() {
                     {/* 6. RUTAS DE DETALLE */}
                     <Route path="modelo/:id" element={
                       <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
-                        <DetalleModelo />
+                        <RouteRemounter>
+                          <DetalleModelo />
+                        </RouteRemounter>
                       </ProtectedRoute>
                     } />
                     <Route path="desarrollo/:id" element={
                       <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
-                        <DetalleDesarrollo />
+                        <RouteRemounter>
+                          <DetalleDesarrollo />
+                        </RouteRemounter>
                       </ProtectedRoute>
                     } />
 
