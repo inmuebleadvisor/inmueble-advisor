@@ -7,7 +7,7 @@ import { useFavorites } from '../context/FavoritesContext';
 import WhatsAppButton from '../components/common/WhatsAppButton/WhatsAppButton';
 import ThemeToggle from '../components/layout/ThemeToggle';
 import { useTheme } from '../context/ThemeContext';
-import SeasonalTheme from '../components/layout/SeasonalTheme';
+
 
 // --- ICONOS SVG ---
 const MenuIcons = {
@@ -144,8 +144,7 @@ export default function Layout() {
       </main>
 
       {/* --- FOOTER --- */}
-      {/* --- SEASONAL THEME (Visible en todas las páginas) --- */}
-      <SeasonalTheme />
+
 
       {/* --- FOOTER (Oculto en rutas Viewport Fit) --- */}
       {!isViewportFit && (

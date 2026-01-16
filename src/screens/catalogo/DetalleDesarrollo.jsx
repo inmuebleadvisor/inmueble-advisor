@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useParams, useNavigate } from 'react-router-dom';
+
 import { useUser } from '../../context/UserContext';
 import { useService } from '../../hooks/useService';
 import { useCatalog } from '../../context/CatalogContext';
