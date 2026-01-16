@@ -40,6 +40,8 @@ export default function DetalleModelo() {
   const [desarrollo, setDesarrollo] = useState(null);
   const [modelosHermanos, setModelosHermanos] = useState([]);
 
+
+
   // 1. EFECTO PRINCIPAL: CARGA Y VINCULACIÓN DE DATOS
   useEffect(() => {
     if (loadingCatalog) return;
@@ -77,6 +79,7 @@ export default function DetalleModelo() {
     } else {
       setModelo(null);
     }
+
 
     window.scrollTo(0, 0);
   }, [id, loadingCatalog, getModeloById, getDesarrolloById, modelos]);
