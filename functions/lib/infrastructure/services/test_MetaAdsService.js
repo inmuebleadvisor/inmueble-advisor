@@ -39,7 +39,7 @@ describe('MetaAdsService', () => {
             (0, chai_1.expect)(payload.data[0].event_id).to.equal('test-event-id');
             // Check if test_event_code is present (since we updated constants.ts)
             (0, chai_1.expect)(payload.test_event_code).to.equal(meta_1.META_CONFIG.TEST_EVENT_CODE);
-            (0, chai_1.expect)(payload.test_event_code).to.equal('TEST21374');
+            (0, chai_1.expect)(payload.test_event_code).to.equal('TEST87487');
         });
         it('should properly hash user data', async () => {
             const event = {
@@ -55,7 +55,7 @@ describe('MetaAdsService', () => {
             const payload = axiosPostStub.getCall(0).args[1];
             const userData = payload.data[0].user_data;
             // SHA256 of 'test@example.com'
-            const expectedEmailHash = '973dfe463ea747b783c5da995628534195b2d6ff511de11bcdd383ad508079d3';
+            const expectedEmailHash = '973dfe463ec85785f5f95af5ba3906eedb2d931c24e69824a89ea65dba4e813b';
             (0, chai_1.expect)(userData.em[0]).to.equal(expectedEmailHash);
         });
         it('should handle errors from axios', async () => {

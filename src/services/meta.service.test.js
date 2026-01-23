@@ -65,7 +65,7 @@ describe('MetaService', () => {
         });
 
         it('should include test_event_code in params if configured', () => {
-            const testCode = 'TEST21374';
+            const testCode = 'TEST87487';
             const metaServiceWithTest = new MetaService({ TEST_EVENT_CODE: testCode });
             const eventName = 'PageView';
             const data = { page_path: '/test' };

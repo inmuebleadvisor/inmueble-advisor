@@ -26,7 +26,7 @@ export const UI_OPCIONES = {
 // --- META ADS CONFIGURATION ---
 export const META_CONFIG = {
   PIXEL_ID: '25721482294159393', // ✅ Added for centralized config
-  TEST_EVENT_CODE: 'TEST21374' // ⚠️ Para pruebas. Borrar en producción.
+  TEST_EVENT_CODE: 'TEST87487' // ⚠️ Para pruebas. Borrar en producción.
 };
 
 // ==========================================
