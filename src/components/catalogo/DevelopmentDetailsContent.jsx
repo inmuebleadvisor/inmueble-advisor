@@ -43,71 +43,8 @@ export default function DevelopmentDetailsContent({
 
 
     // Meta Pixel & CAPI: Contact (Track when form opens)
-    React.useEffect(() => {
-        if (isLeadFormOpen) {
-            // 1. Generate Unique Event ID for Deduplication
-            const eventId = metaService.generateEventId();
-
-            // 2. Browser Pixel Track
-            metaService.track('Contact', {
-                content_name: desarrollo.nombre,
-                content_category: 'Vivienda Nueva'
-            }, eventId); // Pass eventId
-
-            // 3. Server-Side CAPI Track (Fire & Forget)
-            const trackCAPI = async () => {
-                try {
-                    const functionsInstance = getFunctions();
-                    // ✅ Call specialized function for Contact
-                    const onLeadContactMETA = httpsCallable(functionsInstance, 'onLeadContactMETA');
-
-                    // 🛡️ Safe PII Extraction (Reuse Logic)
-                    const email = userProfile?.email || user?.email;
-                    // const phone = userProfile?.telefono; // RAW Removed
-                    const firstName = userProfile?.nombre || user?.displayName?.split(' ')[0];
-                    const lastName = userProfile?.apellido || user?.displayName?.split(' ').slice(1).join(' ');
-
-                    // Phone Normalization (Standardized)
-                    const rawPhone = userProfile?.telefono || '';
-                    const cleanPhone = rawPhone.replace(/\D/g, '');
-                    const normalizedPhone = cleanPhone.length === 10 ? `52${cleanPhone}` : cleanPhone;
-
-                    // 🍪 PII for Browser Pixel (Advanced Matching)
-                    if (email || normalizedPhone || user?.uid) {
-                        metaService.setUserData({
-                            em: email,
-                            ph: normalizedPhone,
-                            fn: firstName,
-                            ln: lastName,
-                            external_id: user?.uid // ✅ External ID (UID)
-                        });
-                    }
-
-                    console.log("[Meta CAPI] Sending 'Contact' intent...");
-                    await onLeadContactMETA({
-                        metaEventId: eventId,
-                        // eventName: 'Contact', // Not needed, implicitly handled by function
-                        leadData: {
-                            nombreDesarrollo: desarrollo.nombre,
-                            urlOrigen: window.location.href,
-                            fbp: metaService.getFbp(),
-                            fbc: metaService.getFbc(),
-                            clientUserAgent: navigator.userAgent,
-                            // 👤 User Context
-                            email: email,
-                            telefono: normalizedPhone,
-                            nombre: firstName,
-                            apellido: lastName,
-                            external_id: user?.uid // ✅ External ID (UID)
-                        }
-                    });
-                } catch (e) {
-                    console.warn("[Meta CAPI] Failed to capture Contact intent", e);
-                }
-            };
-            trackCAPI();
-        }
-    }, [isLeadFormOpen, desarrollo.nombre, metaService]);
+    // REMOVED: User requested Contact to fire ONLY on WhatsApp clicks.
+    // Legacy Code Removed
 
     const galeriaImagenes = useMemo(() => {
         if (!desarrollo || !desarrollo.multimedia) return [];
