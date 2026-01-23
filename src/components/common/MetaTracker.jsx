@@ -101,66 +101,32 @@ const MetaTracker = () => {
             try {
                 // 1. Generate Unique ID for Deduplication
                 const metaEventId = metaService.generateEventId();
-                const currentUrl = window.location.href;
 
-                // 2. Prepare User Data (PII)
-                const email = currentProfile?.email || currentUser?.email || sdkUser?.email;
-
-                let firstName = currentProfile?.nombre;
-                let lastName = currentProfile?.apellido;
-
-                if (!firstName && currentUser?.displayName) {
-                    firstName = currentUser.displayName.split(' ')[0];
-                    lastName = currentUser.displayName.split(' ').slice(1).join(' ');
-                }
-
-                // Phone Normalization
-                const rawPhone = currentProfile?.telefono || '';
-                const cleanPhone = rawPhone.replace(/\D/g, '');
-                const normalizedPhone = cleanPhone.length === 10 ? `52${cleanPhone}` : cleanPhone;
-
-                const uid = currentUser?.uid || sdkUser?.uid;
+                // 2. Prepare User Data (PII) via Service
+                const pii = metaService.prepareUserData(currentUser || sdkUser, currentProfile);
 
                 // 3. Update Pixel Access Token / User Data
-                if (email || normalizedPhone || uid) {
-                    metaService.setUserData({
-                        em: email,
-                        ph: normalizedPhone,
-                        fn: firstName,
-                        ln: lastName,
-                        external_id: uid
-                    });
+                if (Object.keys(pii).length > 0) {
+                    metaService.setUserData(pii);
                 }
 
                 // 4. Track Browser Event (Pixel)
                 const browserPayload = {
                     eventName: 'PageView',
-                    eventID: metaEventId, // ✅ Use uppercase D for absolute consistency
-                    params: {} // Standard for PageView
+                    eventID: metaEventId,
+                    params: {}
                 };
 
-                // ✅ STANDARDIZED SYNC LOG (Mirroring Schedule)
                 console.log(`[Meta Sync] Browser Payload:`, browserPayload);
 
                 if (metaEventId) {
                     metaService.track('PageView', browserPayload.params, metaEventId);
                 } else {
-                    console.error("❌ [Meta Unified] Generated Event ID is null! This should not happen.");
+                    console.error("❌ [Meta Unified] Generated Event ID is null!");
                 }
 
                 // 5. Track Server Event (CAPI)
-                // Use Refactored MetaService CAPI Method
-                metaService.trackPageViewCAPI(metaEventId, {
-                    urlOrigen: currentUrl,
-                    clientUserAgent: navigator.userAgent,
-                    fbp: metaService.getFbp(),
-                    fbc: metaService.getFbc(),
-                    email,
-                    telefono: normalizedPhone,
-                    nombre: firstName,
-                    apellido: lastName,
-                    external_id: uid
-                }).catch(err => {
+                metaService.trackPageViewCAPI(metaEventId, pii).catch(err => {
                     console.warn("[Meta Unified] CAPI PageView failed", err);
                 });
 

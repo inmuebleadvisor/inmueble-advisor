@@ -85,76 +85,56 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
             // Generate Lead OR Reschedule
             let result;
 
-            // ✅ META TRACKING: STRICT FLOW
+            // ✅ META TRACKING: CENTRALIZED FLOW
             const metaEventId = metaService.generateEventId();
-            const fbp = metaService.getFbp();
-            const fbc = metaService.getFbc();
-            const clientUserAgent = navigator.userAgent;
 
-            // Normalize Phone for Meta Match Quality
-            const rawPhone = formData.telefono || '';
-            const cleanPhone = rawPhone.replace(/\D/g, '');
-            const normalizedPhone = cleanPhone.length === 10 ? `52${cleanPhone}` : cleanPhone;
+            // 1. Prepare PII via Service
+            const pii = metaService.prepareUserData(user, userProfile);
 
-            // Prepare PII for Advanced Matching (Browser)
-            const pii = {
-                em: formData.email,
-                ph: normalizedPhone, // ✅ Normalized
-                fn: formData.nombre?.split(' ')[0] || '',
-                ln: formData.nombre?.split(' ').slice(1).join(' ') || '',
-                external_id: user?.uid // ✅ External ID (UID)
-            };
-            // 1. Set User Data for Browser Pixel (Advanced Matching)
-            metaService.setUserData(pii);
+            // 2. Set User Data for Browser Pixel (Advanced Matching)
+            if (Object.keys(pii).length > 0) {
+                metaService.setUserData(pii);
+            }
 
             if (isRescheduling && existingAppointment) {
                 // RESCHEDULE FLOW
-                // Tracking Metada for CAPI updates
                 const trackingData = {
                     metaEventId,
-                    fbp,
-                    fbc,
+                    fbp: metaService.getFbp(),
+                    fbc: metaService.getFbc(),
                     clientUserAgent: navigator.userAgent,
-                    urlOrigen: window.location.href, // ✅ Fix URL Freshness
-                    conversionStatus: 'rescheduled', // ✅ Pass Status
-                    external_id: user?.uid // ✅ External ID
+                    urlOrigen: window.location.href,
+                    conversionStatus: 'rescheduled',
+                    external_id: user?.uid
                 };
 
                 result = await leadAssignment.rescheduleAppointment(
                     existingAppointment.id,
                     formData.citainicial,
-                    trackingData // ✅ Pass Tracking Context
+                    trackingData
                 );
-                // Track Schedule Update
-                metaService.track('Schedule', {
+
+                // Track Schedule Update (Browser)
+                metaService.trackSchedule({
                     content_name: desarrollo?.nombre,
                     content_category: 'Vivienda Nueva',
                     currency: 'MXN',
                     value: modelo?.precios?.base || modelo?.precio || 0,
                     status: 'rescheduled'
-                }, metaEventId); // ✅ REMOVED SUFFIX for Deduplication
+                }, metaEventId);
 
             } else {
                 // NEW LEAD FLOW
-
-                // 2. Track Browser Event (Hybrid Deduplication)
-
                 const browserPayload = {
-                    eventName: 'Schedule',
-                    eventId: metaEventId,
-                    params: {
-                        content_name: desarrollo?.nombre,
-                        content_category: 'Vivienda Nueva',
-                        currency: 'MXN',
-                        value: modelo?.precios?.base || modelo?.precio || 0,
-                        status: 'scheduled'
-                    }
+                    content_name: desarrollo?.nombre,
+                    content_category: 'Vivienda Nueva',
+                    currency: 'MXN',
+                    value: modelo?.precios?.base || modelo?.precio || 0,
+                    status: 'scheduled'
                 };
 
-                // ✅ STANDARDIZED SYNC LOG
-                console.log(`[Meta Sync] Browser Payload:`, browserPayload);
-
-                metaService.track('Schedule', browserPayload.params, metaEventId);
+                console.log(`[Meta Sync] Browser Payload (Schedule):`, browserPayload);
+                metaService.trackSchedule(browserPayload, metaEventId);
 
                 result = await leadAssignment.generarLeadAutomatico(
                     datosCliente,
@@ -169,53 +149,27 @@ const LeadCaptureForm = ({ desarrollo, modelo, onSuccess, onCancel }) => {
                         urlOrigen: window.location.href,
                         citainicial: formData.citainicial,
                         idModelo: modelo?.id || null,
-                        // ✅ PASS TRACKING DATA
                         metaEventId,
-                        fbp,
-                        fbc,
-                        clientUserAgent,
-                        clientIp: null, // IP is automatic in Callable
-                        external_id: user?.uid, // ✅ External ID
-
+                        fbp: metaService.getFbp(),
+                        fbc: metaService.getFbc(),
+                        clientUserAgent: navigator.userAgent,
+                        external_id: user?.uid,
                         snapshot: {
                             idModelo: modelo?.id || null,
                             modeloNombre: modelo?.nombreModelo || modelo?.nombre_modelo || "N/A",
                             desarrolloNombre: desarrollo?.nombre || "N/A",
                             precioAtCapture: modelo?.precios?.base || modelo?.precio || 0,
-                            conversionStatus: 'scheduled' // ✅ Pass Status
+                            conversionStatus: 'scheduled'
                         }
                     }
                 );
 
-                // 3. ☁️ META CAPI: Invoke Cloud Function Explicitly
+                // 3. ☁️ META CAPI
                 if (result.success && result.leadId) {
-                    try {
-                        console.log("☁️ [Meta CAPI] Invoking Cloud Function...", { leadId: result.leadId });
-
-                        // Fire and Forget (don't await strictly to not block UI)
-                        // Refactored Service Call
-                        metaService.trackConversionCAPI('onLeadCreatedMETA', {
-                            leadId: result.leadId,
-                            leadData: {
-                                ...datosCliente,
-                                metaEventId,
-                                fbp,
-                                fbc,
-                                clientUserAgent,
-                                urlOrigen: window.location.href,
-                                nombreDesarrollo: desarrollo?.nombre,
-                                snapshot: { precioAtCapture: modelo?.precios?.base || modelo?.precio || 0 },
-                                external_id: user?.uid // ✅ External ID
-                            }
-                        }).then((resp) => {
-                            console.log("☁️ [Meta CAPI] Success:", resp?.data); // Adjusted check just in case
-                        }).catch((metaErr) => {
-                            console.error("☁️ [Meta CAPI] Failed:", metaErr);
-                        });
-
-                    } catch (e) {
-                        console.error("☁️ [Meta CAPI] Invocation Error:", e);
-                    }
+                    metaService.trackScheduleCAPI(result.leadId, metaEventId, pii, {
+                        nombreDesarrollo: desarrollo?.nombre,
+                        snapshot: { precioAtCapture: modelo?.precios?.base || modelo?.precio || 0 }
+                    }).catch(metaErr => console.error("☁️ [Meta CAPI] Schedule Failed:", metaErr));
                 }
             }
 

@@ -81,6 +81,41 @@ export class MetaService {
     }
 
     /**
+     * Centralized logic to prepare User Data (PII) for Meta.
+     * Extracts from UserContext objects, normalizes, and hashes if needed.
+     * @param {Object} user - Firebase User object
+     * @param {Object} userProfile - Application profile object
+     * @returns {Object} Cleaned PII object
+     */
+    prepareUserData(user, userProfile) {
+        const email = userProfile?.email || user?.email;
+        let firstName = userProfile?.nombre;
+        let lastName = userProfile?.apellido;
+
+        if (!firstName && user?.displayName) {
+            const parts = user.displayName.split(' ');
+            firstName = parts[0];
+            lastName = parts.slice(1).join(' ');
+        }
+
+        // Phone Normalization
+        const rawPhone = userProfile?.telefono || '';
+        const cleanPhone = rawPhone.replace(/\D/g, '');
+        const normalizedPhone = cleanPhone.length === 10 ? `52${cleanPhone}` : cleanPhone;
+
+        const pii = {
+            em: email,
+            ph: normalizedPhone,
+            fn: firstName,
+            ln: lastName,
+            external_id: user?.uid
+        };
+
+        // Remove empty values to not pollute Meta init
+        return Object.fromEntries(Object.entries(pii).filter(([_, v]) => v != null && v !== ''));
+    }
+
+    /**
      * Generates a unique Event ID for deduplication.
      * MUST be shared between Pixel and Server (CAPI).
      * @returns {string} UUID
@@ -111,13 +146,11 @@ export class MetaService {
                 params.test_event_code = this.testEventCode;
             }
 
-            // Syntax: fbq('track', eventName, params, options)
             window.fbq('track', eventName, params, options);
 
             console.groupCollapsed(`📡 [Meta Pixel] Fired ${eventName}`);
-            console.log("Arguments passed to fbq:", ['track', eventName, params, options]);
-            console.log("Event ID (Options):", options.eventID);
-            console.log("Params:", params);
+            console.log("Arguments:", ['track', eventName, params, options]);
+            console.log("Event ID:", options.eventID);
             console.groupEnd();
         } else {
             console.warn("⚠️ [MetaService] fbq not defined. Pixel might be blocked.");
@@ -128,21 +161,13 @@ export class MetaService {
 
     /**
      * Standard Search event.
-     * @param {string} query - The search string.
-     * @param {Object} params - Additional params (content_category, etc.)
-     * @param {string} id - Event ID.
      */
     trackSearch(query, params = {}, id = null) {
-        this.track('Search', {
-            search_string: query,
-            ...params
-        }, id);
+        this.track('Search', { search_string: query, ...params }, id);
     }
 
     /**
      * Standard AddToWishlist event.
-     * @param {Object} params - (content_name, content_ids, value, etc.)
-     * @param {string} id - Event ID.
      */
     trackAddToWishlist(params = {}, id = null) {
         this.track('AddToWishlist', params, id);
@@ -150,11 +175,23 @@ export class MetaService {
 
     /**
      * Standard CompleteRegistration event.
-     * @param {Object} params - (value, currency, status, etc.)
-     * @param {string} id - Event ID.
      */
     trackCompleteRegistration(params = {}, id = null) {
         this.track('CompleteRegistration', params, id);
+    }
+
+    /**
+     * Standard Contact event (WhatsApp, etc).
+     */
+    trackContact(params = {}, id = null) {
+        this.track('Contact', params, id);
+    }
+
+    /**
+     * Standard Schedule event (Cita VIP).
+     */
+    trackSchedule(params = {}, id = null) {
+        this.track('Schedule', params, id);
     }
 
     /**
@@ -193,12 +230,11 @@ export class MetaService {
         }
 
         try {
-            // Import dynamically only when needed
             const { httpsCallable } = await import('firebase/functions');
-
             const callable = httpsCallable(this.functions, functionName);
-            await callable(payload);
+            const result = await callable(payload);
             console.log(`☁️ [MetaService] CAPI '${functionName}' called successfully.`);
+            return result;
         } catch (error) {
             console.error(`❌ [MetaService] CAPI '${functionName}' failed:`, error);
         }
@@ -206,38 +242,75 @@ export class MetaService {
 
     /**
      * Sends PageView to CAPI.
-     * Replaces independent logic in MetaTracker.
      */
-    async trackPageViewCAPI(eventId, leadData) {
-        if (!eventId) {
-            console.error("[MetaService] Missing eventId for CAPI PageView");
-            return;
-        }
+    async trackPageViewCAPI(eventId, pii = {}, extra = {}) {
+        if (!eventId) return;
         return this._callCAPI('onLeadPageViewMETA', {
             metaEventId: eventId,
-            leadData: leadData
+            leadData: {
+                ...pii,
+                ...extra,
+                urlOrigen: window.location.href,
+                clientUserAgent: navigator.userAgent,
+                fbp: this.getFbp(),
+                fbc: this.getFbc()
+            }
         });
     }
 
     /**
      * Sends ViewContent (Intent) to CAPI.
-     * Replaces DetalleDesarrollo logic.
      */
-    async trackIntentCAPI(eventId, leadData) {
+    async trackIntentCAPI(eventId, pii = {}, extra = {}) {
         if (!eventId) return;
         return this._callCAPI('onLeadIntentMETA', {
             metaEventId: eventId,
             eventName: 'ViewContent',
-            leadData: leadData
+            leadData: {
+                ...pii,
+                ...extra,
+                urlOrigen: window.location.href,
+                clientUserAgent: navigator.userAgent,
+                fbp: this.getFbp(),
+                fbc: this.getFbc()
+            }
         });
     }
 
     /**
-     * Sends Conversion (Schedule/Contact) to CAPI.
-     * Replaces LeadCaptureForm logic.
-     * @param {string} type - 'onLeadContactMETA' or 'onLeadCreatedMETA'
+     * Sends Contact to CAPI.
      */
-    async trackConversionCAPI(type, payload) {
-        return this._callCAPI(type, payload);
+    async trackContactCAPI(eventId, pii = {}, extra = {}) {
+        if (!eventId) return;
+        return this._callCAPI('onLeadContactMETA', {
+            metaEventId: eventId,
+            leadData: {
+                ...pii,
+                ...extra,
+                urlOrigen: window.location.href,
+                clientUserAgent: navigator.userAgent,
+                fbp: this.getFbp(),
+                fbc: this.getFbc()
+            }
+        });
+    }
+
+    /**
+     * Sends Production Conversion (Schedule) to CAPI.
+     */
+    async trackScheduleCAPI(leadId, eventId, pii = {}, extra = {}) {
+        if (!eventId || !leadId) return;
+        return this._callCAPI('onLeadCreatedMETA', {
+            leadId: leadId,
+            leadData: {
+                ...pii,
+                ...extra,
+                metaEventId: eventId,
+                urlOrigen: window.location.href,
+                clientUserAgent: navigator.userAgent,
+                fbp: this.getFbp(),
+                fbc: this.getFbc()
+            }
+        });
     }
 }

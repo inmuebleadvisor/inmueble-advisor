@@ -72,24 +72,12 @@ const WhatsAppButton = () => {
         // 1. Generate Event ID
         const eventId = metaService.generateEventId();
 
-        // 2. PII Extraction
-        const email = userProfile?.email || user?.email;
-        const firstName = userProfile?.nombre || user?.displayName?.split(' ')[0];
-        const lastName = userProfile?.apellido || user?.displayName?.split(' ').slice(1).join(' ');
-
-        const rawPhone = userProfile?.telefono || '';
-        const cleanPhone = rawPhone.replace(/\D/g, '');
-        const normalizedPhone = cleanPhone.length === 10 ? `52${cleanPhone}` : cleanPhone;
+        // 2. Prepare User Data (PII) via Service
+        const pii = metaService.prepareUserData(user, userProfile);
 
         // 3. Set User Data (Advanced Matching)
-        if (email || normalizedPhone || user?.uid) {
-            metaService.setUserData({
-                em: email,
-                ph: normalizedPhone,
-                fn: firstName,
-                ln: lastName,
-                external_id: user?.uid
-            });
+        if (Object.keys(pii).length > 0) {
+            metaService.setUserData(pii);
         }
 
         // 4. Browser Track
@@ -100,17 +88,8 @@ const WhatsAppButton = () => {
         }, eventId);
 
         // 5. CAPI Track (Fire and Forget)
-        metaService.trackContactCAPI(eventId, {
-            nombreDesarrollo: contextData.contentName,
-            urlOrigen: window.location.href,
-            fbp: metaService.getFbp(),
-            fbc: metaService.getFbc(),
-            clientUserAgent: navigator.userAgent,
-            email: email,
-            telefono: normalizedPhone,
-            nombre: firstName,
-            apellido: lastName,
-            external_id: user?.uid
+        metaService.trackContactCAPI(eventId, pii, {
+            nombreDesarrollo: contextData.contentName
         }).catch(err => console.warn("[Meta WhatsApp] CAPI Failed", err));
     };
 

@@ -1,0 +1,94 @@
+Manual de Auditoría Técnica: Meta Conversion Tracking (Híbrido)
+Versión: 1.0 Objetivo: Asegurar la integridad de datos, la deduplicación correcta y la maximización de la Calidad de Coincidencia de Eventos (EMQ) mediante una configuración redundante (Píxel + API de Conversiones). Alcance: Eventos PageView, Schedule, ViewContent, Contact.
+
+--------------------------------------------------------------------------------
+1. Fundamentos de Arquitectura y Validación
+Antes de auditar evento por evento, se deben establecer las reglas globales de la infraestructura para evitar la duplicidad de datos y asegurar la atribución.
+1.1 Validación de Deduplicación
+Para que Meta unifique las señales del navegador y del servidor, es obligatorio que ambos envíos compartan identificadores únicos. Si esto falla, el ROAS se inflará artificialmente y el algoritmo de optimización se degradará.
+• Logic de Coincidencia: Meta determina si los eventos son idénticos basándose en el event_id y el event_name.
+• Regla de Oro: El eventID generado en el navegador (ej. fbq) debe ser idéntico al event_id enviado en el payload del servidor.
+• Prioridad: Si se reciben ambos eventos dentro de un periodo de 48 horas con el mismo ID, Meta descarta el posterior (generalmente el del servidor) pero utiliza sus datos para enriquecer la coincidencia.
+1.2 Match Quality (Calidad de Emparejamiento)
+La API de Conversiones requiere al menos un parámetro de cliente en user_data para funcionar, pero para obtener una puntuación alta (EMQ > 6.0), se debe maximizar la "tasa de llenado" de los siguientes parámetros:
+• Capa de Servidor (Payload user_data):
+    ◦ Identificadores Fuertes (Hasheados SHA-256): em (email), ph (teléfono). Nota: Deben normalizarse (minúsculas, sin espacios) antes del hash.
+    ◦ Identificadores de Meta (Sin Hash):
+        ▪ fbp (Browser ID): Extraer de la cookie _fbp.
+        ▪ fbc (Click ID): Extraer de la cookie _fbc o del parámetro de URL fbclid.
+    ◦ Datos de Conexión (Sin Hash): client_ip_address y client_user_agent.
+
+--------------------------------------------------------------------------------
+2. Auditoría Detallada por Evento
+Evento: PageView (Visita a Página)
+Este evento es la base del rastreo y debe dispararse en todas las páginas para establecer la línea base de tráfico.
+• Trigger: Carga inicial del DOM en cada página del sitio.
+A. Capa de Navegador (Pixel)
+El PageView suele dispararse automáticamente con fbq('init'), pero para la deduplicación manual, debe controlarse explícitamente el ID.
+• Script:
+• Nota: El eventID se pasa como el cuarto parámetro.
+B. Capa de Servidor (CAPI Payload)
+• Estructura JSON:
+• Referencias:
+
+--------------------------------------------------------------------------------
+Evento: Schedule (Programar)
+Utilizado para la reserva de citas o visitas.
+• Trigger: Al confirmar exitosamente una cita (ej. botón "Confirmar Reserva" o carga de "Thank You Page").
+A. Capa de Navegador (Pixel)
+• Script:
+• Referencias:
+B. Capa de Servidor (CAPI Payload)
+• Estructura JSON:
+• Referencias:
+
+--------------------------------------------------------------------------------
+Evento: ViewContent (Ver contenido)
+Crítico para campañas de retargeting dinámico. Rastrea visitas a páginas de productos o servicios específicos.
+• Trigger: Al cargar la página de detalle de un producto o servicio.
+A. Capa de Navegador (Pixel)
+• Script:
+• Referencias:
+B. Capa de Servidor (CAPI Payload)
+• Estructura JSON:
+• Referencias:
+
+--------------------------------------------------------------------------------
+Evento: Contact (Contactar)
+Para interacciones de inicio de comunicación (teléfono, SMS, email, chat).
+• Trigger: Clic en botón de WhatsApp, enlace mailto:, o envío de formulario de contacto general.
+A. Capa de Navegador (Pixel)
+• Script:
+• Referencias:
+B. Capa de Servidor (CAPI Payload)
+• Estructura JSON:
+• Referencias:
+
+--------------------------------------------------------------------------------
+3. Prueba de Fuego: Validación con "Test Events Tool"
+La herramienta "Test Events" en el Administrador de Eventos es el método definitivo para verificar la recepción y el procesamiento de la configuración híbrida.
+Procedimiento de Prueba
+1. Vaya al Administrador de Eventos > Pestaña Probar eventos (Test Events).
+2. Server: Copie el código de prueba (ej. TEST12345) y añádalo a su payload del servidor en el parámetro test_event_code.
+3. Browser: Abra su sitio web en una ventana nueva e interactúe para disparar los eventos.
+4. Verificación: Observe la consola en tiempo real.
+Tabla de Diagnóstico y Tratamiento de Errores
+Problema Observado
+Causa Probable
+Opción de Tratamiento (Solución)
+Eventos duplicados (aparecen Browser y Server por separado sin unificarse)
+event_id diferente o event_name no coincide exactamente.
+Auditar que el script del navegador y el payload del servidor usen la misma variable para el ID. Verificar mayúsculas en el nombre (ej. "Schedule" vs "schedule").
+Evento de Servidor no aparece
+Falta el token de acceso, el código de prueba, o error de red 400/500.
+Verificar que el test_event_code esté incluido en el JSON. Verificar validez del Token de Acceso y que el servidor pueda hacer peticiones salientes a graph.facebook.com.
+"Invalid Contents Parameter"
+Formato incorrecto del objeto JSON en contents.
+Asegurar que contents sea un array de objetos (ej. [{'id': '...', 'quantity': 1}]) y no un string simple.
+Baja Calidad de Coincidencia (EMQ < 4)
+No se envían parámetros de usuario (user_data) o no están hasheados.
+Incluir fbp y fbc (cookies) en el servidor. Normalizar y hashear emails/teléfonos antes de enviar. Enviar IP y User Agent.
+Deduplicación fallida por tiempo
+Retraso excesivo entre el evento Browser y Server.
+Asegurar que el evento del servidor se envíe en tiempo real o casi real. Si la diferencia es > 48 horas, no se deduplicarán.
+Nota Final: Recuerde eliminar el parámetro test_event_code de su configuración de producción una vez finalizada la auditoría
