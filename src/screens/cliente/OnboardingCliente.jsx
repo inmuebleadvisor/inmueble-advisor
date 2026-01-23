@@ -14,7 +14,7 @@ const STORAGE_KEY = 'inmueble_advisor_onboarding_cliente_temp';
 
 export default function OnboardingCliente() {
     const navigate = useNavigate();
-    const { catalog: catalogService, client: clientService } = useService(); // ✅ SERVICE INJECTION
+    const { catalog: catalogService, client: clientService, meta: metaService } = useService(); // ✅ SERVICE INJECTION
     const { loginWithGoogle, trackBehavior, user, loadingUser } = useUser();
 
     // --- 1. ESTADOS (Persistencia) ---
@@ -164,6 +164,14 @@ export default function OnboardingCliente() {
                 const rooms = recamaras || '';
 
                 localStorage.removeItem(STORAGE_KEY);
+
+                // ⭐ Tracking: Meta CompleteRegistration
+                metaService.trackCompleteRegistration({
+                    value: presupuestoMaximo || 0,
+                    currency: 'MXN',
+                    status: 'completed'
+                }, metaService.generateEventId());
+
                 navigate(`/catalogo?maxPrice=${maxPrice}&rooms=${rooms}&status=${statusParam}`, { replace: true });
             }
         } catch (error) {

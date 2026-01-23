@@ -10,7 +10,7 @@ export const useFavorites = () => useContext(FavoritesContext);
 
 export const FavoritesProvider = ({ children }) => {
   const { user } = useUser();
-  const { favorites: favoritesService } = useService();
+  const { favorites: favoritesService, meta: metaService } = useService();
   const [favoritosIds, setFavoritosIds] = useState([]); // Array de IDs de modelos
 
   // 1. EFECTO: Sincronización Estricta (Nube -> App)
@@ -64,6 +64,13 @@ export const FavoritesProvider = ({ children }) => {
         await favoritesService.removeFavorite(user.uid, modeloId);
       } else {
         await favoritesService.addFavorite(user.uid, modeloId);
+
+        // ⭐ Tracking: Meta AddToWishlist
+        metaService.trackAddToWishlist({
+          content_ids: [modeloId],
+          content_type: 'product',
+          content_category: 'Real Estate Model'
+        }, metaService.generateEventId());
       }
       return true; // Operación exitosa
     } catch (error) {

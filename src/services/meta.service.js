@@ -124,6 +124,39 @@ export class MetaService {
         }
     }
 
+    // --- Specialized Helpers for Standard Events ---
+
+    /**
+     * Standard Search event.
+     * @param {string} query - The search string.
+     * @param {Object} params - Additional params (content_category, etc.)
+     * @param {string} id - Event ID.
+     */
+    trackSearch(query, params = {}, id = null) {
+        this.track('Search', {
+            search_string: query,
+            ...params
+        }, id);
+    }
+
+    /**
+     * Standard AddToWishlist event.
+     * @param {Object} params - (content_name, content_ids, value, etc.)
+     * @param {string} id - Event ID.
+     */
+    trackAddToWishlist(params = {}, id = null) {
+        this.track('AddToWishlist', params, id);
+    }
+
+    /**
+     * Standard CompleteRegistration event.
+     * @param {Object} params - (value, currency, status, etc.)
+     * @param {string} id - Event ID.
+     */
+    trackCompleteRegistration(params = {}, id = null) {
+        this.track('CompleteRegistration', params, id);
+    }
+
     /**
      * Extracts _fbp cookie value
      */

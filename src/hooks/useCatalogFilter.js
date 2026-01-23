@@ -1,15 +1,17 @@
-// src/hooks/useCatalogFilter.js
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
+import { useService } from './useService';
 import { UI_OPCIONES } from '../config/constants';
 import { CatalogService } from '../services/catalog.service';
 
 export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
     const { userProfile } = useUser();
+    const { meta: metaService } = useService();
     const location = useLocation();
 
     const [searchTerm, setSearchTerm] = useState('');
+    const searchTimeoutRef = useRef(null);
 
     // 1. Inicialización de Filtros
     const getInitialFilters = useMemo(() => {
@@ -106,6 +108,35 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
         );
     }, [filtros, searchTerm, userProfile]);
 
+    // ⭐ Tracking: Meta Search Event (with Debounce)
+    useEffect(() => {
+        if (loading || !hayFiltrosActivos) return;
+
+        if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+
+        searchTimeoutRef.current = setTimeout(() => {
+            const queryParts = [];
+            if (searchTerm) queryParts.push(searchTerm);
+            if (filtros.amenidad) queryParts.push(filtros.amenidad);
+            if (filtros.tipo !== 'all') queryParts.push(filtros.tipo);
+
+            const searchQuery = queryParts.join(' ') || 'catalog_filters';
+
+            metaService.trackSearch(searchQuery, {
+                content_category: 'Inventory',
+                filters: {
+                    min_price: filtros.precioMin,
+                    max_price: filtros.precioMax,
+                    rooms: filtros.habitaciones,
+                    status: filtros.status,
+                    type: filtros.tipo
+                }
+            });
+        }, 1500); // Wait 1.5s of inactivity before tracking search to avoid spam
+
+        return () => clearTimeout(searchTimeoutRef.current);
+    }, [searchTerm, filtros, hayFiltrosActivos, loading, metaService]);
+
     // 3. Motor de Filtrado (Delegado al servicio)
     const modelosFiltrados = useMemo(() => {
         if (loading) return [];
@@ -135,10 +166,6 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
             showNoPrice: false
         };
         setFiltros(emptyFilters);
-        // Also clear local storage effectively by saving the empty state (handled by useEffect)
-        // or we could explicitly remove it if we want 'reset' to mean 'go back to profile on next load'
-        // But user request says "si no tenemos nada en local entonces presentar los filtros en blanco",
-        // forcing empty state here seems correct.
     };
 
     return {

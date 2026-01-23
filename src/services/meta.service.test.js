@@ -101,4 +101,34 @@ describe('MetaService', () => {
             expect(window.fbq).toHaveBeenCalledWith('init', '123', userData);
         });
     });
+
+    describe('Standard Helpers', () => {
+        it('trackSearch should call track with correct params', () => {
+            const spy = vi.spyOn(metaService, 'track');
+            metaService.trackSearch('casa playa', { category: 'luxury' }, 'evt-1');
+
+            expect(spy).toHaveBeenCalledWith('Search', {
+                search_string: 'casa playa',
+                category: 'luxury'
+            }, 'evt-1');
+        });
+
+        it('trackAddToWishlist should call track with correct params', () => {
+            const spy = vi.spyOn(metaService, 'track');
+            metaService.trackAddToWishlist({ content_name: 'Luxury Villa' }, 'evt-2');
+
+            expect(spy).toHaveBeenCalledWith('AddToWishlist', {
+                content_name: 'Luxury Villa'
+            }, 'evt-2');
+        });
+
+        it('trackCompleteRegistration should call track with correct params', () => {
+            const spy = vi.spyOn(metaService, 'track');
+            metaService.trackCompleteRegistration({ value: 100 }, 'evt-3');
+
+            expect(spy).toHaveBeenCalledWith('CompleteRegistration', {
+                value: 100
+            }, 'evt-3');
+        });
+    });
 });
