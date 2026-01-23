@@ -26,12 +26,12 @@ export const onLeadContactMETA = onCall({ cors: true }, async (request) => {
 
     // Extract Data for Meta (Robust Fallbacks)
     // Note: For 'Contact', we might not have email/phone yet unless user is logged in.
-    const email = leadData?.email || leadData?.clienteDatos?.email || leadData?.correo;
-    const phone = leadData?.telefono || leadData?.clienteDatos?.telefono || leadData?.celular;
+    const email = leadData?.em || leadData?.email || leadData?.clienteDatos?.email || leadData?.correo;
+    const phone = leadData?.ph || leadData?.telefono || leadData?.clienteDatos?.telefono || leadData?.celular;
 
     // Name Splitting Logic (Standardized)
-    let firstName = leadData?.nombre || leadData?.clienteDatos?.nombre;
-    let lastName = leadData?.apellido || leadData?.clienteDatos?.apellido;
+    let firstName = leadData?.fn || leadData?.nombre || leadData?.clienteDatos?.nombre;
+    let lastName = leadData?.ln || leadData?.apellido || leadData?.clienteDatos?.apellido;
 
     if (firstName && !lastName) {
         const parts = firstName.trim().split(' ');
