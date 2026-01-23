@@ -1,24 +1,14 @@
 // src/screens/DetalleModelo.jsx
-// ÚLTIMA MODIFICACION: 02/12/2025
+// ÚLTIMA MODIFICACION: 23/01/2026 (Meta Hybrid Tracking)
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
 import { useCatalog } from '../../context/CatalogContext';
+import { useService } from '../../hooks/useService'; // ✅ Import Service Hook
 
 // Componentes UI
 import ModelDetailsContent from '../../components/catalogo/ModelDetailsContent';
-
-// Componentes UI
-// (Algunos importados ya no se usan directamente aquí, pero no hace daño dejarlos si no dan error de lint,
-// aunque lo ideal es limpiar. ModelDetailsContent ahora maneja estos.)
-// import Carousel from '../components/Carousel';
-// import CaracteristicasBox from '../components/CaracteristicasBox';
-// import AmenidadesList from '../components/AmenidadesList';
-// import FinanciamientoWidget from '../components/FinanciamientoWidget';
-// import DevelopmentInfoSection from '../components/DevelopmentInfoSection';
-// import PropertyCard from '../components/PropertyCard';
-// import FavoriteBtn from '../components/shared/FavoriteBtn';
 
 const Icons = {
   Back: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
@@ -32,7 +22,8 @@ const formatoMoneda = (val) => {
 export default function DetalleModelo() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { trackBehavior } = useUser();
+  const { user, userProfile, trackBehavior } = useUser(); // ✅ Get User Context for PII
+  const { meta: metaService } = useService(); // ✅ Inject Meta Service
   const { loadingCatalog, getModeloById, getDesarrolloById, modelos } = useCatalog();
 
   // Estados de datos
@@ -59,6 +50,76 @@ export default function DetalleModelo() {
     if (modeloEncontrado) {
       setModelo(modeloEncontrado);
       trackBehavior('view_item', { item_id: id, item_name: modeloEncontrado.nombre_modelo });
+
+      // ============================================
+      // 🚀 META ADS HYBRID TRACKING (ViewContent)
+      // ============================================
+      const trackMetaViewContent = async () => {
+        try {
+          // 1. Generate Unique Event ID
+          const eventId = metaService.generateEventId();
+          const price = Number(modeloEncontrado.precioNumerico) || 0;
+          const contentName = `${modeloEncontrado.nombre_modelo} (${modeloEncontrado.nombreDesarrollo || 'Modelo'})`;
+
+          // 2. Browser Pixel (Standard)
+          metaService.track('ViewContent', {
+            content_name: contentName,
+            content_ids: [id],
+            content_type: 'product',
+            content_category: 'Vivienda Nueva',
+            value: price,
+            currency: 'MXN'
+          }, eventId);
+
+          // 3. User Data Extraction & Normalization
+          const email = userProfile?.email || user?.email;
+          const firstName = userProfile?.nombre || user?.displayName?.split(' ')[0];
+          const lastName = userProfile?.apellido || user?.displayName?.split(' ').slice(1).join(' ');
+
+          const rawPhone = userProfile?.telefono || '';
+          const cleanPhone = rawPhone.replace(/\D/g, '');
+          const normalizedPhone = cleanPhone.length === 10 ? `52${cleanPhone}` : cleanPhone;
+
+          // 4. Update Pixel User Data (Advanced Matching)
+          if (email || normalizedPhone || user?.uid) {
+            metaService.setUserData({
+              em: email,
+              ph: normalizedPhone,
+              fn: firstName,
+              ln: lastName,
+              external_id: user?.uid
+            });
+          }
+
+          // 5. Server CAPI (Intent)
+          await metaService.trackIntentCAPI(eventId, {
+            // Content Context
+            nombreDesarrollo: contentName, // Mapping as Main Content Name
+            urlOrigen: window.location.href,
+            value: price,
+            currency: 'MXN',
+            // Technical Context
+            fbp: metaService.getFbp(),
+            fbc: metaService.getFbc(),
+            clientUserAgent: navigator.userAgent,
+            // User Context
+            email: email,
+            telefono: normalizedPhone,
+            nombre: firstName,
+            apellido: lastName,
+            external_id: user?.uid
+          });
+
+          console.log(`[Meta Hybrid] ViewContent tracked for Model: ${contentName}`);
+
+        } catch (error) {
+          console.warn("[Meta Hybrid] Tracking failed:", error);
+        }
+      };
+
+      trackMetaViewContent();
+      // ============================================
+
 
       // B. Buscar al Desarrollo Padre (Vinculación)
       const idDevRaw = modeloEncontrado.idDesarrollo || modeloEncontrado.id_desarrollo || modeloEncontrado.desarrollo_id;

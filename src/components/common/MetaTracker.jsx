@@ -46,6 +46,18 @@ const MetaTracker = () => {
         if (lastTrackedKey.current === location.key) return;
         lastTrackedKey.current = location.key;
 
+        // 🛑 EXCLUSION: Skip PageView on routes that fire ViewContent
+        // This prevents double-counting and ensures granular signals.
+        const VIEW_CONTENT_ROUTES = [
+            /^\/desarrollo\/[^/]+/, // Matches /desarrollo/:id
+            /^\/modelo\/[^/]+/      // Matches /modelo/:id
+        ];
+
+        if (VIEW_CONTENT_ROUTES.some(regex => regex.test(location.pathname))) {
+            console.log(`[Meta Unified] Skipping PageView for ${location.pathname} (ViewContent Active)`);
+            return;
+        }
+
         // 🕵️‍♂️ SMART WAIT LOGIC
         let attempt = 0;
         const maxAttempts = 5;
@@ -64,17 +76,26 @@ const MetaTracker = () => {
             const auth = getAuth();
             const sdkUser = auth.currentUser;
 
-            // 🚨 RACE CONDITION CHECK
+            // 🚨 RACE CONDITION CHECK (User Context)
             const isContextLagging = !currentUser && sdkUser;
 
-            if (isContextLagging && attempt <= maxAttempts) {
-                console.log(`⏳ [Meta Unified] Context Lag Detected (Attempt ${attempt}/${maxAttempts}). Waiting for UserContext sync...`);
+            // 🚨 PIXEL LOAD CHECK (New: Wait for fbq to be defined)
+            const isPixelReady = typeof window !== 'undefined' && !!window.fbq;
+
+            // Wait if either Context is lagging OR Pixel is not ready
+            if ((isContextLagging || !isPixelReady) && attempt <= maxAttempts) {
+                const reasons = [];
+                if (isContextLagging) reasons.push("UserContext");
+                if (!isPixelReady) reasons.push("Pixel(fbq)");
+
+                console.log(`⏳ [Meta Unified] Waiting for dependencies (${reasons.join(', ')})... (Attempt ${attempt}/${maxAttempts})`);
                 timerId = setTimeout(tryTrackPageView, 500);
                 return;
             }
 
-            if (isContextLagging && attempt > maxAttempts) {
-                console.warn("⚠️ [Meta Unified] Timeout waiting for UserContext. Proceeding with potentially limited data.");
+            if ((isContextLagging || !isPixelReady) && attempt > maxAttempts) {
+                console.warn("⚠️ [Meta Unified] Timeout waiting for dependencies. Proceeding with potentially limited data or Server-Only tracking.");
+                if (!isPixelReady) console.error("⛔ [Meta Unified] 'window.fbq' is undefined. Pixel script might be blocked by AdBlocker or failed to load.");
             }
 
             try {
