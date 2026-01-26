@@ -21,7 +21,7 @@ const WhatsAppButton = () => {
     if (location.pathname === '/') return null;
 
     // Número de teléfono destino (sin signos, solo dígitos)
-    const PHONE_NUMBER = '524491987425';
+    const PHONE_NUMBER = '526673031923';
 
     // Lógica para determinar el mensaje basado en la ruta
     const contextData = useMemo(() => {
