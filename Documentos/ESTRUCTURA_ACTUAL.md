@@ -26,10 +26,10 @@ El frontend sigue una **Clean Architecture** adaptada a React, separando clarame
 
 #### 📂 `services/` (Capa de Lógica de Negocio)
 *   **Propósito**: Contener la lógica de negocio y orquestar llamadas a los repositorios.
-*   **Patrón**: Inyección de Dependencias.
+*   **Patrón Moderno**: Inyección de Dependencias vía React Context.
 *   **Ejemplos**: `auth.service.js`, `crm.service.js`.
-*   **Responsabilidad**: Validaciones, transformaciones de datos, llamadas a `repositories` u otros servicios.
-*   **Archivo Clave**: `serviceProvider.js`. Este archivo actúa como el contenedor de inyección de dependencias, instanciando repositorios y servicios, e inyectando las dependencias necesarias. `export const services = { ... }` es el punto de acceso central.
+*   **Consumo**: Los componentes deben utilizar Hooks (`useService()`) para acceder a la lógica.
+*   **Archivo de Inicialización**: `serviceProvider.js`. Este archivo actúa únicamente como "Fábrica" ("Composition Root") para instanciar las clases. **NO debe importarse directamente en los componentes**. Su único propósito es alimentar el `ServiceProvider` (Contexto).
 
 #### 📂 `screens/` (Capa de Presentación - Páginas)
 *   **Propósito**: Representar las vistas o páginas completas de la aplicación.
@@ -72,4 +72,4 @@ En la carpeta `Documentos/` se encuentran guías esenciales que rigen el desarro
 ## 5. Notas Importantes sobre el Desarrollo
 
 *   **CSS BEM**: Se debe aplicar la metodología BEM para los estilos CSS.
-*   **Inyección de Dependencias**: Siempre se deben instanciar los servicios a través de `serviceProvider.js` o pasando dependencias en los constructores, nunca importando instancias globales directamente dentro de la clase (para facilitar testing).
+*   **Inyección de Dependencias**: Se prioriza el uso de Hooks (`useService`) para mantener los componentes desacoplados y testables. Evitar la importación directa de `services` desde `serviceProvider.js` (marcado como Legacy para consumo directo).

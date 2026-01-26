@@ -5,16 +5,14 @@ Este manual establece las reglas y directrices esenciales para el diseño de sis
 I. Modelo de Estructura Principal: Modularidad y Desacoplamiento
 El diseño fundamental del sistema debe rechazar el modelo monolítico en favor de componentes pequeños e independientes.
 
-1. Principio: Arquitectura de Microservicios (o Servicios Bien Definidos)
-Descripción: La aplicación debe dividirse en servicios funcionales independientes que puedan desarrollarse, implementarse y escalarse de forma aislada.
+1. Principio: Arquitectura Serverless (Function-as-a-Service)
+Descripción: La aplicación adopta un modelo Serverless utilizando Google Cloud Functions (Firebase).
 
 Implementación:
 
-Ámbito de Servicio: Cada servicio debe adherirse estrictamente al Principio de Responsabilidad Única (SRP). Un servicio debe resolver una única capacidad de negocio (ej. AuthService, PaymentService, InventoryService).
-
-Despliegue: Cada servicio debe ser autocontenido y desplegable por separado (usando Docker).
-
-Límites de Contexto (DDD): Los límites de los servicios deben coincidir con los Contextos Delimitados del negocio para evitar dependencias innecesarias.
+Unidad de Despliegue: La unidad fundamental no es un contenedor, sino una Función (Cloud Function).
+Escalabilidad: El escalado es gestionado automáticamente por la plataforma (Google Cloud), permitiendo reducir costos a cero cuando no hay tráfico y escalar infinitamente bajo demanda.
+Stateless: Las funciones son efímeras y sin estado. Toda persistencia debe delegarse a la Base de Datos o Almacenamiento externo.
 
 2. Contratos de Comunicación (APIs)
 Regla: La comunicación entre servicios debe realizarse a través de interfaces (APIs) bien definidas y versionadas.
@@ -75,9 +73,12 @@ Si le pides a Gemini que refactorice una función, el suite de pruebas le indica
 Todo el código generado o modificado por el agente de codificación debe pasar todas las pruebas existentes antes de su integración.
 
 6. Configuración de Entorno Declarativa (I.A.C.)
-Regla: Se debe utilizar Infraestructura como Código (IaC), como Docker, para definir cómo se empaqueta cada servicio y Kubernetes (o Terraform/CloudFormation) para definir cómo se implementa y escala en la nube.
+Regla: Se utiliza Infraestructura como Código (IaC) centrada en el ecosistema Firebase.
 
-Facilita a Gemini: Permite al agente de codificación generar configuraciones de deployment (como archivos deployment.yaml o docker-compose.yml) con contexto y precisión, sin tener que asumir detalles del entorno.
+Facilita a Gemini:
+Archivo Maestro: `firebase.json` es la fuente de verdad para la definición de funciones, reglas de seguridad y hosting.
+Variables de Entorno: La configuración dinámica se gestiona mediante Firebase Config (`.env` o `functions:config`).
+No se requiere gestión manual de Dockerfiles ni Kubernetes.
 
 IV. Gestión de la Complejidad y Calidad
 Estas reglas aseguran que el código sea mantenible a largo plazo, independientemente de quién o qué lo escriba.

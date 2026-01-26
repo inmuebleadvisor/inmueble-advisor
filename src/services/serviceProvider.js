@@ -1,9 +1,16 @@
-
 /**
- * @deprecated
- * LEGACY SERVICE LOCATOR
- * This file is being phased out in favor of React Context (dependency injection).
- * Avoid adding new services here.
+ * @file serviceProvider.js
+ * @description SERVICE COMPOSITION ROOT (Factory)
+ * 
+ * This file serves as the central "Factory" to instantiate all services and repositories.
+ * 
+ * ARCHITECTURAL ROLE:
+ * 1. Instantiates classes (new Service(...)).
+ * 2. Injects dependencies (Repository -> Service).
+ * 3. Exports the 'services' object to be consumed ONLY by the React Context Provider.
+ * 
+ * ⚠️ DO NOT IMPORT 'services' DIRECTLY IN COMPONENTS.
+ * Always use the `useService()` hook to consume logic.
  */
 import { db, auth, googleProvider } from '../firebase/config';
 
