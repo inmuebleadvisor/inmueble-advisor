@@ -1,79 +1,44 @@
-# Service Layer Architecture (Capa de Servicios) 🚀
+# Meta Ads Service Implementation
 
-Esta carpeta contiene la lógica de negocio central de la aplicación. Aquí es donde se orquestan las llamadas a la API (Firebase), las suscripciones a datos y los flujos de trabajo complejos.
+## Overview
+The `MetaService` handles the hybrid tracking integration (Meta Pixel + Conversion API) for Inmueble Advisor. It ensures high Event Match Quality (EMQ) through PII normalization and robust event deduplication using `event_id`.
 
-## Principios Clave
-1.  **Lógica sin Estado (Stateless):** Los servicios deben contener lógica pura y llamadas a APIs. El estado de la UI debe manejarse en `context` o componentes.
-2.  **Patrón Singleton & DI:** Los servicios se instancian una sola vez en `serviceProvider.js`. Usamos **Inyección de Dependencias (DI)** para pasar repositorios u otros servicios.
-3.  **Abstracción:** Los componentes no deben conocer los detalles de la infraestructura (Firebase, Firestore, etc.), solo los métodos del servicio.
+## Location
+- **Service:** `src/services/meta.service.js`
+- **Tests:** `src/services/meta.service.test.js`
 
-## Catálogo de Servicios Actuales
--   **`AdminService`**: Funciones administrativas y estadísticas globales.
--   **`AnalyticsService`**: (Frontend) Maneja el ciclo de vida de la sesión (Start/End) y el tracking de visitas (`AnalyticEventsRepository`).
--   **`DashboardService`**: Consume las estadísticas pre-calculadas de la colección `dashboard_stats` para visualizar en el panel de admin.
--   **`AppointmentService`**: Gestión de citas y calendario de visitas.
--   **`AuthService`**: Maneja el login con Google, logout y promoción de roles (Asesores).
--   **`CatalogService`**: Gestiona el catálogo de inmuebles, filtros y búsqueda.
--   **`ClientService`**: Gestión de perfiles de clientes.
--   **`ConfigService`**: Configuración remota (Remote Config) y Feature Flags.
--   **`CrmService`**: Lógica para la gestión de leads y asignaciones.
--   **`ExternalAdvisorService`**: Gestión de asesores externos y convenios.
--   **`FavoritesService`**: Maneja la lista de propiedades favoritas del usuario.
--   **`LeadAssignmentService`**: Algoritmos para asignar interesados a asesores.
--   **`MetaService`**: (Frontend) Maneja el Pixel y la orquestación híbrida (Pixel + CAPI). **[Ver Documentación Detallada](./META_TRACKING.md)**.
+## Hybrid Event Tracking (Pixel + CAPI)
+These events are sent from both the browser and the server to ensure maximum attribution accuracy.
 
+| Event (Meta Standard) | Trigger Moment | Server Function (Cloud Function) | Payload Details |
+| :--- | :--- | :--- | :--- |
+| **`PageView`** | SPA route changes via `MetaTracker.jsx` | `onLeadPageViewMETA` | `url`, `fbp`, `fbc`, `userAgent` |
+| **`ViewContent`** | Product/Model detail load | `onLeadIntentMETA` | `content_ids`, `value`, `currency` |
+| **`Contact`** | WhatsApp button interaction | `onLeadContactMETA` | `phone`, `name` (if available) |
+| **`Schedule`** | Lead capture form success | `onLeadCreatedMETA` | `email`, `phone`, `name`, `external_id` |
 
-## Cómo Crear un Nuevo Servicio
-1.  Crea la clase en este directorio (ej. `PaymentService.js`).
-2.  Define el constructor para recibir sus dependencias (repositorios, auth, etc.).
-3.  Registra la instancia en `src/services/serviceProvider.js`.
-4.  Expórtalo en el objeto `services` para que sea accesible vía hooks.
+## Browser-Only Events
+Tactical behavioral events tracked via the Pixel.
 
-## Ejemplo Real: Inyección de Dependencias
-Los servicios **nunca** deben instanciar sus dependencias internamente. Deben recibirlas en el constructor.
+| Event (Meta Standard) | Trigger Moment | Component / Hook |
+| :--- | :--- | :--- |
+| **`Search`** | Filter application (1.5s debounce) | `useCatalogFilter.js` |
+| **`AddToWishlist`** | Favorite toggle (addition) | `FavoritesContext.jsx` |
+| **`CompleteRegistration`** | Onboarding/Calculator completion | `OnboardingCliente.jsx` |
 
+## Technical Implementation Rules
+1. **Deduplication:** Every event must include a unique `eventID` generated via `metaService.generateEventId()`.
+2. **PII Normalization:** All user data must pass through `prepareUserData()` before being sent.
+    - Emails: Lowercase & trimmed.
+    - Phones: Digit extraction + `52` prefix prefixing for Mexico (10 digits).
+3. **Privacy:** Advanced Matching is automatically handled if user session data is present.
+4. **SPA Fixes:** `fbq.disablePushState` is set to `true` to prevent duplicate automatic PageViews on internal navigation.
+
+## Usage example
 ```javascript
-// src/services/auth.service.js
-export class AuthService {
-    // 💉 Dependencias inyectadas en el constructor
-    constructor(auth, googleProvider, userRepository) {
-        this.auth = auth;
-        this.googleProvider = googleProvider;
-        this.userRepository = userRepository; 
-    }
-
-    async loginWithGoogle() {
-        const result = await signInWithPopup(this.auth, this.googleProvider);
-        
-        // Uso del repositorio inyectado para lógica de persistencia
-        let profile = await this.userRepository.getUserById(result.user.uid);
-        
-        if (!profile) {
-            profile = await this.userRepository.createUserWithId(result.user.uid, { 
-                email: result.user.email,
-                role: 'client' 
-            });
-        }
-        return profile;
-    }
-}
+const eventId = metaService.generateEventId();
+// Pixel call
+metaService.track('ViewContent', { content_ids: ['123'], value: 2500000, currency: 'MXN' }, eventId);
+// CAPI call
+metaService.trackIntentCAPI(eventId, pii, { content_ids: ['123'] });
 ```
-
-### Registro en ServiceProvider
-```javascript
-// src/services/serviceProvider.js
-import { AuthService } from './auth.service';
-import { UserRepository } from '../repositories/user.repository';
-
-// 1. Instanciar Repositorios (Capa Inferior)
-const userRepo = new UserRepository(db);
-
-// 2. Instanciar Servicios inyectando Repositorios (Capa Superior)
-export const authService = new AuthService(auth, googleProvider, userRepo);
-```
-
-## Consumo en Componentes
-Para usar un servicio, se debe utilizar el hook correspondiente (usualmente `useService`) que accede al `ServiceProvider`.
-
----
-*Nota: Todos los nuevos servicios deben incluir pruebas unitarias siguiendo el patrón `test_nombreservicio.service.js`.*

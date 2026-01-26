@@ -52,6 +52,7 @@ import RouteRemounter from './components/layout/RouteRemounter'; // ✅ Force Re
 
 // ⭐ NUEVO: Tracker Unificado de Meta
 import MetaTracker from './components/common/MetaTracker';
+import ScrollToTop from './components/common/ScrollToTop'; // ✅ Scroll Restoration Logic
 import { META_CONFIG } from './config/constants';
 
 function App() {
@@ -74,6 +75,7 @@ function App() {
               <CitySelectorModal />
 
               <BrowserRouter>
+                <ScrollToTop /> {/* ✅ Reset Scroll Restoration */}
                 <MetaTracker /> {/* ✅ Rastreo Unificado de PageView */}
                 <AnalyticsTracker />
                 <Routes>
