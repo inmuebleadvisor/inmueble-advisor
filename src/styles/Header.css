@@ -1,14 +1,81 @@
 /* src/styles/Header.css */
 
-/* --- NAVIGATION MENU --- */
-.nav-menu {
+/* --- NAVBAR CONTAINER --- */
+.navbar {
+    background-color: var(--bg-header);
+    color: var(--text-main);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid var(--border-subtle);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+[data-theme='dark'] .navbar {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.navbar__content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: 70px;
     display: flex;
     align-items: center;
-    gap: 24px;
+    justify-content: space-between;
+}
+
+/* --- LOGO --- */
+.navbar__logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    z-index: 1010;
+}
+
+.navbar__logo-img {
+    height: 48px;
+    width: auto;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+}
+
+.navbar__logo-img:hover {
+    transform: scale(1.02);
+}
+
+/* --- CONTROLS (City + Mobile Toggle) --- */
+.navbar__controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* --- CITY SELECTOR --- */
+.navbar__btn-city {
+    background: var(--bg-glass);
+    border: 1px solid var(--border-strong);
+    border-radius: 20px;
+    color: var(--text-main);
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin: 0 5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    /* Often visible on mobile too in header, or tailored via media queries */
+}
+
+.navbar__btn-city:hover {
+    background-color: var(--bg-tertiary);
+    border-color: var(--primary-color);
 }
 
 /* --- HAMBURGER BUTTON --- */
-.menu-toggle-btn {
+.navbar__toggle-btn {
     display: none;
     /* Hidden by default on Desktop */
     background: none;
@@ -19,18 +86,67 @@
     z-index: 1100;
 }
 
-.menu-toggle-btn:hover {
+.navbar__toggle-btn:hover {
     color: var(--primary-color);
 }
 
+/* --- NAVIGATION MENU (Desktop Default) --- */
+.navbar__menu {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.navbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* --- LINKS --- */
+.navbar__link {
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 400;
+    opacity: 0.85;
+    transition: all 0.2s ease;
+    border-bottom: 3px solid transparent;
+    padding-bottom: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: inherit;
+}
+
+.navbar__link:hover {
+    opacity: 1;
+    color: var(--primary-color);
+}
+
+.navbar__link--active {
+    font-weight: 700;
+    border-bottom-color: var(--primary-color);
+    opacity: 1;
+    color: var(--primary-color);
+}
+
+/* Specific buttons specific styles can be added here if needed */
+
+
+
 /* --- RESPONSIVE MOBILE STYLES (< 768px) --- */
 @media (max-width: 768px) {
-    .menu-toggle-btn {
+    .navbar__toggle-btn {
         display: block;
         /* Show on Mobile */
     }
 
-    .nav-menu {
+    /* Hide menu by default on mobile, slide in when open */
+    .navbar__menu {
         position: fixed;
         top: 70px;
         /* Match header height */
@@ -50,32 +166,30 @@
         border-top: 1px solid var(--border-subtle);
     }
 
-    .nav-menu.is-open {
+    .navbar__menu--open {
         transform: translateX(0);
         /* Slide in */
         box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
     }
 
+    /* Adjust content for mobile */
+    .navbar__content {
+        /* ensure logo stays left and toggle right */
+        justify-content: space-between;
+        padding: 0 16px;
+    }
+
     /* Make links bigger on mobile */
-    .nav-menu a {
-        font-size: 1.2rem !important;
+    .navbar__link {
+        font-size: 1.2rem;
         width: 100%;
-        text-align: center;
+        justify-content: center;
         padding: 12px 0;
     }
 
-    .nav-menu .link-with-badge {
-        justify-content: center;
-    }
-
-    /* Adjust Nav Link Buttons on mobile */
-    .nav-link-btn {
-        margin-top: 10px;
-        width: 100% !important;
-        padding: 12px 0 !important;
-        border: none !important;
-        font-size: 1.2rem !important;
-        color: var(--text-main) !important;
-        opacity: 0.85;
+    .navbar__actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
     }
 }
