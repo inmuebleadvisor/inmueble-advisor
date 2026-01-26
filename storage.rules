@@ -1,0 +1,37 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // --- Helper Functions ---
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    function isAdmin() {
+       // Cannot access Firestore from Storage rules easily without custom claims.
+       // We rely on path structure or metadata if needed. 
+       // For now, strict owner access.
+       return isAuthenticated(); 
+    }
+
+    // 1. Public Assets (Images, etc)
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated(); // Only auth users (e.g. admin uploading covers)
+    }
+
+    // 2. User User-Generated Content
+    match /users/{userId}/{allPaths=**} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId);
+    }
+    
+    // Default Deny
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
