@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext } from 'react';
-import { services } from '../services/serviceProvider';
+import { services } from '../services/service.provider';
 
 const ServiceContext = createContext(null);
 

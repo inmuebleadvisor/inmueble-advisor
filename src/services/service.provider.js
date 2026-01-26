@@ -26,7 +26,7 @@ import { AuthService } from './auth.service';
 import { ExternalAdvisorService } from './externalAdvisor.service';
 import { ClientService } from './client.service';
 import { CrmService } from './crm.service';
-import { LeadAssignmentService } from './leadAssignmentService';
+import { LeadAssignmentService } from './leadAssignment.service';
 import { FavoritesService } from './favorites.service';
 
 // 1. Instantiate Repositories

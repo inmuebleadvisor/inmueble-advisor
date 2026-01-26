@@ -17,7 +17,7 @@ import { ServiceProvider } from './context/ServiceContext';
 import { UI_OPCIONES } from './config/constants';
 import { PostHogProvider } from 'posthog-js/react'
 import posthog from './config/posthog';
-import { metaService } from './services/serviceProvider';
+import { metaService } from './services/service.provider';
 import { AnalyticsService } from './services/eventLogger.service';
 import { useEffect } from 'react';
 

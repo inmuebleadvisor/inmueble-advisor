@@ -44,24 +44,30 @@ Aislamiento: Un servicio nunca debe acceder directamente a la base de datos de o
 III. Directrices para la Colaboración con Agentes de Codificación
 Estas reglas están diseñadas para maximizar la eficiencia, la calidad y la comprensión de un agente de codificación como Gemini.
 
-4. Estructura y Nomenclatura Consistente
-Regla: Se debe aplicar una estructura de carpetas y nomenclatura de archivos idéntica en todos los microservicios.
+4. Estructura y Nomenclatura Adaptativa
+Regla: La estructura de carpetas debe reflejar la naturaleza tecnológica del componente (Frontend vs Backend Serverless).
 
-Estructura Típica Recomendada:
+A. Backend (Cloud Functions) - Clean Architecture:
 
-/src: Código fuente.
+/src/core: Lógica de negocio pura (Use Cases, Entities). Agnóstica al framework.
 
-/src/models: Definiciones de datos (entidades).
+/src/interface: Adaptadores de entrada (Triggers, Callable Functions). Capa de Presentación.
 
-/src/repositories: Lógica de acceso a la base de datos.
+/src/infrastructure: Adaptadores de salida (Repositories, External APIs). Detalles de implementación.
 
-/src/services: Lógica de negocio principal (la orquestación de la aplicación).
+/tests: Pruebas unitarias centralizadas.
 
-/src/controllers (o handlers): Lógica de entrada/salida de la API.
+B. Frontend (React/Vite) - Capas de Servicio:
 
-/tests: Pruebas unitarias y de integración.
+/src/services: Lógica de negocio y orquestación.
 
-Ventaja con Gemini: Al pedirle a Gemini que "agregue la lógica de validación", sabrá automáticamente que debe modificar o crear código en el directorio /src/services.
+/src/components: Elementos de UI (BEM, Semántico).
+
+/src/hooks: Lógica de estado reactiva y utilidades.
+
+/src/context: Inyección de Dependencias y estado global.
+
+Ventaja con Gemini: Al trabajar en Backend, Gemini buscará Use Cases en `/core`. Al trabajar en Frontend, buscará Servicios en `/services`.
 
 5. Pruebas Automatizadas como Especificación
 Regla: El código debe tener una alta cobertura de pruebas (Unitarias, de Integración y, si es necesario, End-to-End).

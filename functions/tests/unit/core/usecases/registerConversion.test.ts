@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as sinon from 'sinon';
-import { RegisterConversion } from './RegisterConversion';
-import { TrackingEvent } from '../interfaces/TrackingService';
+import { RegisterConversion } from '../../../../src/core/usecases/RegisterConversion';
+import { TrackingEvent } from '../../../../src/core/interfaces/TrackingService';
 
 describe('RegisterConversion UseCase', () => {
     let useCase: RegisterConversion;
