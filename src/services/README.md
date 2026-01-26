@@ -1,7 +1,33 @@
-# Meta Ads Service Implementation
+# Inmueble Advisor - Services Layer
 
 ## Overview
-The `MetaService` handles the hybrid tracking integration (Meta Pixel + Conversion API) for Inmueble Advisor. It ensures high Event Match Quality (EMQ) through PII normalization and robust event deduplication using `event_id`.
+The `src/services` directory contains the core business logic of the frontend application. It follows the **Dependency Injection** pattern to allow easy testing and loose coupling.
+
+## Core Services
+
+### 1. Catalog Service
+*   **File:** `catalog.service.js`
+*   **Purpose:** Manages the inventory of developments and models. Handles caching and filtering.
+*   **Key Methods:** `obtenerDatosUnificados()`, `filterCatalog()`.
+
+### 2. Auth Service
+*   **File:** `auth.service.js`
+*   **Purpose:** Facade for Firebase Auth and User Repository. Manages user sessions and profile retrieval.
+
+### 3. Analytics Service
+*   **File:** `analytics.service.js`
+*   **Purpose:** Central hub for tracking user behavior (Page Views, Events). Bridges the `AnalyticEventsRepository` with the UI.
+
+### 4. Admin Service
+*   **File:** `admin.service.js`
+*   **Purpose:** Provides restricted access to global data (All Users, All Leads) for administrative dashboards.
+
+## Meta Ads Service Implementation
+*   **File:** `meta.service.js`
+*   **Purpose:** Hybrid tracking (Pixel + CAPI).
+
+... [Rest of Meta Docs preserved] ...
+
 
 ## Location
 - **Service:** `src/services/meta.service.js`

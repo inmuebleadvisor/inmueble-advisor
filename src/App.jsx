@@ -18,7 +18,8 @@ import { UI_OPCIONES } from './config/constants';
 import { PostHogProvider } from 'posthog-js/react'
 import posthog from './config/posthog';
 import { metaService } from './services/service.provider';
-import { AnalyticsService } from './services/eventLogger.service';
+// import { AnalyticsService } from './services/eventLogger.service'; // REMOVED LEGACY
+import { useService } from './hooks/useService'; // Import useService
 import { useEffect } from 'react';
 
 // --- SEGURIDAD Y LAYOUT ---
@@ -65,10 +66,9 @@ function App() {
   // El orden de los Providers es estratégico. FavoritesProvider usa datos de User y Catalog.
   return (
     <PostHogProvider client={posthog}>
-      <UserProvider>
-
-        <CatalogProvider>
-          <ServiceProvider>
+      <ServiceProvider>
+        <UserProvider>
+          <CatalogProvider>
             {/* ⭐ AÑADIMOS EL NUEVO PROVEEDOR AQUÍ */}
             <FavoritesProvider>
               {/* ⭐ MODAL DE SELECCIÓN DE CIUDAD (Global) */}
@@ -139,10 +139,9 @@ function App() {
                 </Routes>
               </BrowserRouter>
             </FavoritesProvider> {/* ⭐ CERRAMOS EL NUEVO PROVEEDOR */}
-          </ServiceProvider>
-        </CatalogProvider>
-
-      </UserProvider>
+          </CatalogProvider>
+        </UserProvider>
+      </ServiceProvider>
     </PostHogProvider >
   );
 }
@@ -154,20 +153,24 @@ function App() {
 function AnalyticsTracker() {
   const location = useLocation();
   const { user } = useUser();
+  const { analytics } = useService(); // Use new service
 
   // 1. Iniciar sesión al montar (y cuando el user cambia, p.ej. login)
   useEffect(() => {
-    AnalyticsService.startSession(user, location.pathname);
-
-    return () => {
-      AnalyticsService.endSession();
-    };
-  }, [user]); // Reinicia sesión si cambia el usuario
+    // AnalyticsService from DI
+    analytics.startTracking({
+      uid: user?.uid || 'ANONYMOUS',
+      path: location.pathname,
+      userAgent: navigator.userAgent
+    });
+    // End session is handled by stopTracking or let it be.
+    // analytics.service.js assumes single session id in memory/storage.
+  }, [user, analytics, location.pathname]);
 
   // 2. Rastrear cambios de ruta
   useEffect(() => {
-    AnalyticsService.trackPageView(location.pathname);
-  }, [location]);
+    analytics.trackPageView(location.pathname);
+  }, [location, analytics]);
 
   return null;
 }
