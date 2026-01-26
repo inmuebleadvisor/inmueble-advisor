@@ -62,6 +62,41 @@ const createCustomIcon = (textoPrecio, backgroundColor) => {
   });
 };
 
+const MapRevalidator = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    // 1. Lock Body Scroll to prevent "activation scroll" on first touch/click
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    // 2. Force Focus to the map container silently
+    // This tells the browser "we are active" without user interaction
+    const container = map.getContainer();
+    if (container) {
+      container.focus({ preventScroll: true });
+    }
+
+    // 3. Invalidate size logic (existing)
+    map.invalidateSize();
+
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+      // Re-assert focus if lost during layout shift
+      if (container && document.activeElement !== container) {
+        container.focus({ preventScroll: true });
+      }
+    }, 100);
+
+    return () => {
+      // Restore original scroll behavior
+      document.body.style.overflow = originalOverflow;
+      clearTimeout(timer);
+    };
+  }, [map]);
+  return null;
+};
+
 const ControlZoom = ({ marcadores }) => {
   const map = useMap();
   useEffect(() => {
@@ -189,7 +224,7 @@ export default function Mapa() {
           />
 
           <ControlZoom marcadores={marcadoresVisibles} />
-
+          <MapRevalidator />
           {marcadoresVisibles.map((dev) => (
             <Marker
               key={dev.id}

@@ -215,3 +215,22 @@ p {
 ::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
+
+/* --- LEAFLET INTERACTION REPAIRS (Global Fix) --- */
+/* Forces browser to treat map taps as immediate events, not scroll initiations */
+.leaflet-container {
+  touch-action: none !important;
+  outline: none !important;
+}
+
+/* Ensures dragging doesn't select text/UI accidentally */
+.leaflet-interactive {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+/* Fix for stacking contexts in hybrid layouts */
+.leaflet-pane {
+  z-index: 400 !important;
+  /* Base Leaflet pane z-index */
+}

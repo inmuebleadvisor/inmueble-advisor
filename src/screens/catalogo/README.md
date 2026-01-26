@@ -33,7 +33,11 @@ Pantalla de detalle para un modelo específico (prototipo) dentro de un desarrol
 
 ### `Mapa.jsx`
 Vista de mapa para la exploración geoespacial de los desarrollos.
-- **Interacción:** Configurado con `tap={false}` para evitar conflictos de eventos (doble clic requerido) en dispositivos táctiles/híbridos.
+- **Interacción (Hammer Fix):** Implementa una estrategia agresiva para garantizar interactividad instantánea en dispositivos híbridos (Windows Touch):
+  - `tap={false}` en Leaflet para evitar conflictos táctiles.
+  - **Body Scroll Lock:** Bloquea físicamente el scroll de la página (`overflow: hidden`) al montar el mapa para evitar que el primer click sea interpretado como "pan".
+  - **Auto-Focus:** El mapa reclama el foco del navegador al cargar.
+  - **CSS Global:** Requiere overrides específicos en `index.css` (`touch-action: none`, `isolation: isolate`) para evitar que el navegador capture eventos.
 ## Dependencias Clave
 - **Services:** `CatalogService` (datos), `MetaAdsService` (tracking client-side).
 - **Context:** `UserContext` (tracking comportamiento interno), `CatalogContext` (estado global).
