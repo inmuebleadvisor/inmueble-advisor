@@ -1,7 +1,7 @@
 // tests/OnboardingCliente.test.jsx
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import OnboardingCliente from '../src/screens/OnboardingCliente';
+import OnboardingCliente from '../src/screens/cliente/OnboardingCliente';
 import React from 'react';
 
 // Mocks
@@ -23,11 +23,23 @@ vi.mock('../src/context/UserContext', () => ({
     }),
 }));
 
-vi.mock('../src/services/catalog.service', () => ({
-    obtenerDatosUnificados: vi.fn(() => Promise.resolve([
-        { id: 1, precioNumerico: 2000000, recamaras: 3, esPreventa: false },
-        { id: 2, precioNumerico: 5000000, recamaras: 4, esPreventa: true }
-    ]))
+vi.mock('../src/hooks/useService', () => ({
+    useService: () => ({
+        catalog: {
+            obtenerDatosUnificados: vi.fn(() => Promise.resolve([
+                { id: 1, precioNumerico: 2000000, recamaras: 3, esPreventa: false },
+                { id: 2, precioNumerico: 5000000, recamaras: 4, esPreventa: true }
+            ]))
+        },
+        client: {
+            completeOnboarding: vi.fn(() => Promise.resolve({ success: true }))
+        },
+        meta: {
+            track: vi.fn(),
+            trackCompleteRegistration: vi.fn(),
+            generateEventId: vi.fn(() => 'evt-123')
+        }
+    })
 }));
 
 describe('OnboardingCliente Screen', () => {

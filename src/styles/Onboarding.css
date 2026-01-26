@@ -1,29 +1,21 @@
 /* src/styles/Onboarding.css */
-/* src/styles/Onboarding.css */
-/* Modular styles for Buyer Onboarding */
+/* Modular styles for Buyer Onboarding - BEM Methodology */
 
 .onboarding-container {
     display: flex;
     flex-direction: column;
-    /* Consistent with Perfil.css */
     justify-content: flex-start;
-    /* Align to top */
     align-items: center;
-    /* Center horizontally */
     width: 100%;
     height: 100%;
-    /* Fill the main-content completely */
     padding: 20px;
-    /* Provides the 20px gap from header */
     background-color: transparent;
-    /* Changed back to transparent for snow */
     font-family: var(--font-main);
 }
 
 .onboarding-card {
     background-color: var(--bg-secondary);
-    padding: 30px 30px;
-    /* Balanced padding */
+    padding: 30px;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
     max-width: 500px;
@@ -31,7 +23,6 @@
     text-align: center;
     position: relative;
     overflow: hidden;
-    /* Flexible height for viewport fit */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -39,7 +30,12 @@
     z-index: 50;
 }
 
-.progress-bar-container {
+.onboarding-card__header {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.onboarding-card__progress-container {
     position: absolute;
     top: 0;
     left: 0;
@@ -48,14 +44,14 @@
     background-color: var(--bg-tertiary);
 }
 
-.progress-bar-fill {
+.onboarding-card__progress-fill {
     height: 100%;
     background-color: var(--primary-color);
     transition: width 0.5s ease;
 }
 
-.step-content {
-    animation: slideIn 0.4s ease-out forwards;
+.onboarding-card__content {
+    animation: onboarding-card-slideIn 0.4s ease-out forwards;
     width: 100%;
     flex: 1;
     display: flex;
@@ -63,24 +59,23 @@
     align-items: center;
 }
 
-.onboarding-title {
+.onboarding-card__title {
     color: var(--primary-color);
     margin-bottom: 0.5rem;
     font-size: 1.8rem;
     font-weight: 800;
 }
 
-.onboarding-subtitle {
+.onboarding-card__subtitle {
     color: var(--text-secondary);
     margin-bottom: 2rem;
     font-size: 1rem;
     line-height: 1.5;
 }
 
-/* Micro-interaction Text */
-.micro-feedback {
+.onboarding-card__feedback {
     height: 20px;
-    margin-bottom: 10px;
+    margin-top: 10px;
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--success);
@@ -88,12 +83,11 @@
     transition: opacity 0.3s ease;
 }
 
-.micro-feedback.visible {
+.onboarding-card__feedback--visible {
     opacity: 1;
 }
 
-/* Form Elements */
-.input-label {
+.onboarding-card__label {
     display: block;
     font-weight: 600;
     color: var(--text-main);
@@ -102,13 +96,109 @@
     width: 100%;
 }
 
-.options-container {
+.onboarding-card__options {
     display: flex;
     justify-content: center;
     gap: 15px;
     margin-bottom: 20px;
     width: 100%;
 }
+
+.onboarding-card__delivery {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.onboarding-card__calculator {
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    border: 1px solid var(--border-subtle);
+    width: 100%;
+}
+
+.onboarding-card__calc-group {
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+.onboarding-card__numeric-field {
+    width: 100%;
+    padding: 8px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-strong);
+    background-color: var(--bg-input);
+    color: var(--text-main);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.onboarding-card__numeric-field:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--shadow-glow);
+}
+
+.onboarding-card__result {
+    background-color: var(--primary-color);
+    color: var(--text-inverse);
+    padding: 30px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-glow);
+    width: 100%;
+}
+
+.onboarding-card__footer {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    width: 100%;
+}
+
+/* Modal Internal Elements */
+.onboarding-card__modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.onboarding-card__modal {
+    background-color: var(--bg-secondary);
+    padding: 30px;
+    border-radius: var(--radius-md);
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-subtle);
+}
+
+.onboarding-card__modal-title {
+    margin-bottom: 10px;
+}
+
+.onboarding-card__modal-text {
+    margin-bottom: 20px;
+    color: var(--text-secondary);
+}
+
+.onboarding-card__modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* Global / Shared Components (Modificar si es necesario o mantener como utilidades) */
 
 .circle-btn {
     width: 55px;
@@ -123,18 +213,12 @@
     transition: all 0.2s ease;
 }
 
-.circle-btn.active {
+.circle-btn--active {
     background-color: var(--primary-color);
     color: var(--text-inverse);
     border-color: var(--primary-color);
     transform: scale(1.1);
     box-shadow: var(--shadow-glow);
-}
-
-.delivery-container {
-    display: flex;
-    gap: 10px;
-    width: 100%;
 }
 
 .delivery-btn {
@@ -150,96 +234,11 @@
     transition: all 0.2s ease;
 }
 
-.delivery-btn.active {
+.delivery-btn--active {
     background-color: var(--primary-color);
     color: var(--text-inverse);
     border-color: var(--primary-color);
     box-shadow: var(--shadow-glow);
-}
-
-.calculator-box {
-    background-color: var(--bg-tertiary);
-    /* Slight contrast */
-    border-radius: var(--radius-md);
-    padding: 20px;
-    border: 1px solid var(--border-subtle);
-    width: 100%;
-}
-
-.calc-input-group {
-    margin-bottom: 25px;
-    text-align: left;
-}
-
-.numeric-display {
-    font-size: 1.4rem;
-    font-weight: bold;
-    color: var(--primary-color);
-    margin-bottom: 5px;
-    background: transparent;
-    border: none;
-    width: 100%;
-}
-
-/* Range Slider Customization */
-input[type=range] {
-    -webkit-appearance: none;
-    width: 100%;
-    background: transparent;
-}
-
-input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    height: 20px;
-    width: 20px;
-    border-radius: 50%;
-    background: var(--primary-color);
-    cursor: pointer;
-    margin-top: -8px;
-    box-shadow: var(--shadow-sm);
-}
-
-input[type=range]::-webkit-slider-runnable-track {
-    width: 100%;
-    height: 4px;
-    cursor: pointer;
-    background: var(--border-strong);
-    border-radius: 2px;
-}
-
-/* Numeric Input Override */
-.numeric-input-field {
-    width: 100%;
-    padding: 8px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border-strong);
-    background-color: var(--bg-input);
-    color: var(--text-main);
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.numeric-input-field:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px var(--shadow-glow);
-}
-
-.final-result-box {
-    background-color: var(--primary-color);
-    color: var(--text-inverse);
-    padding: 30px;
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-glow);
-    width: 100%;
-}
-
-.nav-container {
-    display: flex;
-    gap: 15px;
-    margin-top: 30px;
-    width: 100%;
 }
 
 .btn-primary {
@@ -279,7 +278,8 @@ input[type=range]::-webkit-slider-runnable-track {
     color: var(--text-main);
 }
 
-@keyframes slideIn {
+/* Animations */
+@keyframes onboarding-card-slideIn {
     from {
         opacity: 0;
         transform: translateX(20px);
@@ -291,34 +291,30 @@ input[type=range]::-webkit-slider-runnable-track {
     }
 }
 
-/* Modal Overlay */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    z-index: 50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* Range Slider Customization (Global styling or keep as is) */
+input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    background: transparent;
 }
 
-.modal-content {
-    background-color: var(--bg-secondary);
-    padding: 30px;
-    border-radius: var(--radius-md);
-    max-width: 400px;
-    width: 90%;
-    text-align: center;
-    box-shadow: var(--shadow-md);
-    border: 1px solid var(--border-subtle);
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    cursor: pointer;
+    margin-top: -8px;
+    box-shadow: var(--shadow-sm);
 }
 
-.modal-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
+input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 4px;
+    cursor: pointer;
+    background: var(--border-strong);
+    border-radius: 2px;
 }

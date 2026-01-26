@@ -190,58 +190,60 @@ export default function OnboardingCliente() {
     };
 
     return (
-        <div className="onboarding-container">
-            <div className="onboarding-card">
+        <main className="onboarding-container">
+            <article className="onboarding-card">
 
                 {/* Barra de Progreso */}
-                <div className="progress-bar-container">
-                    <div className="progress-bar-fill" style={{ width: `${(step / totalSteps) * 100}%` }}></div>
-                </div>
+                <header className="onboarding-card__header">
+                    <div className="onboarding-card__progress-container">
+                        <div className="onboarding-card__progress-fill" style={{ width: `${(step / totalSteps) * 100}%` }}></div>
+                    </div>
 
-                {/* Feedback "Microporras" */}
-                <div className={`micro-feedback ${microFeedback ? 'visible' : ''}`}>
-                    {microFeedback}
-                </div>
+                    {/* Feedback "Microporras" */}
+                    <div className={`onboarding-card__feedback ${microFeedback ? 'onboarding-card__feedback--visible' : ''}`}>
+                        {microFeedback}
+                    </div>
+                </header>
 
-                <div className="step-content" key={step}>
+                <section className="onboarding-card__content" key={step}>
 
                     {step === 1 && (
                         <>
-                            <h1 className="onboarding-title">Dime qué buscas</h1>
-                            <p className="onboarding-subtitle">Filtraremos las mejores opciones para ti.</p>
+                            <h1 className="onboarding-card__title">Dime qué buscas</h1>
+                            <p className="onboarding-card__subtitle">Filtraremos las mejores opciones para ti.</p>
 
-                            <label className="input-label">Recámaras mínimas:</label>
-                            <div className="options-container">
+                            <label className="onboarding-card__label">Recámaras mínimas:</label>
+                            <div className="onboarding-card__options">
                                 {[1, 2, 3, 4].map((num) => (
                                     <button
                                         key={num}
                                         onClick={() => setRecamaras(num)}
-                                        className={`circle-btn ${recamaras === num ? 'active' : ''}`}
+                                        className={`circle-btn ${recamaras === num ? 'circle-btn--active' : ''}`}
                                     >
                                         {num === 4 ? '4+' : num}
                                     </button>
                                 ))}
                             </div>
 
-                            <label className="input-label" style={{ marginTop: '20px' }}>Tiempo de entrega:</label>
-                            <div className="delivery-container">
-                                <button onClick={() => setEntregaInmediata(true)} className={`delivery-btn ${entregaInmediata === true ? 'active' : ''}`}>Entrega inmediata</button>
-                                <button onClick={() => setEntregaInmediata(false)} className={`delivery-btn ${entregaInmediata === false ? 'active' : ''}`}>Pre-venta</button>
+                            <label className="onboarding-card__label" style={{ marginTop: '20px' }}>Tiempo de entrega:</label>
+                            <div className="onboarding-card__delivery">
+                                <button onClick={() => setEntregaInmediata(true)} className={`delivery-btn ${entregaInmediata === true ? 'delivery-btn--active' : ''}`}>Entrega inmediata</button>
+                                <button onClick={() => setEntregaInmediata(false)} className={`delivery-btn ${entregaInmediata === false ? 'delivery-btn--active' : ''}`}>Pre-venta</button>
                             </div>
                         </>
                     )}
 
                     {step === 2 && (
                         <>
-                            <h1 className="onboarding-title">Hablemos de números</h1>
-                            <p className="onboarding-subtitle">Ajusta los valores para ver tu capacidad real.</p>
+                            <h1 className="onboarding-card__title">Hablemos de números</h1>
+                            <p className="onboarding-card__subtitle">Ajusta los valores para ver tu capacidad real.</p>
 
-                            <div className="calculator-box">
-                                <div className="calc-input-group">
-                                    <label className="input-label">Ahorros disponibles:</label>
+                            <div className="onboarding-card__calculator">
+                                <div className="onboarding-card__calc-group">
+                                    <label className="onboarding-card__label">Ahorros disponibles:</label>
                                     <input
                                         type="number"
-                                        className="numeric-input-field"
+                                        className="onboarding-card__numeric-field"
                                         value={capitalInicial}
                                         onChange={(e) => setCapitalInicial(Number(e.target.value))}
                                     />
@@ -252,11 +254,11 @@ export default function OnboardingCliente() {
                                     />
                                 </div>
 
-                                <div className="calc-input-group">
-                                    <label className="input-label">Mensualidad cómoda:</label>
+                                <div className="onboarding-card__calc-group">
+                                    <label className="onboarding-card__label">Mensualidad cómoda:</label>
                                     <input
                                         type="number"
-                                        className="numeric-input-field"
+                                        className="onboarding-card__numeric-field"
                                         value={mensualidad}
                                         onChange={(e) => setMensualidad(Number(e.target.value))}
                                     />
@@ -272,10 +274,10 @@ export default function OnboardingCliente() {
 
                     {step === 3 && (
                         <>
-                            <h1 className="onboarding-title">¡Listo!</h1>
-                            <p className="onboarding-subtitle">Este es el valor de propiedad recomendado:</p>
+                            <h1 className="onboarding-card__title">¡Listo!</h1>
+                            <p className="onboarding-card__subtitle">Este es el valor de propiedad recomendado:</p>
 
-                            <div className="final-result-box">
+                            <div className="onboarding-card__result">
                                 <div style={{ fontSize: '2.5rem', fontWeight: 'bold', margin: '10px 0' }}>
                                     {formatoMoneda(presupuestoMaximo)}
                                 </div>
@@ -289,9 +291,9 @@ export default function OnboardingCliente() {
                             </p>
                         </>
                     )}
-                </div>
+                </section>
 
-                <div className="nav-container">
+                <footer className="onboarding-card__footer">
                     <button onClick={prevStep} className="btn-secondary">Atrás</button>
                     <button
                         onClick={step < totalSteps ? nextStep : handlePreFinalizar}
@@ -300,17 +302,17 @@ export default function OnboardingCliente() {
                     >
                         {step === totalSteps ? (isSaving ? 'Procesando...' : 'Ver Propiedades') : 'Siguiente'}
                     </button>
-                </div>
+                </footer>
 
                 {/* MODAL PRE-LOGIN */}
                 {showLoginModal && (
-                    <div className="modal-overlay">
-                        <div className="modal-content">
-                            <h3>🔐 Datos Seguros</h3>
-                            <p style={{ marginBottom: '20px', color: 'var(--text-secondary)' }}>
+                    <div className="onboarding-card__modal-overlay">
+                        <div className="onboarding-card__modal">
+                            <h3 className="onboarding-card__modal-title">🔐 Datos Seguros</h3>
+                            <p className="onboarding-card__modal-text">
                                 Para guardar tu perfil y buscarte las mejores opciones, necesitamos crear una cuenta segura.
                             </p>
-                            <div className="modal-actions">
+                            <div className="onboarding-card__modal-actions">
                                 <button onClick={() => setShowLoginModal(false)} className="btn-secondary">Cancelar</button>
                                 <button onClick={handleFinalizar} className="btn-primary">Continuar con Google</button>
                             </div>
@@ -318,7 +320,7 @@ export default function OnboardingCliente() {
                     </div>
                 )}
 
-            </div>
-        </div>
+            </article>
+        </main>
     );
 }
