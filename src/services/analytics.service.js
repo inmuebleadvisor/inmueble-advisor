@@ -1,73 +1,79 @@
-// src/services/analytics.service.js
-// Ya no necesitamos importar Firestore ni updateDoc, ya que el cálculo 
-// y guardado del score se hace en Cloud Functions (backend) por seguridad.
-
-import { STATUS } from '../config/constants'; // 🔥 FIX: Importación de constantes
-
 /**
- * ==========================================
- * SERVICIO DE ANALÍTICAS & SCORE
- * Responsabilidad: Cálculos matemáticos (solo front-end/puros).
- * ==========================================
+ * Service for handling User Analytics and Behavior Tracking.
+ * Facades the AnalyticEventsRepository to manage session lifecycles.
  */
+export class AnalyticsService {
+  /**
+   * @param {import('../repositories/analyticEvents.repository').AnalyticEventsRepository} analyticEventsRepository 
+   */
+  constructor(analyticEventsRepository) {
+    this.repository = analyticEventsRepository;
+    this.currentSessionId = localStorage.getItem('analytics_session_id') || null;
+  }
 
-/**
- * Calcula métricas crudas para visualización en el dashboard.
- * Función pura (no llama a la BD, solo procesa datos).
- * @param {Array} leads - Lista de leads del asesor
- */
-export const calcularEstadisticasAsesor = (leads) => {
-  let totalVendido = 0;
-  let ganados = 0;
-  let perdidos = 0;
-  let activos = 0;
-  
-  // PORQUÉ: El embudo se mapea con los strings antiguos porque es una función 
-  // que lee leads ya guardados, cuya estructura de STATUS está en transición.
-  const embudo = { nuevos: 0, contactados: 0, visitas: 0, cierres: 0 };
-
-  leads.forEach(lead => {
-    const s = lead.status;
-    
-    // La Cloud Function ya cambió los leads nuevos a las constantes, 
-    // pero mantenemos la lógica de status temporal aquí por si hay leads antiguos.
-    // 🔥 FIX: Priorizamos la constante (ej. STATUS.LEAD_WON es 'WON')
-    if (s === STATUS.LEAD_WON || s === 'vendido') {
-      ganados++;
-      totalVendido += (lead.cierre?.montoFinal || 0);
-    } else if (s === STATUS.LEAD_LOST || s === 'perdido') {
-      perdidos++;
-    } else {
-      activos++;
+  /**
+   * Starts a new analytics session.
+   * @param {Object} userData - { uid, userAgent, path }
+   */
+  async startTracking(userData) {
+    try {
+      // If already has a session, we might want to close it or just continue.
+      // For simplicity, we start a new one if not exists.
+      if (!this.currentSessionId) {
+        const sessionId = await this.repository.startSession({
+          ...userData,
+          deviceType: this._getDeviceType()
+        });
+        this.currentSessionId = sessionId;
+        localStorage.setItem('analytics_session_id', sessionId);
+      }
+    } catch (error) {
+      console.error("Failed to start analytics tracking:", error);
     }
+  }
 
-    // Conteo por etapas para gráficas
-    // 🔥 FIX: Uso de constantes universales para el mapeo del embudo
-    if (s === STATUS.LEAD_NEW || s === 'nuevo') embudo.nuevos++;
-    else if (s === STATUS.LEAD_CONTACTED || s === 'contactado') embudo.contactados++;
-    else if ([STATUS.LEAD_VISIT_SCHEDULED, STATUS.LEAD_VISIT_CONFIRMED, STATUS.LEAD_VISITED, 'visita_agendada', 'visita_confirmada', 'visito'].includes(s)) embudo.visitas++;
-    else if ([STATUS.LEAD_RESERVED, STATUS.LEAD_WON, STATUS.LEAD_CLOSED, 'apartado', 'vendido', 'escriturado'].includes(s)) embudo.cierres++;
-  });
+  /**
+   * Logs a page view.
+   * @param {string} path 
+   */
+  async trackPageView(path) {
+    if (!this.currentSessionId) return;
+    try {
+      await this.repository.logPageView(this.currentSessionId, path);
+    } catch (error) {
+      console.warn("Failed to track page view:", error);
+    }
+  }
 
-  const leadsFinalizados = ganados + perdidos;
-  const tasaCierre = leadsFinalizados > 0 
-    ? ((ganados / leadsFinalizados) * 100).toFixed(1) 
-    : 0;
+  /**
+   * Track a specific business event.
+   * @param {string} eventName 
+   * @param {Object} metadata 
+   */
+  async trackEvent(eventName, metadata = {}) {
+    try {
+      await this.repository.logBusinessEvent(eventName, {
+        sessionId: this.currentSessionId,
+        ...metadata
+      });
+    } catch (error) {
+      console.warn(`Failed to track event ${eventName}:`, error);
+    }
+  }
 
-  return {
-    totalLeads: leads.length,
-    totalVendido,
-    ganados,
-    leadsFinalizados,
-    tasaCierre: Number(tasaCierre),
-    activos,
-    embudo
-  };
-};
+  /**
+   * Clears session (on logout).
+   */
+  async stopTracking() {
+    if (this.currentSessionId) {
+      await this.repository.endSession(this.currentSessionId);
+      this.currentSessionId = null;
+      localStorage.removeItem('analytics_session_id');
+    }
+  }
 
-/**
- * Función actualizarScoreAsesor ELIMINADA.
- * PORQUÉ: Esta lógica fue migrada a la Cloud Function 'functions/index.js' 
- * para garantizar seguridad y que solo el backend pueda modificar el Score 
- * Global (meritocracia). Mantenerla en el frontend es redundante y riesgoso.
- */
+  _getDeviceType() {
+    if (/Mobi|Android/i.test(navigator.userAgent)) return 'mobile';
+    return 'desktop';
+  }
+}

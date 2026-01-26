@@ -21,7 +21,8 @@ import { ExternalAdvisorRepository } from '../repositories/externalAdvisor.repos
 
 // Services
 import { ConfigService } from './config.service';
-import { CatalogService } from './catalog.service'; // Assuming it's already a class
+import { CatalogService } from './catalog.service';
+import { AnalyticsService } from './analytics.service';
 import { AuthService } from './auth.service';
 import { ExternalAdvisorService } from './externalAdvisor.service';
 import { ClientService } from './client.service';
@@ -33,6 +34,7 @@ import { FavoritesService } from './favorites.service';
 import { ConfigRepository } from '../repositories/config.repository';
 import { CatalogRepository } from '../repositories/catalog.repository';
 import { DashboardRepository } from '../repositories/dashboard.repository';
+import { AnalyticEventsRepository } from '../repositories/analyticEvents.repository';
 // Refactored Imports for DI
 import { DashboardServiceImpl } from './dashboard.service';
 import { AdminService } from './admin.service';
@@ -43,14 +45,14 @@ const externalAdvisorRepository = new ExternalAdvisorRepository(db);
 const catalogRepository = new CatalogRepository(db);
 const dashboardRepository = new DashboardRepository(db);
 const configRepository = new ConfigRepository(db);
+const analyticEventsRepository = new AnalyticEventsRepository(db);
 
 // 2. Instantiate Services (Injecting Dependencies)
 // Legacy services that accepted db directly
 export const configService = new ConfigService(configRepository);
 // Refactor CatalogService to use the shared repo or keep as is?
-// CatalogService creates its own repo inside. 
-// For minimal friction, we leave CatalogService as is, but we use 'catalogRepository' for ExternalAdvisorService.
-export const catalogService = new CatalogService(db);
+export const catalogService = new CatalogService(catalogRepository);
+export const analyticsService = new AnalyticsService(analyticEventsRepository);
 
 // New Refactored Services
 export const authService = new AuthService(auth, googleProvider, userRepository);
@@ -85,5 +87,6 @@ export const services = {
     favorites: favoritesService,
     dashboard: dashboardService,
     admin: adminService,
-    meta: metaService
+    meta: metaService,
+    analytics: analyticsService
 };

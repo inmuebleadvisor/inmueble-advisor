@@ -9,7 +9,7 @@ export const useUser = () => {
 };
 
 export const UserProvider = ({ children }) => {
-  const { auth } = useService(); // Inject AuthService
+  const { auth, analytics } = useService(); // Inject AuthService and AnalyticsService
 
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
@@ -40,9 +40,28 @@ export const UserProvider = ({ children }) => {
 
       setLoadingUser(false);
       setInitialLoading(false);
+
+      // Start Tracking if user is logged in
+      if (currentUser) {
+        analytics.startTracking({
+          uid: currentUser.uid,
+          userAgent: navigator.userAgent,
+          path: window.location.pathname
+        });
+      }
     });
     return () => unsubscribe();
-  }, [auth]);
+  }, [auth, analytics]);
+
+  // 3. TRACK PAGE VIEWS (SPA Navigation)
+  useEffect(() => {
+    if (user) {
+      analytics.trackPageView(window.location.pathname);
+    }
+  }, [user, analytics]); // Re-run on path change would be better if we had access to router, 
+  // but context is a good place if we wrap the app.
+  // Actually, browser location doesn't trigger effect unless state changes.
+  // Let's rely on components calling trackBehavior or adding a listener.
 
   // 2. OBTENER PERFIL (Handled internally by subscribeToAuthChanges usually, 
   // but if needed explicitly we can expose it via service or just trust the listener)
@@ -83,7 +102,7 @@ export const UserProvider = ({ children }) => {
   };
 
   const trackBehavior = (action, details) => {
-    console.log(`[TRACKING] ${action}`, details);
+    analytics.trackEvent(action, details);
   };
 
   const value = {

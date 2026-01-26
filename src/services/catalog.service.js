@@ -1,16 +1,19 @@
 import { normalizar } from '../utils/formatters';
 import { IMAGES, STATUS } from '../config/constants';
-import { CatalogRepository } from '../repositories/catalog.repository';
 
 const FALLBACK_IMG = IMAGES.FALLBACK_PROPERTY;
 
 /**
  * Service for handling Catalog Data (Developments and Models).
  * Manages caching and retrieval of inventory.
+ * Follows Dependency Injection pattern.
  */
 export class CatalogService {
-  constructor(db) {
-    this.repository = new CatalogRepository(db);
+  /**
+   * @param {import('../repositories/catalog.repository').CatalogRepository} catalogRepository 
+   */
+  constructor(catalogRepository) {
+    this.repository = catalogRepository;
     this.cacheModelos = null;
     this.lastCityCached = null;
     this.cacheDesarrollos = null;
