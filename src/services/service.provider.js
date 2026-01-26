@@ -30,7 +30,9 @@ import { LeadAssignmentService } from './leadAssignment.service';
 import { FavoritesService } from './favorites.service';
 
 // 1. Instantiate Repositories
+import { ConfigRepository } from '../repositories/config.repository';
 import { CatalogRepository } from '../repositories/catalog.repository';
+import { DashboardRepository } from '../repositories/dashboard.repository';
 // Refactored Imports for DI
 import { DashboardServiceImpl } from './dashboard.service';
 import { AdminService } from './admin.service';
@@ -39,10 +41,12 @@ const leadRepository = new LeadRepository(db);
 const userRepository = new UserRepository(db);
 const externalAdvisorRepository = new ExternalAdvisorRepository(db);
 const catalogRepository = new CatalogRepository(db);
+const dashboardRepository = new DashboardRepository(db);
+const configRepository = new ConfigRepository(db);
 
 // 2. Instantiate Services (Injecting Dependencies)
 // Legacy services that accepted db directly
-export const configService = new ConfigService(db);
+export const configService = new ConfigService(configRepository);
 // Refactor CatalogService to use the shared repo or keep as is?
 // CatalogService creates its own repo inside. 
 // For minimal friction, we leave CatalogService as is, but we use 'catalogRepository' for ExternalAdvisorService.
@@ -57,7 +61,7 @@ export const leadAssignmentService = new LeadAssignmentService(leadRepository, c
 export const favoritesService = new FavoritesService(userRepository);
 
 // New Services
-export const dashboardService = new DashboardServiceImpl(db);
+export const dashboardService = new DashboardServiceImpl(dashboardRepository);
 export const adminService = new AdminService(userRepository, leadRepository, catalogRepository);
 
 // Tracking Services

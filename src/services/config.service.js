@@ -1,8 +1,3 @@
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-
-const SETTINGS_DOC_ID = 'global_config';
-const SETTINGS_COLLECTION = 'settings';
-
 const DEFAULT_SETTINGS = {
     hideNoPhotosDevs: false,
     hideNoPhotosModels: false,
@@ -12,11 +7,14 @@ const DEFAULT_SETTINGS = {
 
 /**
  * Service for managing Global Configuration (Platform Settings).
- * Stores settings in Firestore 'settings/global_config'.
+ * Follows Dependency Injection pattern.
  */
 export class ConfigService {
-    constructor(db) {
-        this.db = db;
+    /**
+     * @param {import('../repositories/config.repository').ConfigRepository} configRepository 
+     */
+    constructor(configRepository) {
+        this.configRepository = configRepository;
     }
 
     /**
@@ -25,16 +23,16 @@ export class ConfigService {
      */
     async getPlatformSettings() {
         try {
-            const docRef = doc(this.db, SETTINGS_COLLECTION, SETTINGS_DOC_ID);
-            const docSnap = await getDoc(docRef);
+            const data = await this.configRepository.getSettings();
 
-            if (docSnap.exists()) {
-                return { ...DEFAULT_SETTINGS, ...docSnap.data() };
+            if (data) {
+                return { ...DEFAULT_SETTINGS, ...data };
             } else {
                 return DEFAULT_SETTINGS;
             }
         } catch (error) {
-            console.error("Error fetching platform settings:", error);
+            console.error("Error fetching platform settings (Service):", error);
+            // Fallback to defaults on error to keep app running
             return DEFAULT_SETTINGS;
         }
     }
@@ -45,11 +43,10 @@ export class ConfigService {
      */
     async updatePlatformSettings(newSettings) {
         try {
-            const docRef = doc(this.db, SETTINGS_COLLECTION, SETTINGS_DOC_ID);
-            await setDoc(docRef, newSettings, { merge: true });
+            await this.configRepository.updateSettings(newSettings);
             return { success: true };
         } catch (error) {
-            console.error("Error updating platform settings:", error);
+            console.error("Error updating platform settings (Service):", error);
             return { success: false, error };
         }
     }
