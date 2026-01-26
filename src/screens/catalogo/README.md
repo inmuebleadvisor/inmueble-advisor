@@ -33,7 +33,7 @@ Pantalla de detalle para un modelo específico (prototipo) dentro de un desarrol
 
 ### `Mapa.jsx`
 Vista de mapa para la exploración geoespacial de los desarrollos.
-
+- **Interacción:** Configurado con `tap={false}` para evitar conflictos de eventos (doble clic requerido) en dispositivos táctiles/híbridos.
 ## Dependencias Clave
 - **Services:** `CatalogService` (datos), `MetaAdsService` (tracking client-side).
 - **Context:** `UserContext` (tracking comportamiento interno), `CatalogContext` (estado global).
