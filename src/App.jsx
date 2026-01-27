@@ -26,23 +26,23 @@ import { useEffect } from 'react';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Layout from './layouts/MainLayout';
 
-// Screens - Cliente
-import Perfil from './screens/cliente/Perfil';
-import OnboardingCliente from './screens/cliente/OnboardingCliente';
-import Favoritos from './screens/cliente/Favoritos';
+// Screens - Cliente (Lazy Loaded)
+const Perfil = React.lazy(() => import('./screens/cliente/Perfil'));
+const OnboardingCliente = React.lazy(() => import('./screens/cliente/OnboardingCliente'));
+const Favoritos = React.lazy(() => import('./screens/cliente/Favoritos'));
 
-// Screens - Catalogo
-import Catalogo from './screens/catalogo/Catalogo';
-import Mapa from './screens/catalogo/Mapa';
-import DetalleModelo from './screens/catalogo/DetalleModelo';
-import DetalleDesarrollo from './screens/catalogo/DetalleDesarrollo';
+// Screens - Catalogo (Lazy Loaded)
+const Catalogo = React.lazy(() => import('./screens/catalogo/Catalogo'));
+const Mapa = React.lazy(() => import('./screens/catalogo/Mapa'));
+const DetalleModelo = React.lazy(() => import('./screens/catalogo/DetalleModelo'));
+const DetalleDesarrollo = React.lazy(() => import('./screens/catalogo/DetalleDesarrollo'));
 
-// Screens - Admin
-import AdminDataExport from './screens/admin/AdminDataExport';
-import AdminHome from './screens/admin/AdminHome';
-import AdminLeads from './screens/admin/AdminLeads';
-import AdminUsers from './screens/admin/AdminUsers';
-import AdvisorsDirectory from './screens/admin/AdvisorsDirectory';
+// Screens - Admin (Lazy Loaded)
+const AdminDataExport = React.lazy(() => import('./screens/admin/AdminDataExport'));
+const AdminHome = React.lazy(() => import('./screens/admin/AdminHome'));
+const AdminLeads = React.lazy(() => import('./screens/admin/AdminLeads'));
+const AdminUsers = React.lazy(() => import('./screens/admin/AdminUsers'));
+const AdvisorsDirectory = React.lazy(() => import('./screens/admin/AdvisorsDirectory'));
 
 // Layouts & Modals
 import AdminLayout from './layouts/AdminLayout';
@@ -78,65 +78,87 @@ function App() {
                 <ScrollToTop /> {/* ✅ Reset Scroll Restoration */}
                 <MetaTracker /> {/* ✅ Rastreo Unificado de PageView */}
                 <AnalyticsTracker />
-                <Routes>
-                  <Route path="/" element={<Layout />}>
+                <Suspense fallback={
+                  <div style={{
+                    height: '100vh',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'var(--bg-main)',
+                    color: 'var(--text-main)',
+                    fontFamily: 'var(--font-primary)'
+                  }}>
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      border: '3px solid var(--border-subtle)',
+                      borderTopColor: 'var(--primary-color)',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }} />
+                    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                  </div>
+                }>
+                  <Routes>
+                    <Route path="/" element={<Layout />}>
 
-                    {/* 1. RUTA PÚBLICA (Home/Perfil de Cliente) */}
-                    <Route index element={<Perfil />} />
-                    <Route path="onboarding-cliente" element={<OnboardingCliente />} />
+                      {/* 1. RUTA PÚBLICA (Home/Perfil de Cliente) */}
+                      <Route index element={<Perfil />} />
+                      <Route path="onboarding-cliente" element={<OnboardingCliente />} />
 
-                    {/* 2. LANDING / ONBOARDING / ACCOUNT ASESORES ELIMINADOS (Modelo Deprecado) */}
+                      {/* 2. LANDING / ONBOARDING / ACCOUNT ASESORES ELIMINADOS (Modelo Deprecado) */}
 
-                    {/* 5. RUTAS DEL SISTEMA (Protegidas) */}
+                      {/* 5. RUTAS DEL SISTEMA (Protegidas) */}
 
-                    <Route path="catalogo" element={<Catalogo />} />
+                      <Route path="catalogo" element={<Catalogo />} />
 
-                    <Route path="mapa" element={<Mapa />} />
+                      <Route path="mapa" element={<Mapa />} />
 
-                    {/* ⭐ NUEVA RUTA: Ruta para la pantalla de Comparador y Favoritos */}
-                    <Route path="favoritos" element={
-                      <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
-                        <Favoritos />
-                      </ProtectedRoute>
-                    } />
+                      {/* ⭐ NUEVA RUTA: Ruta para la pantalla de Comparador y Favoritos */}
+                      <Route path="favoritos" element={
+                        <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
+                          <Favoritos />
+                        </ProtectedRoute>
+                      } />
 
-                    {/* 6. RUTAS DE DETALLE */}
-                    <Route path="modelo/:id" element={
-                      <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
-                        <RouteRemounter>
-                          <DetalleModelo />
-                        </RouteRemounter>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="desarrollo/:id" element={
-                      <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
-                        <RouteRemounter>
-                          <DetalleDesarrollo />
-                        </RouteRemounter>
-                      </ProtectedRoute>
-                    } />
+                      {/* 6. RUTAS DE DETALLE */}
+                      <Route path="modelo/:id" element={
+                        <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
+                          <RouteRemounter>
+                            <DetalleModelo />
+                          </RouteRemounter>
+                        </ProtectedRoute>
+                      } />
+                      <Route path="desarrollo/:id" element={
+                        <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
+                          <RouteRemounter>
+                            <DetalleDesarrollo />
+                          </RouteRemounter>
+                        </ProtectedRoute>
+                      } />
 
-                    {/* 7. HERRAMIENTAS ADMINISTRATIVAS (Uso interno) */}
-                    {/* Accede manualmente escribiendo /admin-export-tool en la URL */}
-                    <Route path="admin-export-tool" element={<AdminDataExport />} />
+                      {/* 7. HERRAMIENTAS ADMINISTRATIVAS (Uso interno) */}
+                      {/* Accede manualmente escribiendo /admin-export-tool en la URL */}
+                      <Route path="admin-export-tool" element={<AdminDataExport />} />
 
-                    {/* ✅ NUEVO SISTEMA DE ADMINISTRACIÓN (Layout Anidado) */}
-                    <Route path="administrador" element={
-                      <ProtectedRoute requireAdmin={true}>
-                        <AdminLayout />
-                      </ProtectedRoute>
-                    }>
-                      <Route index element={<AdminHome />} />
-                      <Route path="leads" element={<AdminLeads />} />
-                      <Route path="users" element={<AdminUsers />} />
-                      <Route path="asesores" element={<AdvisorsDirectory />} />
+                      {/* ✅ NUEVO SISTEMA DE ADMINISTRACIÓN (Layout Anidado) */}
+                      <Route path="administrador" element={
+                        <ProtectedRoute requireAdmin={true}>
+                          <AdminLayout />
+                        </ProtectedRoute>
+                      }>
+                        <Route index element={<AdminHome />} />
+                        <Route path="leads" element={<AdminLeads />} />
+                        <Route path="users" element={<AdminUsers />} />
+                        <Route path="asesores" element={<AdvisorsDirectory />} />
+                      </Route>
+
+                      {/* 404 - Redirección por defecto */}
+                      <Route path="*" element={<Navigate to="/" replace />} />
+
                     </Route>
-
-                    {/* 404 - Redirección por defecto */}
-                    <Route path="*" element={<Navigate to="/" replace />} />
-
-                  </Route>
-                </Routes>
+                  </Routes>
+                </Suspense>
               </BrowserRouter>
             </FavoritesProvider> {/* ⭐ CERRAMOS EL NUEVO PROVEEDOR */}
           </CatalogProvider>

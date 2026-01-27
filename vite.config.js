@@ -5,7 +5,17 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   build: {
-    chunkSizeWarningLimit: 1600,
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'firebase-vendor': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage', 'firebase/analytics'],
+          'ui-vendor': ['react', 'react-dom', 'react-router-dom', 'lucide-react'],
+          'charts-vendor': ['recharts'],
+          'maps-vendor': ['leaflet', 'react-leaflet']
+        }
+      }
+    }
   },
   test: {
     globals: true,
