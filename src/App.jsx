@@ -26,8 +26,8 @@ import { useEffect } from 'react';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Layout from './layouts/MainLayout';
 
-// Screens - Cliente (Lazy Loaded)
-const Perfil = React.lazy(() => import('./screens/cliente/Perfil'));
+// Screens - Cliente (Home is Eager Loaded for LCP)
+import Perfil from './screens/cliente/Perfil';
 const OnboardingCliente = React.lazy(() => import('./screens/cliente/OnboardingCliente'));
 const Favoritos = React.lazy(() => import('./screens/cliente/Favoritos'));
 
