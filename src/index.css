@@ -191,6 +191,11 @@ p {
   padding: 20px 16px;
 }
 
+.main-content--full {
+  max-width: none;
+  padding: 0;
+}
+
 /* RESPONSIVE LAYOUT */
 @media (min-width: 768px) {
   .main-content {

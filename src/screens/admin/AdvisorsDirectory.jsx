@@ -71,30 +71,30 @@ export default function AdvisorsDirectory() {
     };
 
     return (
-        <div style={styles.container}>
-            <header style={styles.header}>
-                <h1 style={styles.title}>Directorio de Asesores Externos</h1>
-                <p style={styles.subtitle}>Gestiona la red de ventas por desarrollador</p>
+        <div className="advisors-directory">
+            <header className="advisors-directory__header">
+                <h1 className="advisors-directory__title">Directorio de Asesores Externos</h1>
+                <p className="advisors-directory__subtitle">Gestiona la red de ventas por desarrollador</p>
             </header>
 
             {loading ? (
-                <div style={styles.loading}>Cargando directorio...</div>
+                <div className="admin-loading">Cargando directorio...</div>
             ) : (
-                <div style={styles.listContainer}>
+                <div className="advisors-directory__list">
                     {directory.map(dev => (
-                        <div key={dev.id} style={styles.card}>
-                            <div style={styles.cardHeader}>
+                        <div key={dev.id} className="advisors-directory__card">
+                            <div className="advisors-directory__card-header">
                                 <div
-                                    style={styles.devInfo}
+                                    className="advisors-directory__dev-info"
                                     onClick={() => toggleDev(dev.id)}
                                 >
-                                    <h3 style={styles.devName}>{dev.nombre}</h3>
-                                    <span style={styles.countBadge}>
+                                    <h3 className="advisors-directory__dev-name">{dev.nombre}</h3>
+                                    <span className="advisors-directory__count-badge">
                                         {dev.advisors?.length || 0} asesores
                                     </span>
                                 </div>
                                 <button
-                                    style={styles.primaryBtn}
+                                    className="advisors-directory__btn-register"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handleOpenModal(dev);
@@ -105,30 +105,32 @@ export default function AdvisorsDirectory() {
                             </div>
 
                             {expandedDevs[dev.id] && (
-                                <div style={styles.advisorsList}>
+                                <div className="advisors-directory__details">
                                     {dev.advisors && dev.advisors.length > 0 ? (
-                                        <table style={styles.table}>
-                                            <thead>
-                                                <tr>
-                                                    <th style={styles.th}>Nombre</th>
-                                                    <th style={styles.th}>WhatsApp</th>
-                                                    <th style={styles.th}>Puesto</th>
-                                                    <th style={styles.th}>Leads</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {dev.advisors.map(adv => (
-                                                    <tr key={adv.id} style={styles.tr}>
-                                                        <td style={styles.td}>{adv.nombre}</td>
-                                                        <td style={styles.td}>{adv.whatsapp}</td>
-                                                        <td style={styles.td}>{adv.puesto}</td>
-                                                        <td style={styles.td}>{adv.leadsAsignadosAcumulados || 0}</td>
+                                        <div className="advisors-directory__table-wrapper">
+                                            <table className="admin-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Nombre</th>
+                                                        <th>WhatsApp</th>
+                                                        <th>Puesto</th>
+                                                        <th>Leads</th>
                                                     </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
+                                                </thead>
+                                                <tbody>
+                                                    {dev.advisors.map(adv => (
+                                                        <tr key={adv.id}>
+                                                            <td>{adv.nombre}</td>
+                                                            <td>{adv.whatsapp}</td>
+                                                            <td>{adv.puesto}</td>
+                                                            <td>{adv.leadsAsignadosAcumulados || 0}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     ) : (
-                                        <div style={styles.emptyState}>
+                                        <div className="advisors-directory__empty-state">
                                             No hay asesores registrados para este desarrollador.
                                         </div>
                                     )}
@@ -144,11 +146,11 @@ export default function AdvisorsDirectory() {
                 onClose={() => setIsModalOpen(false)}
                 title={`Registrar Asesor para ${selectedDev?.nombre || ''}`}
             >
-                <form onSubmit={handleSubmit} style={styles.form}>
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>Nombre Completo *</label>
+                <form onSubmit={handleSubmit} className="advisors-form">
+                    <div className="advisors-form__group">
+                        <label className="advisors-form__label">Nombre Completo *</label>
                         <input
-                            style={styles.input}
+                            className="advisors-form__input"
                             required
                             value={formData.nombre}
                             onChange={e => setFormData({ ...formData, nombre: e.target.value })}
@@ -156,10 +158,10 @@ export default function AdvisorsDirectory() {
                         />
                     </div>
 
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>WhatsApp * (Solo números)</label>
+                    <div className="advisors-form__group">
+                        <label className="advisors-form__label">WhatsApp * (Solo números)</label>
                         <input
-                            style={styles.input}
+                            className="advisors-form__input"
                             required
                             pattern="\d+"
                             value={formData.whatsapp}
@@ -168,10 +170,10 @@ export default function AdvisorsDirectory() {
                         />
                     </div>
 
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>Correo Electrónico</label>
+                    <div className="advisors-form__group">
+                        <label className="advisors-form__label">Correo Electrónico</label>
                         <input
-                            style={styles.input}
+                            className="advisors-form__input"
                             type="email"
                             value={formData.email}
                             onChange={e => setFormData({ ...formData, email: e.target.value })}
@@ -179,26 +181,26 @@ export default function AdvisorsDirectory() {
                         />
                     </div>
 
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>Puesto</label>
+                    <div className="advisors-form__group">
+                        <label className="advisors-form__label">Puesto</label>
                         <input
-                            style={styles.input}
+                            className="advisors-form__input"
                             value={formData.puesto}
                             onChange={e => setFormData({ ...formData, puesto: e.target.value })}
                         />
                     </div>
 
-                    <div style={styles.formActions}>
+                    <div className="advisors-form__actions">
                         <button
                             type="button"
-                            style={styles.secondaryBtn}
+                            className="advisors-form__btn-cancel"
                             onClick={() => setIsModalOpen(false)}
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
-                            style={styles.submitBtn}
+                            className="advisors-form__btn-submit"
                             disabled={submitting}
                         >
                             {submitting ? 'Registrando...' : 'Guardar Asesor'}
@@ -209,143 +211,3 @@ export default function AdvisorsDirectory() {
         </div>
     );
 }
-
-const styles = {
-    container: {
-        padding: '2rem',
-        maxWidth: '1200px',
-        margin: '0 auto',
-        color: 'var(--text-main, #1e293b)'
-    },
-    header: {
-        marginBottom: '2rem'
-    },
-    title: {
-        fontSize: '1.8rem',
-        fontWeight: '700',
-        marginBottom: '0.5rem'
-    },
-    subtitle: {
-        color: 'var(--text-secondary, #64748b)'
-    },
-    loading: {
-        padding: '2rem',
-        textAlign: 'center',
-        color: 'var(--text-secondary)'
-    },
-    listContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1rem'
-    },
-    card: {
-        backgroundColor: 'var(--bg-secondary, white)',
-        borderRadius: '12px',
-        border: '1px solid var(--border-subtle, #e2e8f0)',
-        overflow: 'hidden'
-    },
-    cardHeader: {
-        padding: '1.5rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        cursor: 'pointer',
-        backgroundColor: 'var(--bg-secondary, white)'
-    },
-    devInfo: {
-        flex: 1
-    },
-    devName: {
-        margin: 0,
-        fontSize: '1.1rem',
-        fontWeight: '600'
-    },
-    countBadge: {
-        fontSize: '0.85rem',
-        color: 'var(--text-secondary)',
-        marginTop: '0.25rem',
-        display: 'block'
-    },
-    primaryBtn: {
-        backgroundColor: 'var(--primary-color, #dcb23a)',
-        color: 'white',
-        border: 'none',
-        padding: '0.5rem 1rem',
-        borderRadius: '8px',
-        fontWeight: '600',
-        cursor: 'pointer',
-        transition: 'opacity 0.2s'
-    },
-    advisorsList: {
-        borderTop: '1px solid var(--border-subtle, #e2e8f0)',
-        padding: '1.5rem',
-        backgroundColor: 'var(--bg-main, #f8fafc)' // Slightly contrasted
-    },
-    table: {
-        width: '100%',
-        borderCollapse: 'collapse',
-        fontSize: '0.95rem'
-    },
-    th: {
-        textAlign: 'left',
-        padding: '0.75rem',
-        color: 'var(--text-secondary)',
-        borderBottom: '1px solid var(--border-subtle)',
-        fontWeight: '600'
-    },
-    tr: {
-        borderBottom: '1px solid var(--border-subtle)'
-    },
-    td: {
-        padding: '0.75rem',
-        color: 'var(--text-main)'
-    },
-    emptyState: {
-        textAlign: 'center',
-        padding: '1rem',
-        color: 'var(--text-secondary)',
-        fontStyle: 'italic'
-    },
-    form: {
-        padding: '1rem 0'
-    },
-    formGroup: {
-        marginBottom: '1rem'
-    },
-    label: {
-        display: 'block',
-        marginBottom: '0.5rem',
-        fontWeight: '500',
-        color: 'var(--text-main)'
-    },
-    input: {
-        width: '100%',
-        padding: '0.75rem',
-        borderRadius: '8px',
-        border: '1px solid var(--border-subtle, #cbd5e1)',
-        fontSize: '1rem'
-    },
-    formActions: {
-        display: 'flex',
-        justifyContent: 'flex-end',
-        gap: '1rem',
-        marginTop: '2rem'
-    },
-    secondaryBtn: {
-        padding: '0.75rem 1.5rem',
-        border: '1px solid var(--border-subtle)',
-        backgroundColor: 'transparent',
-        borderRadius: '8px',
-        cursor: 'pointer',
-        fontWeight: '600'
-    },
-    submitBtn: {
-        padding: '0.75rem 1.5rem',
-        backgroundColor: 'var(--primary-color, #dcb23a)',
-        color: 'white',
-        border: 'none',
-        borderRadius: '8px',
-        cursor: 'pointer',
-        fontWeight: '600'
-    }
-};

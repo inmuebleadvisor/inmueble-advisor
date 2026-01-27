@@ -1,33 +1,41 @@
 /* src/styles/AdminDashboard.css */
 
-/* --- DESIGN TOKENS (CSS Variables) --- */
 :root {
-  /* Colors */
-  --admin-primary: #4F46E5; /* Indigo 600 */
-  --admin-primary-hover: #4338CA; /* Indigo 700 */
-  --admin-secondary: #fff;
-  
-  --admin-bg-main: #F3F4F6; /* Gray 100 */
-  --admin-bg-card: #ffffff;
-  --admin-bg-sidebar: #1E293B; /* Slate 800 - Dark Sidebar for contrast */
-  --admin-bg-header: #ffffff;
+  /* --- MAPPING TO GLOBAL THEME (See index.css) --- */
 
-  --admin-text-main: #111827; /* Gray 900 */
-  --admin-text-secondary: #6B7280; /* Gray 500 */
-  --admin-text-sidebar: #CBD5E1; /* Slate 300 */
-  --admin-text-sidebar-hover: #ffffff;
+  /* Primary Action Colors (Gold) */
+  --admin-primary: var(--primary-color);
+  --admin-primary-hover: var(--primary-hover);
 
-  --admin-border-subtle: #E5E7EB; /* Gray 200 */
-  
-  /* Status Colors */
-  --admin-success: #10B981;
-  --admin-success-bg: #ECFDF5;
-  --admin-warning: #F59E0B;
-  --admin-warning-bg: #FFFBEB;
-  --admin-danger: #EF4444;
-  --admin-danger-bg: #FEF2F2;
-  --admin-info: #3B82F6;
-  --admin-info-bg: #EFF6FF;
+  /* Backgrounds */
+  --admin-bg-main: var(--bg-main);
+  --admin-bg-card: var(--bg-secondary);
+  --admin-bg-sidebar: var(--bg-secondary);
+  --admin-bg-header: var(--bg-header);
+
+  /* Typography */
+  --admin-text-main: var(--text-main);
+  --admin-text-secondary: var(--text-secondary);
+  --admin-text-sidebar: var(--text-secondary);
+  --admin-text-sidebar-hover: var(--primary-color);
+
+  /* Borders & Separation */
+  --admin-border-subtle: var(--border-subtle);
+
+  /* Status Colors (Mapped or Fallback) */
+  --admin-success: var(--success);
+  --admin-success-bg: rgba(16, 185, 129, 0.1);
+  /* 10% opacity of success */
+
+  --admin-warning: #f59e0b;
+  /* Bright Gold/Amber */
+  --admin-warning-bg: rgba(245, 158, 11, 0.1);
+
+  --admin-danger: var(--error);
+  --admin-danger-bg: rgba(239, 68, 68, 0.1);
+
+  --admin-info: var(--accent-blue);
+  --admin-info-bg: rgba(59, 130, 246, 0.1);
 
   /* Spacing */
   --admin-spacing-xs: 4px;
@@ -36,9 +44,12 @@
   --admin-spacing-lg: 24px;
   --admin-spacing-xl: 32px;
 
-  /* Shadows */
-  --admin-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --admin-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  /* Shadows & Glow */
+  --admin-shadow-sm: var(--shadow-sm);
+  --admin-shadow-md: var(--shadow-md);
+
+  /* Premium Effects */
+  --admin-glow: var(--shadow-glow);
 }
 
 /* --- RESET & BASE --- */
@@ -100,7 +111,8 @@ body {
   align-items: center;
   padding: 0 var(--admin-spacing-md);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  justify-content: center; /* Centered for both states initially */
+  justify-content: center;
+  /* Centered for both states initially */
 }
 
 /* Hide title text when collapsed, show logo icon */
@@ -114,7 +126,8 @@ body {
 }
 
 .admin-sidebar--collapsed .admin-sidebar__brand span {
-  display: none; /* Hide text part if separated */
+  display: none;
+  /* Hide text part if separated */
 }
 
 .admin-sidebar__nav {
@@ -153,7 +166,8 @@ body {
 .admin-sidebar__icon {
   width: 20px;
   height: 20px;
-  min-width: 20px; /* Prevent squishing */
+  min-width: 20px;
+  /* Prevent squishing */
 }
 
 .admin-sidebar__text {
@@ -358,12 +372,35 @@ body {
 }
 
 /* Variant Modifiers for Icon Backgrounds */
-.admin-metric-card__icon-wrapper--blue { background-color: var(--admin-info-bg); color: var(--admin-info); }
-.admin-metric-card__icon-wrapper--green { background-color: var(--admin-success-bg); color: var(--admin-success); }
-.admin-metric-card__icon-wrapper--purple { background-color: #F3E8FF; color: #9333EA; }
-.admin-metric-card__icon-wrapper--amber { background-color: var(--admin-warning-bg); color: var(--admin-warning); }
-.admin-metric-card__icon-wrapper--indigo { background-color: #E0E7FF; color: #4F46E5; }
-.admin-metric-card__icon-wrapper--rose { background-color: var(--admin-danger-bg); color: var(--admin-danger); }
+.admin-metric-card__icon-wrapper--blue {
+  background-color: var(--admin-info-bg);
+  color: var(--admin-info);
+}
+
+.admin-metric-card__icon-wrapper--green {
+  background-color: var(--admin-success-bg);
+  color: var(--admin-success);
+}
+
+.admin-metric-card__icon-wrapper--purple {
+  background-color: #F3E8FF;
+  color: #9333EA;
+}
+
+.admin-metric-card__icon-wrapper--amber {
+  background-color: var(--admin-warning-bg);
+  color: var(--admin-warning);
+}
+
+.admin-metric-card__icon-wrapper--indigo {
+  background-color: #E0E7FF;
+  color: #4F46E5;
+}
+
+.admin-metric-card__icon-wrapper--rose {
+  background-color: var(--admin-danger-bg);
+  color: var(--admin-danger);
+}
 
 
 /* --- CHARTS SECTION --- */
@@ -454,9 +491,19 @@ body {
   background-color: #F9FAFB;
 }
 
-.admin-table__cell--right { text-align: right; }
-.admin-table__cell--highlight { color: var(--admin-primary); font-weight: 600; }
-.admin-table__cell--success { color: var(--admin-success); font-weight: 600; }
+.admin-table__cell--right {
+  text-align: right;
+}
+
+.admin-table__cell--highlight {
+  color: var(--admin-primary);
+  font-weight: 600;
+}
+
+.admin-table__cell--success {
+  color: var(--admin-success);
+  font-weight: 600;
+}
 
 .admin-table__empty-state {
   padding: 40px;
@@ -485,6 +532,284 @@ body {
   transition: opacity 0.2s;
 }
 
-.admin-btn:hover {
-  opacity: 0.9;
+/* --- ADVISORS DIRECTORY SCREEN (.advisors-directory) --- */
+.advisors-directory {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-spacing-lg);
+  width: 100%;
+  /* Ensure full width */
+}
+
+.advisors-directory__header {
+  margin-bottom: var(--admin-spacing-md);
+}
+
+.advisors-directory__title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--admin-text-main);
+  margin: 0 0 0.5rem 0;
+}
+
+.advisors-directory__subtitle {
+  color: var(--admin-text-secondary);
+  font-size: 1rem;
+}
+
+.advisors-directory__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-spacing-md);
+}
+
+/* Card Block */
+.advisors-directory__card {
+  background-color: var(--admin-bg-card);
+  border-radius: 12px;
+  border: 1px solid var(--admin-border-subtle);
+  overflow: hidden;
+  box-shadow: var(--admin-shadow-sm);
+  transition: box-shadow 0.2s;
+}
+
+.advisors-directory__card:hover {
+  box-shadow: var(--admin-shadow-md);
+}
+
+.advisors-directory__card-header {
+  padding: var(--admin-spacing-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  background-color: var(--admin-bg-card);
+  transition: background-color 0.2s;
+}
+
+.advisors-directory__card-header:hover {
+  background-color: var(--admin-bg-main);
+}
+
+.advisors-directory__dev-info {
+  flex: 1;
+}
+
+.advisors-directory__dev-name {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--admin-text-main);
+}
+
+.advisors-directory__count-badge {
+  font-size: 0.85rem;
+  color: var(--admin-text-secondary);
+  margin-top: 4px;
+}
+
+/* Actions */
+.advisors-directory__btn-register {
+  background-color: var(--admin-primary);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.advisors-directory__btn-register:hover {
+  background-color: var(--admin-primary-hover);
+}
+
+/* Expanded Content */
+.advisors-directory__details {
+  border-top: 1px solid var(--admin-border-subtle);
+  padding: var(--admin-spacing-lg);
+  background-color: var(--admin-bg-main);
+  /* Slight contrast for inner area */
+}
+
+/* Table Wrapper for Horizontal Scroll */
+.advisors-directory__table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.advisors-directory__empty-state {
+  text-align: center;
+  padding: var(--admin-spacing-lg);
+  color: var(--admin-text-secondary);
+  font-style: italic;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+/* Modal Form Styles (Specific overrides or utilities) */
+.advisors-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-spacing-md);
+}
+
+.advisors-form__group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.advisors-form__label {
+  font-weight: 500;
+  color: var(--admin-text-main);
+}
+
+.advisors-form__input {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--admin-border-subtle);
+  background-color: var(--admin-bg-main);
+  color: var(--admin-text-main);
+}
+
+.advisors-form__input:focus {
+  outline: 2px solid var(--admin-primary);
+  border-color: transparent;
+}
+
+.advisors-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--admin-spacing-md);
+  margin-top: var(--admin-spacing-md);
+}
+
+.advisors-form__btn-cancel {
+  background: transparent;
+  border: 1px solid var(--admin-border-subtle);
+  color: var(--admin-text-main);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.advisors-form__btn-submit {
+  background-color: var(--admin-primary);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* --- ADMIN USERS SCREEN (.admin-users) --- */
+.admin-users {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-spacing-lg);
+  width: 100%;
+}
+
+.admin-users__header {
+  margin-bottom: var(--admin-spacing-md);
+}
+
+.admin-users__title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--admin-text-main);
+  margin: 0;
+}
+
+/* --- GENERIC DATA TABLE (.admin-table) --- */
+/* Wrapper for responsiveness */
+.admin-table-container {
+  overflow-x: auto;
+  width: 100%;
+  background-color: var(--admin-bg-card);
+  border-radius: 12px;
+  border: 1px solid var(--admin-border-subtle);
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.admin-table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.admin-table-container thead tr {
+  border-bottom: 2px solid var(--admin-border-subtle);
+  background-color: var(--admin-bg-main);
+}
+
+.admin-table-container th {
+  padding: 16px;
+  text-align: left;
+  color: var(--admin-text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-table-container tbody tr {
+  border-bottom: 1px solid var(--admin-border-subtle);
+  transition: background-color 0.1s;
+}
+
+.admin-table-container tbody tr:last-child {
+  border-bottom: none;
+}
+
+.admin-table-container tbody tr:hover {
+  background-color: var(--admin-bg-main);
+}
+
+.admin-table-container td {
+  padding: 16px;
+  color: var(--admin-text-main);
+}
+
+/* --- BADGES --- */
+.admin-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-badge--admin {
+  background-color: var(--admin-danger-bg);
+  color: var(--admin-danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.admin-badge--client {
+  background-color: var(--admin-info-bg);
+  color: var(--admin-info);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.admin-badge--advisor {
+  background-color: var(--admin-success-bg);
+  color: var(--admin-success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.admin-empty-state {
+  padding: 40px;
+  text-align: center;
+  color: var(--admin-text-secondary);
+  background-color: var(--admin-bg-card);
+  border-radius: 12px;
+  border: 1px solid var(--admin-border-subtle);
+}
+
+.admin-loading-state {
+  padding: 40px;
+  text-align: center;
+  color: var(--admin-text-secondary);
 }

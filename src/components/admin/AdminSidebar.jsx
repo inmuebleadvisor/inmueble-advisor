@@ -1,7 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-// Using standard SVG icons for now, later can be replaced with lucide-react or existing library
-// Simple inline SVGs for portability
+import { LayoutDashboard, Users, UserCheck, Briefcase } from 'lucide-react';
 
 const AdminSidebar = ({ collapsed, toggleCollapse }) => {
 
@@ -22,22 +21,22 @@ const AdminSidebar = ({ collapsed, toggleCollapse }) => {
             <nav className="admin-sidebar__nav">
 
                 <NavLink to="/administrador" end className={getLinkClass}>
-                    <span className="admin-sidebar__icon">📊</span>
+                    <LayoutDashboard className="admin-sidebar__icon" />
                     <span className="admin-sidebar__text">Dashboard</span>
                 </NavLink>
 
                 <NavLink to="/administrador/leads" className={getLinkClass}>
-                    <span className="admin-sidebar__icon">👥</span>
+                    <Users className="admin-sidebar__icon" />
                     <span className="admin-sidebar__text">Gestión de Leads</span>
                 </NavLink>
 
                 <NavLink to="/administrador/users" className={getLinkClass}>
-                    <span className="admin-sidebar__icon">🛡️</span>
+                    <UserCheck className="admin-sidebar__icon" />
                     <span className="admin-sidebar__text">Usuarios</span>
                 </NavLink>
 
                 <NavLink to="/administrador/asesores" className={getLinkClass}>
-                    <span className="admin-sidebar__icon">👔</span>
+                    <Briefcase className="admin-sidebar__icon" />
                     <span className="admin-sidebar__text">Gestión Asesores</span>
                 </NavLink>
 

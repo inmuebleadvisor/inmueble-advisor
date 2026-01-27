@@ -3,42 +3,24 @@ import React from 'react';
 const DataTable = ({ columns, data, isLoading, emptyMessage = "No hay datos disponibles" }) => {
 
     if (isLoading) {
-        return <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>Cargando datos...</div>;
+        return <div className="admin-loading-state">Cargando datos...</div>;
     }
 
     if (!data || data.length === 0) {
         return (
-            <div style={{
-                padding: '40px',
-                textAlign: 'center',
-                backgroundColor: 'var(--bg-secondary)',
-                borderRadius: '8px',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--text-secondary)'
-            }}>
+            <div className="admin-empty-state">
                 {emptyMessage}
             </div>
         );
     }
 
     return (
-        <div className="admin-table-container" style={{
-            overflowX: 'auto',
-            backgroundColor: 'var(--bg-secondary)',
-            borderRadius: '8px',
-            border: '1px solid var(--border-subtle)',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-        }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem' }}>
+        <div className="admin-table-container">
+            <table>
                 <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-subtle)', backgroundColor: 'var(--bg-main)' }}>
+                    <tr>
                         {columns.map((col, idx) => (
-                            <th key={idx} style={{
-                                padding: '16px',
-                                textAlign: 'left',
-                                color: 'var(--text-secondary)',
-                                fontWeight: '600'
-                            }}>
+                            <th key={idx}>
                                 {col.header}
                             </th>
                         ))}
@@ -46,9 +28,9 @@ const DataTable = ({ columns, data, isLoading, emptyMessage = "No hay datos disp
                 </thead>
                 <tbody>
                     {data.map((row, rowIdx) => (
-                        <tr key={row.id || rowIdx} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                        <tr key={row.id || rowIdx}>
                             {columns.map((col, colIdx) => (
-                                <td key={colIdx} style={{ padding: '16px', color: 'var(--text-main)' }}>
+                                <td key={colIdx}>
                                     {col.render ? col.render(row) : row[col.accessor]}
                                 </td>
                             ))}

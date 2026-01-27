@@ -6,16 +6,20 @@ const AdminUsers = () => {
     const { data, loading } = useAdminData();
     const { users } = data;
 
+    const getRoleBadgeClass = (role) => {
+        switch (role) {
+            case 'admin': return 'admin-badge--admin';
+            case 'asesor': return 'admin-badge--advisor';
+            default: return 'admin-badge--client';
+        }
+    };
+
     const columns = [
         { header: 'Nombre', accessor: 'firstName', render: row => <strong>{row.firstName} {row.lastName}</strong> },
         { header: 'Email', accessor: 'email' },
         {
             header: 'Rol', accessor: 'role', render: row => (
-                <span style={{
-                    textTransform: 'uppercase',
-                    fontWeight: 'bold',
-                    color: row.role === 'admin' ? '#ef4444' : (row.role === 'asesor' ? '#3b82f6' : 'var(--text-main)')
-                }}>
+                <span className={`admin-badge ${getRoleBadgeClass(row.role)}`}>
                     {row.role || 'CLIENTE'}
                 </span>
             )
@@ -30,8 +34,10 @@ const AdminUsers = () => {
     ];
 
     return (
-        <div>
-            <h1>Usuarios Registrados</h1>
+        <div className="admin-users">
+            <header className="admin-users__header">
+                <h1 className="admin-users__title">Usuarios Registrados</h1>
+            </header>
             <DataTable columns={columns} data={users} isLoading={loading} />
         </div>
     );

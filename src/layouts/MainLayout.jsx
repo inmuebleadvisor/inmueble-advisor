@@ -18,6 +18,9 @@ export default function Layout() {
   // Detectar si estamos en rutas que requieren Viewport Fit
   const isViewportFit = location.pathname === '/' || location.pathname === '/onboarding-cliente';
 
+  // Detectar si estamos en el panel de administración
+  const isAdminPanel = location.pathname.startsWith('/administrador');
+
   return (
     <div className={`layout ${isViewportFit ? 'layout--viewport-fit' : ''}`}>
 
@@ -25,7 +28,7 @@ export default function Layout() {
       <Navbar />
 
       {/* --- CONTENIDO PRINCIPAL --- */}
-      <main className="main-content">
+      <main className={`main-content ${isAdminPanel ? 'main-content--full' : ''}`}>
         <Outlet />
       </main>
 
