@@ -2,7 +2,6 @@ import React, { useState, useRef, useMemo } from 'react';
 import ImageLoader from '../common/ImageLoader';
 import PropertyCard from './PropertyCard';
 import DevelopmentInfoSection from './DevelopmentInfoSection';
-import TrustBadges from '../common/TrustBadges';
 import StickyActionPanel from '../layout/StickyActionPanel';
 import Delightbox from '../common/Delightbox';
 import FavoriteBtn from '../common/FavoriteBtn';
@@ -142,8 +141,6 @@ export default function DevelopmentDetailsContent({
                         </span>
                     </div>
                     <p className="dev-details__address">{direccionCompleta}</p>
-
-                    <TrustBadges />
                 </div>
 
                 <hr className="dev-details__divider" />

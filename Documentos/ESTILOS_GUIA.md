@@ -49,6 +49,29 @@ Cuando el usuario activa el switch de tema.
 
 ---
 
+## ✨ Patrones de Diseño Premium
+
+### 🛡️ Interactive Badges (Trust Seals)
+
+Este patrón se utiliza para resaltar certificaciones o garantías (ej. "Desarrollador Verificado"). Su diseño busca transmitir seguridad sin saturar visualmente el header.
+
+| Propiedad | Valor / Variable |
+| :--- | :--- |
+| **Fondo** | `var(--bg-secondary)` |
+| **Borde** | `1px solid var(--border-subtle)` |
+| **Border Radius** | `8px` |
+| **Tipografía** | `0.8rem`, `600` weight |
+| **Espaciado** | `padding: 6px 12px` |
+
+**Comportamiento Interactivo (`:hover`):**
+- **Elevación:** `transform: translateY(-2px)`
+- **Color:** Cambia a `var(--primary-color)` (Gold) tanto en texto como en borde.
+- **Brillo:** Aplica `box-shadow: 0 4px 12px var(--shadow-glow)`.
+
+> **Uso Sugerido:** Agrupar en contenedores con un `gap: 12px` y `flex-wrap: wrap`. Siempre acompañar de un icono SVG pequeño (`16x16`).
+
+---
+
 ## 🛠 Guía de Mantenimiento
 
 ### ¿Cómo cambiar el color de marca?
