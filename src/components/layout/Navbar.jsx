@@ -48,6 +48,9 @@ const Navbar = () => {
                         src={currentAssets.logo}
                         alt="Inmueble Advisor"
                         className="navbar__logo-img"
+                        width="180"
+                        height="48"
+                        fetchPriority="high"
                     />
                 </Link>
 
