@@ -1,94 +1,122 @@
-Manual de Auditoría Técnica: Meta Conversion Tracking (Híbrido)
-Versión: 1.0 Objetivo: Asegurar la integridad de datos, la deduplicación correcta y la maximización de la Calidad de Coincidencia de Eventos (EMQ) mediante una configuración redundante (Píxel + API de Conversiones). Alcance: Eventos PageView, Schedule, ViewContent, Contact.
+Manual de Auditoría Técnica: Meta Conversion Tracking (Arquitectura Híbrida)
+Versión: 1.0 Rol: Senior Technical Solution Consultant Alcance: Validación de integridad de datos, deduplicación y calidad de emparejamiento (EMQ) para eventos Web.
+Este documento establece los estándares técnicos para la implementación manual de los eventos: PageView, Schedule, ViewContent, Contact, Search y AddToWishlist.
 
 --------------------------------------------------------------------------------
-1. Fundamentos de Arquitectura y Validación
-Antes de auditar evento por evento, se deben establecer las reglas globales de la infraestructura para evitar la duplicidad de datos y asegurar la atribución.
-1.1 Validación de Deduplicación
-Para que Meta unifique las señales del navegador y del servidor, es obligatorio que ambos envíos compartan identificadores únicos. Si esto falla, el ROAS se inflará artificialmente y el algoritmo de optimización se degradará.
-• Logic de Coincidencia: Meta determina si los eventos son idénticos basándose en el event_id y el event_name.
-• Regla de Oro: El eventID generado en el navegador (ej. fbq) debe ser idéntico al event_id enviado en el payload del servidor.
-• Prioridad: Si se reciben ambos eventos dentro de un periodo de 48 horas con el mismo ID, Meta descarta el posterior (generalmente el del servidor) pero utiliza sus datos para enriquecer la coincidencia.
-1.2 Match Quality (Calidad de Emparejamiento)
-La API de Conversiones requiere al menos un parámetro de cliente en user_data para funcionar, pero para obtener una puntuación alta (EMQ > 6.0), se debe maximizar la "tasa de llenado" de los siguientes parámetros:
-• Capa de Servidor (Payload user_data):
-    ◦ Identificadores Fuertes (Hasheados SHA-256): em (email), ph (teléfono). Nota: Deben normalizarse (minúsculas, sin espacios) antes del hash.
-    ◦ Identificadores de Meta (Sin Hash):
-        ▪ fbp (Browser ID): Extraer de la cookie _fbp.
-        ▪ fbc (Click ID): Extraer de la cookie _fbc o del parámetro de URL fbclid.
-    ◦ Datos de Conexión (Sin Hash): client_ip_address y client_user_agent.
+1. Fundamentos de Arquitectura y Match Quality
+Para maximizar la Calidad de Coincidencia de Eventos (EMQ) y asegurar la atribución correcta, ambos canales (Browser y Server) deben enviar parámetros de usuario enriquecidos.
+Estándar de Datos de Usuario (user_data)
+Tanto el Píxel (vía advanced matching) como la API de Conversiones (en el objeto user_data) deben incluir los siguientes parámetros para lograr una puntuación EMQ > 6.0 (Good/Great).
+• Hashing Obligatorio: Todos los datos de identificación personal (PII) deben normalizarse y hashearse utilizando SHA-256 antes del envío (excepto IP, User Agent, fbp, fbc, external_id).
+• Parámetros Prioritarios:
+    1. em (Email): Minúsculas, sin espacios.
+    2. ph (Teléfono): Solo dígitos, incluyendo código de país.
+    3. fbp (Browser ID): Valor de la cookie _fbp. Crítico para la continuidad de la sesión.
+    4. fbc (Click ID): Valor de la cookie _fbc o parámetro fbclid si proviene de un anuncio.
+    5. client_ip_address y client_user_agent: Obligatorios para eventos Web en CAPI.
+    6. external_id: ID único de CRM o Login del usuario.
 
 --------------------------------------------------------------------------------
-2. Auditoría Detallada por Evento
-Evento: PageView (Visita a Página)
-Este evento es la base del rastreo y debe dispararse en todas las páginas para establecer la línea base de tráfico.
+2. Protocolo de Deduplicación
+La deduplicación es el mecanismo crítico para evitar el conteo doble de conversiones en una configuración redundante. Meta descarta eventos duplicados si se cumplen las siguientes condiciones técnicas:
+1. Coincidencia de event_id: El eventID enviado en el navegador debe ser idéntico (string única) al event_id enviado en el payload del servidor.
+2. Coincidencia de event_name: Los nombres deben ser idénticos (ej. "Purchase" en ambos, no "purchase" vs "Purchase").
+3. Ventana de Tiempo: Los eventos deben recibirse dentro de un lapso de 48 horas entre sí.
+Regla de Auditoría: Si un evento llega por ambos canales con el mismo ID, Meta prioriza generalmente el evento del navegador si llegan con menos de 5 minutos de diferencia, utilizando el evento del servidor para rellenar datos faltantes o como respaldo si el navegador falla (ej. AdBlockers).
+
+--------------------------------------------------------------------------------
+3. Auditoría Detallada por Evento
+3.1 Evento: PageView (Visita a Página)
+Evento base para establecer tráfico y audiencias generales.
 • Trigger: Carga inicial del DOM en cada página del sitio.
-A. Capa de Navegador (Pixel)
-El PageView suele dispararse automáticamente con fbq('init'), pero para la deduplicación manual, debe controlarse explícitamente el ID.
+A. Capa de Navegador (Pixel Manual)
 • Script:
-• Nota: El eventID se pasa como el cuarto parámetro.
+• Nota: El eventID es el cuarto parámetro.
 B. Capa de Servidor (CAPI Payload)
 • Estructura JSON:
-• Referencias:
+• Referencia de parámetros:.
 
 --------------------------------------------------------------------------------
-Evento: Schedule (Programar)
-Utilizado para la reserva de citas o visitas.
-• Trigger: Al confirmar exitosamente una cita (ej. botón "Confirmar Reserva" o carga de "Thank You Page").
-A. Capa de Navegador (Pixel)
+3.2 Evento: Schedule (Programar)
+Reserva de una cita o visita a una ubicación física.
+• Trigger: Confirmación exitosa de la reserva de cita.
+A. Capa de Navegador (Pixel Manual)
 • Script:
-• Referencias:
+• Referencia:.
 B. Capa de Servidor (CAPI Payload)
 • Estructura JSON:
-• Referencias:
+• Referencia:.
 
 --------------------------------------------------------------------------------
-Evento: ViewContent (Ver contenido)
-Crítico para campañas de retargeting dinámico. Rastrea visitas a páginas de productos o servicios específicos.
-• Trigger: Al cargar la página de detalle de un producto o servicio.
-A. Capa de Navegador (Pixel)
+3.3 Evento: ViewContent (Ver Contenido)
+Visita a una página de detalle de producto o landing page específica. Crítico para retargeting dinámico.
+• Trigger: Carga de la página de detalle del producto (PDP).
+A. Capa de Navegador (Pixel Manual)
 • Script:
-• Referencias:
+• Referencia:.
 B. Capa de Servidor (CAPI Payload)
 • Estructura JSON:
-• Referencias:
+• Referencia:.
 
 --------------------------------------------------------------------------------
-Evento: Contact (Contactar)
-Para interacciones de inicio de comunicación (teléfono, SMS, email, chat).
-• Trigger: Clic en botón de WhatsApp, enlace mailto:, o envío de formulario de contacto general.
-A. Capa de Navegador (Pixel)
+3.4 Evento: Contact (Contactar)
+Inicio de contacto vía teléfono, SMS, email o chat.
+• Trigger: Clic en botón de "WhatsApp", "Enviar Email" o envío de formulario de contacto general.
+A. Capa de Navegador (Pixel Manual)
 • Script:
-• Referencias:
+• Referencia:.
 B. Capa de Servidor (CAPI Payload)
 • Estructura JSON:
-• Referencias:
+• Referencia:.
 
 --------------------------------------------------------------------------------
-3. Prueba de Fuego: Validación con "Test Events Tool"
-La herramienta "Test Events" en el Administrador de Eventos es el método definitivo para verificar la recepción y el procesamiento de la configuración híbrida.
+3.5 Evento: Search (Buscar)
+Realización de una búsqueda en el sitio web.
+• Trigger: Al ejecutar una búsqueda interna (carga de página de resultados).
+A. Capa de Navegador (Pixel Manual)
+• Script:
+• Referencia:.
+B. Capa de Servidor (CAPI Payload)
+• Estructura JSON:
+• Referencia:.
+
+--------------------------------------------------------------------------------
+3.6 Evento: AddToWishlist (Agregar a lista de deseos)
+Guardar un producto en una lista de deseos.
+• Trigger: Clic en el botón/icono de "Favoritos" o "Wishlist".
+A. Capa de Navegador (Pixel Manual)
+• Script:
+• Referencia:.
+B. Capa de Servidor (CAPI Payload)
+• Estructura JSON:
+• Referencia:.
+
+--------------------------------------------------------------------------------
+4. Prueba de Fuego: Validación con "Test Events Tool"
+La herramienta "Probar eventos" en el Administrador de Eventos es el método definitivo para verificar que el servidor está procesando y deduplicando correctamente.
 Procedimiento de Prueba
 1. Vaya al Administrador de Eventos > Pestaña Probar eventos (Test Events).
-2. Server: Copie el código de prueba (ej. TEST12345) y añádalo a su payload del servidor en el parámetro test_event_code.
-3. Browser: Abra su sitio web en una ventana nueva e interactúe para disparar los eventos.
-4. Verificación: Observe la consola en tiempo real.
-Tabla de Diagnóstico y Tratamiento de Errores
+2. Genere un código de prueba en la sección "Probar eventos del servidor".
+3. Server: Incluya este código en el parámetro test_event_code dentro de su payload JSON del servidor.
+4. Browser: Abra su sitio web e interactúe para disparar los eventos del Píxel.
+5. Verificación: Ambos eventos (Browser y Server) deben aparecer en la consola. El estado final debe ser "Deduplicated" (Deduplicado).
+Diagnóstico de Problemas y Tratamiento
 Problema Observado
 Causa Probable
 Opción de Tratamiento (Solución)
-Eventos duplicados (aparecen Browser y Server por separado sin unificarse)
-event_id diferente o event_name no coincide exactamente.
-Auditar que el script del navegador y el payload del servidor usen la misma variable para el ID. Verificar mayúsculas en el nombre (ej. "Schedule" vs "schedule").
+Eventos Duplicados (No se unifican)
+El event_id es diferente o el event_name no coincide exactamente (distinción mayúsculas/minúsculas).
+Auditar que el script del navegador y el payload del servidor generen y usen la misma variable para el ID. Verificar ortografía (ej: "Schedule" vs "schedule").
 Evento de Servidor no aparece
-Falta el token de acceso, el código de prueba, o error de red 400/500.
-Verificar que el test_event_code esté incluido en el JSON. Verificar validez del Token de Acceso y que el servidor pueda hacer peticiones salientes a graph.facebook.com.
+Falta el Token de Acceso, error en la petición HTTP (4xx/5xx) o falta el test_event_code.
+Verificar que el servidor reciba un código HTTP 200 de Meta. Asegurar que el test_event_code está activo y es correcto. Verificar permisos del Token.
 "Invalid Contents Parameter"
-Formato incorrecto del objeto JSON en contents.
-Asegurar que contents sea un array de objetos (ej. [{'id': '...', 'quantity': 1}]) y no un string simple.
+Formato JSON incorrecto en contents.
+Asegurar que contents sea un array de objetos (ej. [{'id': '...', 'quantity': 1}]) y no una cadena de texto plana o un objeto único fuera de un array.
 Baja Calidad de Coincidencia (EMQ < 4)
-No se envían parámetros de usuario (user_data) o no están hasheados.
-Incluir fbp y fbc (cookies) en el servidor. Normalizar y hashear emails/teléfonos antes de enviar. Enviar IP y User Agent.
+Faltan datos de usuario (user_data) o no están hasheados.
+Incluir fbp y fbc extraídos de las cookies. Normalizar y hashear emails/teléfonos. Enviar IP y User Agent del cliente.
 Deduplicación fallida por tiempo
-Retraso excesivo entre el evento Browser y Server.
-Asegurar que el evento del servidor se envíe en tiempo real o casi real. Si la diferencia es > 48 horas, no se deduplicarán.
-Nota Final: Recuerde eliminar el parámetro test_event_code de su configuración de producción una vez finalizada la auditoría
+Retraso excesivo (>48h) o marca de tiempo incorrecta.
+Verificar que event_time esté en formato Unix (segundos) y zona horaria GMT. Asegurar envío en tiempo real.
+Nota Final: Recuerde eliminar el parámetro test_event_code de su configuración de producción una vez finalizada la auditoría para evitar ensuciar los datos
