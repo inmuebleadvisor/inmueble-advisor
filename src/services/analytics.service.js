@@ -1,6 +1,10 @@
+import posthog from '../config/posthog';
+
 /**
  * Service for handling User Analytics and Behavior Tracking.
  * Facades the AnalyticEventsRepository to manage session lifecycles.
+ * 
+ * ✅ UPDATED 2026-01-27: Now Dual-Writes to Firestore + PostHog
  */
 export class AnalyticsService {
   /**
@@ -13,12 +17,19 @@ export class AnalyticsService {
 
   /**
    * Starts a new analytics session.
-   * @param {Object} userData - { uid, userAgent, path }
+   * @param {Object} userData - { uid, userAgent, path, email, displayName }
    */
   async startTracking(userData) {
     try {
-      // If already has a session, we might want to close it or just continue.
-      // For simplicity, we start a new one if not exists.
+      // 1. PostHog Identification (Visual Memory)
+      if (userData.uid !== 'ANONYMOUS' && userData.uid) {
+        posthog.identify(userData.uid, {
+          email: userData.email,
+          name: userData.displayName
+        });
+      }
+
+      // 2. Firestore Session (Transactional Memory)
       if (!this.currentSessionId) {
         const sessionId = await this.repository.startSession({
           ...userData,
@@ -37,6 +48,15 @@ export class AnalyticsService {
    * @param {string} path 
    */
   async trackPageView(path) {
+    // 1. PostHog PageView
+    // PostHog handles this automatically if capture_pageview is on, 
+    // but Single Page Apps (SPAs) usually require manual triggers on route change.
+    posthog.capture('$pageview', {
+      $current_url: window.location.href,
+      path: path
+    });
+
+    // 2. Firestore PageView
     if (!this.currentSessionId) return;
     try {
       await this.repository.logPageView(this.currentSessionId, path);
@@ -51,6 +71,10 @@ export class AnalyticsService {
    * @param {Object} metadata 
    */
   async trackEvent(eventName, metadata = {}) {
+    // 1. PostHog Event
+    posthog.capture(eventName, metadata);
+
+    // 2. Firestore Event
     try {
       await this.repository.logBusinessEvent(eventName, {
         sessionId: this.currentSessionId,
@@ -65,6 +89,10 @@ export class AnalyticsService {
    * Clears session (on logout).
    */
   async stopTracking() {
+    // 1. PostHog Reset
+    posthog.reset();
+
+    // 2. Firestore End Session
     if (this.currentSessionId) {
       await this.repository.endSession(this.currentSessionId);
       this.currentSessionId = null;
