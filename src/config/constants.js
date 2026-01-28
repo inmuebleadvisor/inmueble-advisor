@@ -20,7 +20,8 @@ export const UI_OPCIONES = {
   FILTRO_PRECIO_STEP: 100000,
   FILTRO_RECAMARAS_MAX: 4,
   // 🔒 SEGURIDAD: Define si las pantallas de detalle requieren login
-  REQUIRE_AUTH_FOR_DETAILS: true
+  // Se cambia a false para permitir una navegación fluida (Soft Login)
+  REQUIRE_AUTH_FOR_DETAILS: false
 };
 
 // --- META ADS CONFIGURATION ---

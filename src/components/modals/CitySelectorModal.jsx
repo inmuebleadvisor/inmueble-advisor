@@ -1,88 +1,77 @@
 import React, { useState, useEffect } from 'react';
+import { MapPin } from 'lucide-react';
 import { useService } from '../../hooks/useService';
 import { useUser } from '../../context/UserContext';
-import './CitySelectorModal.css'; // Asumimos estilos básicos o reutilizamos modal existente
+import './CitySelectorModal.css';
 
+/**
+ * CitySelectorModal - Componente inicial para la selección de ubicación.
+ * Utiliza una cuadrícula de botones para facilitar la interacción del usuario (Direct Selection UX).
+ */
 const CitySelectorModal = () => {
     const { selectedCity, updateSelectedCity } = useUser();
-    const { catalog: catalogService } = useService(); // ✅ SERVICE INJECTION
+    const { catalog: catalogService } = useService();
     const [ciudades, setCiudades] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [tempSelection, setTempSelection] = useState(null);
-
-    // Si ya hay ciudad, no mostramos el modal (o verificamos si queremos forzar confirmación)
-    // Este componente se renderizará condicionalmente en App.jsx si !selectedCity
 
     useEffect(() => {
+        /**
+         * Carga las ciudades disponibles desde el servicio de catálogo.
+         * Desacoplado mediante el patrón de Inyección de Dependencias.
+         */
         const fetchCiudades = async () => {
             try {
                 const lista = await catalogService.obtenerCiudadesDisponibles();
-                console.log("🏙️ [CitySelector] Loaded Cities:", lista); // Log for debugging
                 setCiudades(lista);
-                if (lista.length > 0) {
-                    setTempSelection(lista[0]); // Default first
-                }
             } catch (err) {
-                console.error("Error cargando ciudades", err);
+                console.error("❌ [CitySelector] Error cargando ciudades:", err);
             } finally {
                 setLoading(false);
             }
         };
         fetchCiudades();
-    }, []);
+    }, [catalogService]);
 
-    const handleConfirm = () => {
-        if (tempSelection) {
-            updateSelectedCity(tempSelection);
-            // El modal se desmontará porque App.jsx dejará de renderizarlo
-        }
-    };
-
-    if (selectedCity) return null; // Safety check
+    // Si el usuario ya tiene una ciudad seleccionada, no mostramos el selector
+    if (selectedCity) return null;
 
     return (
-        <div className="city-modal-overlay">
-            <div id="city-modal-content-override" className="city-modal-content">
-                <h2>Bienvenido a Inmueble Advisor</h2>
-                <p>Por favor, selecciona tu ciudad de interés para mostrarte las mejores opciones.</p>
+        <div className="city-selector-modal">
+            <div className="city-selector">
+                <h2 className="city-selector__title">Bienvenido a Inmueble Advisor</h2>
+                <p className="city-selector__description">
+                    Para ofrecerte una experiencia personalizada, selecciona la ciudad donde buscas tu próxima inversión.
+                </p>
 
                 {loading ? (
-                    <p>Cargando ciudades...</p>
+                    <div className="city-selector__loading">
+                        <div className="city-selector__spinner" />
+                        <span>Cargando destinos...</span>
+                    </div>
                 ) : (
-                    <div className="city-selector-container">
-                        <select
-                            id="city-dropdown-override"
-                            value={tempSelection || ''}
-                            onChange={(e) => {
-                                console.log("🏙️ [CitySelector] Selection changed:", e.target.value);
-                                setTempSelection(e.target.value);
-                            }}
-                            className="city-dropdown"
-                            style={{ colorScheme: 'light', color: '#1e293b', backgroundColor: '#ffffff' }} // Inline override as failsafe
-                        >
-                            <option value="" disabled>Selecciona una ciudad</option>
-                            {ciudades.map(c => (
-                                <option key={c} value={c}>{c}</option>
-                            ))}
-                        </select>
+                    <div className="city-selector__grid">
+                        {ciudades.map(ciudad => (
+                            <button
+                                key={ciudad}
+                                className="city-selector__item"
+                                onClick={() => updateSelectedCity(ciudad)}
+                            >
+                                <MapPin size={24} strokeWidth={2} />
+                                <span>{ciudad}</span>
+                            </button>
+                        ))}
                     </div>
                 )}
 
-                <button
-                    className="btn-primary-modal"
-                    onClick={handleConfirm}
-                    disabled={!tempSelection || loading}
-                >
-                    Comenzar
-                </button>
-
-                {/* Fallback por si la lista está vacía (Error layout) */}
                 {!loading && ciudades.length === 0 && (
-                    <p className="error-text">No se encontraron ciudades disponibles. Intenta recargar.</p>
+                    <p className="city-selector__error">
+                        No pudimos encontrar ciudades disponibles en este momento. Por favor, intenta de nuevo más tarde.
+                    </p>
                 )}
             </div>
         </div>
     );
 };
+
 
 export default CitySelectorModal;

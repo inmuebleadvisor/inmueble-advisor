@@ -4,6 +4,7 @@
 import React, { useMemo, useState } from 'react';
 import AmenidadesList from './AmenidadesList';
 import MapModal from '../modals/MapModal';
+import { useUser } from '../../context/UserContext'; // 🟢 Didáctico: Traemos el contexto para proteger el brochure
 
 
 // --- ICONOS ---
@@ -32,6 +33,22 @@ const formatFecha = (timestamp) => {
 
 export default function DevelopmentInfoSection({ desarrollo }) {
   const [mostrarMapa, setMostrarMapa] = useState(false);
+  const { user, loginWithGoogle } = useUser(); // 🟢 Didáctico: Hook de usuario
+
+  // 🟢 Didáctico: Función para proteger la descarga
+  const handleDownloadBrochure = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      try {
+        const logueado = await loginWithGoogle();
+        if (!logueado) return;
+      } catch (error) {
+        return;
+      }
+    }
+    // Si hay usuario, abrimos el link en otra pestaña
+    window.open(brochureUrl, '_blank');
+  };
 
   if (!desarrollo) return null;
 
@@ -65,9 +82,12 @@ export default function DevelopmentInfoSection({ desarrollo }) {
       {(videoUrl || brochureUrl) && (
         <div style={styles.mediaButtonsContainer}>
           {brochureUrl && (
-            <a href={brochureUrl} target="_blank" rel="noopener noreferrer" style={{ ...styles.mediaButton, backgroundColor: '#1f2937', color: 'white', border: 'none' }}>
+            <button
+              onClick={handleDownloadBrochure}
+              style={{ ...styles.mediaButton, backgroundColor: '#1f2937', color: 'white', border: 'none', cursor: 'pointer' }}
+            >
               <Icons.Download /> Descargar Brochure
-            </a>
+            </button>
           )}
           {videoUrl && (
             <a href={videoUrl} target="_blank" rel="noopener noreferrer" style={styles.mediaButton}>

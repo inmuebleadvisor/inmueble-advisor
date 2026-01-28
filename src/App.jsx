@@ -116,7 +116,7 @@ function App() {
 
                       {/* ⭐ NUEVA RUTA: Ruta para la pantalla de Comparador y Favoritos */}
                       <Route path="favoritos" element={
-                        <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
+                        <ProtectedRoute requireAuth={true}>
                           <Favoritos />
                         </ProtectedRoute>
                       } />

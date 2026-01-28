@@ -30,3 +30,10 @@ describe('STATUS_LABELS Translations', () => {
         expect(STATUS_LABELS[STATUS.LEAD_VISITED]).toBe('Visita Realizada');
     });
 });
+
+describe('UI_OPCIONES Configuration (Soft Login)', () => {
+    test('REQUIRE_AUTH_FOR_DETAILS should be false for Soft Login strategy', () => {
+        const { UI_OPCIONES } = require('./constants');
+        expect(UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS).toBe(false);
+    });
+});

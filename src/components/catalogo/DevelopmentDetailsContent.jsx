@@ -32,10 +32,24 @@ export default function DevelopmentDetailsContent({
     const [activeIndex, setActiveIndex] = useState(0); // Fixed missing state
     const [isLeadFormOpen, setIsLeadFormOpen] = useState(false); // New state for modal
 
+    // 🟢 Didáctico: Gatillo de autenticación para desarrollos
+    const handleOpenLeadForm = async () => {
+        if (!user) {
+            try {
+                const logueado = await loginWithGoogle();
+                if (!logueado) return;
+            } catch (error) {
+                console.error("Login fallido");
+                return;
+            }
+        }
+        setIsLeadFormOpen(true);
+    };
+
     // 1. Control de visibilidad del ActionPanel usando Custom Hook
     const showActionPanel = useStickyPanel(headerRef);
     const { meta: metaService } = useService();
-    const { user, userProfile } = useUser(); // ✅ Get User Context
+    const { user, userProfile, loginWithGoogle } = useUser(); // ✅ Get User Context
 
     // Meta Pixel & CAPI: PageView -> MOVED TO MetaTracker (Global)
     // Legacy Code Removed
@@ -180,7 +194,7 @@ export default function DevelopmentDetailsContent({
                 <StickyActionPanel
                     price={precioDesde}
                     label="Precios desde"
-                    onMainAction={() => setIsLeadFormOpen(true)}
+                    onMainAction={handleOpenLeadForm}
                 />
             )}
 

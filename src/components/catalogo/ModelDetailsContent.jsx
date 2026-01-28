@@ -10,6 +10,7 @@ import FavoriteBtn from '../common/FavoriteBtn';
 import StickyActionPanel from '../layout/StickyActionPanel';
 import Delightbox from '../common/Delightbox';
 import { useStickyPanel } from '../../hooks/useStickyPanel';
+import { useUser } from '../../context/UserContext'; // 🟢 Didáctico: Importamos el contexto de usuario
 import '../../styles/ModelDetailsContent.css'; // BEM Styles relocated
 // import Modal from '../modals/Modal'; // Generic Modal
 import LeadCaptureForm from '../leads/LeadCaptureForm'; // New Capture Form
@@ -40,8 +41,27 @@ export default function ModelDetailsContent({
     // Lead Form Modal State
     const [isLeadFormOpen, setIsLeadFormOpen] = React.useState(false);
 
+    // 🟢 Didáctico: Accedemos a la sesión y al método de login
+    const { user, loginWithGoogle } = useUser();
+
     const headerRef = React.useRef(null);
     const showFab = useStickyPanel(headerRef);
+
+    // 🟢 Didáctico: Esta función actúa como un "Gatillo de Autenticación"
+    const handleOpenLeadForm = async () => {
+        if (!user) {
+            try {
+                // Si el usuario no está logueado, lanzamos el popup
+                const logueado = await loginWithGoogle();
+                if (!logueado) return; // Si cancela, no hacemos nada
+            } catch (error) {
+                console.error("Login cancelado o fallido");
+                return;
+            }
+        }
+        // Si ya hay usuario o se logueó con éxito, abrimos el formulario
+        setIsLeadFormOpen(true);
+    };
 
     const galeriaImagenes = useMemo(() => {
         if (!modelo) return [];
@@ -110,7 +130,7 @@ export default function ModelDetailsContent({
 
                             <button
                                 className="model-details__cta-primary"
-                                onClick={() => setIsLeadFormOpen(true)}
+                                onClick={handleOpenLeadForm}
                             >
                                 <Icons.Calendar />
                                 <span>Cotizar / Agendar</span>
@@ -230,7 +250,7 @@ export default function ModelDetailsContent({
                 <StickyActionPanel
                     price={formatoMoneda(modelo.precioNumerico)}
                     label="Precio de Lista"
-                    onMainAction={() => setIsLeadFormOpen(true)}
+                    onMainAction={handleOpenLeadForm}
                 />
             )}
 

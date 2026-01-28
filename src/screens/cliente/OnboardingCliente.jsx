@@ -132,6 +132,19 @@ export default function OnboardingCliente() {
         }
     };
 
+    // 🟢 Didáctico: Permite al usuario ver resultados sin crear cuenta.
+    // Mantiene la filosofía "Buyer First" al no bloquear el valor prometido.
+    const handleSkipLogin = () => {
+        const statusParam = entregaInmediata === true ? 'inmediata' : (entregaInmediata === false ? 'preventa' : 'all');
+        const maxPrice = presupuestoMaximo > 0 ? Math.round(presupuestoMaximo) : '';
+        const rooms = recamaras || '';
+
+        localStorage.removeItem(STORAGE_KEY);
+
+        // Navegamos al catálogo con los filtros aplicados
+        navigate(`/catalogo?maxPrice=${maxPrice}&rooms=${rooms}&status=${statusParam}`, { replace: true });
+    };
+
     // Acción Real de Finalización (Login + Save)
     const handleFinalizar = async () => {
         setIsSaving(true);
@@ -320,7 +333,7 @@ export default function OnboardingCliente() {
                                 Para guardar tu perfil y buscarte las mejores opciones, necesitamos crear una cuenta segura.
                             </p>
                             <div className="onboarding-card__modal-actions">
-                                <button onClick={() => setShowLoginModal(false)} className="btn-secondary">Cancelar</button>
+                                <button onClick={handleSkipLogin} className="btn-secondary">Continuar sin cuenta</button>
                                 <button onClick={handleFinalizar} className="btn-primary">Continuar con Google</button>
                             </div>
                         </div>

@@ -20,8 +20,10 @@ Specialized modal for displaying property locations using `react-leaflet`.
 - **Dependencies:** `react-leaflet`, `leaflet`.
 
 ### [CitySelectorModal.jsx](file:///c:/Users/novat/inmueble-advisor/src/components/modals/CitySelectorModal.jsx)
-Allows users to select their preferred city/region.
-- **Usage:** Typically triggered from the global header or onboarding flow.
+Permite a los usuarios seleccionar su ciudad o región de interés mediante una cuadrícula de botones interactiva.
+- **UX:** Diseñado para selección directa (un solo clic), reduciendo la fricción inicial.
+- **Estándar:** Implementa metodología BEM y estilos Premium con iconografía de Lucide.
+
 
 ### [FilterModal.jsx](file:///c:/Users/novat/inmueble-advisor/src/components/modals/FilterModal.jsx)
 Provides complex filtering options for the catalog (Price range, Model type, etc.).
