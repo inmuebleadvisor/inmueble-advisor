@@ -38,9 +38,9 @@ const CitySelectorModal = () => {
     return (
         <div className="city-selector-modal">
             <div className="city-selector">
-                <h2 className="city-selector__title">Bienvenido a Inmueble Advisor</h2>
+                <h2 className="city-selector__title">Bienvenid@</h2>
                 <p className="city-selector__description">
-                    Para ofrecerte una experiencia personalizada, selecciona la ciudad donde buscas tu próxima inversión.
+                    selecciona tu ciudad
                 </p>
 
                 {loading ? (
