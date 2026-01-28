@@ -1,8 +1,8 @@
 /* src/components/catalogo/PropertyCard.css */
 
-.property-card {
-    /* Inherits previous .card styles or defined here if needed. Assuming .card is global/utility or local scoping is preferred */
-}
+/* src/components/catalogo/PropertyCard.css */
+
+/* .property-card inherits .card styles globally */
 
 .property-card__carousel-container {
     display: flex;
@@ -204,4 +204,28 @@
 
 .property-card__cta {
     margin-top: 1rem;
+}
+
+/* --- AUDIT REFACTOR: Semantic Modifiers --- */
+.property-card__status-tag--success {
+    background-color: var(--status-success);
+}
+
+.property-card__status-tag--warning {
+    background-color: var(--status-warning);
+}
+
+.property-card__status-tag--info {
+    background-color: var(--status-info);
+}
+
+/* Semantic Price Sizes */
+.property-card__price-value--highlight {
+    color: var(--text-main);
+    font-size: 1.5rem;
+}
+
+.property-card__price-value--muted {
+    color: var(--text-secondary);
+    font-size: 1.2rem;
 }

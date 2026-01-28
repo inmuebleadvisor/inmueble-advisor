@@ -647,6 +647,45 @@
 .filter-checkbox:checked::after {
   transform: translateX(20px);
 }
+
 /* SCROLL REVEAL STYLES */
-.sr-hidden { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94); will-change: opacity, transform; }
-.sr-visible { opacity: 1; transform: translateY(0); }
+.sr-hidden {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: opacity, transform;
+}
+
+.sr-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --- AUDIT REFACTOR: Loading State --- */
+.catalogo--loading {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.catalogo__loading-text {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  font-weight: 500;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.6;
+  }
+}

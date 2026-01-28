@@ -86,27 +86,26 @@ export default function PropertyCard({ item, showDevName = true, style }) {
           // Fallback legacy
           if (item.esPreventa) hasPreventa = true;
 
-          // Determine Label & Color
+          // Determine Label & Class Modifier
           let label = null;
-          let bgColor = 'transparent';
+          let modifierClass = '';
 
           if (hasInmediata && hasPreventa) {
             label = 'Inmediato/Preventa';
-            bgColor = '#0ea5e9'; // Blue for mixed/special
+            modifierClass = 'property-card__status-tag--info';
           } else if (hasInmediata) {
             label = 'ENTREGA INMEDIATA';
-            bgColor = '#10b981'; // Green
+            modifierClass = 'property-card__status-tag--success';
           } else if (hasPreventa) {
             label = 'PRE-VENTA';
-            bgColor = '#f59e0b'; // Orange
+            modifierClass = 'property-card__status-tag--warning';
           }
 
           if (!label) return null;
 
           return (
             <span
-              className="property-card__status-tag"
-              style={{ backgroundColor: bgColor }}
+              className={`property-card__status-tag ${modifierClass}`}
             >
               {label}
             </span>
@@ -159,10 +158,7 @@ export default function PropertyCard({ item, showDevName = true, style }) {
               </span>
             )}
           </div>
-          <div className="property-card__price-value" style={{
-            color: precioMostrar > 0 ? 'var(--text-main)' : 'var(--text-secondary)',
-            fontSize: precioMostrar > 0 ? '1.5rem' : '1.2rem'
-          }}>
+          <div className={`property-card__price-value ${precioMostrar > 0 ? 'property-card__price-value--highlight' : 'property-card__price-value--muted'}`}>
             {precioMostrar > 0 ? formatoMoneda(precioMostrar) : "Consultar Precio"}
           </div>
           {precioMostrar > 0 && (

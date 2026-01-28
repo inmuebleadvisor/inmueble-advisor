@@ -16,7 +16,7 @@ export default function Layout() {
   const isAsesor = userProfile?.role === 'asesor' || userProfile?.role === 'admin';
 
   // Detectar si estamos en rutas que requieren Viewport Fit
-  const isViewportFit = location.pathname === '/' || location.pathname === '/onboarding-cliente';
+  const isViewportFit = location.pathname === '/' || location.pathname === '/onboarding-cliente' || location.pathname === '/mapa';
 
   // Detectar si estamos en el panel de administración
   const isAdminPanel = location.pathname.startsWith('/administrador');

@@ -42,7 +42,14 @@
   --text-inverse: #0f172a;
 
   --accent-blue: #3b82f6;
-  --success: #10b981;
+  
+  /* Semantic Status Colors */
+  --status-success: #10b981;  /* Green - Entrega Inmediata */
+  --status-warning: #f59e0b;  /* Orange - Preventa */
+  --status-info: #0ea5e9;     /* Blue - Mixed/Info */
+  --status-favorite: #dc2626; /* Red - Favorites */
+
+  --success: var(--status-success);
   --error: #ef4444;
 
   /* Fondos */

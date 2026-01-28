@@ -42,8 +42,8 @@ export default function Catalogo() {
   // --- RENDER ---
   if (loading) {
     return (
-      <div className="catalogo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: '#6b7280' }}>Cargando catálogo...</p>
+      <div className="catalogo catalogo--loading">
+        <p className="catalogo__loading-text">Cargando catálogo...</p>
       </div>
     );
   }

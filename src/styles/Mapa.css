@@ -1,13 +1,36 @@
 /* src/styles/Mapa.css */
 
+/* src/styles/Mapa.css */
+/* REFACTOR: Usar 100dvh para adaptarse a barras de navegación de iOS/Android */
+
 .map-view {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 60px);
+    height: 100dvh;
+    /* Antes: calc(100vh - 60px) */
     overflow: hidden;
     position: relative;
     z-index: 2;
     font-family: var(--font-main);
+
+    /* UX Improvement: Visual spacing to indicate end of screen */
+    padding-bottom: 20px;
+    background-color: var(--bg-main);
+    /* Ensure gap is not white/transparent */
+    box-sizing: border-box;
+    /* Ensure padding is included in height */
+}
+
+/* Modo Pantalla Completa: Cubre toda la pantalla por encima del Header */
+.map-view--fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100dvh;
+    z-index: 9999;
+    /* Header tiene z-index: 1000 */
+    background-color: var(--bg-main);
 }
 
 .map-view__header {

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { Maximize2, Minimize2, Map as MapIcon, RotateCcw } from 'lucide-react'; // Added icons for Fullscreen
 
 import { useUser } from '../../context/UserContext';
 import { useCatalog } from '../../context/CatalogContext';
@@ -34,7 +35,7 @@ const createCustomIcon = (textoPrecio, backgroundColor) => {
       font-weight: 800;
       font-size: 0.75rem;
       white-space: nowrap;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
       border: 2px solid white;
       text-align: center;
       min-width: 60px;
@@ -71,7 +72,6 @@ const MapRevalidator = () => {
     document.body.style.overflow = 'hidden';
 
     // 2. Force Focus to the map container silently
-    // This tells the browser "we are active" without user interaction
     const container = map.getContainer();
     if (container) {
       container.focus({ preventScroll: true });
@@ -120,7 +120,21 @@ export default function Mapa() {
   const { modelos: dataMaestra, desarrollos: dataDesarrollos, amenidades: topAmenidades, loadingCatalog: loading } = useCatalog();
   const { favoritasIds, isFavorite } = useFavorites();
 
+  /* --- STATE: Map & Filters --- */
+  const [isFullscreen, setIsFullscreen] = useState(false); // New Fullscreen State
+  const [mapRef, setMapRef] = useState(null);
+  const [activeProperty, setActiveProperty] = useState(null);
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  /* --- FULLSCREEN TOGGLE --- */
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+    // Optional: Force map resize event if needed after transition
+    setTimeout(() => {
+      if (mapRef) mapRef.invalidateSize();
+    }, 300);
+  };
 
   const {
     filtros,
@@ -186,37 +200,66 @@ export default function Mapa() {
       </div>
     );
   }
-
+  // --- RENDER ---
   return (
-    <div className="map-view">
-      <div className="map-view__controls">
-        <header className="map-view__header">
-          <div className="map-view__header-content">
-            <h1 className="map-view__title">Mapa Interactivo</h1>
-            <p className="map-view__subtitle">{marcadoresVisibles.length} desarrollos encontrados</p>
-          </div>
-        </header>
+    <div className={`map-view ${isFullscreen ? 'map-view--fullscreen' : ''}`}>
+      {!isFullscreen && (
+        <div className="map-view__controls">
+          <header className="map-view__header">
+            <div className="map-view__header-content">
+              <h1 className="map-view__title">Explorar Mapa</h1>
+              <p className="map-view__subtitle">{marcadoresVisibles.length} desarrollos en esta zona</p>
+            </div>
+          </header>
 
-        <SearchBar
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-        />
+          <SearchBar
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+          />
 
-        <FilterBar
-          setIsFilterOpen={setIsFilterOpen}
-          hayFiltrosActivos={hayFiltrosActivos}
-          limpiarTodo={limpiarTodo}
-          filtros={filtros}
-        />
-      </div>
+          <FilterBar
+            setIsFilterOpen={setIsFilterOpen}
+            hayFiltrosActivos={hayFiltrosActivos}
+            limpiarTodo={limpiarTodo}
+            filtros={filtros}
+          />
+        </div>
+      )}
+
+      {/* Solo mostramos controles si NO estamos en fullscreen, o decidimos mostrarlos flotantes */}
 
       <div className="map-view__container">
+        {/* Fullscreen Toggle Button - SIEMPRE VISIBLE */}
+        <button
+          onClick={toggleFullscreen}
+          className="map-view__fullscreen-toggle"
+          style={{
+            position: 'absolute',
+            top: '20px',
+            right: '20px',
+            zIndex: 1000,
+            backgroundColor: 'var(--bg-secondary)',
+            border: 'none',
+            borderRadius: '50%',
+            padding: '10px',
+            boxShadow: 'var(--shadow-md)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+          title={isFullscreen ? "Salir de Pantalla Completa" : "Pantalla Completa"}
+        >
+          {isFullscreen ? <Minimize2 size={20} color="var(--text-main)" /> : <Maximize2 size={20} color="var(--text-main)" />}
+        </button>
+
         <MapContainer
           center={centroMapa}
           zoom={12}
           style={{ height: '100%', width: '100%' }}
           zoomControl={false}
           tap={false}
+          whenCreated={setMapRef}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -229,7 +272,7 @@ export default function Mapa() {
             <Marker
               key={dev.id}
               position={[dev.ubicacion.latitud, dev.ubicacion.longitud]}
-              icon={createCustomIcon(dev.etiquetaPrecio, dev.esFavorito ? '#8B0000' : 'var(--primary-color)')}
+              icon={createCustomIcon(dev.etiquetaPrecio, dev.esFavorito ? 'var(--status-favorite)' : 'var(--primary-color)')}
               eventHandlers={{
                 click: () => trackBehavior('map_marker_click', { dev_name: dev.nombre }),
               }}
