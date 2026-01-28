@@ -152,6 +152,22 @@
     width: 100%;
 }
 
+.onboarding-card__result-amount {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.onboarding-card__result-note {
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
+.onboarding-card__result-note--alert {
+    font-weight: 700;
+}
+
+
 .onboarding-card__footer {
     display: flex;
     gap: 15px;

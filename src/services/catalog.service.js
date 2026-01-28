@@ -163,8 +163,67 @@ export class CatalogService {
   }
 
   // Static Pure Logic Methods
+
+  /**
+   * Enriches models with parent development data.
+   * @param {Array} models - Raw models
+   * @param {Array} developments - Raw developments
+   * @returns {Array} Enriched models
+   */
+  static enrichModels(models, developments) {
+    if (!models || !developments) return models || [];
+    return models.map(m => {
+      const idDev = m.idDesarrollo || m.id_desarrollo;
+      if (!idDev) return m;
+
+      const parentDev = developments.find(d => String(d.id) === String(idDev));
+      if (!parentDev) return m;
+
+      return {
+        ...m,
+        colonia: m.colonia || parentDev.ubicacion?.colonia || '',
+        zona: m.zona || parentDev.zona || parentDev.ubicacion?.zona || '',
+        constructora: m.constructora || parentDev.constructora || '',
+        tipoVivienda: m.tipoVivienda || parentDev.tipoVivienda || parentDev.tipo || 'Propiedad',
+        ubicacion: {
+          ...m.ubicacion,
+          colonia: m.ubicacion?.colonia || parentDev.ubicacion?.colonia || '',
+          zona: m.ubicacion?.zona || parentDev.ubicacion?.zona || parentDev.zona || ''
+        }
+      };
+    });
+  }
+
+  /**
+   * Applies platform-level quality business rules.
+   * @param {Array} models - Enriched models
+   * @param {Object} settings - Platform settings (hideNoPrice, hideNoPhotos, etc.)
+   * @returns {Array} Models passing quality rules
+   */
+  static applyQualityFilters(models, settings = {}) {
+    if (!models) return [];
+    return models.filter(m => {
+      // Rule 1: Hide No Price
+      if (settings.hideNoPriceModels) {
+        const price = Number(m.precioNumerico) || 0;
+        if (price <= 0) return false;
+      }
+
+      // Rule 2: Hide No Photos/Renders
+      if (settings.hideNoPhotosModels) {
+        const hasImage = m.imagen || m.media?.render;
+        const hasPlans = m.media?.plantasArquitectonicas?.length > 0 || m.plantas?.length > 0;
+        const hasVirtual = m.media?.recorridoVirtual || m.recorrido360;
+        if (!hasImage && !hasPlans && !hasVirtual) return false;
+      }
+
+      return true;
+    });
+  }
+
   /**
    * Pure logic to filter catalog items based on criteria.
+
    * @param {Array} dataMaestra - List of models
    * @param {Array} desarrollos - List of developments
    * @param {Object} filters - Filter criteria

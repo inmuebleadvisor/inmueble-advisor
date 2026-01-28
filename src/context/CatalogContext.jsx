@@ -4,6 +4,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useService } from '../hooks/useService'; // ✅ DI Hook
 import { useUser } from './UserContext'; // Importamos UserContext
+import { CatalogService } from '../services/catalog.service';
+
 
 const CatalogContext = createContext();
 
@@ -66,52 +68,12 @@ export const CatalogProvider = ({ children }) => {
         const settings = settingsResult;
 
         // 0. ENRICHMENT: Hydrate models with parent development data (Localización, etc.)
+        const modelsEnriched = CatalogService.enrichModels(modelosData, desarrollosData);
 
-        // 0. ENRICHMENT: Hydrate models with parent development data (Localización, etc.)
-        // This fixes "Ubicación pendiente" issues by inheriting from the parent.
-        const modelsEnriched = modelosData.map(m => {
-          const idDev = m.idDesarrollo || m.id_desarrollo;
-          if (!idDev) return m;
-
-          const parentDev = desarrollosData.find(d => String(d.id) === String(idDev));
-          if (!parentDev) return m;
-
-          return {
-            ...m,
-            // Inherit location if missing in model
-            colonia: m.colonia || parentDev.ubicacion?.colonia || '',
-            zona: m.zona || parentDev.zona || parentDev.ubicacion?.zona || '',
-            // Inherit constructor name
-            constructora: m.constructora || parentDev.constructora || '',
-            // Inherit housing type (important for UI cards)
-            tipoVivienda: m.tipoVivienda || parentDev.tipoVivienda || parentDev.tipo || 'Propiedad',
-            // Ensure nested object is also populated
-            ubicacion: {
-              ...m.ubicacion,
-              colonia: m.ubicacion?.colonia || parentDev.ubicacion?.colonia || '',
-              zona: m.ubicacion?.zona || parentDev.ubicacion?.zona || parentDev.zona || ''
-            }
-          };
-        });
+        // 1. Filtrar Modelos (Use enriched data & Quality Rules)
+        let filteredModels = CatalogService.applyQualityFilters(modelsEnriched, settings);
 
 
-
-        // 1. Filtrar Modelos (Use enriched data)
-        let filteredModels = modelsEnriched.filter(m => {
-          // Regla: Hide No Price
-          if (settings.hideNoPriceModels) {
-            const price = typeof m.precioNumerico === 'number' ? m.precioNumerico : 0;
-            if (!price || price <= 0) return false;
-          }
-          // Regla: Hide No Photos
-          if (settings.hideNoPhotosModels) {
-            const hasImage = m.imagen || m.media?.render;
-            const hasPlans = m.media?.plantasArquitectonicas?.length > 0 || m.plantas?.length > 0;
-            const hasVirtual = m.media?.recorridoVirtual || m.recorrido360;
-            if (!hasImage && !hasPlans && !hasVirtual) return false;
-          }
-          return true;
-        });
 
         // 2. Filtrar Desarrollos
         // Primero identificamos qué desarrollos tienen modelos visibles (después del paso 1)

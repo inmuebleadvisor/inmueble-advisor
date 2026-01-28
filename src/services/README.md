@@ -7,8 +7,9 @@ The `src/services` directory contains the core business logic of the frontend ap
 
 ### 1. Catalog Service
 *   **File:** `catalog.service.js`
-*   **Purpose:** Manages the inventory of developments and models. Handles caching and filtering.
-*   **Key Methods:** `obtenerDatosUnificados()`, `filterCatalog()`.
+*   **Purpose:** Manages the inventory of developments and models. Handles caching, data enrichment, and quality filtering.
+*   **Key Methods:** `obtenerDatosUnificados()`, `filterCatalog()`, `enrichModels()`, `applyQualityFilters()`.
+
 
 ### 2. Auth Service
 *   **File:** `auth.service.js`
@@ -21,6 +22,12 @@ The `src/services` directory contains the core business logic of the frontend ap
 ### 4. Admin Service
 *   **File:** `admin.service.js`
 *   **Purpose:** Provides restricted access to global data (All Users, All Leads) for administrative dashboards.
+
+### 5. Financial Service
+*   **File:** `financial.service.js`
+*   **Purpose:** Pure logic service for property affordability and financial assessments.
+*   **Key Methods:** `calculateAffordability()`.
+
 
 ## Meta Ads Service Implementation
 *   **File:** `meta.service.js`

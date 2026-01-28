@@ -4,24 +4,24 @@ Este módulo gestiona la experiencia inicial del comprador ("Buyer First"), perm
 
 ## 🚀 Funcionalidades Clave
 
-1.  **Enfoque Financiero:** El onboarding inicia directamente con "Hablemos de números", reduciendo la fricción para el usuario.
-2.  **Calculadora de Capacidad:** Algoritmo financiero que cruza ahorros (`capitalInicial`) y mensualidad cómoda para determinar el presupuesto máximo real, incluyendo gastos notariales.
-3.  **Motor de Filtrado Unificado:** Utiliza `CatalogService.filterCatalog` para garantizar que el número de opciones mostrado sea idéntico al que el usuario verá en el catálogo principal.
+1.  **Enfoque Financiero (2 Pasos):** El onboarding ha sido optimizado a solo 2 pasos, iniciando directamente con "Hablemos de números" para reducir la fricción.
+2.  **Cálculo Desacoplado:** Utiliza `FinancialService` para determinar el presupuesto máximo real, separando la lógica de negocio de la UI.
+3.  **Motor de Filtrado Unificado:** Implementa `CatalogService.applyQualityFilters` y `CatalogService.enrichModels` para garantizar consistencia total con el catálogo.
 4.  **Confirmación y Registro:** Integración con Google Auth y persistencia del perfil financiero en Firestore.
 
 ## 🧠 Lógica de Negocio
 
 ### Cálculo del Presupuesto Máximo
-El presupuesto se calcula en base a la restricción más fuerte:
-- **Límite por Efectivo:** Basado en el enganche mínimo y gastos notariales requeridos.
-- **Límite por Capacidad de Pago:** Basado en la mensualidad y el factor de crédito por millón.
+El cálculo es delegado al `FinancialService.calculateAffordability()`, el cual considera:
+- **Límite por Efectivo:** Enganche mínimo + gastos notariales.
+- **Límite por Capacidad de Pago:** Mensualidad cómoda y factor de crédito.
 
 ### Consistencia Onboarding-Catálogo
-Para evitar discrepancias, este componente consume:
-- `obtenerDatosUnificados()` (Modelos)
-- `obtenerInventarioDesarrollos()` (Contexto de construcción)
+Para evitar discrepancias, ambos módulos utilizan la misma tubería de procesamiento en `CatalogService`:
+1.  `enrichModels()`: Hereda datos del desarrollo (ubicación, constructora).
+2.  `applyQualityFilters()`: Aplica reglas globales (ocultar sin fotos/precio).
+3.  `filterCatalog()`: Aplica los filtros específicos del usuario.
 
-El filtrado utiliza el objeto de configuración oficial definido en `CatalogService`.
 
 ## 📂 Estructura de Archivos
 - `OnboardingCliente.jsx`: Componente principal (Vista y Lógica de UI).

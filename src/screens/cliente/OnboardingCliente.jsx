@@ -5,8 +5,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
 import { useService } from '../../hooks/useService';
-import { FINANZAS } from '../../config/constants';
-// Firestore imports eliminados por refactoring (DI Principle)
 import '../../styles/Onboarding.css'; // Importamos estilos dedicados
 import { CatalogService } from '../../services/catalog.service';
 
@@ -14,8 +12,15 @@ const STORAGE_KEY = 'inmueble_advisor_onboarding_cliente_temp';
 
 export default function OnboardingCliente() {
     const navigate = useNavigate();
-    const { catalog: catalogService, client: clientService, meta: metaService } = useService(); // ✅ SERVICE INJECTION
-    const { loginWithGoogle, trackBehavior, user, loadingUser } = useUser();
+    const {
+        catalog: catalogService,
+        client: clientService,
+        meta: metaService,
+        financial: financialService,
+        config: configService
+    } = useService(); // ✅ SERVICE INJECTION
+    const { loginWithGoogle, trackBehavior, user, loadingUser, selectedCity } = useUser();
+
 
     // --- 1. ESTADOS (Persistencia) ---
     const getSavedState = (key, def) => {
@@ -46,9 +51,8 @@ export default function OnboardingCliente() {
     const [notaDinamica, setNotaDinamica] = useState('');
     const [esAlerta, setEsAlerta] = useState(false);
 
-    // Micro-interacciones
-    const [microFeedback, setMicroFeedback] = useState('');
     const [showLoginModal, setShowLoginModal] = useState(false); // Modal Pre-Login
+
 
     // --- 2. EFECTOS ---
     useEffect(() => {
@@ -58,31 +62,35 @@ export default function OnboardingCliente() {
 
     const formatoMoneda = (val) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
 
-    // Carga de Datos
+    // Carga de Datos (Respetando Ciudad Seleccionada y Reglas Globales)
     useEffect(() => {
-        catalogService.obtenerDatosUnificados().then(setDataMaestra);
-        catalogService.obtenerInventarioDesarrollos().then(setDesarrollos);
-    }, []);
+        const loadInitialData = async () => {
+            const [modelosRaw, desarrollosRaw, settings] = await Promise.all([
+                catalogService.obtenerDatosUnificados(selectedCity),
+                catalogService.obtenerInventarioDesarrollos(),
+                configService.getPlatformSettings()
+            ]);
 
-    // Cálculo Financiero
+            // Aplicar ENRICHMENT y QUALITY RULES (Igual que en CatalogContext)
+            const modelsEnriched = CatalogService.enrichModels(modelosRaw, desarrollosRaw);
+            const modelsQualified = CatalogService.applyQualityFilters(modelsEnriched, settings);
+
+            setDataMaestra(modelsQualified);
+            setDesarrollos(desarrollosRaw);
+        };
+
+        loadInitialData();
+    }, [selectedCity, catalogService, configService]);
+
+
+    // Cálculo Financiero vía Servicio (Desacoplado)
     useEffect(() => {
-        const { PORCENTAJE_GASTOS_NOTARIALES, PORCENTAJE_ENGANCHE_MINIMO, FACTOR_MENSUALIDAD_POR_MILLON } = FINANZAS;
-        const maxCreditoBanco = (mensualidad / FACTOR_MENSUALIDAD_POR_MILLON) * 1000000;
-        const limitePorEfectivo = capitalInicial / (PORCENTAJE_GASTOS_NOTARIALES + PORCENTAJE_ENGANCHE_MINIMO);
-        const limitePorCapacidadTotal = (capitalInicial + maxCreditoBanco) / (1 + PORCENTAJE_GASTOS_NOTARIALES);
-        const capacidadReal = Math.min(limitePorEfectivo, limitePorCapacidadTotal);
+        const { maxBudget, dynamicNote, isAlert } = financialService.calculateAffordability(capitalInicial, mensualidad);
+        setPresupuestoMaximo(maxBudget);
+        setNotaDinamica(dynamicNote);
+        setEsAlerta(isAlert);
+    }, [capitalInicial, mensualidad, financialService]);
 
-        setPresupuestoMaximo(capacidadReal);
-
-        // Lógica de alerta (simplificada para legibilidad)
-        if (capacidadReal > 0 && limitePorEfectivo < (limitePorCapacidadTotal - 50000)) {
-            setNotaDinamica("Tu efectivo inicial limita tu monto máximo.");
-            setEsAlerta(true);
-        } else {
-            setNotaDinamica("Incluye gastos notariales y enganche.");
-            setEsAlerta(false);
-        }
-    }, [capitalInicial, mensualidad]);
 
     // Opciones encontradas
     const opcionesEncontradas = useMemo(() => {
@@ -105,15 +113,10 @@ export default function OnboardingCliente() {
     const nextStep = () => {
         if (step < totalSteps) {
             trackBehavior('step_completed', { step_number: step });
-
-            // Micro-Feedback Visual (Sin clicks extra)
-            const mensajes = ["", ""];
-            setMicroFeedback(mensajes[step - 1]);
-            setTimeout(() => setMicroFeedback(''), 2000);
-
             setStep(step + 1);
         }
     };
+
 
     const prevStep = () => {
         if (step > 1) {
@@ -156,19 +159,14 @@ export default function OnboardingCliente() {
             }
 
             if (firebaseUser) {
-                // REFACTOR: Usar Service Layer (ClientService via ServiceProvider or UserContext abstraction)
-                // Para mantener consistencia, accedemos al servicio global o inyectado.
-                // Importamos 'clientService' directamente de serviceProvider para este caso puntual
-                // o lo agregamos al context. Por simplicidad y evitar ciclos, usaremos el import arriba.
-                // (Nota: Asegurarse de importar clientService al inicio del archivo)
-
                 const profileData = {
                     capitalInicial,
                     mensualidadMaxima: mensualidad,
                     presupuestoCalculado: presupuestoMaximo,
                     recamarasDeseadas: recamaras,
-                    interesInmediato: entregaInmediata
+                    interesInmediata: entregaInmediata
                 };
+
 
                 // Actualizamos nombre/email si vienen del provider (Google)
                 // Esto podría manejarse dentro del completeOnboarding si le pasamos todo el user object
@@ -258,11 +256,14 @@ export default function OnboardingCliente() {
                             <p className="onboarding-card__subtitle">Este es el valor de propiedad recomendado:</p>
 
                             <div className="onboarding-card__result">
-                                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', margin: '10px 0' }}>
+                                <div className="onboarding-card__result-amount">
                                     {formatoMoneda(presupuestoMaximo)}
                                 </div>
-                                <div style={{ fontSize: '0.95rem', opacity: 0.9 }}>{notaDinamica}</div>
+                                <div className={`onboarding-card__result-note ${esAlerta ? 'onboarding-card__result-note--alert' : ''}`}>
+                                    {notaDinamica}
+                                </div>
                             </div>
+
 
                             <p style={{ marginTop: '20px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
                                 {opcionesEncontradas > 0

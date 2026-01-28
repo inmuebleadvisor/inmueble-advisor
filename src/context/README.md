@@ -5,8 +5,10 @@ Este directorio gestiona el estado global de la aplicación utilizando la API de
 ## ¿Cuándo usar Context?
 Usa Context solo para datos que sean verdaderamente "globales" o necesarios en muchos niveles de profundidad del árbol de componentes.
 -   **`AuthContext`**: Sesión del usuario actual.
+-   **`CatalogContext`**: Catálogo unificado de modelos y desarrollos, encargado del enriquecimiento y filtrado base por ciudad/calidad.
 -   **`ThemeContext`**: Tema claro/oscuro.
--   **`FavoritesContext`** (Opcional): Lista global de IDs favoritos para acceso rápido en la UI.
+-   **`FavoritesContext`**: Lista global de IDs favoritos para acceso rápido en la UI.
+
 
 ## Mejores Prácticas
 

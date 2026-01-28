@@ -31,8 +31,10 @@ describe('OnboardingCliente - Optional Login', () => {
             user: null,
             loginWithGoogle: mockLoginWithGoogle,
             trackBehavior: vi.fn(),
-            loadingUser: false
+            loadingUser: false,
+            selectedCity: 'Cancun'
         });
+
 
         useService.mockReturnValue({
             catalog: {
@@ -45,8 +47,22 @@ describe('OnboardingCliente - Optional Login', () => {
             meta: {
                 trackCompleteRegistration: vi.fn(),
                 generateEventId: vi.fn().mockReturnValue('event-1')
+            },
+            financial: {
+                calculateAffordability: vi.fn().mockReturnValue({
+                    maxBudget: 1500000,
+                    dynamicNote: 'Test note',
+                    isAlert: false
+                })
+            },
+            config: {
+                getPlatformSettings: vi.fn().mockResolvedValue({
+                    hideNoPriceModels: false,
+                    hideNoPhotosModels: false
+                })
             }
         });
+
 
         // Mock localStorage
         Storage.prototype.getItem = vi.fn();

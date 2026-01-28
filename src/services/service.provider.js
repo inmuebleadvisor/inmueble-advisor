@@ -29,6 +29,8 @@ import { ClientService } from './client.service';
 import { CrmService } from './crm.service';
 import { LeadAssignmentService } from './leadAssignment.service';
 import { FavoritesService } from './favorites.service';
+import { FinancialService } from './financial.service';
+
 
 // 1. Instantiate Repositories
 import { ConfigRepository } from '../repositories/config.repository';
@@ -61,6 +63,8 @@ export const clientService = new ClientService(userRepository);
 export const crmService = new CrmService(leadRepository, externalAdvisorService);
 export const leadAssignmentService = new LeadAssignmentService(leadRepository, clientService, catalogRepository);
 export const favoritesService = new FavoritesService(userRepository);
+export const financialService = new FinancialService();
+
 
 // New Services
 export const dashboardService = new DashboardServiceImpl(dashboardRepository);
@@ -88,5 +92,6 @@ export const services = {
     dashboard: dashboardService,
     admin: adminService,
     meta: metaService,
-    analytics: analyticsService
+    analytics: analyticsService,
+    financial: financialService
 };
