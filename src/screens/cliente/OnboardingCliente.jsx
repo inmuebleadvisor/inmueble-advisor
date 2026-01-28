@@ -212,23 +212,10 @@ export default function OnboardingCliente() {
         <main className="onboarding-container">
             <article className="onboarding-card">
 
-                {/* Barra de Progreso */}
-                <header className="onboarding-card__header">
-                    <div className="onboarding-card__progress-container">
-                        <div className="onboarding-card__progress-fill" style={{ width: `${(step / totalSteps) * 100}%` }}></div>
-                    </div>
-
-                    {/* Feedback "Microporras" */}
-                    <div className={`onboarding-card__feedback ${microFeedback ? 'onboarding-card__feedback--visible' : ''}`}>
-                        {microFeedback}
-                    </div>
-                </header>
-
                 <section className="onboarding-card__content" key={step}>
 
                     {step === 1 && (
                         <>
-                            <h1 className="onboarding-card__title">Hablemos de números</h1>
                             <p className="onboarding-card__subtitle">Ajusta los valores para ver tu capacidad real.</p>
 
                             <div className="onboarding-card__calculator">

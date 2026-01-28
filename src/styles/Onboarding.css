@@ -7,22 +7,23 @@
     justify-content: flex-start;
     align-items: center;
     width: 100%;
-    height: 100%;
-    padding: 20px;
+    min-height: 100%;
+    padding: 20px 20px 80px 20px;
+    /* Extra bottom padding for mobile browsers / WhatsApp button */
     background-color: transparent;
     font-family: var(--font-main);
 }
 
 .onboarding-card {
     background-color: var(--bg-secondary);
-    padding: 30px;
+    padding: 10px 30px 30px 30px;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
     max-width: 500px;
     width: 100%;
     text-align: center;
     position: relative;
-    overflow: hidden;
+    /* Quitar overflow hidden para evitar cortes en móviles */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -68,7 +69,8 @@
 
 .onboarding-card__subtitle {
     color: var(--text-secondary);
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
+    margin-top: 5px;
     font-size: 1rem;
     line-height: 1.5;
 }
