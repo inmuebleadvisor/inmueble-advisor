@@ -27,8 +27,11 @@ vi.mock('../src/hooks/useService', () => ({
     useService: () => ({
         catalog: {
             obtenerDatosUnificados: vi.fn(() => Promise.resolve([
-                { id: 1, precioNumerico: 2000000, recamaras: 3, esPreventa: false },
-                { id: 2, precioNumerico: 5000000, recamaras: 4, esPreventa: true }
+                { id: 1, idDesarrollo: 'dev1', precioNumerico: 2000000, recamaras: 3, esPreventa: false },
+                { id: 2, idDesarrollo: 'dev1', precioNumerico: 5000000, recamaras: 4, esPreventa: true }
+            ])),
+            obtenerInventarioDesarrollos: vi.fn(() => Promise.resolve([
+                { id: 'dev1', status: 'ENTREGA INMEDIATA', activo: true }
             ]))
         },
         client: {

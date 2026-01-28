@@ -8,7 +8,7 @@ import { useService } from '../../hooks/useService';
 import { FINANZAS } from '../../config/constants';
 // Firestore imports eliminados por refactoring (DI Principle)
 import '../../styles/Onboarding.css'; // Importamos estilos dedicados
-import '../../styles/Onboarding.css'; // Importamos estilos dedicados
+import { CatalogService } from '../../services/catalog.service';
 
 const STORAGE_KEY = 'inmueble_advisor_onboarding_cliente_temp';
 
@@ -41,6 +41,7 @@ export default function OnboardingCliente() {
 
     // Estados derivados
     const [dataMaestra, setDataMaestra] = useState([]);
+    const [desarrollos, setDesarrollos] = useState([]);
     const [presupuestoMaximo, setPresupuestoMaximo] = useState(0);
     const [notaDinamica, setNotaDinamica] = useState('');
     const [esAlerta, setEsAlerta] = useState(false);
@@ -60,6 +61,7 @@ export default function OnboardingCliente() {
     // Carga de Datos
     useEffect(() => {
         catalogService.obtenerDatosUnificados().then(setDataMaestra);
+        catalogService.obtenerInventarioDesarrollos().then(setDesarrollos);
     }, []);
 
     // Cálculo Financiero
@@ -84,15 +86,20 @@ export default function OnboardingCliente() {
 
     // Opciones encontradas
     const opcionesEncontradas = useMemo(() => {
-        if (presupuestoMaximo === 0 || dataMaestra.length === 0) return 0;
-        return dataMaestra.filter(item => {
-            if (item.precioNumerico > presupuestoMaximo) return false;
-            if (recamaras && item.recamaras < recamaras) return false;
-            if (entregaInmediata === true && item.esPreventa === true) return false;
-            if (entregaInmediata === false && item.esPreventa === false) return false;
-            return true;
-        }).length;
-    }, [presupuestoMaximo, recamaras, entregaInmediata, dataMaestra]);
+        if (presupuestoMaximo === 0 || dataMaestra.length === 0 || desarrollos.length === 0) return 0;
+
+        const filters = {
+            precioMin: 0,
+            precioMax: presupuestoMaximo,
+            habitaciones: recamaras || 0,
+            status: entregaInmediata === true ? 'inmediata' : (entregaInmediata === false ? 'preventa' : 'all'),
+            tipo: 'all',
+            amenidad: '',
+            showNoPrice: false
+        };
+
+        return CatalogService.filterCatalog(dataMaestra, desarrollos, filters, '').length;
+    }, [presupuestoMaximo, recamaras, entregaInmediata, dataMaestra, desarrollos]);
 
     // --- HANDLERS ---
     const nextStep = () => {
