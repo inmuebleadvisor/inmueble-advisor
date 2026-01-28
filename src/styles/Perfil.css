@@ -61,6 +61,7 @@
     gap: 16px;
     align-items: center;
     width: 100%;
+    margin-top: 2rem;
 }
 
 /* Visibility Utilities */
@@ -68,10 +69,11 @@
     display: none;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
     .hero-actions {
         flex-direction: row;
         justify-content: center;
+        flex-wrap: wrap;
     }
 
     .desktop-only {
@@ -79,8 +81,7 @@
     }
 
     .hero-subtitle {
-        margin-bottom: 3rem;
-        /* Restore desktop spacing */
+        margin-bottom: 2rem;
     }
 }
 
@@ -88,24 +89,28 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--primary-color);
-    color: var(--text-inverse);
-    padding: 16px 32px;
+    background-color: rgba(255, 255, 255, 0.03);
+    color: var(--text-main);
+    padding: 14px 24px;
     border-radius: 50px;
-    border: none;
-    font-size: 1.1rem;
+    border: 2px solid var(--primary-color);
+    font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
-    box-shadow: var(--shadow-glow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-sm);
     width: 100%;
-    max-width: 350px;
+    max-width: 280px;
+    text-align: center;
+    line-height: 1.2;
+    backdrop-filter: blur(10px);
 }
 
 .btn-cta-primary:hover {
     transform: translateY(-2px);
-    background-color: var(--primary-hover);
-    box-shadow: var(--shadow-md);
+    background-color: var(--primary-color);
+    color: var(--text-inverse);
+    box-shadow: var(--shadow-glow), 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 .btn-cta-secondary {
@@ -114,16 +119,17 @@
     justify-content: center;
     background-color: transparent;
     color: var(--text-main);
-    padding: 16px 32px;
+    padding: 14px 24px;
     border-radius: 50px;
     border: 2px solid var(--border-strong);
     font-size: 1rem;
-    /* Smaller font as requested */
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
     width: 100%;
-    max-width: 350px;
+    max-width: 280px;
+    text-align: center;
+    line-height: 1.2;
 }
 
 .btn-cta-secondary:hover {

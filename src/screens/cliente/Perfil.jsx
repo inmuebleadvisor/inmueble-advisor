@@ -58,15 +58,11 @@ export default function Perfil() {
       <div className="hero-content">
 
         <h1 className="hero-title">
-          Inversión <span className="highlight-text">inteligente</span> <span className="desktop-only">para tu futuro</span>
+          Encuentra tu <span className="highlight-text">mejor inversión</span>
         </h1>
 
-        <p className="hero-subtitle">
-          Encuentra la propiedad perfecta para ti <span className="desktop-only">con la mejor asesoría financiera y ubicación estratégica.</span>
-        </p>
-
         <div className="hero-actions">
-          {/* CTA Primario: Onboarding */}
+          {/* CTA 1: Onboarding */}
           <button
             onClick={handleStartOnboarding}
             className="btn-cta-primary"
@@ -74,12 +70,20 @@ export default function Perfil() {
             Descubre tu monto de compra
           </button>
 
-          {/* CTA Secundario: Catálogo Directo */}
+          {/* CTA 2: Catálogo */}
           <button
             onClick={() => navigate('/catalogo')}
-            className="btn-cta-secondary"
+            className="btn-cta-primary"
           >
-            Ver Catálogo
+            Conoce los modelos
+          </button>
+
+          {/* CTA 3: Mapa */}
+          <button
+            onClick={() => navigate('/mapa')}
+            className="btn-cta-primary"
+          >
+            Navega por el mapa
           </button>
         </div>
 

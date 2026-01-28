@@ -54,17 +54,16 @@ describe('OnboardingCliente - Optional Login', () => {
         Storage.prototype.removeItem = vi.fn();
     });
 
-    it('allows skipping login and redirects to catalog with filters', async () => {
-        // Render step 3 directly (or navigate to it)
-        // For simplicity, we mock the initial state to step 3
+    it('allows skipping login and redirects to catalog with defaults', async () => {
+        // Render step 2 directly (Result step)
         Storage.prototype.getItem.mockImplementation((key) => {
             if (key === 'inmueble_advisor_onboarding_cliente_temp') {
                 return JSON.stringify({
-                    step: 3,
+                    step: 2,
                     capitalInicial: 500000,
                     mensualidad: 20000,
-                    recamaras: 3,
-                    entregaInmediata: true
+                    recamaras: null,
+                    entregaInmediata: null
                 });
             }
             return null;
@@ -87,19 +86,17 @@ describe('OnboardingCliente - Optional Login', () => {
         const skipBtn = screen.getByText(/Continuar sin cuenta/i);
         fireEvent.click(skipBtn);
 
-        // Should navigate to catalog with specific params
-        // Max Price for 500k savings + 20k monthly is calculated in logic.
-        // We just verify navigate was called with correct structure
+        // Should navigate to catalog
         expect(mockNavigate).toHaveBeenCalledWith(
             expect.stringContaining('/catalogo?maxPrice='),
             expect.objectContaining({ replace: true })
         );
         expect(mockNavigate).toHaveBeenCalledWith(
-            expect.stringContaining('rooms=3'),
+            expect.stringContaining('rooms='),
             expect.any(Object)
         );
         expect(mockNavigate).toHaveBeenCalledWith(
-            expect.stringContaining('status=inmediata'),
+            expect.stringContaining('status=all'),
             expect.any(Object)
         );
 

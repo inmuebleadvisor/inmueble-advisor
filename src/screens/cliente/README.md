@@ -4,7 +4,7 @@ Este módulo gestiona la experiencia inicial del comprador ("Buyer First"), perm
 
 ## 🚀 Funcionalidades Clave
 
-1.  **Perfilamiento Dinámico:** Captura de preferencias de recámaras y tiempo de entrega.
+1.  **Enfoque Financiero:** El onboarding inicia directamente con "Hablemos de números", reduciendo la fricción para el usuario.
 2.  **Calculadora de Capacidad:** Algoritmo financiero que cruza ahorros (`capitalInicial`) y mensualidad cómoda para determinar el presupuesto máximo real, incluyendo gastos notariales.
 3.  **Motor de Filtrado Unificado:** Utiliza `CatalogService.filterCatalog` para garantizar que el número de opciones mostrado sea idéntico al que el usuario verá en el catálogo principal.
 4.  **Confirmación y Registro:** Integración con Google Auth y persistencia del perfil financiero en Firestore.

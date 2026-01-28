@@ -30,7 +30,7 @@ export default function OnboardingCliente() {
     };
 
     const [step, setStep] = useState(() => getSavedState('step', 1));
-    const totalSteps = 3;
+    const totalSteps = 2;
     const [isSaving, setIsSaving] = useState(false);
 
     // Datos del formulario
@@ -107,7 +107,7 @@ export default function OnboardingCliente() {
             trackBehavior('step_completed', { step_number: step });
 
             // Micro-Feedback Visual (Sin clicks extra)
-            const mensajes = ["Paso 2 de 3", "", ""];
+            const mensajes = ["", ""];
             setMicroFeedback(mensajes[step - 1]);
             setTimeout(() => setMicroFeedback(''), 2000);
 
@@ -205,7 +205,6 @@ export default function OnboardingCliente() {
     };
 
     const isStepValid = () => {
-        if (step === 1) return recamaras !== null && entregaInmediata !== null;
         return true;
     };
 
@@ -229,32 +228,6 @@ export default function OnboardingCliente() {
 
                     {step === 1 && (
                         <>
-                            <h1 className="onboarding-card__title">Dime qué buscas</h1>
-                            <p className="onboarding-card__subtitle">Filtraremos las mejores opciones para ti.</p>
-
-                            <label className="onboarding-card__label">Recámaras mínimas:</label>
-                            <div className="onboarding-card__options">
-                                {[1, 2, 3, 4].map((num) => (
-                                    <button
-                                        key={num}
-                                        onClick={() => setRecamaras(num)}
-                                        className={`circle-btn ${recamaras === num ? 'circle-btn--active' : ''}`}
-                                    >
-                                        {num === 4 ? '4+' : num}
-                                    </button>
-                                ))}
-                            </div>
-
-                            <label className="onboarding-card__label" style={{ marginTop: '20px' }}>Tiempo de entrega:</label>
-                            <div className="onboarding-card__delivery">
-                                <button onClick={() => setEntregaInmediata(true)} className={`delivery-btn ${entregaInmediata === true ? 'delivery-btn--active' : ''}`}>Entrega inmediata</button>
-                                <button onClick={() => setEntregaInmediata(false)} className={`delivery-btn ${entregaInmediata === false ? 'delivery-btn--active' : ''}`}>Pre-venta</button>
-                            </div>
-                        </>
-                    )}
-
-                    {step === 2 && (
-                        <>
                             <h1 className="onboarding-card__title">Hablemos de números</h1>
                             <p className="onboarding-card__subtitle">Ajusta los valores para ver tu capacidad real.</p>
 
@@ -275,7 +248,7 @@ export default function OnboardingCliente() {
                                 </div>
 
                                 <div className="onboarding-card__calc-group">
-                                    <label className="onboarding-card__label">Mensualidad cómoda:</label>
+                                    <label className="onboarding-card__label">Cuanto puedes pagar mensual:</label>
                                     <input
                                         type="number"
                                         className="onboarding-card__numeric-field"
@@ -292,7 +265,7 @@ export default function OnboardingCliente() {
                         </>
                     )}
 
-                    {step === 3 && (
+                    {step === 2 && (
                         <>
                             <h1 className="onboarding-card__title">¡Listo!</h1>
                             <p className="onboarding-card__subtitle">Este es el valor de propiedad recomendado:</p>
