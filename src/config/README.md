@@ -7,7 +7,12 @@ Este directorio contiene las constantes y configuraciones globales de la aplicac
 - `posthog.js`: Configuración del rastreo de telemetría.
 - `theme.config.js`: Tokens de diseño y variables de estilo.
 
-## Meta Ads (CAPI & Pixel)
+## PostHog (Product Analytics)
+La integración con PostHog requiere las siguientes variables de entorno en el cliente (Vite):
+- `VITE_APP_POSTHOG`: El identificador (Project API Key) del proyecto.
+- `VITE_APP_POSTHOG_HOST`: (Opcional) El host de la instancia (por defecto `https://us.i.posthog.com`).
+
+**Nota:** Si estas variables no están configuradas en el entorno de build (CD/CI), el rastreo se desactivará automáticamente.
 La configuración de Meta se encuentra en `constants.js` bajo el objeto `META_CONFIG`.
 
 ### IMPORTANT - Eliminación para Producción

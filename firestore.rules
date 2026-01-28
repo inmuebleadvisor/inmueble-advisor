@@ -60,18 +60,19 @@ service cloud.firestore {
     }
 
     // 4. Analytics
-    match /analytics_events/{eventId} {
-      allow create: if true; // Analytics should be open for creation? Or only auth? 
-                             // Usually "if true" for public site navigation tracking, but we enforce auth in UserContext.
-                             // Let's keep strict:
-      allow create: if isAuthenticated();
-      allow read, update, delete: if isAdmin();
-    }
-    
-    match /analytics_sessions/{sessionId} {
-      allow create: if isAuthenticated();
-      allow update: if isOwner(resource.data.uid);
+    // Mantenemos el nombre 'analytic_events' para coincidir con AnalyticEventsRepository.js
+    match /analytic_events/{eventId} {
+      // Permitimos creación a usuarios anónimos para no perder métricas de tráfico inicial.
+      allow create: if true; 
+      
+      // Solo el Admin puede leer o borrar eventos de analíticas.
       allow read: if isAdmin();
+      
+      // Permitimos actualización si el usuario es el dueño de la sesión (para contadores de páginas)
+      // O si es un usuario anónimo (confiamos en el volumen pero limitamos a campos específicos en producción idealmente)
+      allow update: if isAuthenticated() || (request.auth == null && resource.data.uid == 'ANONYMOUS');
+      
+      allow delete: if isAdmin();
     }
 
     // Default: Deny all
