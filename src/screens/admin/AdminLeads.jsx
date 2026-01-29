@@ -165,22 +165,14 @@ const AdminLeads = () => {
         { header: 'Desarrollo', accessor: 'nombreDesarrollo' },
         {
             header: 'Estado', accessor: 'status', render: row => {
-                let color = '#64748b'; // default slate
                 const s = row.status;
-                if (s === 'PENDING_DEVELOPER_CONTACT') color = '#e11d48';
-                else if (s === 'REPORTED') color = '#f59e0b';
-                else if (s === 'ASSIGNED_EXTERNAL') color = '#3b82f6';
-                else if (s === 'WON') color = '#10b981';
+                let modifier = 'pending'; // Default
+                if (s === 'REPORTED') modifier = 'reported';
+                else if (s === 'ASSIGNED_EXTERNAL') modifier = 'assigned';
+                else if (s === 'WON') modifier = 'won';
 
                 return (
-                    <span style={{
-                        backgroundColor: color,
-                        color: 'white',
-                        padding: '2px 8px',
-                        borderRadius: '12px',
-                        fontSize: '0.75rem',
-                        fontWeight: 'bold'
-                    }}>
+                    <span className={`admin-badge admin-badge--${modifier}`}>
                         {STATUS_LABELS[s] || s}
                     </span>
                 );
@@ -188,7 +180,7 @@ const AdminLeads = () => {
         },
         {
             header: 'Acciones', render: row => (
-                <div style={{ display: 'flex', gap: '5px' }}>
+                <div className="admin-actions-group">
                     {(row.status === 'PENDING_DEVELOPER_CONTACT' || row.status === 'REPORTED') && (
                         <button onClick={() => handleReport(row)} className="action-btn action-btn--report">
                             Reportar

@@ -93,13 +93,15 @@ const AdminHome = () => {
                     icon={Calendar}
                     variant="indigo"
                 />
+                {/* 
                 <MetricCard
                     label="Promedio Tiempo/Sitio"
                     value="-- min"
                     icon={Timer}
                     variant="rose"
                     subtext="Próximamente"
-                />
+                /> 
+                */}
             </section>
 
             {/* CHARTS SECTION */}

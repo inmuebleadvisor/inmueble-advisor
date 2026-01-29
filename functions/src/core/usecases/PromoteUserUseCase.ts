@@ -6,28 +6,33 @@ export class PromoteUserUseCase {
     constructor(private userRepository: UserRepository) { }
 
     async execute(uid: string, requesterUid: string): Promise<void> {
-        // 1. Validate Requester (Optional layer, usually handled by trigger context)
-        // In this case, logic is: User promotes themselves? check restrictions.
-        // The original code allowed self-promotion if user was client.
+        // 1. Fetch Requester and Target User
+        const [requester, targetUser] = await Promise.all([
+            this.userRepository.getUserById(requesterUid),
+            this.userRepository.getUserById(uid)
+        ]);
 
-        const user = await this.userRepository.getUserById(uid);
-        if (!user) {
-            throw new Error("User not found");
+        if (!targetUser) throw new Error("Target user not found");
+        if (!requester) throw new Error("Requester not found");
+
+        // 2. Authorization Logic
+        const isSelfPromotion = uid === requesterUid;
+        const isAdmin = requester.role === ROLES.ADMIN;
+
+        if (!isSelfPromotion && !isAdmin) {
+            throw new Error("Unauthorized: Only admins can promote other users");
         }
 
-        // Logic from frontend was: const newRole = currentRole === 'admin' ? 'admin' : 'asesor';
-        // We replicate safe logic here.
-        // We DO NOT allow upgrading to admin via this function. 
-        // Only upgrade to 'asesor'.
-
-        if (user.role === ROLES.ADMIN) {
-            // Already admin, do nothing or keep admin
+        // 3. Role Logic
+        if (targetUser.role === ROLES.ADMIN) {
+            // Already admin, do nothing
             return;
         }
 
         // Upgrade to Advisor
         await this.userRepository.updateUserRole(uid, ROLES.ADVISOR, {
             onboardingCompleto: true,
+            promovidoPor: isSelfPromotion ? 'SELF' : requesterUid,
             fechaRegistroAsesor: new Date().toISOString()
         });
     }

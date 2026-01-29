@@ -21,70 +21,10 @@ const AdminDataExport = () => {
     setStatus({ msg: '⏳ Descargando Desarrollos... espera un momento.', type: 'info' });
 
     try {
-      // 1. Petición a Service Layer
-      const docs = await admin.getAllDesarrollos();
+      // 1. Petición a Service Layer (Lógica Desacoplada)
+      const { headers, rows } = await admin.getDesarrollosExportData();
 
-      // 2. Definición de Columnas (Headers vs DATOSESTRUCTURA.md)
-      const headers = [
-        "id",
-        "nombre",
-        "status",
-        "constructora",
-        "geografiaId", // FK Geo
-        "ubicacion.calle",
-        "ubicacion.colonia",
-        "ubicacion.ciudad",
-        "ubicacion.estado",
-        "ubicacion.zona",
-        "ubicacion.latitud",
-        "ubicacion.longitud",
-        "precios.desde", // Mapeado a precioDesde
-        "stats.ofertaTotal",
-        "stats.viviendasxVender",
-        "infoComercial.fechaInicioVenta",
-        "infoComercial.unidadesTotales",
-        "infoComercial.unidadesVendidas",
-        "infoComercial.unidadesDisponibles",
-        "keywords",
-        "caracteristicas.amenidades"
-      ];
-
-      // 3. Mapeo de Documentos a Filas CSV
-      const rows = docs.map(data => {
-        const ubicacion = data.ubicacion || {};
-        const info = data.info_comercial || {}; // Adapting to model mapper 
-        const stats = data.stats || {};
-        const caracteristicas = data.caracteristicas || {};
-
-        const amenidadesStr = Array.isArray(data.amenidades) ? data.amenidades.join(' | ') : '';
-        const keywordsStr = Array.isArray(data.keywords) ? data.keywords.join(' | ') : '';
-
-        return [
-          cleanField(data.id),
-          cleanField(data.nombre),
-          cleanField(data.active ? 'activo' : 'inactivo'), // Model maps 'activo' boolean
-          cleanField(data.constructora),
-          cleanField(data.geografiaId),
-          cleanField(ubicacion.calle),
-          cleanField(ubicacion.colonia),
-          cleanField(ubicacion.ciudad),
-          cleanField(ubicacion.estado),
-          cleanField(data.zona || ubicacion.zona),
-          cleanField(data.latitud), // Model already parses coord
-          cleanField(data.longitud), // Model already parses coord
-          cleanField(data.precioDesde),
-          cleanField(stats.ofertaTotal),
-          cleanField(stats.viviendasxVender),
-          cleanField(parseDate(info.fechaInicioVenta)),
-          cleanField(info.unidadesTotales),
-          cleanField(info.unidadesVendidas),
-          cleanField(info.unidadesDisponibles),
-          cleanField(keywordsStr),
-          cleanField(amenidadesStr)
-        ].map(val => String(val)).join(','); // Ensure join works
-      });
-
-      // 4. Crear y descargar archivo
+      // 2. Crear y descargar archivo
       downloadCSV(headers, rows, 'BD_Desarrollos_Master.csv');
       setStatus({ msg: `✅ Éxito: ${rows.length} desarrollos descargados.`, type: 'success' });
 
@@ -103,70 +43,10 @@ const AdminDataExport = () => {
     setStatus({ msg: '⏳ Descargando Modelos... esto puede tardar si hay muchos.', type: 'info' });
 
     try {
-      const docs = await admin.getAllModelos();
+      // 1. Petición a Service Layer (Lógica Desacoplada)
+      const { headers, rows } = await admin.getModelosExportData();
 
-      const headers = [
-        "id",
-        "idDesarrollo", // FK
-        "nombreModelo",
-        "nombreDesarrollo", // Ref
-        "tipoVivienda",
-        "esPreventa", // calc
-        "precios.base",
-        "precios.mantenimientoMensual",
-        "recamaras",
-        "banos",
-        "niveles",
-        "cajones",
-        "specs.m2", // Flattened in model but schema says specs.m2? 
-        // Wait, DATOSESTRUCTURA says "specs" root level has m2? No "specs: - m2". so specs.m2 or root m2?
-        // Visual checking DATOSESTRUCTURA:
-        // "| specs | - | - | Especificaciones directas (Root level). |"
-        // "| m2 | number | Simple | Construcción. |"
-        // It seems to imply they are root level fields conceptually grouped under specs in documentation.
-        // Model mapper puts them at root: data.m2. 
-        // Export will follow Model Mapper.
-        "m2",
-        "terreno",
-        "frente",
-        "fondo",
-        "ubicacion.latitud",
-        "ubicacion.longitud",
-        "amenidades"
-      ];
-
-      const rows = docs.map(data => {
-        // Model mapper flat structure
-        const ubicacion = data.ubicacion || {};
-        const amenidadesStr = Array.isArray(data.amenidades) ? data.amenidades.join(' | ') : '';
-
-        return [
-          cleanField(data.id),
-          cleanField(data.idDesarrollo),
-          cleanField(data.nombre_modelo), // Mapper uses nombre_modelo
-          cleanField(data.nombreDesarrollo),
-          cleanField(data.tipoVivienda),
-          cleanField(data.esPreventa ? 'SI' : 'NO'),
-          cleanField(data.precioNumerico), // Best proxy for active price
-          cleanField(data.precios?.mantenimientoMensual),
-          cleanField(data.recamaras),
-          cleanField(data.banos),
-          cleanField(data.niveles),
-          cleanField(data.cajones),
-          cleanField(data.m2),
-          cleanField(data.terreno),
-          cleanField(data.frente), // Model might not map this yet? Let's check Model.js. 
-          // Model.js doesn't seem to map `frente` explicitly in the return object?
-          // Checked `mapModelo`: `frente` is NOT in the return object!
-          // This is a GAP found. I will map it if present in data, otherwise empty.
-          cleanField(data.frente),
-          cleanField(data.fondo),
-          cleanField(data.latitud),
-          cleanField(data.longitud),
-          cleanField(amenidadesStr)
-        ].map(val => String(val)).join(',');
-      });
-
+      // 2. Descargar
       downloadCSV(headers, rows, 'BD_Modelos_Master.csv');
       setStatus({ msg: `✅ Éxito: ${rows.length} modelos descargados.`, type: 'success' });
 

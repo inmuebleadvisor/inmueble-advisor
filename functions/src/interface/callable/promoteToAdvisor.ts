@@ -15,14 +15,16 @@ export const promoteToAdvisor = functions.https.onCall(async (data, context) => 
         );
     }
 
-    const uid = context.auth.uid;
+    const requesterUid = context.auth.uid;
+    const targetUid = data.uid || requesterUid; // Support both self and admin-led
 
     // 2. Execute Use Case
     try {
-        await promoteUserUseCase.execute(uid, uid);
-        return { success: true, message: 'User promoted successfully' };
+        await promoteUserUseCase.execute(targetUid, requesterUid);
+        return { success: true, message: `User ${targetUid} promoted successfully` };
     } catch (error) {
         console.error("Error promoting user:", error);
-        throw new functions.https.HttpsError('internal', 'Unable to promote user');
+        const message = error instanceof Error ? error.message : 'Unable to promote user';
+        throw new functions.https.HttpsError('internal', message);
     }
 });

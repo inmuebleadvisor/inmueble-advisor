@@ -813,3 +813,60 @@ body {
   text-align: center;
   color: var(--admin-text-secondary);
 }
+/* --- LEAD STATUS BADGES --- */
+.admin-badge--pending {
+  background-color: var(--admin-danger-bg);
+  color: var(--admin-danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.admin-badge--reported {
+  background-color: var(--admin-warning-bg);
+  color: var(--admin-warning);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.admin-badge--assigned {
+  background-color: var(--admin-info-bg);
+  color: var(--admin-info);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.admin-badge--won {
+  background-color: var(--admin-success-bg);
+  color: var(--admin-success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/* --- ACTION BUTTONS --- */
+.action-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.action-btn--report {
+  background-color: var(--admin-warning-bg);
+  color: var(--admin-warning);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.action-btn--report:hover {
+  background-color: var(--admin-warning);
+  color: white;
+}
+
+.action-btn--assign {
+  background-color: var(--admin-info-bg);
+  color: var(--admin-info);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.action-btn--assign:hover {
+  background-color: var(--admin-info);
+  color: white;
+}
