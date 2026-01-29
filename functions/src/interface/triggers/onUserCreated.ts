@@ -7,7 +7,7 @@ export const notifyNewUser = functions
     .runWith({ secrets: ["TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"] })
     .auth.user()
     .onCreate(async (user) => {
-        logger.info(`Processing new user trigger for UID: ${user.uid}`);
+        logger.info(`[AUTH_TRIGGER] Starting notification for UID: ${user.uid} (${user.email})`);
         try {
             const telegramService = new TelegramService();
             const useCase = new NotifyNewUser(telegramService);
@@ -18,8 +18,8 @@ export const notifyNewUser = functions
                 displayName: user.displayName
             });
 
-            logger.info(`Notification sent successfully for user: ${user.uid}`);
+            logger.info(`[AUTH_TRIGGER] SUCCESS: Telegram alert sent for user: ${user.uid}`);
         } catch (error) {
-            logger.error(`Error in notifyNewUser trigger for UID: ${user.uid}:`, error);
+            logger.error(`[AUTH_TRIGGER] ERROR for UID: ${user.uid}:`, error);
         }
     });

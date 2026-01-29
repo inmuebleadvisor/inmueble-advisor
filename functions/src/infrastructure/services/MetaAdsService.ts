@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as crypto from 'crypto';
+import * as logger from 'firebase-functions/logger';
 import { META_CONFIG } from '../../core/constants/meta';
 import { TrackingService, TrackingEvent } from '../../core/interfaces/TrackingService';
 
@@ -81,28 +82,28 @@ export class MetaAdsService implements TrackingService {
             };
 
             if (META_CONFIG.TEST_EVENT_CODE) {
-                console.debug(`🧪 [Meta CAPI] TEST MODE ACTIVE. Code: ${META_CONFIG.TEST_EVENT_CODE}`);
+                logger.debug(`🧪 [Meta CAPI] TEST MODE ACTIVE. Code: ${META_CONFIG.TEST_EVENT_CODE}`);
             }
 
             // Sanity Check
             if (!payload.data[0].event_id) {
-                console.error("⛔ [FATAL] 'event_id' is MISSING in the generated payload!");
+                logger.error("⛔ [FATAL] 'event_id' is MISSING in the generated payload!");
             }
 
             // ✅ Debug Log: Show full JSON being sent
-            console.debug(`📦 [Meta CAPI] Payload for '${eventName}':`, JSON.stringify(payload, null, 2));
+            logger.debug(`📦 [Meta CAPI] Payload for '${eventName}':`, JSON.stringify(payload, null, 2));
 
             const response = await axios.post(this.baseUrl, payload);
 
             if (response.data && response.data.error) {
-                console.error('Meta CAPI Error Response:', response.data.error);
+                logger.error('Meta CAPI Error Response:', response.data.error);
                 throw new Error(response.data.error.message);
             }
 
-            console.log(`Meta CAPI Event '${eventName}' sent successfully. EventID: ${eventId}`);
+            logger.info(`Meta CAPI Event '${eventName}' sent successfully. EventID: ${eventId}`);
 
         } catch (error: any) {
-            console.error('Failed to send Meta CAPI event:', error.response?.data || error.message);
+            logger.error('Failed to send Meta CAPI event:', error.response?.data || error.message);
         }
     }
 }

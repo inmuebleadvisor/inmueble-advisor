@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserMessageBuilder = void 0;
+const BaseMessageBuilder_1 = require("./BaseMessageBuilder");
 /**
  * Builder for User-related Telegram messages.
- * Reproduces the pattern of LeadMessageBuilder to ensure consistency.
  */
 class UserMessageBuilder {
     /**
@@ -11,21 +11,14 @@ class UserMessageBuilder {
      * @param user - { uid, email, displayName }
      */
     static formatMessage(user) {
-        // --- HELPERS ---
-        const escape = (text) => {
-            if (!text)
-                return 'N/A';
-            // Escapes characters that break Telegram Markdown V1
-            return text.replace(/[_*`[\]()]/g, '\\$&');
-        };
         const name = user.displayName || "Usuario sin nombre";
         const email = user.email || "No especificado";
         // --- BUILD MESSAGE ---
         let mensaje = `🚀 *Nuevo Usuario Registrado*\n\n`;
-        mensaje += `👤 **Nombre:** ${escape(name)}\n`;
-        mensaje += `📧 **Email:** ${escape(email)}\n`;
-        mensaje += `🆔 **UID:** \`${user.uid}\`\n\n`;
-        mensaje += `_Inmueble Advisor Admin_`;
+        mensaje += `👤 *Nombre:* ${BaseMessageBuilder_1.BaseMessageBuilder.escapeMarkdown(name)}\n`;
+        mensaje += `📧 *Email:* ${BaseMessageBuilder_1.BaseMessageBuilder.escapeMarkdown(email)}\n`;
+        mensaje += `🆔 *UID:* \`${user.uid}\`\n\n`;
+        mensaje += BaseMessageBuilder_1.BaseMessageBuilder.getFooter();
         return mensaje;
     }
 }

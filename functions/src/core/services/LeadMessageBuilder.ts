@@ -1,28 +1,8 @@
 import { STATUS_LABELS } from "../constants";
+import { BaseMessageBuilder } from "./BaseMessageBuilder";
 
 export class LeadMessageBuilder {
     static formatMessage(lead: any, clientUser: any | null, otherLeads: any[]): string {
-        // --- HELPERS ---
-        const fmtMoney = (amount: any) => {
-            if (!amount) return 'N/A';
-            return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(Number(amount));
-        };
-
-        const fmtDate = (timestamp: any) => {
-            if (!timestamp) return 'Por confirmar';
-            let date;
-            if (timestamp.toDate) {
-                date = timestamp.toDate();
-            } else if (timestamp.seconds) { // Firestore timestamp object (not class instance)
-                date = new Date(timestamp.seconds * 1000);
-            } else {
-                date = new Date(timestamp);
-            }
-            // Use specific locale/timezone if possible, simplified for Node
-            return date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Mexico_City' });
-        };
-
-
         // --- EXTRACTION ---
         const clienteDatos = lead.clienteDatos || {};
         const name = clienteDatos.nombre || lead.nombre || "Posible Cliente";
@@ -32,34 +12,34 @@ export class LeadMessageBuilder {
 
         // --- BUILD MESSAGE ---
         let mensaje = `🔔 *Nuevo LEAD Reportado*\n\n`;
-        mensaje += `Interesado en *${desarrollo}*\n\n`;
+        mensaje += `Interesado en *${BaseMessageBuilder.escapeMarkdown(desarrollo)}*\n\n`;
 
         // A. Cita
         const citainicial = lead.citainicial || {};
         if (citainicial.dia) {
             mensaje += `📅 *Cita Agendada:*\n`;
-            mensaje += `${fmtDate(citainicial.dia)} a las ${citainicial.hora || 'Hora N/A'}\n\n`;
+            mensaje += `${BaseMessageBuilder.fmtDate(citainicial.dia)} a las ${citainicial.hora || 'Hora N/A'}\n\n`;
         }
 
         // B. Cliente
-        mensaje += `👤 *Cliente:* ${name}\n`;
-        mensaje += `📞 *Tel:* ${phone}\n`;
-        mensaje += `📧 *Email:* ${email}\n\n`;
+        mensaje += `👤 *Cliente:* ${BaseMessageBuilder.escapeMarkdown(name)}\n`;
+        mensaje += `📞 *Tel:* ${BaseMessageBuilder.escapeMarkdown(phone)}\n`;
+        mensaje += `📧 *Email:* ${BaseMessageBuilder.escapeMarkdown(email)}\n\n`;
 
         // C. Interés
         if (lead.modeloInteres) {
-            mensaje += `🏠 *Modelo:* ${lead.modeloInteres}\n`;
+            mensaje += `🏠 *Modelo:* ${BaseMessageBuilder.escapeMarkdown(lead.modeloInteres)}\n`;
         }
         if (lead.precioReferencia) {
-            mensaje += `💰 *Ref:* ${fmtMoney(lead.precioReferencia)}\n`;
+            mensaje += `💰 *Ref:* ${BaseMessageBuilder.fmtMoney(lead.precioReferencia)}\n`;
         }
 
         // D. Perfil Financiero
         const perfil = clientUser?.perfilFinanciero;
         if (perfil) {
             mensaje += `\n💼 *Perfil Financiero:*\n`;
-            if (perfil.capitalInicial) mensaje += `- Efvo: ${fmtMoney(perfil.capitalInicial)}\n`;
-            if (perfil.mensualidadMaxima) mensaje += `- Mensualidad: ${fmtMoney(perfil.mensualidadMaxima)}\n`;
+            if (perfil.capitalInicial) mensaje += `- Efvo: ${BaseMessageBuilder.fmtMoney(perfil.capitalInicial)}\n`;
+            if (perfil.mensualidadMaxima) mensaje += `- Mensualidad: ${BaseMessageBuilder.fmtMoney(perfil.mensualidadMaxima)}\n`;
             if (perfil.recamarasDeseadas) mensaje += `- Habs: ${perfil.recamarasDeseadas}\n`;
 
             let interes = 'Indistinto';
@@ -75,11 +55,11 @@ export class LeadMessageBuilder {
             relevantHistory.forEach(l => {
                 const statusText = STATUS_LABELS[l.status] || l.status;
                 const devName = l.nombreDesarrollo || l.idDesarrollo;
-                mensaje += `- ${devName} (${statusText})\n`;
+                mensaje += `- ${BaseMessageBuilder.escapeMarkdown(devName)} (${statusText})\n`;
             });
         }
 
-        mensaje += `\n_Inmueble Advisor Admin_`;
+        mensaje += `\n${BaseMessageBuilder.getFooter()}`;
 
         return mensaje;
     }

@@ -35,9 +35,10 @@ exports.onLeadCreated = functions
     .firestore
     .document("leads/{leadId}")
     .onCreate(async (snapshot, context) => {
+    const leadId = context.params.leadId;
+    logger.info(`[LEAD_TRIGGER] New lead detected: ${leadId}`);
     try {
         const leadData = snapshot.data();
-        const leadId = context.params.leadId;
         if (!leadData) {
             logger.warn("onLeadCreated triggered with no data");
             return;

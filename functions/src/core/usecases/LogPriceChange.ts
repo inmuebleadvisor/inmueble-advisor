@@ -1,5 +1,6 @@
 import { PriceHistoryRepository, PriceHistoryRecord } from "../../infrastructure/repositories/PriceHistoryRepository";
 import { FieldValue } from "firebase-admin/firestore";
+import * as logger from "firebase-functions/logger";
 
 export class LogPriceChange {
     constructor(private repository: PriceHistoryRepository) { }
@@ -59,9 +60,9 @@ export class LogPriceChange {
         // 5. Persist
         try {
             await this.repository.saveHistory(record);
-            console.log(`[PriceHistory] Logged change for ${modelId}: ${oldVal} -> ${newVal}`);
+            logger.info(`[PriceHistory] Logged change for ${modelId}: ${oldVal} -> ${newVal}`);
         } catch (error) {
-            console.error(`[PriceHistory] Failed to log change for ${modelId}:`, error);
+            logger.error(`[PriceHistory] Failed to log change for ${modelId}:`, error);
         }
     }
 }

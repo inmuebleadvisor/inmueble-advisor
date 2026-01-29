@@ -29,6 +29,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MetaAdsService = void 0;
 const axios_1 = __importDefault(require("axios"));
 const crypto = __importStar(require("crypto"));
+const logger = __importStar(require("firebase-functions/logger"));
 const meta_1 = require("../../core/constants/meta");
 class MetaAdsService {
     constructor() {
@@ -97,23 +98,23 @@ class MetaAdsService {
                     },
                 ], access_token: meta_1.META_CONFIG.ACCESS_TOKEN }, (meta_1.META_CONFIG.TEST_EVENT_CODE ? { test_event_code: meta_1.META_CONFIG.TEST_EVENT_CODE } : {}));
             if (meta_1.META_CONFIG.TEST_EVENT_CODE) {
-                console.debug(`🧪 [Meta CAPI] TEST MODE ACTIVE. Code: ${meta_1.META_CONFIG.TEST_EVENT_CODE}`);
+                logger.debug(`🧪 [Meta CAPI] TEST MODE ACTIVE. Code: ${meta_1.META_CONFIG.TEST_EVENT_CODE}`);
             }
             // Sanity Check
             if (!payload.data[0].event_id) {
-                console.error("⛔ [FATAL] 'event_id' is MISSING in the generated payload!");
+                logger.error("⛔ [FATAL] 'event_id' is MISSING in the generated payload!");
             }
             // ✅ Debug Log: Show full JSON being sent
-            console.debug(`📦 [Meta CAPI] Payload for '${eventName}':`, JSON.stringify(payload, null, 2));
+            logger.debug(`📦 [Meta CAPI] Payload for '${eventName}':`, JSON.stringify(payload, null, 2));
             const response = await axios_1.default.post(this.baseUrl, payload);
             if (response.data && response.data.error) {
-                console.error('Meta CAPI Error Response:', response.data.error);
+                logger.error('Meta CAPI Error Response:', response.data.error);
                 throw new Error(response.data.error.message);
             }
-            console.log(`Meta CAPI Event '${eventName}' sent successfully. EventID: ${eventId}`);
+            logger.info(`Meta CAPI Event '${eventName}' sent successfully. EventID: ${eventId}`);
         }
         catch (error) {
-            console.error('Failed to send Meta CAPI event:', ((_a = error.response) === null || _a === void 0 ? void 0 : _a.data) || error.message);
+            logger.error('Failed to send Meta CAPI event:', ((_a = error.response) === null || _a === void 0 ? void 0 : _a.data) || error.message);
         }
     }
 }
