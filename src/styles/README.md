@@ -17,7 +17,7 @@ Este directorio contiene la arquitectura visual de la plataforma, basada en un d
 - `cards.css`: Contenedores con elevación y estados interactivos.
 
 ### Estilos Modulares (Screen Specific)
-- `AdminDashboard.css`: Panel administrativo y tablas de datos.
+- `Admin.css`: Panel administrativo y tablas de datos.
 - `Catalogo.css`: Filtros y cuadrícula de propiedades.
 - `Onboarding.css`: Flujo secuencial de entrada de clientes.
 - `Mapa.jsx`: Integración con Leaflet y visualización geoespacial.

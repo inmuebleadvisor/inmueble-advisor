@@ -5,10 +5,10 @@ class GenerateDashboardStats {
     constructor(dashboardRepo) {
         this.dashboardRepo = dashboardRepo;
     }
-    async execute() {
-        console.log("🚀 [UseCase] Starting Daily Dashboard Stats Generation...");
+    async execute(isHistorical = true) {
+        console.log(`🚀 [UseCase] Starting Dashboard Stats Generation (Historical: ${isHistorical})...`);
         try {
-            const stats = await this.dashboardRepo.generateDailyStats();
+            const stats = await this.dashboardRepo.generateDailyStats(isHistorical);
             await this.dashboardRepo.saveStats(stats);
             console.log("✅ [UseCase] Stats saved for date:", stats.date);
             return stats;

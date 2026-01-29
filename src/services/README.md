@@ -21,7 +21,7 @@ The `src/services` directory contains the core business logic of the frontend ap
 
 ### 4. Admin Service
 *   **File:** `admin.service.js`
-*   **Purpose:** Provides restricted access to global data (All Users, All Leads) for administrative dashboards.
+*   **Purpose:** Proporciona acceso a datos globales (Usuarios, Leads) para gestión operativa. Las analíticas de negocio se delegan a **Looker Studio**.
 
 ### 5. Financial Service
 *   **File:** `financial.service.js`

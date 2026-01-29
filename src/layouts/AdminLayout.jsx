@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from '../components/admin/AdminSidebar';
 import AdminHeader from '../components/admin/AdminHeader';
-import '../styles/AdminDashboard.css'; // Reusing/Refactoring existing styles or creating new ones
+import '../styles/Admin.css';
+
 
 const AdminLayout = () => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);

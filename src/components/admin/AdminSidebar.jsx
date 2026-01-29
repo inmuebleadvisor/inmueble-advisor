@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, UserCheck, Briefcase } from 'lucide-react';
+import { BarChart2, Users, UserCheck, Briefcase } from 'lucide-react';
 
 const AdminSidebar = ({ collapsed, toggleCollapse }) => {
 
@@ -21,8 +21,8 @@ const AdminSidebar = ({ collapsed, toggleCollapse }) => {
             <nav className="admin-sidebar__nav">
 
                 <NavLink to="/administrador" end className={getLinkClass}>
-                    <LayoutDashboard className="admin-sidebar__icon" />
-                    <span className="admin-sidebar__text">Dashboard</span>
+                    <BarChart2 className="admin-sidebar__icon" />
+                    <span className="admin-sidebar__text">Analíticas</span>
                 </NavLink>
 
                 <NavLink to="/administrador/leads" className={getLinkClass}>

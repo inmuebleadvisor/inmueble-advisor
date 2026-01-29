@@ -6,7 +6,7 @@ Este directorio contiene los componentes de **Vista (Page Views)** que actúan c
 
 *   **`catalogo/`**: Vistas relacionadas a la exploración de inmuebles (`Catalogo`, `DetalleModelo`, `Mapa`).
 *   **`cliente/`**: Vistas del panel de usuario final (`Perfil`, `Favoritos`, `Onboarding`).
-*   **`admin/`**: Panel de administración y dashboard de leads.
+*   **`admin/`**: Panel de administración y analíticas de negocio integradas con **Looker Studio**.
 *   **`leads/`**: Landing pages específicas para captura.
 
 ## Responsabilidades

@@ -35,17 +35,14 @@ import { FinancialService } from './financial.service';
 // 1. Instantiate Repositories
 import { ConfigRepository } from '../repositories/config.repository';
 import { CatalogRepository } from '../repositories/catalog.repository';
-import { DashboardRepository } from '../repositories/dashboard.repository';
 import { AnalyticEventsRepository } from '../repositories/analyticEvents.repository';
 // Refactored Imports for DI
-import { DashboardServiceImpl } from './dashboard.service';
 import { AdminService } from './admin.service';
 
 const leadRepository = new LeadRepository(db);
 const userRepository = new UserRepository(db);
 const externalAdvisorRepository = new ExternalAdvisorRepository(db);
 const catalogRepository = new CatalogRepository(db);
-const dashboardRepository = new DashboardRepository(db);
 const configRepository = new ConfigRepository(db);
 const analyticEventsRepository = new AnalyticEventsRepository(db);
 
@@ -67,7 +64,6 @@ export const financialService = new FinancialService();
 
 
 // New Services
-export const dashboardService = new DashboardServiceImpl(dashboardRepository);
 export const adminService = new AdminService(userRepository, leadRepository, catalogRepository);
 
 // Tracking Services
@@ -89,7 +85,6 @@ export const services = {
     crm: crmService,
     leadAssignment: leadAssignmentService,
     favorites: favoritesService,
-    dashboard: dashboardService,
     admin: adminService,
     meta: metaService,
     analytics: analyticsService,
