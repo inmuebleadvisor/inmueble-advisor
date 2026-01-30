@@ -649,17 +649,9 @@
 }
 
 /* SCROLL REVEAL STYLES */
-.sr-hidden {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  will-change: opacity, transform;
-}
 
-.sr-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
+/* SCROLL REVEAL STYLES MOVED TO INDEX.CSS */
+
 
 /* --- AUDIT REFACTOR: Loading State --- */
 .catalogo--loading {

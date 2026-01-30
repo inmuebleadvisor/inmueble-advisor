@@ -42,12 +42,16 @@
   --text-inverse: #0f172a;
 
   --accent-blue: #3b82f6;
-  
+
   /* Semantic Status Colors */
-  --status-success: #10b981;  /* Green - Entrega Inmediata */
-  --status-warning: #f59e0b;  /* Orange - Preventa */
-  --status-info: #0ea5e9;     /* Blue - Mixed/Info */
-  --status-favorite: #dc2626; /* Red - Favorites */
+  --status-success: #10b981;
+  /* Green - Entrega Inmediata */
+  --status-warning: #f59e0b;
+  /* Orange - Preventa */
+  --status-info: #0ea5e9;
+  /* Blue - Mixed/Info */
+  --status-favorite: #dc2626;
+  /* Red - Favorites */
 
   --success: var(--status-success);
   --error: #ef4444;
@@ -67,6 +71,9 @@
   --radius-sm: 8px;
   --radius-md: 16px;
   --radius-lg: 24px;
+
+  /* Motion */
+  --ease-premium: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Borders */
   --border-subtle: rgba(255, 255, 255, 0.08);
@@ -245,4 +252,17 @@ p {
 .leaflet-pane {
   z-index: 400 !important;
   /* Base Leaflet pane z-index */
+}
+
+/* --- SCROLL REVEAL (Global Animation) --- */
+.sr-hidden {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-out, transform 0.6s var(--ease-premium);
+  will-change: opacity, transform;
+}
+
+.sr-visible {
+  opacity: 1;
+  transform: translateY(0);
 }

@@ -25,6 +25,7 @@ import { useEffect } from 'react';
 // --- SEGURIDAD Y LAYOUT ---
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Layout from './layouts/MainLayout';
+import './styles/components/Spinner.css';
 
 // Screens - Cliente (Home is Eager Loaded for LCP)
 import Perfil from './screens/cliente/Perfil';
@@ -79,24 +80,8 @@ function App() {
                 <MetaTracker /> {/* ✅ Rastreo Unificado de PageView */}
                 <AnalyticsTracker />
                 <Suspense fallback={
-                  <div style={{
-                    height: '100vh',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'var(--bg-main)',
-                    color: 'var(--text-main)',
-                    fontFamily: 'var(--font-primary)'
-                  }}>
-                    <div style={{
-                      width: '40px',
-                      height: '40px',
-                      border: '3px solid var(--border-subtle)',
-                      borderTopColor: 'var(--primary-color)',
-                      borderRadius: '50%',
-                      animation: 'spin 1s linear infinite'
-                    }} />
-                    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                  <div className="spinner-container">
+                    <div className="spinner" />
                   </div>
                 }>
                   <Routes>

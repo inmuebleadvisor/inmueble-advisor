@@ -11,7 +11,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: fadeIn 0.3s ease-out;
+    animation: fadeIn 0.3s var(--ease-premium);
 }
 
 .delightbox__backdrop {
@@ -78,7 +78,7 @@
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     display: block;
     /* Remove inline gap */
-    transition: all 0.3s ease;
+    transition: all 0.3s var(--ease-premium);
 }
 
 .delightbox__nav-button {

@@ -1,0 +1,29 @@
+/* src/styles/components/FavoriteBtn.css */
+.favorite-btn {
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s var(--ease-premium);
+    opacity: 1;
+}
+
+.favorite-btn:disabled {
+    cursor: wait;
+    opacity: 0.7;
+}
+
+.favorite-btn__icon {
+    transition: all 0.3s var(--ease-premium);
+    transform: scale(0.8);
+}
+
+.favorite-btn__icon--active {
+    transform: scale(1.1);
+}

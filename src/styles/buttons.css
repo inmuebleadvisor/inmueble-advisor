@@ -13,7 +13,7 @@
     font-size: 1rem;
     font-family: var(--font-main);
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s var(--ease-premium);
     border: 1px solid transparent;
     text-decoration: none;
     line-height: 1.5;
@@ -139,7 +139,7 @@
     font-size: 0.8rem;
     font-weight: 600;
     color: var(--text-secondary);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s var(--ease-premium);
     cursor: default;
 }
 

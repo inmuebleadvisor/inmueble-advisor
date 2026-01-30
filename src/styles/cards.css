@@ -6,7 +6,7 @@
     box-shadow: var(--shadow-md);
     border: 1px solid var(--border-subtle);
     /* Subtle border for definition */
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.3s var(--ease-premium), box-shadow 0.3s var(--ease-premium);
     overflow: hidden;
     position: relative;
     z-index: 5;
