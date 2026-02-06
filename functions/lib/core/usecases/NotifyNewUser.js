@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NotifyNewUser = void 0;
+const UserMessageBuilder_1 = require("../services/UserMessageBuilder");
 class NotifyNewUser {
     constructor(notificationPort) {
         this.notificationPort = notificationPort;
     }
     async execute(user) {
-        const identifier = user.displayName || user.email || "Usuario sin nombre";
-        const message = `🚀 *Nuevo Usuario Registrado*\n\n👤 **Nombre:** ${identifier}\n📧 **Email:** ${user.email || "N/A"}\n🆔 **UID:** \`${user.uid}\`\n\n_Inmueble Advisor Admin_`;
+        const message = UserMessageBuilder_1.UserMessageBuilder.formatMessage(user);
         await this.notificationPort.sendAlert(message);
     }
 }

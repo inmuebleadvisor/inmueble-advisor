@@ -48,11 +48,11 @@ exports.onLeadContactMETA = (0, https_1.onCall)({ cors: true }, async (request) 
     logger.info(`[MetaCAPI-Contact] Received '${eventName}' (ID: ${metaEventId})`);
     // Extract Data for Meta (Robust Fallbacks)
     // Note: For 'Contact', we might not have email/phone yet unless user is logged in.
-    const email = (leadData === null || leadData === void 0 ? void 0 : leadData.email) || ((_a = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _a === void 0 ? void 0 : _a.email) || (leadData === null || leadData === void 0 ? void 0 : leadData.correo);
-    const phone = (leadData === null || leadData === void 0 ? void 0 : leadData.telefono) || ((_b = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _b === void 0 ? void 0 : _b.telefono) || (leadData === null || leadData === void 0 ? void 0 : leadData.celular);
+    const email = (leadData === null || leadData === void 0 ? void 0 : leadData.em) || (leadData === null || leadData === void 0 ? void 0 : leadData.email) || ((_a = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _a === void 0 ? void 0 : _a.email) || (leadData === null || leadData === void 0 ? void 0 : leadData.correo);
+    const phone = (leadData === null || leadData === void 0 ? void 0 : leadData.ph) || (leadData === null || leadData === void 0 ? void 0 : leadData.telefono) || ((_b = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _b === void 0 ? void 0 : _b.telefono) || (leadData === null || leadData === void 0 ? void 0 : leadData.celular);
     // Name Splitting Logic (Standardized)
-    let firstName = (leadData === null || leadData === void 0 ? void 0 : leadData.nombre) || ((_c = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _c === void 0 ? void 0 : _c.nombre);
-    let lastName = (leadData === null || leadData === void 0 ? void 0 : leadData.apellido) || ((_d = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _d === void 0 ? void 0 : _d.apellido);
+    let firstName = (leadData === null || leadData === void 0 ? void 0 : leadData.fn) || (leadData === null || leadData === void 0 ? void 0 : leadData.nombre) || ((_c = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _c === void 0 ? void 0 : _c.nombre);
+    let lastName = (leadData === null || leadData === void 0 ? void 0 : leadData.ln) || (leadData === null || leadData === void 0 ? void 0 : leadData.apellido) || ((_d = leadData === null || leadData === void 0 ? void 0 : leadData.clienteDatos) === null || _d === void 0 ? void 0 : _d.apellido);
     if (firstName && !lastName) {
         const parts = firstName.trim().split(' ');
         if (parts.length > 1) {

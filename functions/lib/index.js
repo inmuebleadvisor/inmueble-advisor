@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onLeadPageViewMETA = exports.onLeadContactMETA = exports.onLeadIntentMETA = exports.onLeadCreatedMETA = exports.onLeadCreated = exports.notifyNewUser = exports.triggerDashboardStats = exports.scheduledDashboardStats = exports.promoteToAdvisor = void 0;
+exports.onModelUpdate = exports.onLeadPageViewMETA = exports.onLeadContactMETA = exports.onLeadIntentMETA = exports.onLeadCreatedMETA = exports.onLeadCreated = exports.notifyNewUser = exports.promoteToAdvisor = void 0;
 const admin = __importStar(require("firebase-admin"));
 // Initialize Firebase Admin SDK once
 if (!admin.apps.length) {
@@ -32,9 +32,6 @@ if (!admin.apps.length) {
 // Export Callables
 var promoteToAdvisor_1 = require("./interface/callable/promoteToAdvisor");
 Object.defineProperty(exports, "promoteToAdvisor", { enumerable: true, get: function () { return promoteToAdvisor_1.promoteToAdvisor; } });
-var scheduledDashboardStats_1 = require("./interface/triggers/scheduledDashboardStats");
-Object.defineProperty(exports, "scheduledDashboardStats", { enumerable: true, get: function () { return scheduledDashboardStats_1.scheduledDashboardStats; } });
-Object.defineProperty(exports, "triggerDashboardStats", { enumerable: true, get: function () { return scheduledDashboardStats_1.triggerDashboardStats; } });
 var onUserCreated_1 = require("./interface/triggers/onUserCreated");
 Object.defineProperty(exports, "notifyNewUser", { enumerable: true, get: function () { return onUserCreated_1.notifyNewUser; } });
 var onLeadCreated_1 = require("./interface/triggers/onLeadCreated");
@@ -47,4 +44,7 @@ var onLeadContactMETA_1 = require("./interface/callable/onLeadContactMETA");
 Object.defineProperty(exports, "onLeadContactMETA", { enumerable: true, get: function () { return onLeadContactMETA_1.onLeadContactMETA; } });
 var onLeadPageViewMETA_1 = require("./interface/callable/onLeadPageViewMETA");
 Object.defineProperty(exports, "onLeadPageViewMETA", { enumerable: true, get: function () { return onLeadPageViewMETA_1.onLeadPageViewMETA; } });
+// Triggers - Catalog Persistence
+var onModelUpdate_1 = require("./interface/triggers/onModelUpdate");
+Object.defineProperty(exports, "onModelUpdate", { enumerable: true, get: function () { return onModelUpdate_1.onModelUpdate; } });
 //# sourceMappingURL=index.js.map

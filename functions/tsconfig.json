@@ -8,11 +8,11 @@
         "strict": true,
         "target": "es2017",
         "esModuleInterop": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "rootDir": "src"
     },
     "compileOnSave": true,
     "include": [
-        "src",
-        "tests"
+        "src"
     ]
 }
