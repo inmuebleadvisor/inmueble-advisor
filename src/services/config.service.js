@@ -52,3 +52,7 @@ export class ConfigService {
     }
 }
 
+// Support for Legacy Mocks
+export const getPlatformSettings = () => { };
+export const updatePlatformSettings = () => { };
+

@@ -1,5 +1,6 @@
-import { normalizar } from '../utils/formatters';
-import { IMAGES, STATUS } from '../config/constants';
+import { IMAGES } from '../config/constants';
+import { filterCatalog, findClosestByPrice } from '../utils/catalogFilters';
+import { enrichModels, applyQualityFilters, hydrateInventoryList } from '../utils/catalogEnricher';
 
 const FALLBACK_IMG = IMAGES.FALLBACK_PROPERTY;
 
@@ -136,33 +137,11 @@ export class CatalogService {
    * @returns {Promise<Array>} Hydrated inventory list
    */
   async hidratarInventarioAsesor(listaInventarioUsuario) {
-    if (!listaInventarioUsuario || listaInventarioUsuario.length === 0) return [];
     const catalogo = await this.obtenerInventarioDesarrollos();
-
-    return listaInventarioUsuario.map(itemUsuario => {
-      if (itemUsuario.tipo === 'db') {
-        const dataReal = catalogo.find(d => d.id === itemUsuario.idDesarrollo);
-        if (dataReal) {
-          return {
-            ...itemUsuario,
-            nombre: dataReal.nombre,
-            constructora: dataReal.constructora,
-            zona: dataReal.zona || dataReal.ubicacion?.ciudad || 'Zona N/A',
-            imagen: dataReal.imagen
-          };
-        }
-      }
-      return {
-        ...itemUsuario,
-        nombre: itemUsuario.nombreManual || 'Desarrollo Desconocido',
-        constructora: 'Manual',
-        zona: 'N/A',
-        imagen: FALLBACK_IMG
-      };
-    });
+    return hydrateInventoryList(listaInventarioUsuario, catalogo);
   }
 
-  // Static Pure Logic Methods
+  // --- Static Wrappers for Backward Compatibility & Clean Access ---
 
   /**
    * Enriches models with parent development data.
@@ -171,27 +150,7 @@ export class CatalogService {
    * @returns {Array} Enriched models
    */
   static enrichModels(models, developments) {
-    if (!models || !developments) return models || [];
-    return models.map(m => {
-      const idDev = m.idDesarrollo || m.id_desarrollo;
-      if (!idDev) return m;
-
-      const parentDev = developments.find(d => String(d.id) === String(idDev));
-      if (!parentDev) return m;
-
-      return {
-        ...m,
-        colonia: m.colonia || parentDev.ubicacion?.colonia || '',
-        zona: m.zona || parentDev.zona || parentDev.ubicacion?.zona || '',
-        constructora: m.constructora || parentDev.constructora || '',
-        tipoVivienda: m.tipoVivienda || parentDev.tipoVivienda || parentDev.tipo || 'Propiedad',
-        ubicacion: {
-          ...m.ubicacion,
-          colonia: m.ubicacion?.colonia || parentDev.ubicacion?.colonia || '',
-          zona: m.ubicacion?.zona || parentDev.ubicacion?.zona || parentDev.zona || ''
-        }
-      };
-    });
+    return enrichModels(models, developments);
   }
 
   /**
@@ -201,29 +160,11 @@ export class CatalogService {
    * @returns {Array} Models passing quality rules
    */
   static applyQualityFilters(models, settings = {}) {
-    if (!models) return [];
-    return models.filter(m => {
-      // Rule 1: Hide No Price
-      if (settings.hideNoPriceModels) {
-        const price = Number(m.precioNumerico) || 0;
-        if (price <= 0) return false;
-      }
-
-      // Rule 2: Hide No Photos/Renders
-      if (settings.hideNoPhotosModels) {
-        const hasImage = m.imagen || m.media?.render;
-        const hasPlans = m.media?.plantasArquitectonicas?.length > 0 || m.plantas?.length > 0;
-        const hasVirtual = m.media?.recorridoVirtual || m.recorrido360;
-        if (!hasImage && !hasPlans && !hasVirtual) return false;
-      }
-
-      return true;
-    });
+    return applyQualityFilters(models, settings);
   }
 
   /**
    * Pure logic to filter catalog items based on criteria.
-
    * @param {Array} dataMaestra - List of models
    * @param {Array} desarrollos - List of developments
    * @param {Object} filters - Filter criteria
@@ -231,163 +172,20 @@ export class CatalogService {
    * @returns {Array} Filtered list
    */
   static filterCatalog(dataMaestra, desarrollos, filters, searchTerm) {
-    if (!dataMaestra) return [];
-    const term = normalizar(searchTerm);
-
-    return dataMaestra.filter(item => {
-      const desarrollo = desarrollos.find(d => String(d.id) === String(item.idDesarrollo));
-      if (item.activo === false) return false;
-      if (desarrollo && desarrollo.activo === false) return false;
-
-      const precio = Number(item.precioNumerico) || 0;
-      if (!filters.showNoPrice && precio <= 0) return false;
-      if (precio > 0) {
-        if (precio > filters.precioMax) return false;
-        if (filters.precioMin && precio < filters.precioMin) return false;
-      }
-
-      const recamaras = Number(item.recamaras) || 0;
-      if (filters.habitaciones > 0 && recamaras < filters.habitaciones) return false;
-
-      let hasPreventa = false;
-      let hasInmediata = false;
-
-      // Helper to process status value(s)
-      const processStatus = (val) => {
-        if (!val) return;
-        const values = Array.isArray(val) ? val : [val];
-        values.forEach(v => {
-          if (!v) return;
-          const s = String(v).toUpperCase().trim();
-
-          // Check Preventa
-          if (
-            s === 'PRE-VENTA' ||
-            s === 'PREVENTA' ||
-            s === STATUS.DEV_PREALE ||
-            s.includes('PRE-VENTA')
-          ) {
-            hasPreventa = true;
-          }
-
-          // Check Inmediata
-          if (
-            s === 'ENTREGA INMEDIATA' ||
-            s === 'INMEDIATA' ||
-            s === STATUS.DEV_IMMEDIATE ||
-            s.includes('ENTREGA INMEDIATA')
-          ) {
-            hasInmediata = true;
-          }
-        });
-      };
-
-      // 1. Check Desarrollo Status
-      if (desarrollo && desarrollo.status) {
-        processStatus(desarrollo.status);
-      }
-
-      // 2. Check Item (Model) Status - Override or Additive? 
-      //    Usually additive or specific to the unit. 
-      //    If the model says "Entrega Inmediata" specifically, it should count.
-      if (item.status) {
-        processStatus(item.status);
-      }
-
-      // Legacy field check (just in case)
-      if (item.esPreventa) hasPreventa = true;
-
-      // Filter Logic
-      // "En caso de estar en blanco o tener el valor 'Sin definir' no debe aparecer si se filtra"
-      // This is implicit: if hasPreventa/hasInmediata are false, they won't match the below checks.
-
-      if (filters.status === 'inmediata' && !hasInmediata) return false;
-      if (filters.status === 'preventa' && !hasPreventa) return false;
-
-      if (filters.tipo !== 'all') {
-        const tipoItem = normalizar(item.tipoVivienda);
-        const tipoFiltro = normalizar(filters.tipo);
-        if (!tipoItem.includes(tipoFiltro)) {
-          if (tipoFiltro === 'departamento' && (tipoItem.includes('loft') || tipoItem.includes('studio'))) return false;
-          return false;
-        }
-      }
-
-      if (filters.amenidad) {
-        const amenidadBuscada = normalizar(filters.amenidad);
-        const amDesarrollo = Array.isArray(desarrollo?.amenidades) ? desarrollo.amenidades : [];
-        const amModelo = Array.isArray(item.amenidades) ? item.amenidades : [];
-        const amModeloDesarrollo = Array.isArray(item.amenidadesDesarrollo) ? item.amenidadesDesarrollo : [];
-        const todasAmenidades = [...new Set([...amDesarrollo, ...amModelo, ...amModeloDesarrollo])];
-        const tieneAmenidad = todasAmenidades.some(a => normalizar(a).includes(amenidadBuscada));
-        if (!tieneAmenidad) return false;
-      }
-
-      if (term) {
-        const keywordsModelo = Array.isArray(item.keywords) ? item.keywords : [];
-        const keywordsDesarrollo = desarrollo && Array.isArray(desarrollo.keywords) ? desarrollo.keywords : [];
-        const allKeywords = [...keywordsModelo, ...keywordsDesarrollo];
-
-        if (allKeywords.length > 0) {
-          const match = allKeywords.some(k => normalizar(k).includes(term));
-          if (!match) {
-            const amenidadesTexto = [...(Array.isArray(item.amenidadesDesarrollo) ? item.amenidadesDesarrollo : []), ...(desarrollo?.amenidades || [])].join(' ');
-            const searchTarget = `
-                   ${normalizar(item.nombre)} ${normalizar(item.nombre_modelo)} ${normalizar(item.nombreDesarrollo)}
-                   ${normalizar(item.constructora)} ${normalizar(item.tipoVivienda)}
-                   ${normalizar(item.colonia)} ${normalizar(item.ciudad)}
-                   ${normalizar(item.zona)} ${normalizar(amenidadesTexto)}
-                   ${normalizar(desarrollo?.nombre || '')}
-                 `;
-            if (!searchTarget.includes(term)) return false;
-          }
-        } else {
-          const amenidadesTexto = [...(Array.isArray(item.amenidadesDesarrollo) ? item.amenidadesDesarrollo : []), ...(desarrollo?.amenidades || [])].join(' ');
-          const searchTarget = `
-              ${normalizar(item.nombre)} ${normalizar(item.nombre_modelo)} ${normalizar(item.nombreDesarrollo)}
-              ${normalizar(item.constructora)} ${normalizar(item.tipoVivienda)}
-              ${normalizar(item.colonia)} ${normalizar(item.ciudad)}
-              ${normalizar(item.zona)} ${normalizar(amenidadesTexto)}
-              ${normalizar(desarrollo?.nombre || '')}
-            `;
-          if (!searchTarget.includes(term)) return false;
-        }
-      }
-      return true;
-    });
+    return filterCatalog(dataMaestra, desarrollos, filters, searchTerm);
   }
 
   static findClosestByPrice(allModels, filters, limit = 3) {
-    if (!allModels || allModels.length === 0) return [];
-    let targetPrice = 0;
-    if (filters.precioMax < 20000000 && filters.precioMax > 0) {
-      if (filters.precioMin > 0) {
-        targetPrice = (filters.precioMin + filters.precioMax) / 2;
-      } else {
-        targetPrice = filters.precioMax;
-      }
-    }
-
-    const candidates = allModels.filter(m => {
-      if (!m.activo) return false;
-      const p = m.precioNumerico || 0;
-      return p > 0;
-    });
-
-    if (candidates.length === 0) return [];
-
-    const IS_DEFAULT_MAX = filters.precioMax >= 15000000;
-    if (targetPrice === 0 || (filters.precioMin === 0 && IS_DEFAULT_MAX)) {
-      return candidates.sort((a, b) => (a.precioNumerico || 0) - (b.precioNumerico || 0)).slice(0, limit);
-    }
-
-    return candidates.sort((a, b) => {
-      const distA = Math.abs((a.precioNumerico || 0) - targetPrice);
-      const distB = Math.abs((b.precioNumerico || 0) - targetPrice);
-      return distA - distB;
-    }).slice(0, limit);
+    return findClosestByPrice(allModels, filters, limit);
   }
 }
+
+// --- Soporte para Mocks de Tests (Legacy Compatibility) ---
+// Estos exports permiten que los tests unitarios antiguos utilicen vi.mock() a nivel de módulo
+// sin romper la estructura de la nueva clase.
+export const obtenerInventarioDesarrollos = () => { };
+export const obtenerTopAmenidades = () => { };
+export const obtenerDatosUnificados = () => { };
 
 // --- BACKWARD COMPATIBILITY EXPORTS (Optional/Deprecated) ---
 // For now, we allow importing the static functions directly if needed,

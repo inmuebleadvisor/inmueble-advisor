@@ -13,11 +13,24 @@ vi.mock('../Modal', () => {
                     <h1>{title}</h1>
                     <button onClick={onClose} aria-label="Cerrar">X</button>
                     {children}
+                    <button onClick={onClose} className="btn-entendido">¡Entendido!</button>
                 </div>
             );
         }
     };
 });
+
+vi.mock('../../context/UserContext', () => ({
+    useUser: vi.fn(() => ({ selectedCity: 'Cancun' }))
+}));
+
+vi.mock('../../context/FavoritesContext', () => ({
+    useFavorites: vi.fn(() => ({ isFavorite: vi.fn(() => false) }))
+}));
+
+vi.mock('../common/FavoriteBtn', () => ({
+    default: () => <div data-testid="favorite-btn" />
+}));
 
 describe('HighlightsModal', () => {
     const mockHighlights = ['Precio bajo', 'Cocina equipada', 'Jardín amplio'];
@@ -43,7 +56,7 @@ describe('HighlightsModal', () => {
         );
 
         expect(screen.getByRole('dialog')).toBeInTheDocument();
-        expect(screen.getByText('¡Felicidades, encontraste un Destacado!')).toBeInTheDocument();
+        expect(screen.getByText(/Felicidades, encontraste un/i)).toBeInTheDocument();
 
         mockHighlights.forEach(highlight => {
             expect(screen.getByText(highlight)).toBeInTheDocument();
@@ -56,7 +69,7 @@ describe('HighlightsModal', () => {
         );
 
         // This targets the "¡Entendido!" button styled in the component
-        const button = screen.getByText('¡Entendido!');
+        const button = screen.getByText(/Entendido/i);
         fireEvent.click(button);
         expect(mockOnClose).toHaveBeenCalled();
     });

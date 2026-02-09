@@ -23,6 +23,7 @@ vi.mock('canvas-confetti', () => ({ default: vi.fn() }));
 describe('LeadCaptureForm', () => {
     const mockLoginWithGoogle = vi.fn();
     const mockGenerarLeadAutomatico = vi.fn();
+    const mockCheckActiveAppointment = vi.fn();
 
     beforeEach(() => {
         useUser.mockReturnValue({
@@ -34,10 +35,12 @@ describe('LeadCaptureForm', () => {
         useService.mockReturnValue({
             leadAssignment: {
                 generarLeadAutomatico: mockGenerarLeadAutomatico,
+                checkActiveAppointment: mockCheckActiveAppointment,
             },
         });
 
         mockGenerarLeadAutomatico.mockResolvedValue({ success: true });
+        mockCheckActiveAppointment.mockResolvedValue({ hasAppointment: false });
         vi.clearAllMocks();
     });
 

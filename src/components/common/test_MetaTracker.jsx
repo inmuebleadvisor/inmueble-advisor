@@ -26,12 +26,12 @@ describe('MetaTracker Component', () => {
     let mockUserContext;
 
     afterEach(() => {
-        vi.useRealTimers();
+        delete window.fbq;
     });
 
     beforeEach(() => {
         vi.clearAllMocks();
-        vi.useFakeTimers();
+        window.fbq = vi.fn();
 
         mockMetaService = {
             initialized: false,
@@ -64,11 +64,9 @@ describe('MetaTracker Component', () => {
             </MemoryRouter>
         );
 
-        vi.advanceTimersByTime(1000);
-
         await waitFor(() => {
             expect(mockMetaService.init).toHaveBeenCalled();
-        });
+        }, { timeout: 3000 });
     });
 
     it('should track PageView on route change', async () => {
@@ -78,12 +76,10 @@ describe('MetaTracker Component', () => {
             </MemoryRouter>
         );
 
-        vi.advanceTimersByTime(1000);
-
         await waitFor(() => {
             expect(mockMetaService.track).toHaveBeenCalledWith('PageView', {}, 'test-event-id');
             expect(mockMetaService.trackPageViewCAPI).toHaveBeenCalledWith('test-event-id', { em: 'test@example.com' });
-        });
+        }, { timeout: 3000 });
     });
 
     it('should skip PageView on ViewContent routes', async () => {
@@ -95,12 +91,11 @@ describe('MetaTracker Component', () => {
             </MemoryRouter>
         );
 
-        vi.advanceTimersByTime(1000);
-
         // Should not track PageView because it's a ViewContent route
-        await waitFor(() => {
-            expect(mockMetaService.track).not.toHaveBeenCalledWith('PageView', expect.anything(), expect.anything());
-        });
+        // We wait a bit to be sure it didn't fire
+        await new Promise(r => setTimeout(r, 1000));
+
+        expect(mockMetaService.track).not.toHaveBeenCalledWith('PageView', expect.anything(), expect.anything());
     });
 
     it('should enrich with user data when available', async () => {
@@ -110,14 +105,12 @@ describe('MetaTracker Component', () => {
             </MemoryRouter>
         );
 
-        vi.advanceTimersByTime(1000);
-
         await waitFor(() => {
             expect(mockMetaService.prepareUserData).toHaveBeenCalledWith(
                 mockUserContext.user,
                 mockUserContext.userProfile
             );
             expect(mockMetaService.setUserData).toHaveBeenCalledWith({ em: 'test@example.com' });
-        });
+        }, { timeout: 3000 });
     });
 });

@@ -1,38 +1,26 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import PropertyCard from './PropertyCard';
-import { UserProvider } from '../../context/UserContext';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
+import { useUser } from '../../context/UserContext';
 
-// Mock useService hook which is used by UserProvider
-vi.mock('../../hooks/useService', () => ({
-    useService: () => ({
-        auth: {
-            subscribeToAuthChanges: vi.fn((cb) => {
-                // Simulate auth ready state
-                cb({ uid: '123' }, { role: 'user' });
-                return vi.fn(); // Return unsubscribe mock
-            }),
-        },
-        analytics: {
-            trackEvent: vi.fn(),
-        },
-    }),
+// Mock contexts
+vi.mock('../../context/UserContext', () => ({
+    useUser: vi.fn(() => ({
+        trackBehavior: vi.fn()
+    }))
 }));
 
 // Mock child components
 vi.mock('../common/ImageLoader', () => ({ default: () => <div data-testid="image-loader" /> }));
 vi.mock('../common/FavoriteBtn', () => ({ default: () => <div data-testid="favorite-btn" /> }));
 vi.mock('../common/Delightbox', () => ({ default: () => <div data-testid="delightbox" /> }));
-vi.mock('../modals/HighlightsModal', () => ({ default: () => <div data-testid="highlights-modal" /> }));
+vi.mock('../modals/HighlightsModal', () => ({ default: ({ modeloId }) => <div data-testid="highlights-modal" data-modelid={modeloId} /> }));
 
-// Mock contexts
 const MockProviders = ({ children }) => (
-    <BrowserRouter>
-        <UserProvider>
-            {children}
-        </UserProvider>
-    </BrowserRouter>
+    <MemoryRouter>
+        {children}
+    </MemoryRouter>
 );
 
 describe('PropertyCard', () => {

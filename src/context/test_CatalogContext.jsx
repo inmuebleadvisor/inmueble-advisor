@@ -6,18 +6,38 @@ import * as catalogService from '../services/catalog.service';
 import * as configService from '../services/config.service';
 import * as UserContext from './UserContext';
 
-// Mock dependencies
-vi.mock('../services/catalog.service');
+// --- Mock dependencies ---
+const mockCatalogMethods = vi.hoisted(() => ({
+    obtenerInventarioDesarrollos: vi.fn(),
+    obtenerTopAmenidades: vi.fn(),
+    obtenerDatosUnificados: vi.fn(),
+    hidratarInventarioAsesor: vi.fn()
+}));
+
+vi.mock('../services/catalog.service', () => {
+    const MockClass = vi.fn().mockImplementation(function () {
+        return mockCatalogMethods;
+    });
+    // Static methods used by CatalogContext
+    MockClass.enrichModels = vi.fn((m) => m);
+    MockClass.applyQualityFilters = vi.fn((m) => m);
+
+    return {
+        CatalogService: MockClass,
+        ...mockCatalogMethods
+    };
+});
+
 vi.mock('../services/config.service');
+vi.mock('../hooks/useService');
 
 // Mock UserContext hooks
-// We need to mock the module export itself or spy on it if possible. 
-// Since it's a named export, vi.mock with partial helper is safer or spying on the exported object if it was a default export.
-// But since we are importing from './UserContext', we can mock the module.
 vi.mock('./UserContext', () => ({
     useUser: vi.fn(),
     UserProvider: ({ children }) => <div>{children}</div>
 }));
+
+import { useService } from '../hooks/useService';
 
 // Test component to consume context
 const TestComponent = () => {
@@ -38,6 +58,12 @@ const TestComponent = () => {
 describe('CatalogContext', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+
+        // Bind useService to the mocked module objects
+        useService.mockReturnValue({
+            catalog: catalogService,
+            config: configService
+        });
 
         // Setup default mock returns
         catalogService.obtenerInventarioDesarrollos.mockResolvedValue([

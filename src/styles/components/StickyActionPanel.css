@@ -1,0 +1,101 @@
+/* src/styles/components/StickyActionPanel.css */
+/* Modularized styles for the high-conversion sticky footer */
+
+.dev-action-panel {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    background: rgba(15, 23, 42, 0.82); /* Standardized Dark Slate with alpha */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-subtle);
+    padding: 16px 24px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    animation: slideUp 0.4s var(--ease-premium);
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.dev-action-panel__info {
+    display: flex;
+    flex-direction: column;
+}
+
+.dev-action-panel__label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.dev-action-panel__price {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--primary-color);
+}
+
+.dev-action-panel__btns {
+    display: flex;
+    gap: 12px;
+}
+
+/* CTA Buttons */
+.btn-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s var(--ease-premium);
+    border: none;
+}
+
+.btn-cta--primary {
+    background-color: var(--primary-color);
+    color: var(--text-inverse, #fff);
+}
+
+.btn-cta--primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(220, 178, 58, 0.4); /* Gold Glow */
+}
+
+/* Mobile Optimizations */
+@media (max-width: 480px) {
+    .dev-action-panel {
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px 20px;
+        bottom: 12px;
+        left: 12px;
+        right: 12px;
+    }
+    
+    .dev-action-panel__info {
+        align-items: center;
+    }
+    
+    .dev-action-panel__btns {
+        width: 100%;
+    }
+}

@@ -1,4 +1,5 @@
 import React from 'react';
+import '../../styles/components/StickyActionPanel.css';
 
 /**
  * Icons defined locally to avoid dependency bloat.
