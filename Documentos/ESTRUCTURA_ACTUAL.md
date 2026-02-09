@@ -29,7 +29,7 @@ El frontend sigue una **Clean Architecture** adaptada a React, separando clarame
 *   **Patrón Moderno**: Inyección de Dependencias vía React Context.
 *   **Ejemplos**: `auth.service.js`, `crm.service.js`.
 *   **Consumo**: Los componentes deben utilizar Hooks (`useService()`) para acceder a la lógica.
-*   **Archivo de Inicialización**: `serviceProvider.js`. Este archivo actúa únicamente como "Fábrica" ("Composition Root") para instanciar las clases. **NO debe importarse directamente en los componentes**. Su único propósito es alimentar el `ServiceProvider` (Contexto).
+*   **Archivo de Inicialización**: `service.provider.js`. Este archivo actúa únicamente como "Fábrica" ("Composition Root") para instanciar las clases. **NO debe importarse directamente en los componentes**. Su único propósito es alimentar el `ServiceProvider` (Contexto).
 
 #### 📂 `screens/` (Capa de Presentación - Páginas)
 *   **Propósito**: Representar las vistas o páginas completas de la aplicación.
@@ -56,7 +56,10 @@ El frontend sigue una **Clean Architecture** adaptada a React, separando clarame
 
 Contiene la lógica de servidor ejecutada en Firebase Cloud Functions.
 
-*   **`src/`**: Código fuente de las funciones (TypeScript).
+*   **`src/`**: Código fuente de las funciones (TypeScript), organizado bajo **Clean Architecture**:
+    *   **`/src/core`**: Dominio y Lógica de Negocio Pura (Use Cases, Entities).
+    *   **`/src/infrastructure`**: Adaptadores de Salida (Repositories, Servicios Externos).
+    *   **`/src/interface`**: Adaptadores de Entrada (Triggers, Callable Functions).
 *   **`lib/`**: Código compilado (JavaScript) listo para despliegue.
 *   **Propósito**: Manejar triggers de Firestore, autenticación avanzada, tareas programadas o lógica sensible que no debe estar en el cliente.
 

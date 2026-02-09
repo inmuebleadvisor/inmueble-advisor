@@ -59,13 +59,24 @@ A. Backend (Cloud Functions) - Clean Architecture:
 
 B. Frontend (React/Vite) - Capas de Servicio:
 
-/src/services: Lógica de negocio y orquestación.
+/src/config: Constantes globales y configuración centralizada (Single Source of Truth).
 
-/src/components: Elementos de UI (BEM, Semántico).
+/src/types: Definiciones de tipos (JSDoc/TypeScript) para contratos de datos robustos.
 
-/src/hooks: Lógica de estado reactiva y utilidades.
+/src/repositories: Capa de Acceso a Datos (Firebase/API). Sigue el patrón Repository para aislar la persistencia de la lógica de negocio (Análogo a `/infrastructure` en Backend).
 
-/src/context: Inyección de Dependencias y estado global.
+/src/services: Lógica de negocio y orquestación. Interactúan con Repositories.
+    *   NOTA: La Inyección de Dependencias se realiza en `service.provider.js` (Composition Root) antes de exponerse.
+
+/src/layouts: Estructuras visuales globales (Wrappers, Navbars, Sidebars).
+
+/src/screens: Vistas/Páginas completas. Representan las rutas principales de navegación.
+
+/src/components: Elementos de UI reutilizables y agnósticos (BEM, Semántico).
+
+/src/hooks: Lógica de estado reactiva (ViewModels) y utilidades de UI.
+
+/src/context: Mecanismo de transporte para disponibilizar los Servicios a los Componentes (no contiene lógica compleja, solo exposición).
 
 Ventaja con Gemini: Al trabajar en Backend, Gemini buscará Use Cases en `/core`. Al trabajar en Frontend, buscará Servicios en `/services`.
 
