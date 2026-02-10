@@ -65,6 +65,12 @@ Todos los márgenes, paddings y gaps deben ser múltiplos de **8px**:
 - `.btn-primary`: Degradado Gold, sombra resplandeciente.
 - `.btn-secondary`: Contorno que transmuta a cristal al hover.
 
+### 🃏 Tarjetas (`CardTokens.css`)
+Sistema de tokens compartido para `DevelopmentCard` y `PropertyCard`.
+- **Dimensiones**: Radio `32px` (`--radius-xl`), Padding `24px`.
+- **Efectos**: Elevación al hover (`translateY(-4px)`), sombra expansiva (`--shadow-lg`).
+- **Imágenes**: Altura estándar `240px` con zoom suave (`--ease-premium`).
+
 ### 🛡️ Interactive Badges (Sellos de Confianza)
 - **Visual**: Fondo secundario, borde sutil de 1px, radius de 8px.
 - **Interacción**: Al hover aplica `translateY(-2px)`, vira a Gold y activa `var(--shadow-glow)`.

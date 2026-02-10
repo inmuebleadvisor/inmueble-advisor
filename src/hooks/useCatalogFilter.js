@@ -1,9 +1,10 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { useService } from './useService';
 import { UI_OPCIONES } from '../config/constants';
 import { CatalogService } from '../services/catalog.service';
+import { useDebounce } from './useDebounce'; // [NEW]
 
 export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
     const { userProfile } = useUser();
@@ -11,7 +12,10 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
     const location = useLocation();
 
     const [searchTerm, setSearchTerm] = useState('');
-    const searchTimeoutRef = useRef(null);
+
+    // [NEW] Use Debounce Hook for tracking logic
+    // We want to track AFTER the user stops typing, so we debounce the inputs
+    const debouncedSearchTerm = useDebounce(searchTerm, 1500);
 
     // 1. Inicialización de Filtros
     const getInitialFilters = useMemo(() => {
@@ -85,6 +89,10 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
 
     const [filtros, setFiltros] = useState(getInitialFilters);
 
+    // Debounce filters too for tracking? 
+    // Usually filters are "instant" clicks, but if we want to bundle tracking events to avoid spam on sliders:
+    const debouncedFiltros = useDebounce(filtros, 1500);
+
     // 2. Persistence: Save to Local Storage whenever filters change
     useEffect(() => {
         localStorage.setItem('catalog_filters_v1', JSON.stringify(filtros));
@@ -108,34 +116,31 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
         );
     }, [filtros, searchTerm, userProfile]);
 
-    // ⭐ Tracking: Meta Search Event (with Debounce)
+    // ⭐ Tracking: Meta Search Event (Refactored with useDebounce)
     useEffect(() => {
+        // We use the DEBOUNCED values to trigger the event
         if (loading || !hayFiltrosActivos) return;
 
-        if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+        const queryParts = [];
+        if (debouncedSearchTerm) queryParts.push(debouncedSearchTerm);
+        if (debouncedFiltros.amenidad) queryParts.push(debouncedFiltros.amenidad);
+        if (debouncedFiltros.tipo !== 'all') queryParts.push(debouncedFiltros.tipo);
 
-        searchTimeoutRef.current = setTimeout(() => {
-            const queryParts = [];
-            if (searchTerm) queryParts.push(searchTerm);
-            if (filtros.amenidad) queryParts.push(filtros.amenidad);
-            if (filtros.tipo !== 'all') queryParts.push(filtros.tipo);
+        const searchQuery = queryParts.join(' ') || 'catalog_filters';
 
-            const searchQuery = queryParts.join(' ') || 'catalog_filters';
+        metaService.trackSearch(searchQuery, {
+            content_category: 'Inventory',
+            filters: {
+                min_price: debouncedFiltros.precioMin,
+                max_price: debouncedFiltros.precioMax,
+                rooms: debouncedFiltros.habitaciones,
+                status: debouncedFiltros.status,
+                type: debouncedFiltros.tipo
+            }
+        });
 
-            metaService.trackSearch(searchQuery, {
-                content_category: 'Inventory',
-                filters: {
-                    min_price: filtros.precioMin,
-                    max_price: filtros.precioMax,
-                    rooms: filtros.habitaciones,
-                    status: filtros.status,
-                    type: filtros.tipo
-                }
-            });
-        }, 1500); // Wait 1.5s of inactivity before tracking search to avoid spam
-
-        return () => clearTimeout(searchTimeoutRef.current);
-    }, [searchTerm, filtros, hayFiltrosActivos, loading, metaService]);
+        // Removed explicit cleanup because useDebounce handles the timer
+    }, [debouncedSearchTerm, debouncedFiltros, hayFiltrosActivos, loading, metaService]);
 
     // 3. Motor de Filtrado (Delegado al servicio)
     const modelosFiltrados = useMemo(() => {

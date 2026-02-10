@@ -1,7 +1,7 @@
 // src/context/CatalogContext.jsx
 // ÚLTIMA MODIFICACION: 02/12/2025
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { useService } from '../hooks/useService'; // ✅ DI Hook
 import { useUser } from './UserContext'; // Importamos UserContext
 import { CatalogService } from '../services/catalog.service';
@@ -128,7 +128,12 @@ export const CatalogProvider = ({ children }) => {
     loadCatalogData();
   }, [selectedCity]); // Recargamos si cambia la ciudad
 
-  const value = {
+  /* 
+   * MEMOIZATION OPTIMIZATION
+   * We wrap the context value in useMemo to prevent unnecessary re-renders 
+   * of consuming components when the Context parent simply re-renders but data hasn't changed.
+   */
+  const value = useMemo(() => ({
     modelos,
     desarrollos,
     amenidades,
@@ -137,7 +142,7 @@ export const CatalogProvider = ({ children }) => {
     // Buscadores rápidos en memoria
     getModeloById: (id) => modelos.find(m => m.id === id),
     getDesarrolloById: (id) => desarrollos.find(d => d.id === id),
-  };
+  }), [modelos, desarrollos, amenidades, loadingCatalog]);
 
   return (
     <CatalogContext.Provider value={value}>

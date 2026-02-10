@@ -16,6 +16,23 @@ Hooks genéricos que resuelven problemas específicos y pueden usarse en múltip
 -   **`useAuth`**: Acceso rápido al contexto de usuario.
 -   **`useAnalytics`**: Abstracción del servicio de analítica (PostHog). Expone métodos `identifyUser` y `trackEvent`.
 
+### `useCatalogFilter`
+Maneja la lógica de filtrado del catálogo, sincronizando estado con URL y LocalStorage.
+**Características:**
+- Persistencia automática.
+- Integración con Meta Pixel para tracking de búsquedas.
+- **Optimización:** Usa `useDebounce` para evitar spam de eventos.
+
+### `useDevelopmentCatalog` (ViewModel)
+Transforma la lista plana de modelos en una estructura jerárquica de Desarrollos para la vista principal.
+**Entrada:** `modelosFiltrados`, `desarrollos`.
+**Salida:** `enrichedDevelopments` (Desarrollos con `matchCount`, `visiblePrice`, `matchingModels`).
+**Uso:** Principalmente en `Catalogo.jsx`.
+
+### `useDebounce`
+Hook utilitario para retrasar la actualización de un valor hasta que el usuario deja de interactuar.
+**Uso:** Búsquedas en tiempo real, sliders de precio.
+
 ## Regla de Oro: Separación UI/Lógica
 Un componente de Vista (`screen`) no debería tener `useEffect` complejos ni lógica de estado masiva. Mueve esa lógica a un Custom Hook aquí.
 

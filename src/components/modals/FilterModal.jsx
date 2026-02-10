@@ -217,7 +217,7 @@ export default function FilterModal({
                     <div style={{ display: 'flex', width: '100%', gap: '1rem', alignItems: 'center' }}>
                         <button className="modal__clear-btn" onClick={limpiarTodo}>Limpiar</button>
                         <button className="modal__apply-btn" onClick={onClose}>
-                            Ver {resultadosCount} resultados
+                            {resultadosCount} {resultadosCount === 1 ? 'modelo disponible' : 'modelos disponibles'}
                         </button>
                     </div>
 

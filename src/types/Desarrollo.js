@@ -9,7 +9,7 @@ export const mapDesarrollo = (docSnapshot) => {
         id: docSnapshot.id,
         nombre: data.nombre || 'Desarrollo',
         info_comercial: data.infoComercial || data.info_comercial || {},
-        amenidades: Array.isArray(data.amenidades) ? data.amenidades : [],
+        amenidades: Array.isArray(data.caracteristicas?.amenidades) ? data.caracteristicas.amenidades : (Array.isArray(data.amenidades) ? data.amenidades : []),
         keywords: Array.isArray(data.keywords) ? data.keywords : [],
         precioDesde: (data.precios && data.precios.desde) ? data.precios.desde : (data.precioDesde || 0),
         precios: data.precios || {},

@@ -22,7 +22,10 @@ Contenedores para diálogos y ventanas emergentes globales.
 ### 📁 Carpetas de Características (Features)
 Componentes que pertenecen a un dominio de negocio específico:
 -   **`auth/`**: Formularios de login, perfiles.
--   **`catalogo/`**: Tarjetas de propiedades, filtros de búsqueda, sliders de fotos.
+-   **`catalogo/`**:
+    - **`DevelopmentCard`**: Tarjeta premium que muestra un desarrollo y resume los modelos coincidentes. Usa `CardTokens.css` para estilos compartidos.
+    - **`PropertyCard`**: Tarjeta de detalle para modelos individuales (usada en Top Models y Sugerencias).
+    - **`FilterModal`**: Modal de filtros avanzados con sliders de precio y selectores de casillas.
 -   **`leads/`**: Tablas de prospectos, detalles de contacto, historial.
 -   **`admin/`**: Tableros de control y gestión interna.
 

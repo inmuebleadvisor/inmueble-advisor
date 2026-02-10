@@ -1,12 +1,14 @@
 // src/screens/Catalogo.jsx
-// ÚLTIMA MODIFICACION: 03/12/2025
-import React, { useState } from 'react'; // Only useState for modal, if needed, but hook handles filters
+// ÚLTIMA MODIFICACION: 10/02/2026 (Refactor: Vista por Desarrollos)
+import React, { useState } from 'react';
 import { useUser } from '../../context/UserContext';
 import { useCatalog } from '../../context/CatalogContext';
 import { useCatalogFilter } from '../../hooks/useCatalogFilter';
+import { useDevelopmentCatalog } from '../../hooks/useDevelopmentCatalog'; // [NEW]
 import { useScrollReveal } from '../../hooks/useScrollReveal';
 
 // Components
+import DevelopmentCard from '../../components/catalogo/DevelopmentCard'; // [NEW]
 import PropertyCard from '../../components/catalogo/PropertyCard';
 import SearchBar from '../../components/layout/SearchBar';
 import FilterBar from '../../components/layout/FilterBar';
@@ -15,15 +17,13 @@ import FilterModal from '../../components/modals/FilterModal';
 // Styles
 import '../../styles/Catalogo.css';
 
-
-
 export default function Catalogo() {
   const { userProfile } = useUser();
   const { modelos: dataMaestra, amenidades: topAmenidades, loadingCatalog: loading, desarrollos } = useCatalog();
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Use Custom Hook for Logic
+  // Use Custom Hook for Filter Logic
   const {
     filtros,
     setFiltros,
@@ -35,9 +35,11 @@ export default function Catalogo() {
     limpiarTodo
   } = useCatalogFilter(dataMaestra, desarrollos, loading);
 
-  // Alternating animations: Odd from left, Even from right
-  useScrollReveal('.catalogo__grid .card:nth-of-type(odd)', { origin: 'left', interval: 100 }, [modelosFiltrados]);
-  useScrollReveal('.catalogo__grid .card:nth-of-type(even)', { origin: 'right', interval: 100 }, [modelosFiltrados]);
+  // [NEW] Use ViewModel Hook to group models into developments
+  const enrichedDevelopments = useDevelopmentCatalog(modelosFiltrados, desarrollos);
+
+  // Scroll Reveal for Development Cards
+  useScrollReveal('.catalogo__grid > article', { origin: 'bottom', interval: 100 }, [enrichedDevelopments]);
 
   // --- RENDER ---
   if (loading) {
@@ -55,7 +57,7 @@ export default function Catalogo() {
         <h1 className="catalogo__title">
           {userProfile?.nombre ? `Hola, ${userProfile.nombre}` : 'Catálogo'}
         </h1>
-        <p className="catalogo__subtitle">Encuentra tu hogar ideal</p>
+        <p className="catalogo__subtitle">Explora nuestros desarrollos exclusivos</p>
       </header>
 
       <SearchBar
@@ -81,23 +83,24 @@ export default function Catalogo() {
       />
 
       <section className="catalogo__grid">
-        {modelosFiltrados.map((item) => (
-          <PropertyCard
-            key={item.id}
-            item={item}
-            showDevName={true}
+        {/* Render Developments instead of Models */}
+        {enrichedDevelopments.map((dev) => (
+          <DevelopmentCard
+            key={dev.id}
+            development={dev}
           />
         ))}
 
-        {modelosFiltrados.length === 0 && (
+        {/* Empty State / Suggestions */}
+        {enrichedDevelopments.length === 0 && (
           <div className="catalogo__empty">
             <h3>No encontramos resultados exactos</h3>
             <p>Intenta ajustar tus filtros o explora estas opciones cercanas a tu presupuesto:</p>
 
             {suggestions && suggestions.length > 0 && (
               <div className="catalogo__suggestions">
-
-                <div className="catalogo__grid" style={{ marginTop: '1rem', padding: 0, gap: '1rem' }}>
+                <p className="catalogo__subtitle" style={{ marginBottom: '1rem' }}>Sugerencias (Modelos individuales):</p>
+                <div className="catalogo__grid" style={{ marginTop: '0', padding: 0, gap: '1rem' }}>
                   {suggestions.map((item) => (
                     <PropertyCard
                       key={`sugg-${item.id}`}
