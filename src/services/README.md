@@ -28,6 +28,11 @@ The `src/services` directory contains the core business logic of the frontend ap
 *   **Purpose:** Pure logic service for property affordability and financial assessments.
 *   **Key Methods:** `calculateAffordability()`.
 
+### 6. Development Service
+*   **File:** `developmentService.js`
+*   **Purpose:** Centraliza la lógica de negocio y visualización para los desarrollos inmobiliarios (etiquetas de estado, jerarquía de imágenes).
+*   **Key Methods:** `getDevelopmentStatusTag()`, `getDevelopmentCoverImage()`.
+
 
 ## Meta Ads Service Implementation
 *   **File:** `meta.service.js`
