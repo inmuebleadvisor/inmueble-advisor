@@ -1,5 +1,7 @@
 ---
-description: Apply Premium Branding (Gold/Slate) and BEM methodology. MANDATORY for all UI tasks. strict-mode: true
+name: estilo-marca
+description: Apply Premium Branding (Gold/Slate) and BEM methodology. MANDATORY for all UI tasks. Includes deterministic validation scripts.
+risk_level: low
 ---
 
 # Skill: Estilo Marca (Premium Design System) v2.0
@@ -41,9 +43,13 @@ Before generating any code, you MUST:
 
 ## 6. Verification & Quality Assurance (Mandatory)
 After implementation, you MUST:
-1.  **Browser Check:** context logic permitting, use `browser_subagent` to screenshot the component in Dark Mode.
-2.  **Visual Audit:** Verify contrast ratios and alignment (8px grid).
-3.  **Documentation:** Update `walkthrough.md` with:
+1.  **Validación Determinista:** Ejecutar el script de validación para asegurar cumplimiento BEM y evitar colores hardcodeados.
+    ```bash
+    python .agent/skills/estilo-marca/scripts/validate_design.py "ruta/al/archivo/modificado.jsx"
+    ```
+2.  **Browser Check:** context logic permitting, use `browser_subagent` to screenshot the component in Dark Mode.
+3.  **Visual Audit:** Verify contrast ratios and alignment (8px grid).
+4.  **Documentation:** Update `walkthrough.md` with:
     *   Screenshot of the new/modified component.
     *   List of modified files.
     *   Confirmation of Mobile Responsiveness checks (<768px).

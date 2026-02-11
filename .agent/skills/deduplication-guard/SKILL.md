@@ -44,3 +44,11 @@ Esta skill valida la **ARQUITECTURA**. Una vez que se confirma que no hay duplic
 - No impone estilos de código (eso es rol de `estilo-marca` o linters).
 - No dicta la estructura de archivos (eso es rol de la arquitectura hexagonal definida).
 - Solo asegura que no reinventemos la rueda.
+
+## Manejo de Errores y Casos de Borde
+- **Fallo del Script**: Si `audit_existence.py` falla por falta de dependencias o error de entorno, el agente DEBE realizar un `grep_search` manual sobre los términos clave antes de proceder.
+- **Sin Directorios**: Si los directorios `src` o `functions` no existen, asume que es un proyecto nuevo y documenta la creación de la estructura base.
+
+## Ejemplos de Referencia
+- Ver `examples/positive_match.md` para casos de colisión.
+- Ver `examples/negative_match.md` para casos de nueva funcionalidad.
