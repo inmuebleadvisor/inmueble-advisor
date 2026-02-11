@@ -33,3 +33,9 @@ export const getTiempoTranscurrido = (fecha) => {
     if (horas < 24) return `Hace ${horas}h`;
     return `Hace ${Math.floor(horas / 24)}d`;
 };
+
+export const formatoMillones = (val) => {
+    if (!val || isNaN(val)) return "$0 Mill.";
+    const mill = val / 1000000;
+    return `$${mill.toFixed(2)} Mill.`;
+};

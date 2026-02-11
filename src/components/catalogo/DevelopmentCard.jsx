@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import ImageLoader from '../common/ImageLoader';
 import { IMAGES } from '../../config/constants';
 import { getAmenityIcon } from '../../utils/amenityIconMapper.jsx';
+import { getDevelopmentStatusTag, getDevelopmentCoverImage } from '../../services/developmentService';
+import { formatoMoneda, formatoMillones } from '../../utils/formatters';
 import './DevelopmentCard.css';
 
 // --- ICONS ---
@@ -15,17 +17,30 @@ const Icons = {
     ChevronRight: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
 };
 
-// --- HELPERS ---
-const formatoMoneda = (val) => {
-    if (!val || isNaN(val)) return "$0";
-    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
+// --- CONFIGURATION ---
+const SCROLL_CONFIG = {
+    AMOUNT: 300,
+    THRESHOLD_START: 20,
+    THRESHOLD_END: 15,
+    RESIZE_BUFFER: 5,
+    INITIAL_CHECK_TIMERS: [100, 300, 600, 1200],
+    ANIMATION_CHECK_TIMERS: [100, 200, 400, 600],
+    MAX_VISIBLE_AMENITIES: 6
 };
 
-const formatoMillones = (val) => {
-    if (!val || isNaN(val)) return "$0 Mill.";
-    const mill = val / 1000000;
-    return `$${mill.toFixed(2)} Mill.`;
-};
+/**
+ * Tarjeta de presentación de un Desarrollo en el catálogo.
+ * Muestra imagen, precio, amenidades y modelos disponibles.
+ * 
+ * @param {Object} props
+ * @param {Object} props.development - Datos del desarrollo
+ * @param {string} props.development.id - ID único
+ * @param {string} props.development.nombre - Nombre del desarrollo
+ * @param {string} props.development.imagen - URL de imagen principal (opcional)
+ * @param {Object} props.development.ubicacion - Objeto con datos de ubicación
+ * @param {Array} props.development.amenidades - Lista de strings de amenidades
+ * @param {Array} props.development.matchingModels - Lista de modelos que coinciden con filtros
+ */
 
 export default function DevelopmentCard({ development }) {
     const [showTooltip, setShowTooltip] = useState(false);
@@ -47,11 +62,11 @@ export default function DevelopmentCard({ development }) {
 
         // Use an even more aggressive threshold for start detection (20px)
         // to handle any browser-specific offsets or internal spacings
-        const isAtStart = scrollLeft <= 20;
-        const isAtEnd = Math.ceil(scrollLeft + clientWidth) >= scrollWidth - 15;
+        const isAtStart = scrollLeft <= SCROLL_CONFIG.THRESHOLD_START;
+        const isAtEnd = Math.ceil(scrollLeft + clientWidth) >= scrollWidth - SCROLL_CONFIG.THRESHOLD_END;
 
         setCanScrollLeft(!isAtStart);
-        setCanScrollRight(!isAtEnd && scrollWidth > clientWidth + 5);
+        setCanScrollRight(!isAtEnd && scrollWidth > clientWidth + SCROLL_CONFIG.RESIZE_BUFFER);
     };
 
     useEffect(() => {
@@ -62,7 +77,9 @@ export default function DevelopmentCard({ development }) {
 
         handleInitialCheck();
 
-        const timers = [100, 300, 600, 1200].map(ms => setTimeout(handleInitialCheck, ms));
+        handleInitialCheck();
+
+        const timers = SCROLL_CONFIG.INITIAL_CHECK_TIMERS.map(ms => setTimeout(handleInitialCheck, ms));
         window.addEventListener('resize', checkScroll);
 
         return () => {
@@ -77,56 +94,25 @@ export default function DevelopmentCard({ development }) {
         const slider = sliderRef.current;
         if (!slider) return;
 
-        const scrollAmount = 300;
+        const scrollAmount = SCROLL_CONFIG.AMOUNT;
         slider.scrollBy({
             left: dir === 'left' ? -scrollAmount : scrollAmount,
             behavior: 'smooth'
         });
 
         // Re-check visibility multiple times during/after smooth scroll animation
-        const checkTimers = [100, 200, 400, 600].map(ms => setTimeout(checkScroll, ms));
+        const checkTimers = SCROLL_CONFIG.ANIMATION_CHECK_TIMERS.map(ms => setTimeout(checkScroll, ms));
         return () => checkTimers.forEach(clearTimeout);
     };
 
-    // Determine Image: Use development cover, or fallback to first matching model image
-    const coverImage = development.imagen ||
-        (development.multimedia?.portada) ||
-        (matchingModels[0]?.imagen) ||
-        IMAGES.FALLBACK_PROPERTY;
+    // Determine Image: Use service logic
+    const coverImage = getDevelopmentCoverImage(development, IMAGES.FALLBACK_PROPERTY);
 
     // Price Logic: prefer "visiblePrice" (calculated from matches), fallback to "precioDesde"
     const priceToShow = development.visiblePrice || development.precioDesde || 0;
 
-    // Status Tag Logic (Restoring original tags pattern)
-    const statusTag = useMemo(() => {
-        let hasPreventa = false;
-        let hasInmediata = false;
-
-        const checkValue = (val) => {
-            if (!val) return;
-            const s = String(val).toUpperCase().trim();
-            if (s.includes('PRE-VENTA') || s.includes('PREVENTA')) hasPreventa = true;
-            if (s.includes('INMEDIATA') || s.includes('IMMEDIATE')) hasInmediata = true;
-        };
-
-        // Check each matching model's status
-        development.matchingModels?.forEach(m => {
-            if (Array.isArray(m.status)) m.status.forEach(checkValue);
-            else checkValue(m.status);
-            if (m.esPreventa) hasPreventa = true;
-        });
-
-        // Also check development status if available
-        if (development.status) {
-            if (Array.isArray(development.status)) development.status.forEach(checkValue);
-            else checkValue(development.status);
-        }
-
-        if (hasInmediata && hasPreventa) return { label: 'Inmediato/Preventa', class: 'property-card__status-tag--info' };
-        if (hasInmediata) return { label: 'ENTREGA INMEDIATA', class: 'property-card__status-tag--success' };
-        if (hasPreventa) return { label: 'PRE-VENTA', class: 'property-card__status-tag--warning' };
-        return null;
-    }, [development.matchingModels, development.status]);
+    // STATUS TAG (Desacoplado via Service)
+    const statusTag = useMemo(() => getDevelopmentStatusTag(development), [development]);
 
     return (
         <article className="development-card">
@@ -137,9 +123,9 @@ export default function DevelopmentCard({ development }) {
                     className="development-card__image"
                 />
 
-                {/* STATUS TAG (Restored from existing system) */}
+                {/* STATUS TAG (Normalizado a BEM development-card) */}
                 {statusTag && (
-                    <span className={`property-card__status-tag ${statusTag.class}`} style={{ zIndex: 20 }}>
+                    <span className={`development-card__status-tag ${statusTag.class}`} style={{ zIndex: 20 }}>
                         {statusTag.label}
                     </span>
                 )}
@@ -182,7 +168,7 @@ export default function DevelopmentCard({ development }) {
                         {showTooltip && amenityCount > 0 && (
                             <div className="development-card__tooltip" onClick={(e) => e.stopPropagation()}>
                                 <div className="development-card__tooltip-content">
-                                    {development.amenidades.slice(0, 6).map((am, idx) => {
+                                    {development.amenidades.slice(0, SCROLL_CONFIG.MAX_VISIBLE_AMENITIES).map((am, idx) => {
                                         const Icon = getAmenityIcon(am);
                                         return (
                                             <div key={idx} className="development-card__tooltip-item">
@@ -191,8 +177,8 @@ export default function DevelopmentCard({ development }) {
                                             </div>
                                         );
                                     })}
-                                    {amenityCount > 6 && (
-                                        <div className="development-card__tooltip-more">+{amenityCount - 6} más...</div>
+                                    {amenityCount > SCROLL_CONFIG.MAX_VISIBLE_AMENITIES && (
+                                        <div className="development-card__tooltip-more">+{amenityCount - SCROLL_CONFIG.MAX_VISIBLE_AMENITIES} más...</div>
                                     )}
                                 </div>
                             </div>
