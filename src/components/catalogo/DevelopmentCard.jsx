@@ -40,39 +40,52 @@ export default function DevelopmentCard({ development }) {
     const previewModels = matchingModels;
 
     const checkScroll = () => {
-        if (!sliderRef.current) return;
-        const { scrollLeft, scrollWidth, clientWidth } = sliderRef.current;
-        // Using a 1px buffer for floating point issues
-        setCanScrollLeft(scrollLeft > 1);
-        setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 1);
+        const slider = sliderRef.current;
+        if (!slider) return;
+
+        const { scrollLeft, scrollWidth, clientWidth } = slider;
+
+        // Use an even more aggressive threshold for start detection (20px)
+        // to handle any browser-specific offsets or internal spacings
+        const isAtStart = scrollLeft <= 20;
+        const isAtEnd = Math.ceil(scrollLeft + clientWidth) >= scrollWidth - 15;
+
+        setCanScrollLeft(!isAtStart);
+        setCanScrollRight(!isAtEnd && scrollWidth > clientWidth + 5);
     };
 
     useEffect(() => {
-        const slider = sliderRef.current;
-        if (slider) {
-            checkScroll();
-            slider.addEventListener('scroll', checkScroll);
-            window.addEventListener('resize', checkScroll);
+        // Ensure we check on mount and after layout shifts
+        const handleInitialCheck = () => {
+            if (sliderRef.current) checkScroll();
+        };
 
-            // Check again after a short delay for image/content layout
-            const timer = setTimeout(checkScroll, 500);
-            return () => {
-                slider.removeEventListener('scroll', checkScroll);
-                window.removeEventListener('resize', checkScroll);
-                clearTimeout(timer);
-            };
-        }
+        handleInitialCheck();
+
+        const timers = [100, 300, 600, 1200].map(ms => setTimeout(handleInitialCheck, ms));
+        window.addEventListener('resize', checkScroll);
+
+        return () => {
+            timers.forEach(clearTimeout);
+            window.removeEventListener('resize', checkScroll);
+        };
     }, [previewModels.length]);
 
     if (!development) return null;
 
     const handleScroll = (dir) => {
-        if (!sliderRef.current) return;
-        const scrollAmount = 250; // Increased for better movement
-        sliderRef.current.scrollBy({
+        const slider = sliderRef.current;
+        if (!slider) return;
+
+        const scrollAmount = 300;
+        slider.scrollBy({
             left: dir === 'left' ? -scrollAmount : scrollAmount,
             behavior: 'smooth'
         });
+
+        // Re-check visibility multiple times during/after smooth scroll animation
+        const checkTimers = [100, 200, 400, 600].map(ms => setTimeout(checkScroll, ms));
+        return () => checkTimers.forEach(clearTimeout);
     };
 
     // Determine Image: Use development cover, or fallback to first matching model image
@@ -192,7 +205,7 @@ export default function DevelopmentCard({ development }) {
                     <div className="development-card__models-preview">
                         <span className="development-card__preview-title">{matchCount} Modelos:</span>
                         <div className="development-card__slider-wrapper">
-                            {canScrollLeft && (
+                            {previewModels.length > 2 && canScrollLeft && (
                                 <button
                                     className="development-card__nav-btn development-card__nav-btn--left"
                                     onClick={(e) => { e.stopPropagation(); handleScroll('left'); }}
@@ -202,7 +215,11 @@ export default function DevelopmentCard({ development }) {
                                 </button>
                             )}
 
-                            <div className="development-card__model-chips hide-scrollbar" ref={sliderRef}>
+                            <div
+                                className={`development-card__model-chips hide-scrollbar ${previewModels.length <= 2 ? 'development-card__model-chips--centered' : ''}`}
+                                ref={sliderRef}
+                                onScroll={checkScroll}
+                            >
                                 {previewModels.map(m => (
                                     <Link
                                         key={m.id}
@@ -228,7 +245,7 @@ export default function DevelopmentCard({ development }) {
                                 ))}
                             </div>
 
-                            {canScrollRight && (
+                            {previewModels.length > 2 && canScrollRight && (
                                 <>
                                     <button
                                         className="development-card__nav-btn development-card__nav-btn--right"

@@ -23,7 +23,7 @@ Contenedores para diálogos y ventanas emergentes globales.
 Componentes que pertenecen a un dominio de negocio específico:
 -   **`auth/`**: Formularios de login, perfiles.
 -   **`catalogo/`**:
-    - **`DevelopmentCard`**: Tarjeta premium que muestra un desarrollo y resume los modelos coincidentes. Usa `CardTokens.css` para estilos compartidos.
+    - **`DevelopmentCard`**: Tarjeta premium que muestra un desarrollo y resume los modelos coincidentes. Incluye un slider interactivo con navegación por flechas, alineación inteligente (centrado automático para 1-2 modelos) y visualización dinámica de amenidades mediante tooltips interactivos. Usa `DevelopmentCard.css` para estilos encapsulados siguiendo BEM.
     - **`PropertyCard`**: Tarjeta de detalle para modelos individuales (usada en Top Models y Sugerencias).
     - **`FilterModal`**: Modal de filtros avanzados con sliders de precio y selectores de casillas.
 -   **`leads/`**: Tablas de prospectos, detalles de contacto, historial.
