@@ -1,0 +1,4 @@
+{
+    "request": "Exporta la tabla de usuarios a csv",
+    "transformation": "python .agent/skills/smart-data-exporter/scripts/export_handler.py --source '[{\"id\": 1, \"user\": \"admin\"}]' --format csv --dest exports/users.csv"
+}
