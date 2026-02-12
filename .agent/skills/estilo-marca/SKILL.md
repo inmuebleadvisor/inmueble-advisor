@@ -32,8 +32,8 @@ Before generating any code, you MUST:
 
 ## 4. Visual Standards (Premium Feel)
 - **Motion:** `transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);`
-- **Elevation:** `box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);` (Tailwind `shadow-md` equivalent or custom).
-- **Radius:** `rounded-lg` (8px) for standard, `rounded-xl` (12px) for cards.
+- **Elevation:** `box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);` (Estándar de elevación premium).
+- **Radius:** `border-radius: 8px;` para estándar, `border-radius: 12px;` para tarjetas (tokens definidos en CSS).
 
 ## 5. Constraints & Security (Sanity Check)
 - ⛔ **NO** hardcoded colors (Hex/RGB). ALWAYS use CSS variables.

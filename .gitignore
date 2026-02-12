@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .gemini/
+mcp_config.json
+service-account.json
+data-manager/*.json
+!data-manager/README.md
