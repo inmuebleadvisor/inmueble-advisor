@@ -66,20 +66,6 @@ function App() {
 
   return (
     <PostHogProvider client={posthog}>
-      {/* ⚠️ DEBUG BANNER - REMOVE AFTER VERIFICATION */}
-      <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        zIndex: 9999,
-        background: 'red',
-        color: 'white',
-        padding: '5px 10px',
-        fontWeight: 'bold'
-      }}>
-        v1.1 - PROD CHECK
-      </div>
-
       <ServiceProvider>
         <UserProvider>
           <CatalogProvider>
