@@ -108,6 +108,8 @@
   --z-normal: 1;
   --z-footer: 2;
   --z-map-pane: 400;
+  --z-fixed-map: 990;
+  /* [NEW] Offset Fullscreen Map (Below Header) */
   --z-sticky: 1000;
   /* Navbar / Header */
   --z-modal: 1050;
@@ -116,6 +118,10 @@
   /* Critical Toggles (Hamburger) */
   --z-toast: 1200;
   /* Notifications / Toasts */
+
+  /* Layout Dimensions */
+  --header-height: 72px;
+  /* Standard Header Height (8px * 9) */
 }
 
 /* --- LIGHT THEME VARIABLES --- */

@@ -172,7 +172,7 @@ export default function MapCatalogView({ marcadores, trackBehavior, isFullscreen
                                 click: () => trackBehavior && trackBehavior('map_marker_click', { dev_name: dev.nombre }),
                             }}
                         >
-                            <Popup className="custom-popup">
+                            <Popup className="map-catalog-view__popup">
                                 <div className="map-popup__content">
                                     <img
                                         src={dev.portada || FALLBACK_IMG}
