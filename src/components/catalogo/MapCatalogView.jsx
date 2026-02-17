@@ -155,7 +155,7 @@ export default function MapCatalogView({ marcadores, trackBehavior }) {
                         <Marker
                             key={dev.id}
                             position={[dev.ubicacion.latitud, dev.ubicacion.longitud]}
-                            icon={createCustomIcon(dev.etiquetaPrecio, dev.esFavorito ? '#8B0000' : 'var(--primary-color)')}
+                            icon={createCustomIcon(dev.etiquetaPrecio, dev.esFavorito ? 'var(--status-favorite)' : 'var(--primary-color)')}
                             eventHandlers={{
                                 click: () => trackBehavior && trackBehavior('map_marker_click', { dev_name: dev.nombre }),
                             }}

@@ -163,7 +163,7 @@
 }
 
 .map-catalog-view__legend-color--favorite {
-    background-color: #8B0000;
+    background-color: var(--status-favorite);
 }
 
 @media (max-width: 768px) {
