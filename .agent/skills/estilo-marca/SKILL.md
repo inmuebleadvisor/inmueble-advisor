@@ -45,7 +45,7 @@ Before generating any code, you MUST:
 After implementation, you MUST:
 1.  **Validación Determinista:** Ejecutar el script de validación para asegurar cumplimiento BEM y evitar colores hardcodeados.
     ```bash
-    python .agent/skills/estilo-marca/scripts/validate_design.py "ruta/al/archivo/modificado.jsx"
+    python .agent/skills/estilo-marca/scripts/validate_design.py --target "ruta/al/archivo/modificado.jsx"
     ```
 2.  **Browser Check:** context logic permitting, use `browser_subagent` to screenshot the component in Dark Mode.
 3.  **Visual Audit:** Verify contrast ratios and alignment (8px grid).

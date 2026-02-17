@@ -1,6 +1,7 @@
 import re
 import sys
 import os
+import argparse
 
 def check_file(filepath):
     errors = []
@@ -39,11 +40,12 @@ def check_file(filepath):
     return errors
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python validate_design.py <file_path>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Validación de Estándares de Diseño Premium y BEM.")
+    parser.add_argument("--target", required=True, help="Ruta del archivo a validar (JSX, TSX, CSS).")
+    
+    args = parser.parse_args()
+    target_file = args.target
 
-    target_file = sys.argv[1]
     if not os.path.exists(target_file):
         print(f"Error: File {target_file} not found.")
         sys.exit(1)
