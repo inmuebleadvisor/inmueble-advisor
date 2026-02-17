@@ -64,9 +64,22 @@ function App() {
     metaService.init(META_CONFIG.PIXEL_ID);
   }, []);
 
-  // El orden de los Providers es estratégico. FavoritesProvider usa datos de User y Catalog.
   return (
     <PostHogProvider client={posthog}>
+      {/* ⚠️ DEBUG BANNER - REMOVE AFTER VERIFICATION */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        zIndex: 9999,
+        background: 'red',
+        color: 'white',
+        padding: '5px 10px',
+        fontWeight: 'bold'
+      }}>
+        v1.1 - PROD CHECK
+      </div>
+
       <ServiceProvider>
         <UserProvider>
           <CatalogProvider>
