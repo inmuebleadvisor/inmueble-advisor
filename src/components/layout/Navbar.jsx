@@ -86,9 +86,6 @@ const Navbar = () => {
                     {/* 1. CATÁLOGO */}
                     <Link to="/catalogo" className={getLinkClassName('/catalogo')}>Catálogo</Link>
 
-                    {/* 2. MAPA */}
-                    <Link to="/mapa" className={getLinkClassName('/mapa')}>Mapa</Link>
-
                     {/* 3. FAVORITOS */}
                     <Link to="/favoritos" className={getLinkClassName('/favoritos')}>Favoritos</Link>
 

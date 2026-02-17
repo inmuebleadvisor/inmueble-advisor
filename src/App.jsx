@@ -34,7 +34,7 @@ const Favoritos = React.lazy(() => import('./screens/cliente/Favoritos'));
 
 // Screens - Catalogo (Lazy Loaded)
 const Catalogo = React.lazy(() => import('./screens/catalogo/Catalogo'));
-const Mapa = React.lazy(() => import('./screens/catalogo/Mapa'));
+// Mapa screen removed - Integrated into Catalogo
 const DetalleModelo = React.lazy(() => import('./screens/catalogo/DetalleModelo'));
 const DetalleDesarrollo = React.lazy(() => import('./screens/catalogo/DetalleDesarrollo'));
 
@@ -97,7 +97,8 @@ function App() {
 
                       <Route path="catalogo" element={<Catalogo />} />
 
-                      <Route path="mapa" element={<Mapa />} />
+                      {/* Redirect legacy map route to unified catalog view */}
+                      <Route path="mapa" element={<Navigate to="/catalogo" replace />} />
 
                       {/* ⭐ NUEVA RUTA: Ruta para la pantalla de Comparador y Favoritos */}
                       <Route path="favoritos" element={

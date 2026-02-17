@@ -29,15 +29,16 @@ Before generating any code, you MUST:
 - **Element:** `__element` (e.g., `user-profile__avatar`).
 - **Modifier:** `--modifier` (e.g., `user-profile__button--active`).
 - **Rule:** MAX nesting depth of 1.
+- **Spacing:** Use 8px Grid system (multiples of 8px for margin, padding, gaps).
 
 ## 4. Visual Standards (Premium Feel)
-- **Motion:** `transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);`
-- **Elevation:** `box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);` (Estándar de elevación premium).
-- **Radius:** `border-radius: 8px;` para estándar, `border-radius: 12px;` para tarjetas (tokens definidos en CSS).
+- **Motion:** `transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);` (Premium Easing).
+- **Elevation:** Use CSS variables: `--shadow-sm`, `--shadow-md`, `--shadow-lg`.
+- **Radius:** `border-radius: 12px;` for generic UI, `border-radius: 32px;` (--radius-xl) for Cards.
 
 ## 5. Constraints & Security (Sanity Check)
 - ⛔ **NO** hardcoded colors (Hex/RGB). ALWAYS use CSS variables.
-- ⛔ **NO** arbitrary `z-index` values (e.g., 9999). Use the declared scale (100, 200, ... 1000).
+- ⛔ **NO** arbitrary `z-index` values. Use Scale: `1000` (Header), `1050` (Modals), `1100` (Crit Toggles).
 - ⛔ **NO** destructive commands (`rm`, `rf`) without explicit user goal.
 - ⛔ **NO** overwriting `index.css` without a specific backup plan.
 

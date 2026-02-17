@@ -80,7 +80,7 @@ export default function Perfil() {
 
           {/* CTA 3: Mapa */}
           <button
-            onClick={() => navigate('/mapa')}
+            onClick={() => navigate('/catalogo', { state: { viewMode: 'map' } })}
             className="btn-cta-primary"
           >
             Navega por el mapa
