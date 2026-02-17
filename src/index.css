@@ -102,6 +102,20 @@
   --bg-search: var(--bg-secondary);
   --bg-filter: var(--bg-tertiary);
   --bg-card-price: transparent;
+
+  /* Z-Index Scale (Ref: STYLES_GUIDE.md) */
+  --z-negative: -1;
+  --z-normal: 1;
+  --z-footer: 2;
+  --z-map-pane: 400;
+  --z-sticky: 1000;
+  /* Navbar / Header */
+  --z-modal: 1050;
+  /* Modals / Mobile Menu / Fullscreen Map */
+  --z-critical: 1100;
+  /* Critical Toggles (Hamburger) */
+  --z-toast: 1200;
+  /* Notifications / Toasts */
 }
 
 /* --- LIGHT THEME VARIABLES --- */
