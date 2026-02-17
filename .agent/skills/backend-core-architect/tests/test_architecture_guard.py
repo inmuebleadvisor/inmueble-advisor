@@ -10,7 +10,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 scripts_dir = os.path.join(current_dir, '..', 'scripts')
 sys.path.append(scripts_dir)
 
-import architecture_guard
+import architecture_guard  # type: ignore
 
 class TestArchitectureGuard(unittest.TestCase):
     
