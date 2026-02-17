@@ -20,7 +20,11 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
-    height: 70px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: var(--header-height);
+    display: flex;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -148,11 +152,11 @@
     /* Hide menu by default on mobile, slide in when open */
     .navbar__menu {
         position: fixed;
-        top: 70px;
+        top: var(--header-height);
         /* Match header height */
         left: 0;
         width: 100%;
-        height: calc(100vh - 70px);
+        height: calc(100vh - var(--header-height));
         background-color: var(--bg-secondary);
         flex-direction: column;
         align-items: center;

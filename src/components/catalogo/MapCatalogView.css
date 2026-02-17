@@ -14,11 +14,11 @@
 
 .map-catalog-view--fullscreen {
     position: fixed;
-    top: 0;
+    top: var(--header-height);
     left: 0;
     width: 100vw;
-    height: 100dvh;
-    z-index: var(--z-modal);
+    height: calc(100dvh - var(--header-height));
+    z-index: var(--z-fixed-map);
     background-color: var(--bg-main);
     border-radius: 0;
     margin-top: 0;
