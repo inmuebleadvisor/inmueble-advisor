@@ -11,7 +11,6 @@ export default defineConfig({
         manualChunks: {
           'firebase-vendor': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage', 'firebase/analytics'],
           'ui-vendor': ['react', 'react-dom', 'react-router-dom', 'lucide-react'],
-          'charts-vendor': ['recharts'],
           'maps-vendor': ['leaflet', 'react-leaflet']
         }
       }
