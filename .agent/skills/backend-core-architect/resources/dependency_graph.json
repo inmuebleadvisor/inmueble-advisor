@@ -1,0 +1,40 @@
+{
+    "layers": {
+        "core": {
+            "allowed_imports": [
+                "shared-kernel",
+                "types",
+                "luxon"
+            ],
+            "forbidden": [
+                "infrastructure",
+                "interface",
+                "firebase-admin",
+                "express",
+                "axios",
+                "firebase-functions"
+            ]
+        },
+        "infrastructure": {
+            "allowed_imports": [
+                "core",
+                "types",
+                "firebase-admin",
+                "firebase-functions",
+                "axios",
+                "google-cloud"
+            ],
+            "forbidden": [
+                "interface"
+            ]
+        },
+        "interface": {
+            "allowed_imports": [
+                "core",
+                "infrastructure",
+                "types"
+            ],
+            "forbidden": []
+        }
+    }
+}

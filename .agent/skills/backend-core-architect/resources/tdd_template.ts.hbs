@@ -1,0 +1,36 @@
+import { expect } from 'chai';
+import * as sinon from 'sinon';
+import { {{className}} } from '../src/{{layers}}/{{className}}';
+
+describe('{{className}}', () => {
+    let sut: {{className}};
+    // Add your mocks here
+    // let dependencyMock: sinon.SinonStubbedInstance<Dependency>;
+
+    beforeEach(() => {
+        // Initialize mocks
+        // dependencyMock = sinon.createStubInstance(Dependency);
+        // sut = new {{className}}(dependencyMock);
+    });
+
+    afterEach(() => {
+        sinon.restore();
+    });
+
+    it('should be defined', () => {
+        expect(sut).to.not.be.undefined;
+    });
+
+    // START RED PHASE: Write your failing test here
+    it('should do something (IMPLEMENT ME)', async () => {
+        // Arrange
+        // ...
+
+        // Act
+        // const result = await sut.execute(...);
+
+        // Assert
+        // expect(result).to.equal(...);
+        expect.fail('Test not implemented');
+    });
+});
