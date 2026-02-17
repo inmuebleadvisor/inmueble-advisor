@@ -27,6 +27,7 @@ export default function Catalogo() {
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState(location.state?.viewMode || 'grid');
+  const [isMapFullscreen, setIsMapFullscreen] = useState(false);
 
   // Use Custom Hook for Filter Logic
   const {
