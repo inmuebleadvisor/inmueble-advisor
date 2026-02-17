@@ -25,7 +25,7 @@ vite.config.js
  
 ## Frontend (SRC) 
 Listado de rutas de carpetas para el volumen OS
-El número de serie del volumen es 9650-5F4F
+El nÃºmero de serie del volumen es 9650-5F4F
 C:\USERS\NOVAT\INMUEBLE-ADVISOR\SRC
 |   App.css
 |   App.jsx
@@ -255,7 +255,7 @@ C:\USERS\NOVAT\INMUEBLE-ADVISOR\SRC
  
 ## Backend (Functions/SRC) 
 Listado de rutas de carpetas para el volumen OS
-El número de serie del volumen es 9650-5F4F
+El nÃºmero de serie del volumen es 9650-5F4F
 C:\USERS\NOVAT\INMUEBLE-ADVISOR\FUNCTIONS\SRC
 |   index.ts
 |   
@@ -333,7 +333,7 @@ C:\USERS\NOVAT\INMUEBLE-ADVISOR\FUNCTIONS\SRC
  
 ## Documentos 
 Listado de rutas de carpetas para el volumen OS
-El número de serie del volumen es 9650-5F4F
+El nÃºmero de serie del volumen es 9650-5F4F
 C:\USERS\NOVAT\INMUEBLE-ADVISOR\DOCUMENTOS
 |   BIGQUERY_SETUP.md
 |   DATOSESTRUCTURA.md
@@ -349,29 +349,5 @@ C:\USERS\NOVAT\INMUEBLE-ADVISOR\DOCUMENTOS
 |       002-persistencia-poliglota-bq-firestore.md
 |       003-patron-dependency-injection.md
 |       
-\---docx
-        CloudFunction.docx
-        CODIGOCLOUD.docx
-        DATOSESTRUCTURA.docx
-        DATOSFLUJO.docx
-        DATOSMANUAL.docx
-        ESTILOS_GUIA.docx
-        ESTILOS_TEMPORADA.docx
-        GUIA_DESARROLLO.docx
-        LOGICA_AGENDAMIENTO.docx
-        MANUALDEARQUITECTURA.docx
         MANUAL_AUDITORIA_CONVERSION TRACKING
-        ModuloAdmin.docx
-        README_functions.docx
-        README_ROOT.docx
-        README_src.docx
-        README_src_components.docx
-        README_src_context.docx
-        README_src_hooks.docx
-        README_src_repositories.docx
-        README_src_screens.docx
-        README_src_services.docx
-        README_src_types.docx
-        README_src_utils.docx
-        Reporte_Campos_Importacion.docx
         
