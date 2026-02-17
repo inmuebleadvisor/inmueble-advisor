@@ -189,6 +189,8 @@ export default function Catalogo() {
         <MapCatalogView
           marcadores={marcadoresVisibles}
           trackBehavior={trackBehavior}
+          isFullscreen={isMapFullscreen}
+          setIsFullscreen={setIsMapFullscreen}
         />
       )}
     </div>

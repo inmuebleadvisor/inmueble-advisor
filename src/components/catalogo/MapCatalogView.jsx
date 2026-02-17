@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Maximize2, Minimize2 } from 'lucide-react';
+import Portal from '../common/Portal';
 
 import './MapCatalogView.css';
 
@@ -109,9 +110,20 @@ const FALLBACK_IMG = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cro
  * @param {Array} props.marcadores - List of markers to display
  * @param {Function} props.trackBehavior - Tracking function
  */
-export default function MapCatalogView({ marcadores, trackBehavior }) {
-    const [isFullscreen, setIsFullscreen] = useState(false);
+export default function MapCatalogView({ marcadores, trackBehavior, isFullscreen, setIsFullscreen }) {
     const [mapRef, setMapRef] = useState(null);
+
+    // Manage body overflow when fullscreen
+    useEffect(() => {
+        if (isFullscreen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [isFullscreen]);
 
     const centroMapa = [21.88, -102.29];
 
@@ -123,7 +135,7 @@ export default function MapCatalogView({ marcadores, trackBehavior }) {
         }, 300);
     };
 
-    return (
+    const content = (
         <div className={`map-catalog-view ${isFullscreen ? 'map-catalog-view--fullscreen' : ''}`}>
             {/* Fullscreen Toggle */}
             <button
@@ -192,4 +204,6 @@ export default function MapCatalogView({ marcadores, trackBehavior }) {
             </div>
         </div>
     );
+
+    return isFullscreen ? <Portal>{content}</Portal> : content;
 }
