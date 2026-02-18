@@ -12,16 +12,25 @@
     margin-top: 1rem;
 }
 
+/* [DIDÁCTICO] Movido antes de los modificadores para que --fullscreen tenga prioridad */
+@media (max-width: 768px) {
+    .map-catalog-view {
+        height: 400px;
+    }
+}
+
 .map-catalog-view--fullscreen {
     position: fixed;
     top: var(--header-height);
     left: 0;
     width: 100vw;
+    /* [DIDÁCTICO] Usamos 100dvh para adaptarse dinámicamente a la UI móvil (barras de navegación) */
     height: calc(100dvh - var(--header-height));
-    z-index: var(--z-fixed-map);
+    z-index: var(--z-modal); /* 1050: Modales y Pantalla Completa según STYLES_GUIDE.md */
     background-color: var(--bg-main);
     border-radius: 0;
     margin-top: 0;
+    transition: all 0.3s var(--ease-premium);
 }
 
 .map-catalog-view__container {
@@ -166,8 +175,3 @@
     background-color: var(--status-favorite);
 }
 
-@media (max-width: 768px) {
-    .map-catalog-view {
-        height: 400px;
-    }
-}

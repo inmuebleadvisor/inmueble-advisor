@@ -23,6 +23,15 @@ Este módulo contiene los componentes visuales encargados de presentar la oferta
 *   **Archivo:** `AmenidadesList.jsx`
 *   **Propósito:** Renderizado estandarizado de la lista de características de una propiedad.
 
+### 4. MapCatalogView
+*   **Archivo:** `MapCatalogView.jsx`
+*   **CSS:** `MapCatalogView.css`
+*   **Propósito:** Vista de mapa interactiva con Leaflet para localizar desarrollos.
+*   **Características:**
+    - Fullscreen dinámico optimizado para móviles con `100dvh`.
+    - Marcadores personalizados con precios y estatus de favoritos.
+    - Leyenda interactiva integrada.
+
 ## Estándares del Módulo
 
 1.  **Metodología BEM:** Es obligatorio el uso de BEM con el prefijo correspondiente al componente (ej. `.development-card__element`).
