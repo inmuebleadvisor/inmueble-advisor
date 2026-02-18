@@ -1,8 +1,0 @@
-{
-    "allowed_roots": [
-        "./exports",
-        "./logs/reports",
-        "./temp/data_audit"
-    ],
-    "description": "Lista de directorios permitidos para operaciones de exportación. Cualquier ruta fuera de estas raíces será rechazada por el Skill."
-}

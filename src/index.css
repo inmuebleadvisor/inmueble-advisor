@@ -1,5 +1,4 @@
 @import './styles/buttons.css';
-@import './styles/buttons.css';
 @import './styles/components/CardTokens.css';
 @import './styles/cards.css';
 @import './styles/Header.css';
@@ -12,6 +11,7 @@
    🎨 CONFIGURACIÓN GLOBAL DE COLORES (CENTRALIZADA)
    ==========================================================================
    Modifique estos valores para afectar toda la aplicación.
+   Tema único: Dark Premium.
 */
 :root {
   /* 
@@ -19,9 +19,9 @@
      Nota: Se definen dos variantes para contraste visual.
   */
   --base-primary-light: #dcb23a;
-  /* Bronze/Dark Gold - Para MODO CLARO (Texto legible sobre blanco) */
+  /* Bronze/Dark Gold - Token de reserva */
   --base-primary-dark: #f59e0b;
-  /* Bright Gold - Para MODO OSCURO (Brillante sobre fondo oscuro) */
+  /* Bright Gold - Primario activo (Dark Premium) */
 
   /* Color de Acento/Marca: Usado en enlaces, info y headers */
   --base-brand-blue: #0f172a;
@@ -57,8 +57,32 @@
   --status-favorite: #dc2626;
   /* Red - Favorites */
 
+  --status-accent: var(--accent-blue);
+
+  --success: var(--status-success);
   --success: var(--status-success);
   --error: #ef4444;
+
+  /* Semantic Subtles (for chips/badges) - Dark Mode Defaults */
+  --bg-success-subtle: rgba(16, 185, 129, 0.1);
+  --text-success: var(--status-success);
+  --border-success: rgba(16, 185, 129, 0.3);
+
+  --bg-warning-subtle: rgba(245, 158, 11, 0.1);
+  --text-warning: var(--status-warning);
+  --border-warning: rgba(245, 158, 11, 0.3);
+
+  --bg-error-subtle: rgba(239, 68, 68, 0.1);
+  --text-error: var(--error);
+  --border-error: rgba(239, 68, 68, 0.3);
+
+  --bg-primary-subtle: rgba(245, 158, 11, 0.1);
+  --bg-input-search: var(--bg-tertiary);
+  /* Default for Dark Mode */
+
+  --bg-accent-subtle: rgba(2, 132, 199, 0.1);
+  --text-accent: var(--accent-blue);
+  --border-accent: rgba(2, 132, 199, 0.3);
 
   /* Fondos */
   --bg-main: #0f172a;
@@ -122,49 +146,6 @@
   /* Layout Dimensions */
   --header-height: 72px;
   /* Standard Header Height (8px * 9) */
-}
-
-/* --- LIGHT THEME VARIABLES --- */
-[data-theme='light'] {
-  color-scheme: light;
-
-  /* --- ASIGNACIÓN DE COLORES BASE --- */
-  /* Usamos la versión "Dark Gold" para que el texto se lea bien sobre blanco */
-  --primary-color: var(--base-primary-light);
-  --primary-hover: #92400e;
-
-  --text-main: var(--base-brand-blue);
-  --text-secondary: #475569;
-  --text-inverse: #ffffff;
-
-  --accent-blue: var(--base-accent-blue);
-
-  /* Fondos */
-  --bg-main: #f8fafc;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #e2e8f0;
-
-  /* Borders */
-  --border-subtle: rgba(0, 0, 0, 0.08);
-  --border-strong: rgba(0, 0, 0, 0.15);
-
-  /* Glass Effects */
-  --bg-glass: rgba(0, 0, 0, 0.05);
-
-  /* Component Specific */
-  --bg-modal: #ffffff;
-  --bg-input: #ffffff;
-  --bg-header: #ffffff;
-  --bg-search: #ffffff;
-  --bg-filter: #ffffff;
-  --bg-card-price: #eff6ff;
-  --bg-input-search: #f1f5f9;
-
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  /* Sombra Glow ajustada */
-  --shadow-glow: 0 0 15px rgba(180, 83, 9, 0.25);
 }
 
 /* --- GLOBAL RESET & BASE STYLES --- */

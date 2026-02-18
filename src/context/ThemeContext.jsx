@@ -1,42 +1,37 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { THEME_CONFIG, THEME_ASSETS } from '../config/theme.config';
+import React, { createContext, useContext } from 'react';
+import { THEME_ASSETS } from '../config/theme.config';
+
+/**
+ * @fileoverview ThemeContext simplificado — Dark Premium es el único tema.
+ * Provee los assets visuales (logo, decoraciones) a los componentes consumidores.
+ * No existe toggle de tema. El tema es estático.
+ */
 
 const ThemeContext = createContext();
 
+/**
+ * Proveedor de tema estático (Dark Premium).
+ * @param {object} props - Props del componente.
+ * @param {React.ReactNode} props.children - Componentes hijos que consumen el contexto.
+ * @returns {React.ReactElement} Provider con assets del tema oscuro.
+ */
 export function ThemeProvider({ children }) {
-    // 1. Theme State (User Preference)
-    const [theme, setTheme] = useState(() => {
-        const saved = localStorage.getItem(THEME_CONFIG.storageKeys.theme);
-        if (saved) return saved;
-        return THEME_CONFIG.defaultTheme;
-    });
-
-    useEffect(() => {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem(THEME_CONFIG.storageKeys.theme, theme);
-    }, [theme]);
-
-    const toggleTheme = () => {
-        setTheme(prev => prev === THEME_CONFIG.themes.dark ? THEME_CONFIG.themes.light : THEME_CONFIG.themes.dark);
-    };
-
-    // 2. Derived Assets (Simplified)
+    // Dark Premium es el único tema. No hay toggle.
     const currentAssets = {
-        logo: theme === 'light' ? THEME_ASSETS.logoLight : THEME_ASSETS.logoDark,
+        logo: THEME_ASSETS.logoDark,
         footer: THEME_ASSETS.footerDecoration,
         effect: THEME_ASSETS.backgroundEffect
     };
 
     return (
-        <ThemeContext.Provider value={{
-            theme,
-            toggleTheme,
-            currentAssets
-        }}>
+        <ThemeContext.Provider value={{ currentAssets }}>
             {children}
         </ThemeContext.Provider>
     );
 }
 
+/**
+ * Hook para acceder al contexto de tema.
+ * @returns {{ currentAssets: { logo: string, footer: string|null, effect: string|null } }}
+ */
 export const useTheme = () => useContext(ThemeContext);
-

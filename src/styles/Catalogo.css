@@ -27,14 +27,8 @@
   /* Prevent horizontal scroll from children */
 }
 
-/* ... existing content ... */
-.catalogo__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  /* Reduced from 300px to avoid overflow on small screens */
-  gap: 1.5rem;
-  padding: 1.5rem 1.25rem;
-}
+
+/* .catalogo__grid moved to consistent location below */
 
 .catalogo__header {
   background-color: var(--bg-secondary);
@@ -78,7 +72,7 @@
 .search-bar__container {
   display: flex;
   align-items: center;
-  background-color: var(--bg-input-search, #eff6ff);
+  background-color: var(--bg-input-search);
   border-radius: var(--radius-lg);
   padding: 0.75rem 1rem;
   border: 1px solid transparent;
@@ -167,9 +161,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #fee2e2;
-  border: 1px solid #fecaca;
-  color: #ef4444;
+  background-color: var(--bg-error-subtle);
+  border: 1px solid var(--border-error);
+  color: var(--text-error);
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -224,27 +218,28 @@
 }
 
 .chip--primary {
-  background-color: rgba(245, 158, 11, 0.1);
+  background-color: var(--bg-primary-subtle);
   color: var(--primary-color);
   border-color: var(--primary-color);
 }
 
 .chip--success {
-  background-color: #f0fdf4;
-  color: #15803d;
-  border-color: #bbf7d0;
+  background-color: var(--bg-success-subtle);
+  color: var(--text-success);
+  border-color: var(--border-success);
 }
 
 .chip--warning {
-  background-color: #fff7ed;
-  color: #c2410c;
-  border-color: #fed7aa;
+  background-color: var(--bg-warning-subtle);
+  color: var(--text-warning);
+  border-color: var(--border-warning);
 }
 
 /* Grid Results */
 .catalogo__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  /* Reduced from 300px to avoid overflow on small screens */
   gap: 1.5rem;
   padding: 1.5rem 1.25rem;
 }
@@ -290,7 +285,6 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
   background-color: rgba(0, 0, 0, 0.6);
   z-index: 9999;
   /* Ensure it is above everything */
@@ -419,9 +413,9 @@
 }
 
 .amenity-chip--active {
-  background-color: #e0f2fe;
-  color: #0284c7;
-  border-color: #7dd3fc;
+  background-color: var(--bg-accent-subtle);
+  color: var(--text-accent);
+  border-color: var(--border-accent);
 }
 
 .modal__footer {
@@ -596,10 +590,7 @@
   border-radius: 50%;
   background-color: var(--white);
   border: 2px solid var(--primary-color);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   cursor: pointer;
-  border: none;
-  /* Reset border */
 }
 
 /* Toggle Switch */
@@ -663,12 +654,12 @@
 
 /* SCROLL REVEAL STYLES */
 
-/* SCROLL REVEAL STYLES MOVED TO INDEX.CSS */
+
 
 
 /* --- AUDIT REFACTOR: Loading State --- */
 .catalogo--loading {
-  display: flex !important;
+  display: flex;
   align-items: center;
   justify-content: center;
   height: 100vh;

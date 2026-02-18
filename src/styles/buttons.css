@@ -59,11 +59,6 @@
         0 2px 4px -1px rgba(245, 158, 11, 0.1);
 }
 
-[data-theme='light'] .btn-primary {
-    background: var(--primary-color);
-    box-shadow: none;
-}
-
 .btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.4),

@@ -12,24 +12,23 @@ Nuestro diseño transmite autoridad, éxito y seguridad mediante:
 
 ---
 
-## 2. Configuración de Colores y Temas
-Los colores se inyectan a través de variables CSS en `src/index.css`.
+## 2. Configuración de Colores — Dark Premium (Único)
+Los colores se inyectan a través de variables CSS en `src/index.css`. No existe modo claro.
 
 ### 🎨 Variables Base (Tokens Raíz)
 | Variable | Propósito | Valor |
 | :--- | :--- | :--- |
-| `--base-primary-light` | Oro para Modo Claro | `#dcb23a` |
-| `--base-primary-dark` | Oro para Modo Oscuro | `#f59e0b` |
+| `--base-primary-dark` | Oro Brillante (Primario activo) | `#f59e0b` |
 | `--base-brand-blue` | Azul Corporativo (Slate) | `#0f172a` |
 | `--base-accent-blue` | Acentos y Highlights | `#0284c7` |
 
-### 🌓 Temas (Modes)
-| Elemento | Modo Oscuro (Default) | Modo Claro |
-| :--- | :--- | :--- |
-| Fondo Principal (`--bg-main`) | `#0f172a` | `#f8fafc` |
-| Fondo Secundario (`--bg-secondary`) | `#1e293b` | `#ffffff` |
-| Texto Principal (`--text-main`) | `#f8fafc` | `#0f172a` |
-| Color Primario (`--primary-color`) | `--base-primary-dark` | `--base-primary-light` |
+### 🌑 Tema Dark Premium (Default y Único)
+| Elemento | Valor |
+| :--- | :--- |
+| Fondo Principal (`--bg-main`) | `#0f172a` |
+| Fondo Secundario (`--bg-secondary`) | `#1e293b` |
+| Texto Principal (`--text-main`) | `#f8fafc` |
+| Color Primario (`--primary-color`) | `--base-primary-dark` |
 
 ---
 
@@ -92,8 +91,8 @@ Sistema de tokens compartido para `DevelopmentCard` y `PropertyCard`.
 1. [ ] ¿Usa BEM sin anidamiento profundo?
 2. [ ] ¿Todos los colores son variables CSS?
 3. [ ] ¿El espaciado es múltiplo de 8px?
-4. [ ] ¿Funciona perfectamente en Dark y Light mode?
+4. [ ] ¿Usa exclusivamente las variables del Dark Premium?
 5. [ ] ¿Usa el Easing estándar para las transiciones?
 
 ---
-*Ultima actualización: Enero 2026. Consolidado de STYLES_GUIDE, ESTILOS_GUIA y Skill Estilo Marca.*
+*Última actualización: Febrero 2026. Consolidado a Dark Premium único.*

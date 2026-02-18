@@ -4,7 +4,6 @@ import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import WhatsAppButton from '../components/common/WhatsAppButton/WhatsAppButton';
-import ThemeToggle from '../components/layout/ThemeToggle';
 import Navbar from '../components/layout/Navbar';
 
 export default function Layout() {
@@ -57,8 +56,6 @@ export default function Layout() {
                 // So broken link.
                 <span className="footer__link">Inmueble Advisor</span>
               )}
-              <span className="footer__separator">|</span>
-              <ThemeToggle />
             </div>
 
             <div className="footer__copy">
