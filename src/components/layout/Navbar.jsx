@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { MapPin } from 'lucide-react';
 import { useUser } from '../../context/UserContext';
 import { useTheme } from '../../context/ThemeContext';
 // Assuming CitySelectorModal manages its own visibility via global state or similar, 
@@ -66,7 +67,8 @@ const Navbar = () => {
                             className="navbar__btn-city"
                             aria-label="Cambiar ciudad seleccionada"
                         >
-                            📍 {selectedCity}
+                            <MapPin size={18} strokeWidth={2} className="navbar__city-icon" />
+                            {selectedCity}
                         </button>
                     )}
 

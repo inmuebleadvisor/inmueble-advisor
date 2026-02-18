@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { MapPin, CircleDollarSign } from 'lucide-react';
 import SearchBar from '../layout/SearchBar';
 import '../../styles/components/home/HeroSection.css';
 
@@ -46,13 +47,15 @@ export default function HeroSection() {
                     className="hero-content__filter-chip"
                     onClick={() => applyFilter('rangoPrecio', 'economico')}
                 >
-                    💰 Precio
+                    <CircleDollarSign size={20} strokeWidth={2} className="hero-content__chip-icon" />
+                    Precio
                 </button>
                 <button
                     className="hero-content__filter-chip"
                     onClick={() => navigate('/catalogo', { state: { viewMode: 'map' } })}
                 >
-                    📍 Mapa
+                    <MapPin size={20} strokeWidth={2} className="hero-content__chip-icon" />
+                    Mapa
                 </button>
             </div>
         </div>

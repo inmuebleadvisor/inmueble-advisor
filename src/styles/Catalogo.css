@@ -123,10 +123,10 @@
 /* Sticky Filter Bar */
 .filter-bar {
   position: sticky;
-  top: 0;
-  top: 0;
-  z-index: 2;
-  /* Sit ABOVE the snow (z=1) */
+  top: var(--header-height);
+  /* Offset by header height to sit below Navbar */
+  z-index: 900;
+  /* High enough to sit above content, below Navbar (1000) */
   width: 100%;
   overflow-x: hidden;
   background-color: var(--bg-main);

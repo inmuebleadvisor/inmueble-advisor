@@ -33,11 +33,19 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
             return Math.min(num, max);
         }
 
-        // PRIORITY 1: URL Params (Override everything if present)
+        // PRIORITY 1: Navigation State (From Home Widget or other internal links)
+        const state = location.state;
+        const stateMinPrice = state?.minPrice ?? state?.precioMin;
+        const stateMaxPrice = state?.maxPrice ?? state?.precioMax;
+        const stateRooms = state?.rooms ?? state?.habitaciones;
+        const stateStatus = state?.status;
+
+        // PRIORITY 2: URL Params (Override everything if present AND no state)
+        // If state exists, it takes precedence because it's an explicit "new" action
         const hasUrlParams = params.has('minPrice') || params.has('maxPrice') || params.has('rooms') || params.has('status');
 
-        // PRIORITY 2: Local Storage (If no URL params)
-        if (!hasUrlParams) {
+        // PRIORITY 3: Local Storage (If no URL params and no state)
+        if (!state && !hasUrlParams) {
             try {
                 const saved = localStorage.getItem('catalog_filters_v1');
                 if (saved) {
@@ -48,7 +56,7 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
             }
         }
 
-        // PRIORITY 3: User Profile (First time fallback)
+        // PRIORITY 4: User Profile (First time fallback)
         // ... (Logic continues below using the calculated defaults)
 
         // Presupuesto
@@ -56,25 +64,30 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
         const urlMaxPrice = params.get('maxPrice');
         const profileMaxPrice = profile?.presupuestoCalculado;
 
-        const initialMinPrice = urlMinPrice ? safeNum(urlMinPrice) : defaultMinPrice;
-        const initialMaxPrice = urlMaxPrice
-            ? safeNum(urlMaxPrice, defaultMaxPrice)
-            : (profileMaxPrice ? safeNum(profileMaxPrice, defaultMaxPrice) : defaultMaxPrice);
+        const initialMinPrice = stateMinPrice !== undefined
+            ? safeNum(stateMinPrice)
+            : (urlMinPrice ? safeNum(urlMinPrice) : defaultMinPrice);
+
+        const initialMaxPrice = stateMaxPrice !== undefined
+            ? safeNum(stateMaxPrice, defaultMaxPrice)
+            : (urlMaxPrice ? safeNum(urlMaxPrice, defaultMaxPrice)
+                : (profileMaxPrice ? safeNum(profileMaxPrice, defaultMaxPrice) : defaultMaxPrice));
 
         // Recámaras
         const urlRooms = params.get('rooms');
         const profileRooms = profile?.recamarasDeseadas;
-        const initialRooms = urlRooms
-            ? safeNum(urlRooms)
-            : (profileRooms !== undefined && profileRooms !== null ? safeNum(profileRooms) : defaultRooms);
+        const initialRooms = stateRooms !== undefined
+            ? safeNum(stateRooms)
+            : (urlRooms ? safeNum(urlRooms)
+                : (profileRooms !== undefined && profileRooms !== null ? safeNum(profileRooms) : defaultRooms));
 
         // Status
         const urlStatus = params.get('status');
         const profileStatus = profile?.interesInmediato === true ? 'inmediata' : (profile?.interesInmediato === false ? 'preventa' : defaultStatus);
 
-        const initialStatus = urlStatus && ['inmediata', 'preventa'].includes(urlStatus)
-            ? urlStatus
-            : profileStatus;
+        const initialStatus = stateStatus && ['inmediata', 'preventa', 'all'].includes(stateStatus)
+            ? stateStatus
+            : (urlStatus && ['inmediata', 'preventa'].includes(urlStatus) ? urlStatus : profileStatus);
 
         return {
             precioMin: initialMinPrice,

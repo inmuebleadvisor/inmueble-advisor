@@ -30,7 +30,7 @@ import './styles/components/Spinner.css';
 // Screens - Cliente (Home is Eager Loaded for LCP)
 import Home from './screens/cliente/Home';
 import Perfil from './screens/cliente/Perfil';
-const OnboardingCliente = React.lazy(() => import('./screens/cliente/OnboardingCliente'));
+
 const Favoritos = React.lazy(() => import('./screens/cliente/Favoritos'));
 
 // Screens - Catalogo (Lazy Loaded)
@@ -97,7 +97,7 @@ function App() {
                         </ProtectedRoute>
                       } />
 
-                      <Route path="onboarding-cliente" element={<OnboardingCliente />} />
+
 
                       {/* 3. RUTAS DEL SISTEMA (Protegidas) */}
 

@@ -1,18 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FinancialService } from '../../services/financial.service';
+import { useCatalog } from '../../context/CatalogContext';
+import { CatalogService } from '../../services/catalog.service';
 import '../../styles/components/home/AffordabilityWidget.css';
 
 /**
  * @file AffordabilityWidget.jsx
  * @description Widget financiero para la Home.
- * @responsibility Calcular presupuesto máximo basado en ingresos y enganche.
+ * @responsibility Calcular presupuesto máximo basado en ingresos y enganche, y mostrar coincidencias.
  */
 export default function AffordabilityWidget() {
-    const [ingreso, setIngreso] = useState(''); // Mensualidad o Ingreso (asumimos monthly payment capacity logic directly or 30%)
-    // Didáctico: Para simplificar y alinear con FinancialService.calculateAffordability(capital, monthlyPayment),
-    // pediremos "Pago Mensual que puedes cubrir" O "Ingreso Mensual" y calcularemos el 30% internamente si es ingreso.
-    // UX Decision: Pedir "Cuánto puedes pagar al mes" es más directo para la fórmula existente.
+    const navigate = useNavigate();
+    const { modelos, desarrollos } = useCatalog();
 
+    // Form State
+    const [ingreso, setIngreso] = useState('');
     const [enganche, setEnganche] = useState('');
     const [resultado, setResultado] = useState(null);
 
@@ -23,10 +26,44 @@ export default function AffordabilityWidget() {
         const capMensual = parseFloat(ingreso) || 0;
         const capitalInicial = parseFloat(enganche) || 0;
 
-        // Lógica de negocio (Servicio)
+        // Lógica de negocio (Servicio Financiero)
         const { maxBudget, dynamicNote, isAlert } = financialService.calculateAffordability(capitalInicial, capMensual);
 
         setResultado({ maxBudget, dynamicNote, isAlert });
+    };
+
+    // --- LÓGICA DE COINCIDENCIAS (Restored from Onboarding) ---
+    const matchingCount = useMemo(() => {
+        if (!resultado?.maxBudget || !modelos || !desarrollos) return 0;
+
+        // Filtros equivalentes a "Lo que me alcanza"
+        const filters = {
+            precioMin: 0,
+            precioMax: resultado.maxBudget,
+            status: 'all',
+            tipo: 'all',
+            habitaciones: 0,
+            amenidad: '',
+            showNoPrice: false
+        };
+
+        // Usamos el servicio estático para filtrar (mismo motor que el catálogo)
+        return CatalogService.filterCatalog(modelos, desarrollos, filters, '').length;
+    }, [resultado, modelos, desarrollos]);
+
+    const handleVerPropiedades = () => {
+        if (!resultado) return;
+
+        // Navegamos al catálogo pasando el estado inicial de filtros
+        // El catálogo debe ser capaz de leer `location.state` o query params.
+        // Por consistencia con el plan, usaremos state, pero idealmente query params para compartir URL.
+        // Vamos a usar state por ahora como se definió en el plan rápido.
+        navigate('/catalogo', {
+            state: {
+                precioMax: resultado.maxBudget,
+                // Podríamos pasar más filtros si el widget tuviera inputs de recámaras, etc.
+            }
+        });
     };
 
     const formatoMoneda = (val) => {
@@ -40,8 +77,9 @@ export default function AffordabilityWidget() {
 
             <form onSubmit={calcular} className="affordability-widget__form">
                 <div className="affordability-widget__field">
-                    <label>¿Cuánto puedes pagar al mes?</label>
+                    <label className="affordability-widget__label">¿Cuánto puedes pagar al mes?</label>
                     <input
+                        className="affordability-widget__input"
                         type="number"
                         placeholder="$20,000"
                         value={ingreso}
@@ -51,8 +89,9 @@ export default function AffordabilityWidget() {
                 </div>
 
                 <div className="affordability-widget__field">
-                    <label>¿Cuánto enganche tienes?</label>
+                    <label className="affordability-widget__label">¿Cuánto enganche tienes?</label>
                     <input
+                        className="affordability-widget__input"
                         type="number"
                         placeholder="$100,000"
                         value={enganche}
@@ -71,6 +110,24 @@ export default function AffordabilityWidget() {
                     <span className="affordability-widget__result-label">Monto Máximo de Propiedad:</span>
                     <span className="affordability-widget__result-value">{formatoMoneda(resultado.maxBudget)}</span>
                     <p className="affordability-widget__result-note">{resultado.dynamicNote}</p>
+
+                    {/* --- SECCIÓN DE RESULTADOS (Restored) --- */}
+                    <div className="affordability-widget__matches">
+                        <p className="affordability-widget__matches-text">
+                            {matchingCount > 0
+                                ? `Encontramos ${matchingCount} propiedades para ti`
+                                : "El mercado está limitado para este presupuesto"}
+                        </p>
+
+                        {matchingCount > 0 && (
+                            <button
+                                onClick={handleVerPropiedades}
+                                className="affordability-widget__matches-btn"
+                            >
+                                Ver Propiedades
+                            </button>
+                        )}
+                    </div>
                 </div>
             )}
         </div>

@@ -32,7 +32,7 @@
     gap: 20px;
 }
 
-.affordability-widget__field label {
+.affordability-widget__label {
     display: block;
     font-size: 0.9rem;
     font-weight: 600;
@@ -42,7 +42,7 @@
     letter-spacing: 0.5px;
 }
 
-.affordability-widget__field input {
+.affordability-widget__input {
     width: 100%;
     padding: 14px 18px;
     background: var(--bg-main);
@@ -53,13 +53,13 @@
     transition: all 0.3s var(--ease-premium);
 }
 
-.affordability-widget__field input:focus {
+.affordability-widget__input:focus {
     border-color: var(--primary-color);
     outline: none;
     box-shadow: var(--shadow-glow);
 }
 
-.affordability-widget__field input::placeholder {
+.affordability-widget__input::placeholder {
     color: var(--text-secondary);
     opacity: 0.4;
 }
@@ -132,4 +132,42 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* --- Matches Section (New) --- */
+.affordability-widget__matches {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.affordability-widget__matches-text {
+    font-size: 0.95rem;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.affordability-widget__matches-btn {
+    background-color: var(--bg-tertiary);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    padding: 10px 20px;
+    border-radius: var(--radius-full);
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s var(--ease-premium);
+    align-self: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.affordability-widget__matches-btn:hover {
+    background-color: var(--primary-color);
+    color: var(--text-inverse);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
 }

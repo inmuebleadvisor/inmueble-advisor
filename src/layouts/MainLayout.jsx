@@ -15,14 +15,11 @@ export default function Layout() {
   // Keeping this check only if needed for footer logic below
   const isAsesor = userProfile?.role === 'asesor' || userProfile?.role === 'admin';
 
-  // Detectar si estamos en rutas que requieren Viewport Fit
-  const isViewportFit = location.pathname === '/' || location.pathname === '/onboarding-cliente';
-
   // Detectar si estamos en el panel de administración
   const isAdminPanel = location.pathname.startsWith('/administrador');
 
   return (
-    <div className={`layout ${isViewportFit ? 'layout--viewport-fit' : ''}`}>
+    <div className="layout">
 
       {/* --- HEADER / NAVBAR --- */}
       <Navbar />
@@ -32,8 +29,8 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      {/* --- FOOTER (Oculto en rutas Viewport Fit) --- */}
-      {!isViewportFit && (
+      {/* --- FOOTER --- */}
+      {true && (
         <>
           <footer className="footer">
             <div className="footer__links">
