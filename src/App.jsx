@@ -28,6 +28,7 @@ import Layout from './layouts/MainLayout';
 import './styles/components/Spinner.css';
 
 // Screens - Cliente (Home is Eager Loaded for LCP)
+import Home from './screens/cliente/Home';
 import Perfil from './screens/cliente/Perfil';
 const OnboardingCliente = React.lazy(() => import('./screens/cliente/OnboardingCliente'));
 const Favoritos = React.lazy(() => import('./screens/cliente/Favoritos'));
@@ -86,13 +87,19 @@ function App() {
                   <Routes>
                     <Route path="/" element={<Layout />}>
 
-                      {/* 1. RUTA PÚBLICA (Home/Perfil de Cliente) */}
-                      <Route index element={<Perfil />} />
+                      {/* 1. RUTA PÚBLICA (Home) */}
+                      <Route index element={<Home />} />
+
+                      {/* 2. PERFIL DE USUARIO (Antes era Index) */}
+                      <Route path="perfil" element={
+                        <ProtectedRoute requireAuth={true}>
+                          <Perfil />
+                        </ProtectedRoute>
+                      } />
+
                       <Route path="onboarding-cliente" element={<OnboardingCliente />} />
 
-                      {/* 2. LANDING / ONBOARDING / ACCOUNT ASESORES ELIMINADOS (Modelo Deprecado) */}
-
-                      {/* 5. RUTAS DEL SISTEMA (Protegidas) */}
+                      {/* 3. RUTAS DEL SISTEMA (Protegidas) */}
 
                       <Route path="catalogo" element={<Catalogo />} />
 

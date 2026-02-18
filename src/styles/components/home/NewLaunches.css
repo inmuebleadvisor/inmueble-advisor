@@ -1,0 +1,45 @@
+/* src/styles/components/home/NewLaunches.css */
+
+.new-launches {
+    padding: 64px 24px;
+    background: var(--bg-main);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.new-launches__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.new-launches__title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.new-launches__link {
+    color: var(--primary-color);
+
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.new-launches__link:hover {
+    color: var(--base-primary-dark);
+}
+
+.new-launches__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+/* PropertyCard adjustment context if needed */
+.new-launches__grid .property-card {
+    width: 100%;
+    /* Ensure it fills grid cell */
+}

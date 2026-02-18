@@ -1,0 +1,135 @@
+/* src/styles/components/home/AffordabilityWidget.css */
+
+.affordability-widget {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-lg);
+    padding: 32px;
+    border-radius: var(--radius-xl);
+    max-width: 440px;
+    width: 100%;
+    backdrop-filter: blur(16px);
+}
+
+.affordability-widget__title {
+    color: var(--primary-color);
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+
+.affordability-widget__desc {
+    color: var(--text-main);
+    opacity: 0.8;
+    font-size: 1rem;
+    margin-bottom: 24px;
+}
+
+.affordability-widget__form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.affordability-widget__field label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.affordability-widget__field input {
+    width: 100%;
+    padding: 14px 18px;
+    background: var(--bg-main);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    font-size: 1.1rem;
+    color: var(--text-main);
+    transition: all 0.3s var(--ease-premium);
+}
+
+.affordability-widget__field input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: var(--shadow-glow);
+}
+
+.affordability-widget__field input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.4;
+}
+
+.affordability-widget__btn {
+    background: var(--primary-color);
+    color: var(--text-inverse);
+    border: none;
+    padding: 18px;
+    border-radius: var(--radius-sm);
+    font-weight: 800;
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.3s var(--ease-premium);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.affordability-widget__btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+    filter: brightness(1.1);
+}
+
+.affordability-widget__result {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-subtle);
+    text-align: center;
+    animation: fadeIn 0.6s var(--ease-premium);
+}
+
+.affordability-widget__result-label {
+    display: block;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.affordability-widget__result-value {
+    display: block;
+    font-size: 2.75rem;
+    font-weight: 900;
+    color: var(--primary-color);
+    margin: 8px 0;
+    text-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+}
+
+.affordability-widget__result-note {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.affordability-widget__result--alert .affordability-widget__result-note {
+    color: var(--error);
+    font-weight: 600;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
