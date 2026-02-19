@@ -66,7 +66,7 @@
 /* Search Bar */
 .search-bar {
   background-color: var(--bg-filter);
-  padding: 1rem 1.25rem;
+  padding: clamp(0.5rem, 3vw, 1rem) clamp(0.75rem, 5vw, 1.25rem);
 }
 
 .search-bar__container {
@@ -74,8 +74,10 @@
   align-items: center;
   background-color: var(--bg-input-search);
   border-radius: var(--radius-lg);
-  padding: 0.75rem 1rem;
+  padding: 0.5rem clamp(0.75rem, 4vw, 1rem);
   border: 1px solid transparent;
+  width: 100%;
+  min-width: 0;
   transition: all 0.2s ease;
 }
 
@@ -98,6 +100,13 @@
   outline: none;
   font-size: 1rem;
   color: var(--text-main);
+  min-width: 0;
+  width: 100%;
+  text-overflow: ellipsis;
+}
+
+.search-bar__input::placeholder {
+  text-overflow: ellipsis;
 }
 
 .search-bar__clear {
