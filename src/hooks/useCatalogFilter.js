@@ -11,7 +11,7 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
     const { meta: metaService } = useService();
     const location = useLocation();
 
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm] = useState(location.state?.searchQuery || '');
 
     // [NEW] Use Debounce Hook for tracking logic
     // We want to track AFTER the user stops typing, so we debounce the inputs
@@ -57,7 +57,9 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
         }
 
         // PRIORITY 4: User Profile (First time fallback)
-        // ... (Logic continues below using the calculated defaults)
+        // [MODIFIED] If we have a search query from Home (state.searchQuery), we treat this as a "Fresh Search"
+        // and IGNORE the profile budget/calculated values to avoid "sticky" filters from the Calculator.
+        const isFreshSearch = !!state?.searchQuery;
 
         // Presupuesto
         const urlMinPrice = params.get('minPrice');
@@ -70,16 +72,18 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
 
         const initialMaxPrice = stateMaxPrice !== undefined
             ? safeNum(stateMaxPrice, defaultMaxPrice)
-            : (urlMaxPrice ? safeNum(urlMaxPrice, defaultMaxPrice)
-                : (profileMaxPrice ? safeNum(profileMaxPrice, defaultMaxPrice) : defaultMaxPrice));
+            : (urlMaxPrice
+                ? safeNum(urlMaxPrice, defaultMaxPrice)
+                : (profileMaxPrice && !isFreshSearch ? safeNum(profileMaxPrice, defaultMaxPrice) : defaultMaxPrice)); // [MODIFIED] Added !isFreshSearch check
 
         // Recámaras
         const urlRooms = params.get('rooms');
         const profileRooms = profile?.recamarasDeseadas;
         const initialRooms = stateRooms !== undefined
             ? safeNum(stateRooms)
-            : (urlRooms ? safeNum(urlRooms)
-                : (profileRooms !== undefined && profileRooms !== null ? safeNum(profileRooms) : defaultRooms));
+            : (urlRooms
+                ? safeNum(urlRooms)
+                : (profileRooms !== undefined && profileRooms !== null && !isFreshSearch ? safeNum(profileRooms) : defaultRooms)); // [MODIFIED] Added !isFreshSearch check
 
         // Status
         const urlStatus = params.get('status');
@@ -87,7 +91,9 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
 
         const initialStatus = stateStatus && ['inmediata', 'preventa', 'all'].includes(stateStatus)
             ? stateStatus
-            : (urlStatus && ['inmediata', 'preventa'].includes(urlStatus) ? urlStatus : profileStatus);
+            : (urlStatus && ['inmediata', 'preventa'].includes(urlStatus)
+                ? urlStatus
+                : (!isFreshSearch ? profileStatus : defaultStatus)); // [MODIFIED] Added !isFreshSearch check
 
         return {
             precioMin: initialMinPrice,
@@ -98,7 +104,7 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
             tipo: 'all',
             showNoPrice: false // Default: Don't show items without price
         };
-    }, [userProfile, location.search]);
+    }, [userProfile, location.search, location.state]);
 
     const [filtros, setFiltros] = useState(getInitialFilters);
 
