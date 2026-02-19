@@ -127,12 +127,12 @@ export default function Catalogo() {
             <MapIcon size={18} /> Mapa
           </button>
         </div>
-      </header>
 
-      <SearchBar
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-      />
+        <SearchBar
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+        />
+      </header>
 
       <FilterBar
         setIsFilterOpen={setIsFilterOpen}

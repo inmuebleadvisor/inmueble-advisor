@@ -55,6 +55,10 @@
     flex-direction: column;
     text-align: center;
     padding: 1.5rem 1rem;
+    margin: 0 16px;
+    /* Reducimos el ancho del elemento agregando margen exterior */
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-subtle);
     gap: 1rem;
   }
 
@@ -73,6 +77,13 @@
   /* Consistently limited width */
   margin: 0 auto;
   /* Centered */
+}
+
+/* Adjust search bar when nested in header */
+.catalogo__header .search-bar {
+  padding: 0;
+  max-width: 100%;
+  margin-top: 1rem;
 }
 
 .search-bar__container {
@@ -261,13 +272,14 @@
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   /* Reduced from 300px to avoid overflow on small screens */
   gap: 1.5rem;
-  padding: 1.5rem 1.25rem;
+  padding: 1.5rem 0;
+  /* Changed from 1.25rem to 0 on sides to align with container padding */
 }
 
 @media (max-width: 768px) {
   .catalogo__grid {
-    padding: 1rem 5px;
-    /* Exact 5px side margin as requested */
+    padding: 1rem 0;
+    /* Removed specific side margin to rely on main-content padding */
     gap: 1rem;
     /* Reduce gap slightly for mobile density */
     grid-template-columns: 1fr;
@@ -278,7 +290,8 @@
 .catalogo__empty {
   grid-column: 1 / -1;
   text-align: center;
-  padding: 2rem 1rem;
+  padding: 2rem 0;
+  /* Changed from 1rem to 0 horizontal to expand content */
   color: var(--text-secondary);
 }
 
