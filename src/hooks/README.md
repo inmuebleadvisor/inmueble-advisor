@@ -17,11 +17,19 @@ Hooks genéricos que resuelven problemas específicos y pueden usarse en múltip
 -   **`useAnalytics`**: Abstracción del servicio de analítica (PostHog). Expone métodos `identifyUser` y `trackEvent`.
 
 ### `useCatalogFilter`
-Maneja la lógica de filtrado del catálogo, sincronizando estado con URL y LocalStorage.
-**Características:**
-- Persistencia automática.
-- Integración con Meta Pixel para tracking de búsquedas.
-- **Optimización:** Usa `useDebounce` para evitar spam de eventos.
+Maneja la lógica de filtrado del catálogo, sincronizando el estado con la navegación (`location.state`), parámetros de URL (`URLSearchParams`) y el Perfil del Usuario.
+
+**Resolución de Prioridades (Source of Truth):**
+1.  **Navigation State**: Acciones explícitas desde la UI (ej: clic desde la Calculadora).
+2.  **URL Parameters**: Navegación directa o Deep Linking.
+3.  **User Profile**: Preferencias persistidas del usuario (solo se aplican si no es una "Búsqueda Fresca").
+4.  **Defaults**: Valores base definidos en `constants.js`.
+
+**Características Técnicas:**
+- **Fresh Search Logic**: Si se detecta un término de búsqueda (`searchQuery`) proveniente de la Home, se ignoran temporalmente los presupuestos del perfil para permitir una búsqueda libre.
+- **Reactividad Total**: Escucha cambios en `location.state` para asegurar que la vista se actualice inmediatamente en navegaciones internas.
+- **Tracking**: Integración con Meta Pixel para rastrear términos de búsqueda y filtros aplicados.
+- **Optimización**: Debounce de 1.5s para eventos de tracking y filtrado.
 
 ### `useDevelopmentCatalog` (ViewModel)
 Transforma la lista plana de modelos en una estructura jerárquica de Desarrollos para la vista principal.

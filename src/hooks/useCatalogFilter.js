@@ -4,125 +4,122 @@ import { useUser } from '../context/UserContext';
 import { useService } from './useService';
 import { UI_OPCIONES } from '../config/constants';
 import { CatalogService } from '../services/catalog.service';
-import { useDebounce } from './useDebounce'; // [NEW]
+import { useDebounce } from './useDebounce';
 
+/**
+ * Hook Filter Logic for Catalog
+ * @responsibility: Resolve initial filter state based on priority (State > URL > Profile > Default)
+ */
 export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
     const { userProfile } = useUser();
     const { meta: metaService } = useService();
     const location = useLocation();
 
+    // 1. Search Term Initialization
     const [searchTerm, setSearchTerm] = useState(location.state?.searchQuery || '');
 
-    // [NEW] Use Debounce Hook for tracking logic
-    // We want to track AFTER the user stops typing, so we debounce the inputs
-    const debouncedSearchTerm = useDebounce(searchTerm, 1500);
+    // [Refactoring Strategy]
+    // Helper to resolve filter values with strict priority
+    const resolveFilterValue = (stateVal, urlVal, profileVal, defaultVal, isFreshSearch, transform = Number) => {
+        // Priority 1: Navigation State (Explicit User Action from UI)
+        if (stateVal !== undefined && stateVal !== null) {
+            return transform(stateVal);
+        }
 
-    // 1. Inicialización de Filtros
+        // Priority 2: URL Parameters (Deep Linking)
+        if (urlVal !== undefined && urlVal !== null) {
+            return transform(urlVal);
+        }
+
+        // Priority 3: User Profile (Persisted Preferences)
+        // SKIPPED if this is a "Fresh Search" (User typed into search bar from Home)
+        if (profileVal !== undefined && profileVal !== null && !isFreshSearch) {
+            return transform(profileVal);
+        }
+
+        // Priority 4: Default
+        return defaultVal;
+    };
+
+    // 2. Filter Initialization
     const getInitialFilters = useMemo(() => {
         const params = new URLSearchParams(location.search);
-        const profile = userProfile?.perfilFinanciero;
+        const state = location.state || {};
+        const profile = userProfile?.perfilFinanciero || {};
 
-        const defaultMinPrice = 0;
+        // "Fresh Search" Detection: If coming from Home Search, ignore profile budgets.
+        const isFreshSearch = !!state.searchQuery;
+
         const defaultMaxPrice = UI_OPCIONES.FILTRO_PRECIO_MAX;
-        const defaultRooms = 0;
-        const defaultStatus = 'all';
-
-        const safeNum = (val, max = Infinity) => {
+        const safeNum = (val) => {
             const num = Number(val);
-            if (isNaN(num) || num < 0) return defaultRooms;
-            return Math.min(num, max);
+            return (isNaN(num) || num < 0) ? 0 : num;
+        };
+        const safeMax = (val) => {
+            const num = Number(val);
+            return (isNaN(num) || num < 0) ? defaultMaxPrice : Math.min(num, defaultMaxPrice);
         }
-
-        // PRIORITY 1: Navigation State (From Home Widget or other internal links)
-        const state = location.state;
-        const stateMinPrice = state?.minPrice ?? state?.precioMin;
-        const stateMaxPrice = state?.maxPrice ?? state?.precioMax;
-        const stateRooms = state?.rooms ?? state?.habitaciones;
-        const stateStatus = state?.status;
-
-        // PRIORITY 2: URL Params (Override everything if present AND no state)
-        // If state exists, it takes precedence because it's an explicit "new" action
-        const hasUrlParams = params.has('minPrice') || params.has('maxPrice') || params.has('rooms') || params.has('status');
-
-        // PRIORITY 3: Local Storage (If no URL params and no state)
-        if (!state && !hasUrlParams) {
-            try {
-                const saved = localStorage.getItem('catalog_filters_v1');
-                if (saved) {
-                    return JSON.parse(saved);
-                }
-            } catch (e) {
-                console.error("Error loading filters from local storage:", e);
-            }
-        }
-
-        // PRIORITY 4: User Profile (First time fallback)
-        // [MODIFIED] If we have a search query from Home (state.searchQuery), we treat this as a "Fresh Search"
-        // and IGNORE the profile budget/calculated values to avoid "sticky" filters from the Calculator.
-        const isFreshSearch = !!state?.searchQuery;
-
-        // Presupuesto
-        const urlMinPrice = params.get('minPrice');
-        const urlMaxPrice = params.get('maxPrice');
-        const profileMaxPrice = profile?.presupuestoCalculado;
-
-        const initialMinPrice = stateMinPrice !== undefined
-            ? safeNum(stateMinPrice)
-            : (urlMinPrice ? safeNum(urlMinPrice) : defaultMinPrice);
-
-        const initialMaxPrice = stateMaxPrice !== undefined
-            ? safeNum(stateMaxPrice, defaultMaxPrice)
-            : (urlMaxPrice
-                ? safeNum(urlMaxPrice, defaultMaxPrice)
-                : (profileMaxPrice && !isFreshSearch ? safeNum(profileMaxPrice, defaultMaxPrice) : defaultMaxPrice)); // [MODIFIED] Added !isFreshSearch check
-
-        // Recámaras
-        const urlRooms = params.get('rooms');
-        const profileRooms = profile?.recamarasDeseadas;
-        const initialRooms = stateRooms !== undefined
-            ? safeNum(stateRooms)
-            : (urlRooms
-                ? safeNum(urlRooms)
-                : (profileRooms !== undefined && profileRooms !== null && !isFreshSearch ? safeNum(profileRooms) : defaultRooms)); // [MODIFIED] Added !isFreshSearch check
-
-        // Status
-        const urlStatus = params.get('status');
-        const profileStatus = profile?.interesInmediato === true ? 'inmediata' : (profile?.interesInmediato === false ? 'preventa' : defaultStatus);
-
-        const initialStatus = stateStatus && ['inmediata', 'preventa', 'all'].includes(stateStatus)
-            ? stateStatus
-            : (urlStatus && ['inmediata', 'preventa'].includes(urlStatus)
-                ? urlStatus
-                : (!isFreshSearch ? profileStatus : defaultStatus)); // [MODIFIED] Added !isFreshSearch check
 
         return {
-            precioMin: initialMinPrice,
-            precioMax: initialMaxPrice,
-            habitaciones: initialRooms,
-            status: initialStatus,
+            precioMin: resolveFilterValue(
+                state.minPrice ?? state.precioMin,
+                params.get('minPrice'),
+                null, // No profile min price
+                0,
+                isFreshSearch,
+                safeNum
+            ),
+            precioMax: resolveFilterValue(
+                state.maxPrice ?? state.precioMax,
+                params.get('maxPrice'),
+                profile.presupuestoCalculado,
+                defaultMaxPrice,
+                isFreshSearch,
+                safeMax
+            ),
+            habitaciones: resolveFilterValue(
+                state.rooms ?? state.habitaciones,
+                params.get('rooms'),
+                profile.recamarasDeseadas,
+                0,
+                isFreshSearch,
+                safeNum
+            ),
+            status: (() => {
+                // Status logic is slightly more complex due to string mapping
+                const sState = state.status;
+                const sUrl = params.get('status');
+                const sProfile = profile.interesInmediato === true ? 'inmediata' : (profile.interesInmediato === false ? 'preventa' : undefined);
+
+                const isValid = (s) => ['inmediata', 'preventa', 'all'].includes(s);
+
+                if (sState && isValid(sState)) return sState;
+                if (sUrl && isValid(sUrl)) return sUrl;
+                if (sProfile && !isFreshSearch) return sProfile;
+                return 'all';
+            })(),
             amenidad: '',
             tipo: 'all',
-            showNoPrice: false // Default: Don't show items without price
+            showNoPrice: false
         };
     }, [userProfile, location.search, location.state]);
 
     const [filtros, setFiltros] = useState(getInitialFilters);
-
-    // Debounce filters too for tracking? 
-    // Usually filters are "instant" clicks, but if we want to bundle tracking events to avoid spam on sliders:
     const debouncedFiltros = useDebounce(filtros, 1500);
+    const debouncedSearchTerm = useDebounce(searchTerm, 1500);
 
-    // 2. Persistence: Save to Local Storage whenever filters change
+    // 3. Persistence
     useEffect(() => {
         localStorage.setItem('catalog_filters_v1', JSON.stringify(filtros));
     }, [filtros]);
 
-    // Detector de Filtros Activos 
+    // 4. Active Filter Detection
     const hayFiltrosActivos = useMemo(() => {
         const isMinPriceFiltered = filtros.precioMin > 0;
         const isMaxPriceFiltered = filtros.precioMax < UI_OPCIONES.FILTRO_PRECIO_MAX;
         const userBudget = userProfile?.perfilFinanciero?.presupuestoCalculado;
 
+        // Custom check: Is the price filter DIFFERENT from the user's budget?
         const isCustomPriceFilter = (isMinPriceFiltered || isMaxPriceFiltered) && (
             !userBudget ||
             filtros.precioMax !== Math.min(Number(userBudget), UI_OPCIONES.FILTRO_PRECIO_MAX)
@@ -135,9 +132,8 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
         );
     }, [filtros, searchTerm, userProfile]);
 
-    // ⭐ Tracking: Meta Search Event (Refactored with useDebounce)
+    // 5. Tracking
     useEffect(() => {
-        // We use the DEBOUNCED values to trigger the event
         if (loading || !hayFiltrosActivos) return;
 
         const queryParts = [];
@@ -145,9 +141,9 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
         if (debouncedFiltros.amenidad) queryParts.push(debouncedFiltros.amenidad);
         if (debouncedFiltros.tipo !== 'all') queryParts.push(debouncedFiltros.tipo);
 
-        const searchQuery = queryParts.join(' ') || 'catalog_filters';
+        const eventQuery = queryParts.join(' ') || 'catalog_filters';
 
-        metaService.trackSearch(searchQuery, {
+        metaService.trackSearch(eventQuery, {
             content_category: 'Inventory',
             filters: {
                 min_price: debouncedFiltros.precioMin,
@@ -157,23 +153,18 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
                 type: debouncedFiltros.tipo
             }
         });
-
-        // Removed explicit cleanup because useDebounce handles the timer
     }, [debouncedSearchTerm, debouncedFiltros, hayFiltrosActivos, loading, metaService]);
 
-    // 3. Motor de Filtrado (Delegado al servicio)
+    // 6. Filtering Engine
     const modelosFiltrados = useMemo(() => {
         if (loading) return [];
         return CatalogService.filterCatalog(dataMaestra, desarrollos, filtros, searchTerm);
     }, [dataMaestra, desarrollos, filtros, searchTerm, loading]);
 
-    // 4. "No Results" Suggestions Logic
-    // If no results, find closest by price.
+    // 7. Suggestions Logic
     const suggestions = useMemo(() => {
         if (loading) return [];
-        // Only calculate if main results are empty and we have data
         if (modelosFiltrados.length === 0 && dataMaestra && dataMaestra.length > 0) {
-            // Only suggest if filtering is active (to avoid suggesting on initial load if empty for other reasons)
             if (hayFiltrosActivos) {
                 return CatalogService.findClosestByPrice(dataMaestra, filtros);
             }
@@ -183,13 +174,15 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
 
     const limpiarTodo = () => {
         setSearchTerm('');
-        const emptyFilters = {
+        setFiltros({
             precioMin: 0,
             precioMax: UI_OPCIONES.FILTRO_PRECIO_MAX,
-            habitaciones: 0, status: 'all', amenidad: '', tipo: 'all',
+            habitaciones: 0,
+            status: 'all',
+            amenidad: '',
+            tipo: 'all',
             showNoPrice: false
-        };
-        setFiltros(emptyFilters);
+        });
     };
 
     return {

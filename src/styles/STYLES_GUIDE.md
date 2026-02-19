@@ -74,6 +74,15 @@ Sistema de tokens compartido para `DevelopmentCard` y `PropertyCard`.
 - **Visual**: Fondo secundario, borde sutil de 1px, radius de 8px.
 - **Interacción**: Al hover aplica `translateY(-2px)`, vira a Gold y activa `var(--shadow-glow)`.
 
+### 🔍 Buscador Premium (`SearchBar`)
+Elemento central de navegación y conversión:
+- **Presentación**: Diseño tipo "píldora" con fondo blanco puro (`#ffffff`) y radio `32px` (`--radius-xl`).
+- **Sombras**: Usa `--shadow-lg` para un efecto de flotación sobre el fondo oscuro.
+- **Ancho**: Fluido (`width: 100%`) con un tope de seguridad de `800px` para legibilidad.
+- **Tipografía**: Texto oscuro (`--base-brand-blue`) para máximo contraste.
+- **Interacción**: En `:focus-within` aplica un aura de marca (`--primary-color`) de 4px con opacidad.
+- **Contenedor**: El contenedor global `.search-bar` debe ser transparente y sin fondo para integrarse fluidamente en cualquier sección (Home o Catálogo).
+
 ### ✨ Animaciones
 - **Easing**: Siempre usar `cubic-bezier(0.4, 0, 0.2, 1)` para un movimiento fluido y premium.
 - **Velocidad**: `0.2s` para estados simples, `0.3s` para entradas de componentes.

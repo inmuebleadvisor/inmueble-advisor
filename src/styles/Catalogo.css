@@ -63,28 +63,38 @@
   }
 }
 
-/* Search Bar */
+/* Search Bar - Global clean presentation */
 .search-bar {
-  background-color: var(--bg-filter);
-  padding: clamp(0.5rem, 3vw, 1rem) clamp(0.75rem, 5vw, 1.25rem);
+  background-color: transparent;
+  padding: 1.5rem 1.25rem;
+  /* Standard vertical spacing */
+  width: 100%;
+  max-width: 800px;
+  /* Consistently limited width */
+  margin: 0 auto;
+  /* Centered */
 }
 
 .search-bar__container {
   display: flex;
   align-items: center;
-  background-color: var(--bg-input-search);
-  border-radius: var(--radius-lg);
-  padding: 0.5rem clamp(0.75rem, 4vw, 1rem);
-  border: 1px solid transparent;
+  background-color: var(--white, #ffffff);
+  /* Pure white for premium contrast */
+  border-radius: var(--radius-xl);
+  /* Increased radius for the pill look */
+  padding: 0.6rem 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   width: 100%;
   min-width: 0;
-  transition: all 0.2s ease;
+  transition: all 0.3s var(--ease-premium);
+  box-shadow: var(--shadow-lg);
+  /* Deep shadow for floating effect */
 }
 
 .search-bar__container:focus-within {
-  background-color: var(--white);
-  border-color: var(--secondary-color);
-  box-shadow: 0 0 0 3px rgba(220, 178, 58, 0.1);
+  background-color: var(--white, #ffffff);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15), var(--shadow-lg);
 }
 
 .search-bar__icon {
@@ -99,7 +109,8 @@
   background: transparent;
   outline: none;
   font-size: 1rem;
-  color: var(--text-main);
+  color: var(--base-brand-blue);
+  /* Dark text for white background */
   min-width: 0;
   width: 100%;
   text-overflow: ellipsis;

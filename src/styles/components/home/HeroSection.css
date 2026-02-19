@@ -38,23 +38,12 @@
 
 .hero-content__search-container {
     margin-bottom: clamp(1.5rem, 5vw, 2rem);
-    max-width: 500px;
     width: 100%;
 }
 
-/* Reusing SearchBar styles but ensuring visibility in dark context */
-.hero-content__search-container .search-bar__container {
-    background: white;
-    border-radius: var(--radius-xl);
-    padding: 6px 12px;
-    box-shadow: var(--shadow-lg);
-}
 
-.hero-content__search-container .search-bar__input {
-    color: var(--base-brand-blue);
-    font-size: 1rem;
-}
 
+/* Search chips for specific property categories */
 .hero-content__filters {
     display: flex;
     gap: 12px;

@@ -3,16 +3,20 @@ import { renderHook, act } from '@testing-library/react';
 import { useCatalogFilter } from './useCatalogFilter';
 import { vi } from 'vitest';
 import { useLocation } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
 
-// Mock dependencies
+// --- MOCK SETUP ---
+const mockLocation = {
+    state: null,
+    search: ''
+};
+
 vi.mock('react-router-dom', () => ({
-    useLocation: vi.fn()
+    useLocation: vi.fn(() => mockLocation)
 }));
 
 vi.mock('../context/UserContext', () => ({
-    useUser: () => ({
-        userProfile: { perfilFinanciero: {} }
-    })
+    useUser: vi.fn()
 }));
 
 vi.mock('./useService', () => ({
@@ -23,7 +27,6 @@ vi.mock('./useService', () => ({
     })
 }));
 
-// Mock CatalogService to avoid complex logic during hook initialization
 vi.mock('../services/catalog.service', () => ({
     CatalogService: {
         filterCatalog: vi.fn(() => []),
@@ -33,48 +36,65 @@ vi.mock('../services/catalog.service', () => ({
 
 describe('useCatalogFilter', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        vi.resetAllMocks();
+        mockLocation.state = null;
+        mockLocation.search = '';
+
+        // Default User Mock (Empty Profile)
+        useUser.mockImplementation(() => ({
+            userProfile: {}
+        }));
     });
 
-    it('should initialize searchTerm from location.state.searchQuery', () => {
-        // Arrange: Simulate navigation from Home with a search query
-        useLocation.mockReturnValue({
-            state: { searchQuery: 'Preventa' },
-            search: ''
+    describe('Search Query Initialization', () => {
+        it('should initialize searchTerm from location.state.searchQuery', () => {
+            mockLocation.state = { searchQuery: 'Preventa' };
+            const { result } = renderHook(() => useCatalogFilter([], [], false));
+            expect(result.current.searchTerm).toBe('Preventa');
         });
 
-        // Act
-        const { result } = renderHook(() => useCatalogFilter([], [], false));
-
-        // Assert
-        expect(result.current.searchTerm).toBe('Preventa');
+        it('should initialize searchTerm as empty if no state is provided', () => {
+            mockLocation.state = null;
+            const { result } = renderHook(() => useCatalogFilter([], [], false));
+            expect(result.current.searchTerm).toBe('');
+        });
     });
 
-    it('should initialize searchTerm as empty if no state is provided', () => {
-        // Arrange: Simulate navigation without state
-        useLocation.mockReturnValue({
-            state: null,
-            search: ''
+    describe('Filter Initialization Priority', () => {
+        it('should allow fresh search to ignore profile budget (Bug Fix Verification)', () => {
+            // Arrange: Search is active
+            mockLocation.state = { searchQuery: 'Preventa' };
+
+            // Mock restrictive profile
+            useUser.mockImplementation(() => ({
+                userProfile: {
+                    perfilFinanciero: { presupuestoCalculado: 2000000 }
+                }
+            }));
+
+            // Act
+            const { result } = renderHook(() => useCatalogFilter([], [], false));
+
+            // Assert: Should NOT be limited to 2M
+            expect(result.current.filtros.precioMax).not.toBe(2000000);
         });
 
-        // Act
-        const { result } = renderHook(() => useCatalogFilter([], [], false));
+        it('should respect profile budget when browsing normally (Regression Verification)', () => {
+            // Arrange: No search
+            mockLocation.state = null;
 
-        // Assert
-        expect(result.current.searchTerm).toBe('');
-    });
-    
-    it('should prioritize location.state.searchQuery over default empty string', () => {
-         // Arrange: Simulate navigation from Home with a DIFFERENT search query
-        useLocation.mockReturnValue({
-            state: { searchQuery: 'Departamento' },
-            search: ''
+            // Mock restrictive profile
+            useUser.mockImplementation(() => ({
+                userProfile: {
+                    perfilFinanciero: { presupuestoCalculado: 2000000 }
+                }
+            }));
+
+            // Act
+            const { result } = renderHook(() => useCatalogFilter([], [], false));
+
+            // Assert: Should be limited to 2M
+            expect(result.current.filtros.precioMax).toBe(2000000);
         });
-
-        // Act
-        const { result } = renderHook(() => useCatalogFilter([], [], false));
-
-        // Assert
-        expect(result.current.searchTerm).toBe('Departamento');
     });
 });
