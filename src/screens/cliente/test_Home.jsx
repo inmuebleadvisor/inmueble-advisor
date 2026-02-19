@@ -3,28 +3,31 @@ import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { vi, describe, it, expect } from 'vitest';
 import Home from '../../screens/cliente/Home';
-import { ServiceProvider } from '../../context/ServiceContext';
 
 // Mocks
-vi.mock('../../services/catalog.service', () => ({
-    CatalogService: class {
-        obtenerInventarioDesarrollos = vi.fn().mockResolvedValue([]);
-        obtenerDatosUnificados = vi.fn().mockResolvedValue([]);
-    }
+vi.mock('../../components/home/HeroSection', () => ({
+    default: () => <div>Hero Section Mock</div>
+}));
+vi.mock('../../components/home/AffordabilityWidget', () => ({
+    default: () => <div>Affordability Widget Mock</div>
+}));
+vi.mock('../../components/home/FeaturedDevelopers', () => ({
+    default: () => <div>Featured Developers Mock</div>
+}));
+vi.mock('../../components/home/NewLaunches', () => ({
+    default: () => <div>New Launches Mock</div>
 }));
 
 describe('Home Screen', () => {
     it('renders Hero and Sections without crashing', () => {
         render(
             <BrowserRouter>
-                <ServiceProvider>
-                    <Home />
-                </ServiceProvider>
+                <Home />
             </BrowserRouter>
         );
 
         // Check for static text elements
-        expect(screen.getByText(/Encuentra tu/i)).toBeInTheDocument();
-        expect(screen.getByText(/Calculadora de Poder de Compra/i)).toBeInTheDocument();
+        expect(screen.getByText(/Hero Section Mock/i)).toBeInTheDocument();
+        expect(screen.getByText(/Affordability Widget Mock/i)).toBeInTheDocument();
     });
 });

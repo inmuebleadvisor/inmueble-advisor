@@ -4,7 +4,8 @@
     background: var(--bg-secondary);
     border: 1px solid var(--border-subtle);
     box-shadow: var(--shadow-lg);
-    padding: 32px;
+    padding: clamp(1rem, 5vw, 2rem);
+    /* Reduced min padding for 320px viewports */
     border-radius: var(--radius-xl);
     max-width: 440px;
     width: 100%;
@@ -68,10 +69,12 @@
     background: var(--primary-color);
     color: var(--text-inverse);
     border: none;
-    padding: 18px;
+    padding: clamp(0.75rem, 3vw, 1.125rem);
+    /* Fluid padding: min 12px, max 18px */
     border-radius: var(--radius-sm);
     font-weight: 800;
-    font-size: 1.1rem;
+    font-size: clamp(0.9rem, 4vw, 1.1rem);
+    /* Fluid font: min 14.4px, max 17.6px */
     cursor: pointer;
     margin-top: 8px;
     transition: all 0.3s var(--ease-premium);
@@ -104,7 +107,8 @@
 
 .affordability-widget__result-value {
     display: block;
-    font-size: 2.75rem;
+    font-size: clamp(1.75rem, 10vw, 2.75rem);
+    /* Fluid font: min 28px, max 44px */
     font-weight: 900;
     color: var(--primary-color);
     margin: 8px 0;

@@ -3,6 +3,7 @@
 .home-screen {
     width: 100%;
     background: var(--bg-main);
+    overflow-x: hidden;
 }
 
 /* --- HERO MASTER CONTAINER --- */
@@ -10,14 +11,12 @@
     position: relative;
     width: 100%;
     min-height: 80vh;
-    /* Based on viewport, not pixels */
     display: flex;
     align-items: center;
     background-image: url('https://images.unsplash.com/photo-1600596542815-e32c0d9963e6?q=80&w=2574&auto=format&fit=crop');
     background-size: cover;
     background-position: center;
     padding: 64px 24px;
-    /* Default padding 8px * 8 */
 }
 
 .home-hero__overlay {
@@ -58,7 +57,8 @@
 /* Breakpoint Tablets/Móvil */
 @media (max-width: 991px) {
     .home-hero {
-        padding: 48px 16px;
+        padding: clamp(2rem, 10vw, 3rem) clamp(1rem, 5vw, 1.5rem);
+        /* Fluid padding: min 16px/32px, max ~48px */
         min-height: auto;
     }
 
@@ -71,12 +71,17 @@
     .home-hero__container {
         grid-template-columns: 1fr;
         text-align: center;
-        gap: 32px;
+        gap: clamp(1.5rem, 5vw, 2.5rem);
+        /* Fluid gap: min 24px, max 40px */
+        min-width: 0;
+        /* Allow grid items to shrink */
     }
 
     .home-hero__widget-column {
         display: flex;
         justify-content: center;
+        width: 100%;
+        min-width: 0;
     }
 }
 

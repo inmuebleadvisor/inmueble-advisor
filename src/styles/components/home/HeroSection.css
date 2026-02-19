@@ -9,9 +9,10 @@
 }
 
 .hero-content__title {
-    font-size: clamp(2.25rem, 6vw, 3.5rem);
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    /* Reduced min size for 360px */
     font-weight: 800;
-    margin-bottom: 24px;
+    margin-bottom: clamp(1rem, 4vw, 1.5rem);
     line-height: 1.1;
     color: white;
     text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
@@ -22,15 +23,16 @@
 }
 
 .hero-content__subtitle {
-    font-size: 1.15rem;
-    margin-bottom: 32px;
+    font-size: clamp(1rem, 3vw, 1.15rem);
+    margin-bottom: clamp(1.5rem, 5vw, 2rem);
     color: rgba(255, 255, 255, 0.9);
     line-height: 1.5;
 }
 
 .hero-content__search-container {
-    margin-bottom: 32px;
+    margin-bottom: clamp(1.5rem, 5vw, 2rem);
     max-width: 500px;
+    width: 100%;
 }
 
 /* Reusing SearchBar styles but ensuring visibility in dark context */

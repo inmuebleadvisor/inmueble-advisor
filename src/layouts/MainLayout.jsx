@@ -24,7 +24,7 @@ export default function Layout() {
       <Navbar />
 
       {/* --- CONTENIDO PRINCIPAL --- */}
-      <main className={`main-content ${isAdminPanel ? 'main-content--full' : ''}`}>
+      <main className={`main-content ${isAdminPanel || location.pathname === '/' ? 'main-content--full' : ''}`}>
         <Outlet />
       </main>
 
