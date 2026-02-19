@@ -4,12 +4,14 @@
     background: var(--bg-secondary);
     border: 1px solid var(--border-subtle);
     box-shadow: var(--shadow-lg);
-    padding: clamp(1rem, 5vw, 2rem);
-    /* Reduced min padding for 320px viewports */
+    padding: clamp(0.75rem, 5vw, 2rem);
+    /* min 12px for 320px devices */
     border-radius: var(--radius-xl);
     max-width: 440px;
     width: 100%;
     backdrop-filter: blur(16px);
+    box-sizing: border-box;
+    /* Crucial for absolute width control */
 }
 
 .affordability-widget__title {
