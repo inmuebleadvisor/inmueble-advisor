@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FinancialService } from '../../services/financial.service';
 import { useCatalog } from '../../context/CatalogContext';
+import { useUser } from '../../context/UserContext';
+import { useService } from '../../hooks/useService';
 import { CatalogService } from '../../services/catalog.service';
 import '../../styles/components/home/AffordabilityWidget.css';
 
@@ -13,6 +15,8 @@ import '../../styles/components/home/AffordabilityWidget.css';
 export default function AffordabilityWidget() {
     const navigate = useNavigate();
     const { modelos, desarrollos } = useCatalog();
+    const { user } = useUser();
+    const { client } = useService();
 
     // Form State
     const [ingreso, setIngreso] = useState('');
@@ -21,7 +25,7 @@ export default function AffordabilityWidget() {
 
     const financialService = new FinancialService();
 
-    const calcular = (e) => {
+    const calcular = async (e) => {
         e.preventDefault();
         const capMensual = parseFloat(ingreso) || 0;
         const capitalInicial = parseFloat(enganche) || 0;
@@ -29,7 +33,22 @@ export default function AffordabilityWidget() {
         // Lógica de negocio (Servicio Financiero)
         const { maxBudget, dynamicNote, isAlert } = financialService.calculateAffordability(capitalInicial, capMensual);
 
-        setResultado({ maxBudget, dynamicNote, isAlert });
+        const calculationResult = { maxBudget, dynamicNote, isAlert };
+        setResultado(calculationResult);
+
+        // PERSISTENCIA: Si el usuario está logueado, guardamos en su perfil
+        if (user?.uid) {
+            try {
+                await client.completeOnboarding(user.uid, {
+                    ...calculationResult,
+                    ingresoMensual: capMensual,
+                    engancheDisponible: capitalInicial,
+                    fechaCalculo: new Date().toISOString()
+                });
+            } catch (error) {
+                console.error("Error persistiendo cálculo en perfil:", error);
+            }
+        }
     };
 
     // --- LÓGICA DE COINCIDENCIAS (Restored from Onboarding) ---

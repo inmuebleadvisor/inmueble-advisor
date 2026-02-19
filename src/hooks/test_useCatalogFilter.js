@@ -11,6 +11,24 @@ const mockLocation = {
     search: ''
 };
 
+// Mock localStorage
+const localStorageMock = (() => {
+    let store = {};
+    return {
+        getItem: vi.fn(key => store[key] || null),
+        setItem: vi.fn((key, value) => {
+            store[key] = value.toString();
+        }),
+        removeItem: vi.fn(key => {
+            delete store[key];
+        }),
+        clear: vi.fn(() => {
+            store = {};
+        })
+    };
+})();
+Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+
 vi.mock('react-router-dom', () => ({
     useLocation: vi.fn(() => mockLocation)
 }));
@@ -37,6 +55,7 @@ vi.mock('../services/catalog.service', () => ({
 describe('useCatalogFilter', () => {
     beforeEach(() => {
         vi.resetAllMocks();
+        localStorageMock.clear();
         mockLocation.state = null;
         mockLocation.search = '';
 
@@ -95,6 +114,24 @@ describe('useCatalogFilter', () => {
 
             // Assert: Should be limited to 2M
             expect(result.current.filtros.precioMax).toBe(2000000);
+        });
+
+        it('should prioritize localStorage over profile budget (New Feature Verification)', () => {
+            // Arrange: Persisted filter exists
+            localStorageMock.setItem('catalog_filters_v1', JSON.stringify({ precioMax: 4000000 }));
+
+            // Mock profile budget (lower than persisted)
+            useUser.mockImplementation(() => ({
+                userProfile: {
+                    perfilFinanciero: { presupuestoCalculado: 2000000 }
+                }
+            }));
+
+            // Act
+            const { result } = renderHook(() => useCatalogFilter([], [], false));
+
+            // Assert: Should be 4M (persisted), NOT 2M (profile)
+            expect(result.current.filtros.precioMax).toBe(4000000);
         });
     });
 });

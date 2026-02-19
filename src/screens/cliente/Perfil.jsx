@@ -33,11 +33,6 @@ export default function Perfil() {
   // Si estamos cargando estado de usuario, mostramos null o spinner
   if (loadingUser) return null;
 
-  const handleStartOnboarding = () => {
-    // Redirección directa al perfilado de comprador
-    navigate('/onboarding-cliente');
-  };
-
   const handleLoginDirecto = async () => {
     setIsLoggingIn(true);
     try {
@@ -62,15 +57,7 @@ export default function Perfil() {
         </h1>
 
         <div className="hero-actions">
-          {/* CTA 1: Onboarding */}
-          <button
-            onClick={handleStartOnboarding}
-            className="btn-cta-primary"
-          >
-            Descubre tu monto de compra
-          </button>
-
-          {/* CTA 2: Catálogo */}
+          {/* CTA 1: Catálogo */}
           <button
             onClick={() => navigate('/catalogo')}
             className="btn-cta-primary"
@@ -78,7 +65,7 @@ export default function Perfil() {
             Conoce los modelos
           </button>
 
-          {/* CTA 3: Mapa */}
+          {/* CTA 2: Mapa */}
           <button
             onClick={() => navigate('/catalogo', { state: { viewMode: 'map' } })}
             className="btn-cta-primary"

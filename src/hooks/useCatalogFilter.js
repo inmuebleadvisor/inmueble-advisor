@@ -20,7 +20,7 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
 
     // [Refactoring Strategy]
     // Helper to resolve filter values with strict priority
-    const resolveFilterValue = (stateVal, urlVal, profileVal, defaultVal, isFreshSearch, transform = Number) => {
+    const resolveFilterValue = (stateVal, urlVal, persistedVal, profileVal, defaultVal, isFreshSearch, transform = Number) => {
         // Priority 1: Navigation State (Explicit User Action from UI)
         if (stateVal !== undefined && stateVal !== null) {
             return transform(stateVal);
@@ -31,13 +31,19 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
             return transform(urlVal);
         }
 
-        // Priority 3: User Profile (Persisted Preferences)
+        // Priority 3: Persisted Value (Memory of last selection)
+        // Only if NOT a fresh search from Home
+        if (persistedVal !== undefined && persistedVal !== null && !isFreshSearch) {
+            return transform(persistedVal);
+        }
+
+        // Priority 4: User Profile (Persisted Preferences)
         // SKIPPED if this is a "Fresh Search" (User typed into search bar from Home)
         if (profileVal !== undefined && profileVal !== null && !isFreshSearch) {
             return transform(profileVal);
         }
 
-        // Priority 4: Default
+        // Priority 5: Default
         return defaultVal;
     };
 
@@ -47,7 +53,16 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
         const state = location.state || {};
         const profile = userProfile?.perfilFinanciero || {};
 
-        // "Fresh Search" Detection: If coming from Home Search, ignore profile budgets.
+        // Load persisted filters
+        let persisted = {};
+        try {
+            const saved = localStorage.getItem('catalog_filters_v1');
+            if (saved) persisted = JSON.parse(saved);
+        } catch (e) {
+            console.warn("Error parsing persisted filters", e);
+        }
+
+        // "Fresh Search" Detection: If coming from Home Search, ignore profile/persisted budgets.
         const isFreshSearch = !!state.searchQuery;
 
         const defaultMaxPrice = UI_OPCIONES.FILTRO_PRECIO_MAX;
@@ -64,6 +79,7 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
             precioMin: resolveFilterValue(
                 state.minPrice ?? state.precioMin,
                 params.get('minPrice'),
+                persisted.precioMin,
                 null, // No profile min price
                 0,
                 isFreshSearch,
@@ -72,6 +88,7 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
             precioMax: resolveFilterValue(
                 state.maxPrice ?? state.precioMax,
                 params.get('maxPrice'),
+                persisted.precioMax,
                 profile.presupuestoCalculado,
                 defaultMaxPrice,
                 isFreshSearch,
@@ -80,27 +97,30 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
             habitaciones: resolveFilterValue(
                 state.rooms ?? state.habitaciones,
                 params.get('rooms'),
+                persisted.habitaciones,
                 profile.recamarasDeseadas,
                 0,
                 isFreshSearch,
                 safeNum
             ),
             status: (() => {
-                // Status logic is slightly more complex due to string mapping
+                // Status logic
                 const sState = state.status;
                 const sUrl = params.get('status');
+                const sPersisted = persisted.status;
                 const sProfile = profile.interesInmediato === true ? 'inmediata' : (profile.interesInmediato === false ? 'preventa' : undefined);
 
                 const isValid = (s) => ['inmediata', 'preventa', 'all'].includes(s);
 
                 if (sState && isValid(sState)) return sState;
                 if (sUrl && isValid(sUrl)) return sUrl;
+                if (sPersisted && isValid(sPersisted) && !isFreshSearch) return sPersisted;
                 if (sProfile && !isFreshSearch) return sProfile;
                 return 'all';
             })(),
-            amenidad: '',
-            tipo: 'all',
-            showNoPrice: false
+            amenidad: (!isFreshSearch && persisted.amenidad) ? persisted.amenidad : '',
+            tipo: (!isFreshSearch && persisted.tipo) ? persisted.tipo : 'all',
+            showNoPrice: (!isFreshSearch && persisted.showNoPrice) ? persisted.showNoPrice : false
         };
     }, [userProfile, location.search, location.state]);
 

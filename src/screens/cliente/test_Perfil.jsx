@@ -29,7 +29,7 @@ describe('Perfil - Home Screen Redesign', () => {
         });
     });
 
-    it('renders the new title and three buttons', () => {
+    it('renders the new title and two buttons', () => {
         render(
             <MemoryRouter>
                 <Perfil />
@@ -38,22 +38,11 @@ describe('Perfil - Home Screen Redesign', () => {
 
         expect(screen.getByRole('heading', { level: 1, name: /Encuentra tu mejor inversión/i })).toBeInTheDocument();
         expect(screen.queryByText(/Descubre la propiedad perfecta para ti/i)).not.toBeInTheDocument();
-        expect(screen.getByText(/Descubre tu monto de compra/i)).toBeInTheDocument();
+        expect(screen.queryByText(/Descubre tu monto de compra/i)).not.toBeInTheDocument();
         expect(screen.getByText(/Conoce los modelos/i)).toBeInTheDocument();
         expect(screen.getByText(/Navega por el mapa/i)).toBeInTheDocument();
     });
 
-    it('navigates to onboarding when clicking "Descubre tu monto de compra"', () => {
-        render(
-            <MemoryRouter>
-                <Perfil />
-            </MemoryRouter>
-        );
-
-        const onboardingBtn = screen.getByText(/Descubre tu monto de compra/i);
-        fireEvent.click(onboardingBtn);
-        expect(mockNavigate).toHaveBeenCalledWith('/onboarding-cliente');
-    });
 
     it('navigates to catalog when clicking "Conoce los modelos"', () => {
         render(
@@ -67,7 +56,7 @@ describe('Perfil - Home Screen Redesign', () => {
         expect(mockNavigate).toHaveBeenCalledWith('/catalogo');
     });
 
-    it('navigates to map when clicking "Navega por el mapa"', () => {
+    it('navigates to map view in catalog when clicking "Navega por el mapa"', () => {
         render(
             <MemoryRouter>
                 <Perfil />
@@ -76,6 +65,7 @@ describe('Perfil - Home Screen Redesign', () => {
 
         const mapBtn = screen.getByText(/Navega por el mapa/i);
         fireEvent.click(mapBtn);
-        expect(mockNavigate).toHaveBeenCalledWith('/mapa');
+        expect(mockNavigate).toHaveBeenCalledWith('/catalogo', { state: { viewMode: 'map' } });
     });
+
 });
