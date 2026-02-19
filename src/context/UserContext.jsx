@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useService } from '../hooks/useService';
 
-const UserContext = createContext();
+export const UserContext = createContext();
 
 export const useUser = () => {
   return useContext(UserContext);

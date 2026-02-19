@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useService } from '../../hooks/useService';
 import { useUser } from '../../context/UserContext';
 import '../../styles/components/home/FeaturedDevelopers.css';
@@ -9,7 +10,8 @@ import '../../styles/components/home/FeaturedDevelopers.css';
  */
 export default function FeaturedDevelopers() {
     const { catalog } = useService();
-    const { selectedCity } = useUser();
+    const { selectedCity, trackBehavior } = useUser();
+    const navigate = useNavigate();
 
     const [developers, setDevelopers] = useState([]);
 
@@ -35,6 +37,15 @@ export default function FeaturedDevelopers() {
         fetchDevs();
     }, [catalog, selectedCity]);
 
+    const handleDevClick = (dev) => {
+        trackBehavior('select_development', {
+            id: dev.id,
+            nombre: dev.nombre,
+            origin: 'home_featured'
+        });
+        navigate(`/desarrollo/${dev.id}`);
+    };
+
     if (developers.length === 0) return null;
 
     return (
@@ -44,7 +55,11 @@ export default function FeaturedDevelopers() {
             </h2>
             <div className="featured-developers__grid">
                 {developers.map((dev) => (
-                    <div key={dev.id} className="featured-developers__item">
+                    <div
+                        key={dev.id}
+                        className="featured-developers__item"
+                        onClick={() => handleDevClick(dev)}
+                    >
                         <div className="featured-developers__logo-box">
                             {dev.imagen ? (
                                 <img src={dev.imagen} alt={dev.nombre} className="featured-developers__img" />
@@ -61,3 +76,4 @@ export default function FeaturedDevelopers() {
         </section>
     );
 }
+
