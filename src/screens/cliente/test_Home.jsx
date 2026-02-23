@@ -14,9 +14,6 @@ vi.mock('../../components/home/AffordabilityWidget', () => ({
 vi.mock('../../components/home/FeaturedDevelopers', () => ({
     default: () => <div>Featured Developers Mock</div>
 }));
-vi.mock('../../components/home/NewLaunches', () => ({
-    default: () => <div>New Launches Mock</div>
-}));
 
 describe('Home Screen', () => {
     it('renders Hero and Sections without crashing', () => {

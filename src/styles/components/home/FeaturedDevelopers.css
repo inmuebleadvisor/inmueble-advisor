@@ -28,7 +28,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 140px;
+    width: 144px;
     cursor: pointer;
     transition: all 0.3s var(--ease-premium);
 }
@@ -38,8 +38,8 @@
 }
 
 .featured-developers__logo-box {
-    width: 100px;
-    height: 100px;
+    width: 96px;
+    height: 96px;
     border-radius: 50%;
     overflow: hidden;
     background: var(--bg-secondary);

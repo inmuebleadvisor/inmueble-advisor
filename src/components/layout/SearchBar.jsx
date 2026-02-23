@@ -3,6 +3,11 @@ import React from 'react';
 import { Icons } from '../common/Icons';
 import '../../styles/Catalogo.css';
 
+/**
+ * @file SearchBar.jsx
+ * @description Componente de entrada de texto reutilizable para búsquedas.
+ * Mantiene estilos consistentes y maneja la limpieza del input y las pulsaciones de teclas.
+ */
 export default function SearchBar({ searchTerm, setSearchTerm, onClick, readOnly, autoFocus, onKeyDown }) {
     return (
         <div className="search-bar" onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
