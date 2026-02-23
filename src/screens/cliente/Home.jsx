@@ -2,7 +2,6 @@ import React from 'react';
 import HeroSection from '../../components/home/HeroSection';
 import AffordabilityWidget from '../../components/home/AffordabilityWidget';
 import FeaturedDevelopers from '../../components/home/FeaturedDevelopers';
-import NewLaunches from '../../components/home/NewLaunches';
 import '../../styles/screens/Home.css';
 
 /**
@@ -26,7 +25,6 @@ export default function Home() {
                     <AffordabilityWidget />
                 </section>
                 <FeaturedDevelopers />
-                <NewLaunches />
             </main>
         </div>
     );

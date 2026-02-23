@@ -1,10 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FinancialService } from '../../services/financial.service';
 import { useCatalog } from '../../context/CatalogContext';
 import { useUser } from '../../context/UserContext';
 import { useService } from '../../hooks/useService';
-import { CatalogService } from '../../services/catalog.service';
 import '../../styles/components/home/AffordabilityWidget.css';
 
 /**
@@ -16,21 +14,23 @@ export default function AffordabilityWidget() {
     const navigate = useNavigate();
     const { modelos, desarrollos } = useCatalog();
     const { user } = useUser();
-    const { client } = useService();
+    const { client, financial: financialService, catalog: catalogLogic } = useService();
 
     // Form State
     const [ingreso, setIngreso] = useState('');
     const [enganche, setEnganche] = useState('');
     const [resultado, setResultado] = useState(null);
 
-    const financialService = new FinancialService();
+    // Refs for Focus Management
+    const inputIngresoRef = useRef(null);
+    const inputEngancheRef = useRef(null);
 
     const calcular = async (e) => {
         e.preventDefault();
         const capMensual = parseFloat(ingreso) || 0;
         const capitalInicial = parseFloat(enganche) || 0;
 
-        // Lógica de negocio (Servicio Financiero)
+        // Lógica de negocio (Servicio Financiero Inyectado)
         const { maxBudget, dynamicNote, isAlert } = financialService.calculateAffordability(capitalInicial, capMensual);
 
         const calculationResult = { maxBudget, dynamicNote, isAlert };
@@ -51,6 +51,34 @@ export default function AffordabilityWidget() {
         }
     };
 
+    /**
+     * Smart Keyboard Flow:
+     * - If Enter is pressed and the other field is empty -> Jump to it.
+     * - If Enter is pressed and both are filled -> Let the form submit normally.
+     */
+    const handleKeyDownIngreso = (e) => {
+        if (e.key === 'Enter') {
+            if (!enganche) {
+                e.preventDefault();
+                inputEngancheRef.current?.focus();
+            }
+        }
+    };
+
+    const handleKeyDownEnganche = (e) => {
+        if (e.key === 'Enter') {
+            if (!ingreso) {
+                e.preventDefault();
+                inputIngresoRef.current?.focus();
+            }
+        }
+    };
+
+    const handleInputChange = (setter) => (e) => {
+        setter(e.target.value);
+        if (resultado) setResultado(null); // Feedback reactivo: limpiar al editar
+    };
+
     // --- LÓGICA DE COINCIDENCIAS (Restored from Onboarding) ---
     const matchingCount = useMemo(() => {
         if (!resultado?.maxBudget || !modelos || !desarrollos) return 0;
@@ -66,21 +94,18 @@ export default function AffordabilityWidget() {
             showNoPrice: false
         };
 
-        // Usamos el servicio estático para filtrar (mismo motor que el catálogo)
-        return CatalogService.filterCatalog(modelos, desarrollos, filters, '').length;
-    }, [resultado, modelos, desarrollos]);
+        // Usamos el servicio inyectado para filtrar (mismo motor que el catálogo)
+        return catalogLogic.constructor.filterCatalog(modelos, desarrollos, filters, '').length;
+    }, [resultado, modelos, desarrollos, catalogLogic]);
 
     const handleVerPropiedades = () => {
         if (!resultado) return;
 
         // Navegamos al catálogo pasando el estado inicial de filtros
-        // El catálogo debe ser capaz de leer `location.state` o query params.
-        // Por consistencia con el plan, usaremos state, pero idealmente query params para compartir URL.
-        // Vamos a usar state por ahora como se definió en el plan rápido.
         navigate('/catalogo', {
             state: {
                 precioMax: resultado.maxBudget,
-                // Podríamos pasar más filtros si el widget tuviera inputs de recámaras, etc.
+                resetFilters: true // Limpiar filtros previos para coincidir con el conteo de la calculadora
             }
         });
     };
@@ -97,11 +122,13 @@ export default function AffordabilityWidget() {
                 <div className="affordability-widget__field">
                     <label className="affordability-widget__label">¿Cuánto puedes pagar al mes?</label>
                     <input
+                        ref={inputIngresoRef}
                         className="affordability-widget__input"
                         type="number"
                         placeholder="$20,000"
                         value={ingreso}
-                        onChange={(e) => setIngreso(e.target.value)}
+                        onChange={handleInputChange(setIngreso)}
+                        onKeyDown={handleKeyDownIngreso}
                         required
                     />
                 </div>
@@ -109,11 +136,13 @@ export default function AffordabilityWidget() {
                 <div className="affordability-widget__field">
                     <label className="affordability-widget__label">¿Cuánto enganche tienes?</label>
                     <input
+                        ref={inputEngancheRef}
                         className="affordability-widget__input"
                         type="number"
                         placeholder="$100,000"
                         value={enganche}
-                        onChange={(e) => setEnganche(e.target.value)}
+                        onChange={handleInputChange(setEnganche)}
+                        onKeyDown={handleKeyDownEnganche}
                         required
                     />
                 </div>

@@ -1,7 +1,8 @@
 /* src/styles/components/home/FeaturedDevelopers.css */
 
 .featured-developers {
-    padding: 80px 24px;
+    padding: 3rem 1.5rem;
+    /* 48px vertical - Sincronizado con sistema de 8px */
     background: var(--bg-main);
     text-align: center;
 }
