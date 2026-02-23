@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icons } from '../common/Icons';
 import Portal from '../common/Portal'; // [NEW]
+import SearchBar from '../layout/SearchBar';
 import { formatoMoneda } from '../../utils/formatters';
 import { UI_OPCIONES } from '../../config/constants';
 import '../../styles/Catalogo.css';
@@ -12,6 +13,8 @@ export default function FilterModal({
     onClose,
     filtros,
     setFiltros,
+    searchTerm,
+    setSearchTerm,
     limpiarTodo,
     topAmenidades,
     resultadosCount
@@ -57,6 +60,22 @@ export default function FilterModal({
                     </div>
 
                     <div className="modal__body">
+
+                        <div className="filter-section">
+                            <label className="filter-section__label">Búsqueda</label>
+                            <div className="modal__search-wrapper">
+                                <SearchBar
+                                    searchTerm={searchTerm}
+                                    setSearchTerm={setSearchTerm}
+                                    autoFocus={true}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            onClose();
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </div>
 
                         <div className="filter-section">
                             <label className="filter-section__label">Rango de Precio</label>

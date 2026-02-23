@@ -14,7 +14,7 @@ export const THEME_CONFIG = {
 };
 
 export const THEME_ASSETS = {
-    logoDark: "https://firebasestorage.googleapis.com/v0/b/inmueble-advisor-app.firebasestorage.app/o/Institucional%2FLogo%20blanco%20con%20amarillo.png?alt=media",
+    logoDark: "https://firebasestorage.googleapis.com/v0/b/inmueble-advisor-app.firebasestorage.app/o/Institucional%2FLogo%20Inmueble%20Advisor%20PNG.png?alt=media&token=d123edd6-31b1-4087-bcb3-afddb58b4d0f",
     footerDecoration: null,
     backgroundEffect: null
 };

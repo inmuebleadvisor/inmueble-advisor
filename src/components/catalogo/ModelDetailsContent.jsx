@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import { IMAGES } from '../../config/constants';
 import Carousel from './Carousel';
 import CaracteristicasBox from '../common/CaracteristicasBox';

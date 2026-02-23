@@ -74,6 +74,11 @@
     border-color: var(--primary-color);
 }
 
+.navbar__city-icon {
+    color: #ef4444;
+    /* Rojo vibrante para resaltar ubicación */
+}
+
 /* --- HAMBURGER BUTTON --- */
 .navbar__toggle-btn {
     display: none;

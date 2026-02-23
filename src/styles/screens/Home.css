@@ -10,70 +10,55 @@
 .home-hero {
     position: relative;
     width: 100%;
-    min-height: 80vh;
+    min-height: 50vh;
     display: flex;
     align-items: center;
-    background-image: url('https://images.unsplash.com/photo-1600596542815-e32c0d9963e6?q=80&w=2574&auto=format&fit=crop');
-    background-size: cover;
-    background-position: center;
-    padding: 64px 24px;
+    background-color: var(--bg-main);
+    padding: 3rem 1.5rem;
+    /* 48px vertical - Sincronizado con sistema de 8px */
+    border-radius: var(--radius-xl);
+    /* Technically correct implementation for future-proofing */
 }
 
-.home-hero__overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg,
-            rgba(15, 23, 42, 0.95) 0%,
-            rgba(15, 23, 42, 0.7) 50%,
-            rgba(15, 23, 42, 0.4) 100%);
-    z-index: 1;
-}
+/* Overlay removed for solid white design */
 
 .home-hero__container {
     position: relative;
     z-index: 2;
     width: 100%;
-    max-width: 1200px;
+    max-width: 1024px;
     margin: 0 auto;
-    display: grid;
-    gap: 48px;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    /* Prevent shrinking below 0 to allow children to control size */
+    text-align: center;
+    gap: 2rem;
+    /* Restore desktop air (32px) */
     min-width: 0;
 }
 
 /* Breakpoint Escritorio */
 @media (min-width: 992px) {
     .home-hero__container {
-        grid-template-columns: 1fr 440px;
-        /* Precise width for widget column */
-    }
-
-    .home-hero__widget-column {
-        display: flex;
-        justify-content: flex-end;
+        max-width: 1000px;
     }
 }
 
 /* Breakpoint Tablets/Móvil */
 @media (max-width: 991px) {
     .home-hero {
-        padding: clamp(2rem, 10vw, 3rem) clamp(1rem, 5vw, 1.5rem);
-        /* Fluid padding: min 16px/32px, max ~48px */
+        padding: clamp(1.5rem, 10vw, 3rem) clamp(1rem, 5vw, 1.5rem);
+        /* Fluid padding: min 24px/48px, max ~48px */
         min-height: auto;
     }
 
-    .home-hero__overlay {
-        background: linear-gradient(180deg,
-                rgba(15, 23, 42, 0.8) 0%,
-                rgba(15, 23, 42, 0.95) 100%);
-    }
+    /* Mobile overlay removal */
 
     .home-hero__container {
         grid-template-columns: 100%;
         /* Force single column to avoid overflow math */
         text-align: center;
-        gap: clamp(1.5rem, 5vw, 2.5rem);
+        gap: clamp(0.5rem, 5vw, 2.5rem);
         min-width: 0;
         /* Safe centering: ensure it doesn't clip left if children are rigid */
         display: flex;
@@ -82,18 +67,24 @@
         /* Stretch children, let them handle internal centering */
     }
 
-    .home-hero__content-column,
-    .home-hero__widget-column {
-        width: 100%;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        /* Center children within columns */
+    .home-hero__container {
+        padding: 0 16px;
     }
 }
 
 /* --- MAIN CONTENT SECTIONS --- */
 .home-main {
     padding-bottom: 64px;
+}
+
+.home-calculator {
+    padding: 3rem 1.5rem;
+    /* 48px vertical - Reducción de aire para integración */
+    display: flex;
+    justify-content: center;
+}
+
+.home-calculator>* {
+    width: 100%;
+    max-width: 1000px;
 }

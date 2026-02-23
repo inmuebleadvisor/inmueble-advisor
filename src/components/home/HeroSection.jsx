@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, CircleDollarSign } from 'lucide-react';
+import { MapPin, List, Home as HomeIcon, Building2, Construction } from 'lucide-react';
 import SearchBar from '../layout/SearchBar';
 import '../../styles/components/home/HeroSection.css';
 
@@ -13,42 +13,30 @@ export default function HeroSection() {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
 
-    const handleSearch = () => {
-        if (!searchTerm.trim()) return;
-        navigate('/catalogo', { state: { searchQuery: searchTerm } });
-    };
-
-    const applyFilter = (filterType, value) => {
-        navigate('/catalogo', { state: { [filterType]: value } });
-    };
-
     return (
-        <div className="hero-content">
+        <>
             <h1 className="hero-content__title">
-                Encuentra tu sueño, <br />
-                <span className="hero-content__highlight">encuentra tu hogar</span>
+                Encuentra tu <span className="hero-content__title-extra"><span className="hero-content__highlight">Sueño</span>,<br />encuentra tu </span>
+                <span className="hero-content__highlight">Hogar</span>
             </h1>
-            <p className="hero-content__subtitle">
-                Explora desarrollos exclusivos y preventas únicas en tu ciudad.
-            </p>
 
-            <div
-                className="hero-content__search-container"
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            >
+
+            <div className="hero-content__search-wrapper" onClick={() => navigate('/catalogo', { state: { openSearchModal: true } })}>
                 <SearchBar
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
+                    readOnly={true}
+                    onClick={() => navigate('/catalogo', { state: { openSearchModal: true } })}
                 />
             </div>
 
             <div className="hero-content__filters">
                 <button
                     className="hero-content__filter-chip"
-                    onClick={() => applyFilter('rangoPrecio', 'economico')}
+                    onClick={() => navigate('/catalogo', { state: { viewMode: 'grid' } })}
                 >
-                    <CircleDollarSign size={20} strokeWidth={2} className="hero-content__chip-icon" />
-                    Precio
+                    <List size={20} strokeWidth={2} className="hero-content__chip-icon" />
+                    Lista
                 </button>
                 <button
                     className="hero-content__filter-chip"
@@ -57,7 +45,25 @@ export default function HeroSection() {
                     <MapPin size={20} strokeWidth={2} className="hero-content__chip-icon" />
                     Mapa
                 </button>
+                <button
+                    className="hero-content__filter-chip"
+                    onClick={() => navigate('/catalogo', { state: { tipo: 'casa', resetFilters: true } })}
+                >
+                    <HomeIcon size={18} /> Casas
+                </button>
+                <button
+                    className="hero-content__filter-chip"
+                    onClick={() => navigate('/catalogo', { state: { tipo: 'departamento', resetFilters: true } })}
+                >
+                    <Building2 size={18} /> Deptos
+                </button>
+                <button
+                    className="hero-content__filter-chip"
+                    onClick={() => navigate('/catalogo', { state: { status: 'preventa', resetFilters: true } })}
+                >
+                    <Construction size={18} /> Preventa
+                </button>
             </div>
-        </div>
+        </>
     );
 }

@@ -15,23 +15,16 @@ export default function Home() {
         <div className="home-screen">
             {/* 1. SECCIÓN HERO (CONTENEDOR MAESTRO) */}
             <header className="home-hero">
-                <div className="home-hero__overlay"></div>
-
                 <div className="home-hero__container">
-                    {/* Contenido Editorial (Izquierda en Desktop) */}
-                    <div className="home-hero__content-column">
-                        <HeroSection />
-                    </div>
-
-                    {/* Widget Financiero (Derecha en Desktop) */}
-                    <div className="home-hero__widget-column">
-                        <AffordabilityWidget />
-                    </div>
+                    <HeroSection />
                 </div>
             </header>
 
             {/* 2. CONTENIDO PRINCIPAL */}
             <main className="home-main">
+                <section className="home-calculator">
+                    <AffordabilityWidget />
+                </section>
                 <FeaturedDevelopers />
                 <NewLaunches />
             </main>

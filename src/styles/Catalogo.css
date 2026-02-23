@@ -86,6 +86,13 @@
   margin-top: 1rem;
 }
 
+/* Adjust search bar when nested in modal */
+.modal__search-wrapper .search-bar {
+  padding: 0;
+  margin: 0;
+  max-width: 100%;
+}
+
 .search-bar__container {
   display: flex;
   align-items: center;
@@ -427,10 +434,10 @@
 }
 
 .pill--active {
-  background-color: var(--primary-color);
+  background: var(--base-primary-light);
   color: var(--white);
-  border-color: var(--primary-color);
-  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.2);
+  border-color: var(--base-primary-light);
+  box-shadow: 0 4px 6px -1px rgba(220, 178, 58, 0.2);
 }
 
 .amenity-chip {
@@ -736,9 +743,9 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   border-radius: var(--radius-full);
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  background: var(--white);
+  color: var(--primary-color);
   font-weight: 600;
   font-size: 0.8rem;
   cursor: pointer;
@@ -746,14 +753,15 @@
 }
 
 .catalogo__toggle-btn--active {
-  background: var(--primary-color);
+  background: var(--base-primary-light);
   color: var(--white);
+  border-color: var(--base-primary-light);
   box-shadow: var(--shadow-sm);
 }
 
 .catalogo__toggle-btn:not(.catalogo__toggle-btn--active):hover {
-  color: var(--text-main);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-secondary);
+  color: var(--primary-hover);
 }
 
 @media (max-width: 768px) {

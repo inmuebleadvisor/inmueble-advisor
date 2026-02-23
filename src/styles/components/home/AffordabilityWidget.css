@@ -1,32 +1,27 @@
 /* src/styles/components/home/AffordabilityWidget.css */
 
 .affordability-widget {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-subtle);
-    box-shadow: var(--shadow-lg);
-    padding: clamp(0.75rem, 5vw, 2rem);
-    /* min 12px for 320px devices */
+    background: var(--base-primary-dark);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 57, 106, 0.3);
+    padding: clamp(1.5rem, 5vw, 2.5rem);
     border-radius: var(--radius-xl);
-    max-width: 440px;
+    max-width: 480px;
     width: 100%;
-    backdrop-filter: blur(16px);
     box-sizing: border-box;
-    /* Crucial for absolute width control */
+    color: var(--white);
+    transition: transform 0.3s var(--ease-premium);
 }
 
 .affordability-widget__title {
-    color: var(--primary-color);
-    font-size: 1.75rem;
-    font-weight: 800;
-    margin-bottom: 8px;
-    line-height: 1.2;
-}
-
-.affordability-widget__desc {
-    color: var(--text-main);
-    opacity: 0.8;
-    font-size: 1rem;
+    color: var(--base-primary-light);
+    /* Gold accent */
+    font-size: 2.25rem;
+    font-weight: 900;
     margin-bottom: 24px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-align: left;
 }
 
 .affordability-widget__form {
@@ -37,63 +32,63 @@
 
 .affordability-widget__label {
     display: block;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-main);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.8);
     margin-bottom: 8px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
 }
 
 .affordability-widget__input {
     width: 100%;
     padding: 14px 18px;
-    background: var(--bg-main);
-    border: 1px solid var(--border-strong);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: var(--radius-sm);
     font-size: 1.1rem;
-    color: var(--text-main);
+    color: var(--white);
     transition: all 0.3s var(--ease-premium);
 }
 
 .affordability-widget__input:focus {
-    border-color: var(--primary-color);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--base-primary-light);
     outline: none;
-    box-shadow: var(--shadow-glow);
+    box-shadow: 0 0 0 4px rgba(220, 178, 58, 0.2);
 }
 
 .affordability-widget__input::placeholder {
-    color: var(--text-secondary);
-    opacity: 0.4;
+    color: rgba(255, 255, 255, 0.3);
 }
 
 .affordability-widget__btn {
-    background: var(--primary-color);
-    color: var(--text-inverse);
+    background: var(--base-primary-light);
+    /* Gold Button */
+    color: var(--base-primary-dark);
     border: none;
     padding: clamp(0.75rem, 3vw, 1.125rem);
-    /* Fluid padding: min 12px, max 18px */
     border-radius: var(--radius-sm);
-    font-weight: 800;
+    font-weight: 900;
     font-size: clamp(0.9rem, 4vw, 1.1rem);
-    /* Fluid font: min 14.4px, max 17.6px */
     cursor: pointer;
     margin-top: 8px;
     transition: all 0.3s var(--ease-premium);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
 }
 
 .affordability-widget__btn:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-glow);
-    filter: brightness(1.1);
+    background: var(--white);
+    color: var(--base-primary-dark);
+    box-shadow: 0 10px 20px rgba(220, 178, 58, 0.3);
 }
 
 .affordability-widget__result {
-    margin-top: 24px;
+    margin-top: 32px;
     padding-top: 24px;
-    border-top: 1px solid var(--border-subtle);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     text-align: center;
     animation: fadeIn 0.6s var(--ease-premium);
 }
@@ -103,29 +98,30 @@
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.6);
     margin-bottom: 4px;
 }
 
 .affordability-widget__result-value {
     display: block;
-    font-size: clamp(1.75rem, 10vw, 2.75rem);
-    /* Fluid font: min 28px, max 44px */
-    font-weight: 900;
-    color: var(--primary-color);
+    font-size: clamp(2rem, 10vw, 3rem);
+    font-weight: 950;
+    color: var(--base-primary-light);
     margin: 8px 0;
-    text-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+    text-shadow: 0 0 30px rgba(220, 178, 58, 0.2);
 }
 
 .affordability-widget__result-note {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.8);
     font-style: italic;
+    line-height: 1.4;
 }
 
 .affordability-widget__result--alert .affordability-widget__result-note {
-    color: var(--error);
-    font-weight: 600;
+    color: #ff9999;
+    /* Softer error color on dark background */
+    font-weight: 700;
 }
 
 @keyframes fadeIn {

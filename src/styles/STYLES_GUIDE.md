@@ -4,30 +4,30 @@ Esta es la **fuente de verdad única** para la interfaz de Inmueble Advisor. Def
 
 ---
 
-## 1. Filosofía de Diseño: "Buyer First"
-Nuestro diseño transmite autoridad, éxito y seguridad mediante:
-- **Aesthetics**: Uso de *Dark Slate* (#0f172a), dorados (*Gold*) y efectos de cristal (*Glassmorphism*).
+## 1. Filosofía de Diseño: "Buyer First" (Light Professional)
+Nuestro diseño transmite autoridad, confianza y profesionalismo mediante:
+- **Aesthetics**: Entorno limpio y luminoso basado en blanco puro (`#ffffff`), azul corporativo fuerte (`#00396a`) y acentos en dorado sólido (`#dcb23a`).
 - **Ritmo Visual**: Layouts limpios basados en un sistema matemático de espaciado.
 - **Movimiento Premium**: Animaciones sutiles con curvas de aceleración naturales.
 
 ---
 
-## 2. Configuración de Colores — Dark Premium (Único)
-Los colores se inyectan a través de variables CSS en `src/index.css`. No existe modo claro.
+## 2. Configuración de Colores — Light Professional (Único)
+Los colores se inyectan a través de variables CSS en `src/index.css`. No existe modo oscuro.
 
 ### 🎨 Variables Base (Tokens Raíz)
 | Variable | Propósito | Valor |
 | :--- | :--- | :--- |
-| `--base-primary-dark` | Oro Brillante (Primario activo) | `#f59e0b` |
-| `--base-brand-blue` | Azul Corporativo (Slate) | `#0f172a` |
-| `--base-accent-blue` | Acentos y Highlights | `#0284c7` |
+| `--base-primary-dark` | Azul Corporativo Fuerte (Primario) | `#00396a` |
+| `--base-primary-light` | Dorado Sólido (Acentos/Detalles) | `#dcb23a` |
+| `--base-brand-blue` | Azul Corporativo Base | `#00396a` |
 
-### 🌑 Tema Dark Premium (Default y Único)
+### ☀️ Tema Light Professional (Default y Único)
 | Elemento | Valor |
 | :--- | :--- |
-| Fondo Principal (`--bg-main`) | `#0f172a` |
-| Fondo Secundario (`--bg-secondary`) | `#1e293b` |
-| Texto Principal (`--text-main`) | `#f8fafc` |
+| Fondo Principal (`--bg-main`) | `#ffffff` |
+| Fondo Secundario (`--bg-secondary`) | `#f8fafc` |
+| Texto Principal (`--text-main`) | `#0f172a` |
 | Color Primario (`--primary-color`) | `--base-primary-dark` |
 
 ---
@@ -104,4 +104,4 @@ Elemento central de navegación y conversión:
 5. [ ] ¿Usa el Easing estándar para las transiciones?
 
 ---
-*Última actualización: Febrero 2026. Consolidado a Dark Premium único.*
+*Última actualización: Febrero 2026. Consolidado a Light Professional único.*

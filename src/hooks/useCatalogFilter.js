@@ -21,6 +21,8 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
     // [Refactoring Strategy]
     // Helper to resolve filter values with strict priority
     const resolveFilterValue = (stateVal, urlVal, persistedVal, profileVal, defaultVal, isFreshSearch, transform = Number) => {
+        const resetFilters = location.state?.resetFilters;
+
         // Priority 1: Navigation State (Explicit User Action from UI)
         if (stateVal !== undefined && stateVal !== null) {
             return transform(stateVal);
@@ -30,6 +32,9 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
         if (urlVal !== undefined && urlVal !== null) {
             return transform(urlVal);
         }
+
+        // If resetFilters is active, skip persisted/profile logic
+        if (resetFilters) return defaultVal;
 
         // Priority 3: Persisted Value (Memory of last selection)
         // Only if NOT a fresh search from Home
@@ -104,6 +109,7 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
                 safeNum
             ),
             status: (() => {
+                const resetFilters = location.state?.resetFilters;
                 // Status logic
                 const sState = state.status;
                 const sUrl = params.get('status');
@@ -114,13 +120,17 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
 
                 if (sState && isValid(sState)) return sState;
                 if (sUrl && isValid(sUrl)) return sUrl;
+
+                // If reset, ignore lower priority sources
+                if (resetFilters) return 'all';
+
                 if (sPersisted && isValid(sPersisted) && !isFreshSearch) return sPersisted;
                 if (sProfile && !isFreshSearch) return sProfile;
                 return 'all';
             })(),
-            amenidad: (!isFreshSearch && persisted.amenidad) ? persisted.amenidad : '',
-            tipo: (!isFreshSearch && persisted.tipo) ? persisted.tipo : 'all',
-            showNoPrice: (!isFreshSearch && persisted.showNoPrice) ? persisted.showNoPrice : false
+            amenidad: (!isFreshSearch && !location.state?.resetFilters && persisted.amenidad) ? persisted.amenidad : '',
+            tipo: (state.tipo) ? state.tipo : ((!isFreshSearch && !location.state?.resetFilters && persisted.tipo) ? persisted.tipo : 'all'),
+            showNoPrice: (!isFreshSearch && !location.state?.resetFilters && persisted.showNoPrice) ? persisted.showNoPrice : false
         };
     }, [userProfile, location.search, location.state]);
 

@@ -1,10 +1,13 @@
 /* src/styles/components/home/HeroSection.css */
 
-.hero-content {
-    position: relative;
-    z-index: 2;
-    width: 100%;
-    /* No defined width/height here, let parent container handle layout */
+/* Base elements animation (moved from hero-content) */
+.hero-content__title,
+.hero-content__title-extra,
+.hero-content__highlight,
+.hero-content__search-wrapper,
+.hero-content__subtitle,
+.search-bar,
+.hero-content__filters {
     animation: fadeIn 0.8s var(--ease-premium);
 }
 
@@ -12,10 +15,11 @@
     font-size: clamp(1.75rem, 8vw, 3.5rem);
     /* Lower min size for 320px */
     font-weight: 800;
-    margin-bottom: clamp(1rem, 4vw, 1.5rem);
+    margin-bottom: 0;
+    /* Let gap handle it in desktop */
     line-height: 1.1;
-    color: white;
-    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    color: var(--text-secondary);
+    /* Gray for "Encuentra tu" / Connectors */
     /* Safe word breaking */
     overflow-wrap: break-word;
     word-break: break-word;
@@ -24,21 +28,36 @@
 
 .hero-content__highlight {
     color: var(--base-primary-dark);
+    /* Solid Blue for "Sueño" and "Hogar" */
+}
+
+.hero-content__title-extra {
+    display: inline;
 }
 
 .hero-content__subtitle {
     font-size: clamp(0.9rem, 3vw, 1.15rem);
     /* Lower min size */
     margin-bottom: clamp(1.5rem, 5vw, 2rem);
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-secondary);
     line-height: 1.5;
     overflow-wrap: break-word;
     max-width: 100%;
 }
 
-.hero-content__search-container {
-    margin-bottom: clamp(1.5rem, 5vw, 2rem);
+/* Search container removed, now using direct SearchBar component */
+.hero-content__search-wrapper {
     width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+/* Use a more specific selector to ensure width override on Home */
+.home-hero .search-bar {
+    margin-bottom: 0;
+    width: 100%;
+    max-width: 1000px;
+    /* Base padding restored from Catalogo.css for Desktop */
 }
 
 
@@ -55,16 +74,19 @@
 }
 
 .hero-content__filter-chip {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--bg-main);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
     padding: 10px 20px;
     border-radius: var(--radius-sm);
     cursor: pointer;
     font-size: 0.9rem;
     font-weight: 600;
     transition: all 0.3s var(--ease-premium);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .hero-content__filter-chip:hover {
@@ -86,16 +108,21 @@
 }
 
 @media (max-width: 767px) {
-    .hero-content {
-        text-align: center;
+    .hero-content__title {
+        margin-bottom: 0.5rem;
+        /* Forces 8px + 8px gap = 16px */
     }
 
-    .hero-content__filters {
-        justify-content: center;
+    .hero-content__title-extra {
+        display: none;
     }
 
-    .hero-content__search-container {
-        margin-left: auto;
-        margin-right: auto;
+    .hero-content__highlight {
+        color: var(--base-primary-dark);
+    }
+
+    .home-hero .search-bar {
+        padding: 0;
+        /* Maintain compact mobile density */
     }
 }

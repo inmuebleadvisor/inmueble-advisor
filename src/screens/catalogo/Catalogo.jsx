@@ -29,6 +29,15 @@ export default function Catalogo() {
   const [viewMode, setViewMode] = useState(location.state?.viewMode || 'grid');
   const [isMapFullscreen, setIsMapFullscreen] = useState(false);
 
+  // [NEW] Escuchar navegación desde la Home o otros lugares para abrir el buscador
+  React.useEffect(() => {
+    if (location.state?.openSearchModal) {
+      setIsFilterOpen(true);
+      // Limpiar el state para que al recargar la página no se vuelva a abrir solo
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
   // Use Custom Hook for Filter Logic
   const {
     filtros,
@@ -131,6 +140,8 @@ export default function Catalogo() {
         <SearchBar
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
+          readOnly={true}
+          onClick={() => setIsFilterOpen(true)}
         />
       </header>
 
@@ -146,6 +157,8 @@ export default function Catalogo() {
         onClose={() => setIsFilterOpen(false)}
         filtros={filtros}
         setFiltros={setFiltros}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
         limpiarTodo={limpiarTodo}
         topAmenidades={topAmenidades}
         resultadosCount={modelosFiltrados.length}

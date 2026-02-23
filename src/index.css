@@ -16,41 +16,49 @@
 :root {
   /* 
      Color Primario: Acciones principales, botones, destacados.
-     Nota: Se definen dos variantes para contraste visual.
   */
   --base-primary-light: #dcb23a;
-  /* Bronze/Dark Gold - Token de reserva */
-  --base-primary-dark: #f59e0b;
-  /* Bright Gold - Primario activo (Dark Premium) */
+  /* Gold - Detalles y Acentos */
+  --base-primary-light-rgb: 220, 178, 58;
+  --base-primary-dark-rgb: 0, 57, 106;
+  --base-primary-dark: rgb(var(--base-primary-dark-rgb));
+  /* Primary Blue - Primario activo (Light Professional) */
+
+  --white: #ffffff;
+  /* Resolving global strict contrast issues */
 
   /* Color de Acento/Marca: Usado en enlaces, info y headers */
-  --base-brand-blue: #0f172a;
-  /* Dark Slate/Black - Marca Secundaria */
-  --base-accent-blue: #0284c7;
-  /* Azul Brillante - Enlaces/Highlights */
+  --base-brand-blue: #00396a;
+  /* Primary Blue - Marca Secundaria */
+  --base-accent-blue-rgb: 220, 178, 58;
+  --base-accent-blue: rgb(var(--base-accent-blue-rgb));
+  /* Gold - Enlaces/Highlights */
   --brand-whatsapp: #25D366;
   /* WhatsApp Official Brand Color */
 }
 
-/* --- DARK PREMIUM THEME VARIABLES (DEFAULT) --- */
+/* --- LIGHT PROFESSIONAL THEME VARIABLES --- */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
   /* --- ASIGNACIÓN DE COLORES BASE --- */
   --primary-color: var(--base-primary-dark);
-  --primary-hover: #d97706;
+  --primary-hover: #00284d;
   /* Ligeramente más oscuro que el base dark */
 
-  --text-main: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-inverse: #0f172a;
+  --text-main: #0f172a;
+  /* Slate muy oscuro para máxima legibilidad sobre blanco */
+  --text-secondary: #475569;
+  --text-inverse: #ffffff;
 
-  --accent-blue: #3b82f6;
+  --accent-blue: var(--base-accent-blue);
 
   /* Semantic Status Colors */
-  --status-success: #10b981;
+  --status-success-rgb: 16, 185, 129;
+  --status-success: rgb(var(--status-success-rgb));
   /* Green - Entrega Inmediata */
-  --status-warning: #f59e0b;
+  --status-warning-rgb: 245, 158, 11;
+  --status-warning: rgb(var(--status-warning-rgb));
   /* Orange - Preventa */
   --status-info: #0ea5e9;
   /* Blue - Mixed/Info */
@@ -61,36 +69,37 @@
 
   --success: var(--status-success);
   --success: var(--status-success);
-  --error: #ef4444;
+  --error-rgb: 239, 68, 68;
+  --error: rgb(var(--error-rgb));
 
   /* Semantic Subtles (for chips/badges) - Dark Mode Defaults */
-  --bg-success-subtle: rgba(16, 185, 129, 0.1);
+  --bg-success-subtle: rgba(var(--status-success-rgb), 0.1);
   --text-success: var(--status-success);
-  --border-success: rgba(16, 185, 129, 0.3);
+  --border-success: rgba(var(--status-success-rgb), 0.3);
 
-  --bg-warning-subtle: rgba(245, 158, 11, 0.1);
+  --bg-warning-subtle: rgba(var(--status-warning-rgb), 0.1);
   --text-warning: var(--status-warning);
-  --border-warning: rgba(245, 158, 11, 0.3);
+  --border-warning: rgba(var(--status-warning-rgb), 0.3);
 
-  --bg-error-subtle: rgba(239, 68, 68, 0.1);
+  --bg-error-subtle: rgba(var(--error-rgb), 0.1);
   --text-error: var(--error);
-  --border-error: rgba(239, 68, 68, 0.3);
+  --border-error: rgba(var(--error-rgb), 0.3);
 
-  --bg-primary-subtle: rgba(245, 158, 11, 0.1);
+  --bg-primary-subtle: rgba(var(--base-primary-dark-rgb), 0.1);
   --bg-input-search: var(--bg-tertiary);
   /* Default for Dark Mode */
 
-  --bg-accent-subtle: rgba(2, 132, 199, 0.1);
+  --bg-accent-subtle: rgba(var(--base-accent-blue-rgb), 0.1);
   --text-accent: var(--accent-blue);
-  --border-accent: rgba(2, 132, 199, 0.3);
+  --border-accent: rgba(var(--base-accent-blue-rgb), 0.3);
 
   /* Fondos */
-  --bg-main: #0f172a;
-  /* Dark Slate */
-  --bg-secondary: #1e293b;
-  /* Slightly lighter */
-  --bg-tertiary: #334155;
-  /* Inputs/Borders */
+  --bg-main: #ffffff;
+  /* Blanco Puro */
+  --bg-secondary: #f8fafc;
+  /* Gris muy claro / Slate 50 */
+  --bg-tertiary: #f1f5f9;
+  /* Inputs/Borders / Slate 100 */
 
   /* Typography */
   --font-main: 'Outfit', 'Inter', system-ui, sans-serif;
@@ -105,26 +114,26 @@
   --ease-premium: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Borders */
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  /* Increased visibility slightly */
-  --border-strong: rgba(255, 255, 255, 0.15);
+  --border-subtle: rgba(0, 57, 106, 0.08);
+  /* Sombra sutil oscura sobre blanco */
+  --border-strong: rgba(0, 57, 106, 0.15);
 
   /* Glass Effects */
-  --bg-glass: rgba(255, 255, 255, 0.05);
+  --bg-glass: rgba(255, 255, 255, 0.8);
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
   /* Sombra Glow usa RGB manual para transparencia, se mantiene aproximado al primary dark */
-  --shadow-glow: 0 0 15px rgba(245, 158, 11, 0.15);
+  --shadow-glow: 0 0 15px rgba(var(--base-primary-dark-rgb), 0.15);
 
   /* Component Specific */
   --bg-modal: transparent;
-  --bg-input: #1e293b;
-  --bg-header: var(--bg-secondary);
-  --bg-search: var(--bg-secondary);
-  --bg-filter: var(--bg-tertiary);
+  --bg-input: #ffffff;
+  --bg-header: var(--bg-main);
+  --bg-search: var(--bg-main);
+  --bg-filter: var(--bg-secondary);
   --bg-card-price: transparent;
 
   /* Z-Index Scale (Ref: STYLES_GUIDE.md) */

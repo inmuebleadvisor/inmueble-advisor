@@ -91,8 +91,7 @@ export default function AffordabilityWidget() {
 
     return (
         <div className="affordability-widget">
-            <h3 className="affordability-widget__title">Calculadora</h3>
-            <p className="affordability-widget__desc">Descubre tu poder de compra</p>
+            <h3 className="affordability-widget__title">Descubre tu poder de compra</h3>
 
             <form onSubmit={calcular} className="affordability-widget__form">
                 <div className="affordability-widget__field">

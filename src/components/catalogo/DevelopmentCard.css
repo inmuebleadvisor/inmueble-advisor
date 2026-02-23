@@ -358,9 +358,8 @@
     /* Default smaller size for mobile */
     height: 24px;
     border-radius: 50%;
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(220, 178, 58, 0.4);
+    background: var(--white);
+    border: 1px solid var(--primary-color);
     color: var(--primary-color);
     display: flex;
     /* Always flex (visible) */
@@ -394,7 +393,7 @@
 
 .development-card__nav-btn:hover {
     background: var(--primary-color);
-    color: white;
+    color: var(--white);
     transform: translateY(-50%) scale(1.1);
 }
 
