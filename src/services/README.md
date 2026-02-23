@@ -62,7 +62,7 @@ Tactical behavioral events tracked via the Pixel.
 | :--- | :--- | :--- |
 | **`Search`** | Filter application (1.5s debounce) | `useCatalogFilter.js` |
 | **`AddToWishlist`** | Favorite toggle (addition) | `FavoritesContext.jsx` |
-| **`CompleteRegistration`** | Onboarding/Calculator completion | `OnboardingCliente.jsx` |
+| **`CompleteRegistration`** | Onboarding/Calculator completion | `AffordabilityWidget.jsx` |
 
 ## Technical Implementation Rules
 1. **Deduplication:** Every event must include a unique `eventID` generated via `metaService.generateEventId()`.

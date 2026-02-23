@@ -24,8 +24,9 @@ Para evitar discrepancias, ambos módulos utilizan la misma tubería de procesam
 
 
 ## 📂 Estructura de Archivos
-- `OnboardingCliente.jsx`: Componente principal (Vista y Lógica de UI).
-- `../../styles/Onboarding.css`: Estilos siguiendo metodología BEM.
+- `Home.jsx`: Composición principal de la Home Page (Hero + Calculadora + Destacados).
+- `OnboardingCliente.jsx`: Flujo interactivo heredado (actualmente integrado en la Home).
+- `../../styles/screens/Home.css`: Estilos de layout para la página principal.
 - `../../services/catalog.service.js`: Motor de filtrado compartido.
 
 ## 🧪 Pruebas
