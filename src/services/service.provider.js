@@ -30,6 +30,8 @@ import { CrmService } from './crm.service';
 import { LeadAssignmentService } from './leadAssignment.service';
 import { FavoritesService } from './favorites.service';
 import { FinancialService } from './financial.service';
+import { AppointmentService } from './appointment.service';
+import { DevelopmentService } from './development.service';
 
 
 // 1. Instantiate Repositories
@@ -61,6 +63,8 @@ export const crmService = new CrmService(leadRepository, externalAdvisorService)
 export const leadAssignmentService = new LeadAssignmentService(leadRepository, clientService, catalogRepository);
 export const favoritesService = new FavoritesService(userRepository);
 export const financialService = new FinancialService();
+export const appointmentService = new AppointmentService();
+export const developmentService = new DevelopmentService();
 
 
 // New Services
@@ -88,5 +92,7 @@ export const services = {
     admin: adminService,
     meta: metaService,
     analytics: analyticsService,
-    financial: financialService
+    financial: financialService,
+    appointment: appointmentService,
+    development: developmentService
 };

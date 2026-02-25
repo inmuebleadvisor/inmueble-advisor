@@ -19,6 +19,12 @@ import FilterModal from '../../components/modals/FilterModal';
 // Styles
 import '../../styles/Catalogo.css';
 
+/**
+ * @file Catalogo.jsx
+ * @description Pantalla principal de búsqueda y visualización de desarrollos.
+ * Maneja la lógica de switching entre mapa/lista y la orquestación de filtros complejos.
+ * No debe contener lógica de acceso a datos directa, todo debe pasar por hooks y/o Servicios.
+ */
 export default function Catalogo() {
   const { userProfile, trackBehavior, selectedCity } = useUser();
   const { modelos: dataMaestra, amenidades: topAmenidades, loadingCatalog: loading, desarrollos } = useCatalog();

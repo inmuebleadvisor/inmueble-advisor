@@ -24,6 +24,16 @@ const formatoMoneda = (val) => {
 // Calcula escrituración aproximada con base en constante global
 const calcularEscrituracion = (precio) => formatoMoneda(precio * (FINANZAS?.PORCENTAJE_GASTOS_NOTARIALES || 0.05));
 
+/**
+ * @file PropertyCard.jsx
+ * @description Tarjeta de visualización para un modelo de propiedad individual.
+ * Maneja el carrusel de imágenes, favoritos y la presentación de highlights.
+ * 
+ * @param {Object} props
+ * @param {Object} props.item - Datos del modelo de propiedad
+ * @param {boolean} props.showDevName - Si debe mostrar el nombre del desarrollo
+ * @param {Object} props.style - Estilos inline opcionales
+ */
 export default function PropertyCard({ item, showDevName = true, style }) {
   const { trackBehavior } = useUser();
 

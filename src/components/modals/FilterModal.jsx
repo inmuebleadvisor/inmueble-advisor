@@ -8,6 +8,12 @@ import { formatoMoneda } from '../../utils/formatters';
 import { UI_OPCIONES } from '../../config/constants';
 import '../../styles/Catalogo.css';
 
+/**
+ * @file FilterModal.jsx
+ * @description Modal avanzado de filtros sobrepuesto en la pantalla.
+ * Permite afinar búsquedas por precio, ubicación, status y amenidades.
+ * Utiliza portales para renderizarse en el root de la app flotando sobre el contenido.
+ */
 export default function FilterModal({
     isOpen,
     onClose,

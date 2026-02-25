@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { format, addDays, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { getAvailableSlots, getMaxScheduleDate } from '../../services/appointment.service';
+import { useService } from '../../hooks/useService';
 import '../../index.css'; // Ensure variables are available
 
 /**
@@ -14,13 +14,16 @@ import '../../index.css'; // Ensure variables are available
  * @param {string} [props.className] - Extra classes
  */
 const AppointmentScheduler = ({ onSelect, initialDate, className = '' }) => {
+    const { appointment } = useService();
     const [selectedDate, setSelectedDate] = useState(initialDate || new Date());
-    const [selectedSlot, setSelectedSlot] = useState(null);
+    const [selectedTime, setSelectedTime] = useState(null);
+
+    // Get max available scheduling date from service via Context
+    const maxDate = useMemo(() => appointment.getMaxScheduleDate(), [appointment]);
 
     // Generate next 15 days for the calendar strip
     const calendarDays = useMemo(() => {
         const days = [];
-        const maxDate = getMaxScheduleDate();
         let current = new Date();
 
         while (current <= maxDate) {
@@ -28,19 +31,21 @@ const AppointmentScheduler = ({ onSelect, initialDate, className = '' }) => {
             current = addDays(current, 1);
         }
         return days;
-    }, []);
+    }, [maxDate]);
 
-    // Derived state for slots
-    const slots = useMemo(() => getAvailableSlots(selectedDate), [selectedDate]);
+    // Fetch available slots from shared logic (DI Injection)
+    const availableSlots = useMemo(() => {
+        return appointment.getAvailableSlots(selectedDate);
+    }, [selectedDate, appointment]);
 
     const handleDateSelect = (date) => {
         setSelectedDate(date);
-        setSelectedSlot(null); // Reset selection when date changes
+        setSelectedTime(null); // Reset selection when date changes
     };
 
     const handleSlotClick = (slot) => {
         if (!slot.available) return;
-        setSelectedSlot(slot.value);
+        setSelectedTime(slot.value);
         if (onSelect) {
             onSelect({
                 dia: slot.date, // Firestore Timestamp compatible (Date object)
@@ -128,7 +133,7 @@ const AppointmentScheduler = ({ onSelect, initialDate, className = '' }) => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
                     {slots.length > 0 ? (
                         slots.map((slot, idx) => {
-                            const isSelected = selectedSlot === slot.value;
+                            const isSelected = selectedTime === slot.value;
                             return (
                                 <button
                                     type="button"

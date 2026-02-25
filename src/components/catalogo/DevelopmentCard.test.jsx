@@ -12,12 +12,16 @@ vi.mock('../../utils/amenityIconMapper.jsx', () => ({
     getAmenityIcon: () => () => <span data-testid="amenity-icon" />
 }));
 
-vi.mock('../../services/developmentService', () => ({
-    getDevelopmentStatusTag: vi.fn((dev) => {
-        if (dev.status === 'Preventa') return { label: 'PRE-VENTA', class: 'tag-warning' };
-        return null;
-    }),
-    getDevelopmentCoverImage: vi.fn((dev, fallback) => dev?.imagen || fallback)
+vi.mock('../../hooks/useService', () => ({
+    useService: () => ({
+        development: {
+            getDevelopmentStatusTag: vi.fn((dev) => {
+                if (dev.status === 'Preventa') return { label: 'PRE-VENTA', class: 'tag-warning' };
+                return null;
+            }),
+            getDevelopmentCoverImage: vi.fn((dev, fallback) => dev?.imagen || fallback)
+        }
+    })
 }));
 
 const mockDevelopment = {

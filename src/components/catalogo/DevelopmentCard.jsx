@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import ImageLoader from '../common/ImageLoader';
 import { IMAGES } from '../../config/constants';
 import { getAmenityIcon } from '../../utils/amenityIconMapper.jsx';
-import { getDevelopmentStatusTag, getDevelopmentCoverImage } from '../../services/developmentService';
+import { useService } from '../../hooks/useService';
 import { formatoMoneda, formatoMillones } from '../../utils/formatters';
 import './DevelopmentCard.css';
 
@@ -105,14 +105,16 @@ export default function DevelopmentCard({ development }) {
         return () => checkTimers.forEach(clearTimeout);
     };
 
+    const { development: devService } = useService();
+
     // Determine Image: Use service logic
-    const coverImage = getDevelopmentCoverImage(development, IMAGES.FALLBACK_PROPERTY);
+    const coverImage = devService.getDevelopmentCoverImage(development, IMAGES.FALLBACK_PROPERTY);
 
     // Price Logic: prefer "visiblePrice" (calculated from matches), fallback to "precioDesde"
     const priceToShow = development.visiblePrice || development.precioDesde || 0;
 
     // STATUS TAG (Desacoplado via Service)
-    const statusTag = useMemo(() => getDevelopmentStatusTag(development), [development]);
+    const statusTag = useMemo(() => devService.getDevelopmentStatusTag(development), [development, devService]);
 
     return (
         <article className="development-card">

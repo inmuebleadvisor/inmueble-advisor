@@ -9,6 +9,12 @@ import Portal from '../common/Portal';
 import './MapCatalogView.css';
 
 /**
+ * @file MapCatalogView.jsx
+ * @description Vista geoespacial del catálogo. Renderiza marcadores dinámicos usando Leaflet.
+ * Se apoya en datos procesados por Catalogo.jsx para mantener su responsabilidad enfocada en la UI del mapa.
+ */
+
+/**
  * Helper to create a custom marker icon with price
  */
 const createCustomIcon = (textoPrecio, backgroundColor) => {

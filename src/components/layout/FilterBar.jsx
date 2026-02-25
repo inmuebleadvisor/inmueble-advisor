@@ -5,6 +5,17 @@ import { formatoMoneda } from '../../utils/formatters';
 import { UI_OPCIONES } from '../../config/constants';
 import '../../styles/Catalogo.css';
 
+/**
+ * @file FilterBar.jsx
+ * @description Barra de filtros rápidos que se muestra encima del catálogo.
+ * Permite abrir el modal completo o limpiar los filtros activos rápidamente.
+ *
+ * @param {Object} props
+ * @param {Function} props.setIsFilterOpen - Setter para abrir el modal
+ * @param {boolean} props.hayFiltrosActivos - Indica si hay algún filtro en uso
+ * @param {Function} props.limpiarTodo - Resetea todos los filtros
+ * @param {Object} props.filtros - Estado actual de los filtros
+ */
 export default function FilterBar({
     setIsFilterOpen,
     hayFiltrosActivos,
