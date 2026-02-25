@@ -50,7 +50,6 @@ export default function StickyActionPanel({
                 <button
                     className="btn-cta btn-cta--primary"
                     onClick={onMainAction}
-                    style={{ width: '100%' }}
                 >
                     <Icons.Calendar />
                     <span>Agendar Cita</span>
