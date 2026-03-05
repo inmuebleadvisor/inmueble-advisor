@@ -9,7 +9,7 @@ const Icons = {
 };
 
 export default function MortgageSimulatorModal({ initialPrice = 1000000, onClose }) {
-    const { simulate, isLoading, result, errorMessages } = useMortgageSimulator();
+    const { simulate, simulateAccelerated, isLoading, result, errorMessages } = useMortgageSimulator();
     const lastValidMensualidad = React.useRef(0);
 
     const [price, setPrice] = useState(initialPrice);
@@ -22,6 +22,11 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, onClose
         return saved ? Number(saved) : null;
     });
     const [income, setIncome] = useState(savedIncome || (initialPrice * 0.05));
+
+    // Estados para Pago Adelantado
+    const [extraPayment, setExtraPayment] = useState(0); // Iniciamos en 0 a petición del usuario
+    const [acceleratedResult, setAcceleratedResult] = useState(null);
+    const [showFullTable, setShowFullTable] = useState(false);
 
     // Evita el scroll del body al abrir
     useEffect(() => {
@@ -36,6 +41,15 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, onClose
         simulate(Number(price), Number(downPayment), Number(term));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [price, downPayment, term]);
+
+    // Simulación Secundaria Acelerada
+    useEffect(() => {
+        if (extraPayment > 0) {
+            setAcceleratedResult(simulateAccelerated(Number(price), Number(downPayment), Number(term), Number(extraPayment)));
+        } else {
+            setAcceleratedResult(null);
+        }
+    }, [price, downPayment, term, extraPayment, simulateAccelerated]);
 
     // Helpers de Formato
     const parseNumber = (val) => Number(String(val).replace(/\D/g, ''));
@@ -63,7 +77,8 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, onClose
         promedioMensualidad = lastValidMensualidad.current;
     }
 
-    const minIncome = promedioMensualidad > 0 ? promedioMensualidad / 0.4 : 25000;
+    const minIncomeRaw = promedioMensualidad > 0 ? promedioMensualidad / 0.4 : 25000;
+    const minIncome = Math.ceil(minIncomeRaw / 500) * 500; // Redondeo al alza a 500 para paso limpio
 
     useEffect(() => {
         if (minIncome > 0) {
@@ -86,6 +101,78 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, onClose
     if (leftPos > 100) leftPos = 100;
     if (leftPos < 0) leftPos = 0;
 
+    const renderDonutChart = () => {
+        if (!result) return null;
+
+        const activeCapital = (acceleratedResult && acceleratedResult.capitalTotal > 0) ? acceleratedResult.capitalTotal : totalCapital;
+        const activeInteres = (acceleratedResult && extraPayment > 0) ? acceleratedResult.interesNuevo : totalInteres;
+        const activeSeguros = (acceleratedResult && extraPayment > 0) ? acceleratedResult.segurosNuevo : totalSeguros;
+
+        const total = activeCapital + activeInteres + activeSeguros;
+        if (total === 0) return null;
+
+        const pCapital = total > 0 ? (activeCapital / total) * 100 : 0;
+        const pInteres = total > 0 ? (activeInteres / total) * 100 : 0;
+        const pSeguros = total > 0 ? (activeSeguros / total) * 100 : 0;
+
+        const r = 45;
+        const circ = 2 * Math.PI * r;
+
+        // Offsets
+        const dashCapital = (pCapital / 100) * circ;
+        const dashInteres = (pInteres / 100) * circ;
+        const dashSeguros = (pSeguros / 100) * circ;
+
+        // La suma de los anteriores para ir recorriendo el offset en negativo
+        const offsetInteres = -dashCapital;
+        const offsetSeguros = -(dashCapital + dashInteres);
+
+        return (
+            <div className="mortgage-chart-wrapper" style={{ justifyContent: 'flex-start', margin: '20px 0', backgroundColor: '#ffffff', padding: '16px', borderRadius: '12px', border: '1px solid #bbf7d0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                <div className="mortgage-donut-container">
+                    <svg viewBox="0 0 100 100" className="mortgage-donut">
+                        <circle cx="50" cy="50" r={r} fill="transparent" stroke="#f1f5f9" strokeWidth="10" />
+
+                        {/* Capital - Verde */}
+                        <circle cx="50" cy="50" r={r} fill="transparent" stroke="#10b981" strokeWidth="10"
+                            strokeDasharray={`${dashCapital} ${circ}`} strokeDashoffset={0} />
+
+                        {/* Interés - Naranja */}
+                        <circle cx="50" cy="50" r={r} fill="transparent" stroke="#f59e0b" strokeWidth="10"
+                            strokeDasharray={`${dashInteres} ${circ}`} strokeDashoffset={offsetInteres} />
+
+                        {/* Seguros - Azul/Gris */}
+                        <circle cx="50" cy="50" r={r} fill="transparent" stroke="#94a3b8" strokeWidth="10"
+                            strokeDasharray={`${dashSeguros} ${circ}`} strokeDashoffset={offsetSeguros} />
+                    </svg>
+                </div>
+                <div className="mortgage-chart-legend" style={{ textAlign: 'left' }}>
+                    <div className="chart-legend-item">
+                        <span className="legend-dot" style={{ backgroundColor: '#10b981' }}></span>
+                        <div>
+                            <div className="legend-label">Capital ({isNaN(pCapital) ? 0 : pCapital.toFixed(0)}%)</div>
+                            <div className="legend-value">{formatoMoneda(activeCapital || 0)}</div>
+                        </div>
+                    </div>
+                    <div className="chart-legend-item">
+                        <span className="legend-dot" style={{ backgroundColor: '#f59e0b' }}></span>
+                        <div>
+                            <div className="legend-label">Intereses ({isNaN(pInteres) ? 0 : pInteres.toFixed(0)}%)</div>
+                            <div className="legend-value">{formatoMoneda(activeInteres || 0)}</div>
+                        </div>
+                    </div>
+                    <div className="chart-legend-item" style={{ marginBottom: 0 }}>
+                        <span className="legend-dot" style={{ backgroundColor: '#94a3b8' }}></span>
+                        <div>
+                            <div className="legend-label">Seguros ({isNaN(pSeguros) ? 0 : pSeguros.toFixed(0)}%)</div>
+                            <div className="legend-value">{formatoMoneda(activeSeguros || 0)}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     const renderAmortizationTable = () => {
         if (!result || !result.tablaAmortizacion) return null;
 
@@ -94,6 +181,11 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, onClose
                 <div style={{ marginBottom: '20px' }}>
                     <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', marginBottom: '4px' }}>Tabla de Pagos</h3>
                     <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>El detalle de cada mes de tu crédito.</p>
+                    {extraPayment > 0 && (
+                        <p style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 600, marginTop: '8px', fontStyle: 'italic' }}>
+                            *Pagos en base a crédito base sin considerar abonos extras
+                        </p>
+                    )}
                 </div>
 
                 <div style={{ overflowX: 'auto', margin: '0 -20px', padding: '0 20px' }}>
@@ -110,7 +202,7 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, onClose
                             </tr>
                         </thead>
                         <tbody>
-                            {result.tablaAmortizacion.slice(0, 12).map((row) => (
+                            {(showFullTable ? result.tablaAmortizacion : result.tablaAmortizacion.slice(0, 12)).map((row) => (
                                 <tr key={row.mes}>
                                     <td style={{ fontWeight: 700, color: '#64748b' }}>{row.mes}</td>
                                     <td>{formatoMoneda(row.saldoInicial)}</td>
@@ -126,9 +218,17 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, onClose
                     {result.tablaAmortizacion.length > 12 && (
                         <div style={{ textAlign: 'center', marginTop: '20px', paddingBottom: '10px' }}>
                             <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
-                                Mostrando primeros 12 meses de {result.tablaAmortizacion.length}.
+                                {showFullTable
+                                    ? `Mostrando todos los ${result.tablaAmortizacion.length} meses.`
+                                    : `Mostrando primeros 12 meses de ${result.tablaAmortizacion.length}.`}
                             </span>
-                            <button className="mortgage-text-link" style={{ marginLeft: '8px' }}>Ver todo el detalle</button>
+                            <button
+                                onClick={() => setShowFullTable(!showFullTable)}
+                                className="mortgage-text-link"
+                                style={{ marginLeft: '8px' }}
+                            >
+                                {showFullTable ? 'Ver menos' : 'Ver todo el detalle'}
+                            </button>
                         </div>
                     )}
                 </div>
@@ -183,7 +283,7 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, onClose
                                                 setDownPayment(newPrice * currentDownPaymentRatio);
                                             }}
                                             min={500000}
-                                            max={15000000}
+                                            max={6000000}
                                             step={50000}
                                         />
                                     </div>
@@ -192,13 +292,15 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, onClose
                                 {/* Downpayment Control */}
                                 <div className="mortgage-form__group" style={{ marginBottom: 0 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
-                                        <label className="mortgage-form__label" style={{ marginBottom: 0, fontSize: '0.8rem', display: 'flex', alignItems: 'center' }}>
-                                            ENGANCHE ({((downPayment / price) * 100).toFixed(0)}%)
+                                        <label className="mortgage-form__label" style={{ marginBottom: 0, fontSize: '0.75rem', display: 'flex', alignItems: 'center' }}>
+                                            ENGANCHE + ESCRITURA + APERTURA
                                             <span className="mortgage-tooltip">?
-                                                <span className="mortgage-tooltip__text">Entre más enganche, menos crédito y menos mensualidad</span>
+                                                <span className="mortgage-tooltip__text">Es el total de efectivo que utilizarás para comprar la casa. El mínimo es el 15% del valor de la vivienda</span>
                                             </span>
                                         </label>
-                                        <span style={{ fontWeight: 800, color: '#0f172a', fontSize: '1rem' }}>{formatoMoneda(downPayment)}</span>
+                                        <span style={{ fontWeight: 800, color: '#0f172a', fontSize: '1rem' }}>
+                                            {formatoMoneda(result?.desembolsoInicial || (downPayment + (price * 0.051) + 5800 + 750))}
+                                        </span>
                                     </div>
                                     <div className="mortgage-slider-wrapper" style={{ marginTop: '4px' }}>
                                         <input
@@ -237,7 +339,7 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, onClose
                                             }}
                                             min={minIncome}
                                             max={minIncome * 3}
-                                            step={1000}
+                                            step={500}
                                         />
                                     </div>
                                 </div>
@@ -267,43 +369,68 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, onClose
                         <span className="hero-subtitle">TU PAGO MENSUAL ESTIMADO</span>
                         <div className="hero-payment">{formatoMoneda(promedioMensualidad)}</div>
                         <span className="hero-context">*Incluye capital, intereses y seguros.</span>
-                    </div>
 
-                    {/* Salud Financiera */}
-                    <div className="mortgage-dashboard-card mb-4 mt-4" style={{ textAlign: 'center' }}>
-                        <h3 className="dashboard-card-title" style={{ fontSize: '0.8rem', color: '#64748b', letterSpacing: '0.05em', textAlign: 'center' }}>SALUD FINANCIERA</h3>
-                        <div style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '16px', color: '#0f172a' }}>SEMÁFORO DE SALUD FINANCIERA</div>
-
-                        <div style={{ padding: '0 16px' }}>
-                            <div style={{ height: '10px', width: '100%', background: 'linear-gradient(90deg, #16a34a 0%, #16a34a 25%, #ca8a04 50%, #dc2626 75%, #dc2626 100%)', borderRadius: '5px', position: 'relative', marginBottom: '8px' }}>
-                                <div style={{ position: 'absolute', top: '-5px', left: `${leftPos}%`, width: '20px', height: '20px', backgroundColor: '#fff', border: '4px solid #94a3b8', borderRadius: '50%', boxShadow: '0 2px 4px rgba(0,0,0,0.2)', transition: 'left 0.3s ease-out' }}></div>
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            gap: '32px',
+                            marginTop: '24px',
+                            paddingTop: '20px',
+                            borderTop: '1px solid #f1f5f9',
+                            maxWidth: '450px',
+                            margin: '24px auto 0 auto'
+                        }}>
+                            <div style={{ textAlign: 'center' }}>
+                                <div style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: '4px' }}>Monto del Préstamo</div>
+                                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a' }}>{formatoMoneda(result?.montoCredito || 0)}</div>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>
-                                <span style={{ color: '#16a34a' }}>Cómodo</span>
-                                <span style={{ color: '#ca8a04' }}>Moderado</span>
-                                <span style={{ color: '#dc2626' }}>Riesgo</span>
+                            <div style={{ textAlign: 'center' }}>
+                                <div style={{ fontSize: '0.7rem', color: '#16a34a', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: '4px' }}>Efectivo Necesario</div>
+                                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#16a34a' }}>{formatoMoneda(result?.desembolsoInicial || 0)}</div>
                             </div>
-                        </div>
-
-                        <div style={{ marginTop: '16px', fontSize: '0.85rem', color: '#475569', backgroundColor: '#f1f5f9', padding: '8px 16px', borderRadius: '16px', display: 'inline-block', fontWeight: 500 }}>
-                            Tus pagos representan el <strong>{dti.toFixed(1)}%</strong> de tu ingreso. {dtiMessage}
                         </div>
                     </div>
 
 
                     {/* Pago Adelantado */}
                     <div className="mortgage-dashboard-card mb-4 mt-4" style={{ backgroundColor: '#f0fdf4', borderColor: '#bbf7d0', textAlign: 'center' }}>
-                        <h3 className="dashboard-card-title" style={{ fontSize: '0.8rem', color: '#166534', letterSpacing: '0.05em', borderBottomColor: '#bbf7d0', textAlign: 'center' }}>PAGO ADELANTADO</h3>
-                        <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#14532d', marginBottom: '16px' }}>¡ADIÓS DEUDA ANTES!</div>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#14532d', marginBottom: '16px' }}>¿Quieres pagar menos intereses?</div>
 
-                        <div style={{ marginBottom: '20px', textAlign: 'left' }}>
-                            <label style={{ display: 'block', fontSize: '0.85rem', color: '#166534', fontWeight: 700, marginBottom: '8px' }}>Pago extra anual opcional:</label>
-                            <input type="text" value="$10,000" disabled style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #bbf7d0', backgroundColor: '#ffffff', color: '#0f172a', fontWeight: 700, fontSize: '1rem', outline: 'none' }} />
+                        <div style={{ marginBottom: '24px', textAlign: 'left' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
+                                <label style={{ fontSize: '0.85rem', color: '#166534', fontWeight: 700 }}>Abono mensual extra:</label>
+                                <span style={{ fontWeight: 800, color: '#14532d', fontSize: '1.1rem' }}>{formatoMoneda(extraPayment)}</span>
+                            </div>
+                            <div className="mortgage-slider-wrapper">
+                                <input
+                                    type="range"
+                                    className="mortgage-slider"
+                                    style={{ accentColor: '#16a34a' }}
+                                    value={extraPayment}
+                                    onChange={(e) => setExtraPayment(Number(e.target.value))}
+                                    min={0}
+                                    max={5000}
+                                    step={500}
+                                />
+                            </div>
                         </div>
 
-                        <div style={{ backgroundColor: '#16a34a', color: '#fff', padding: '16px', borderRadius: '8px', fontWeight: 800, fontSize: '1rem', boxShadow: '0 4px 6px rgba(22, 163, 74, 0.2)' }}>
-                            ¡AHORRARÍAS 3 AÑOS Y $150,000 EN INTERESES!
-                        </div>
+                        {renderDonutChart()}
+
+                        {acceleratedResult && acceleratedResult.mesesAhorrados > 0 ? (
+                            <div style={{ backgroundColor: '#16a34a', color: '#fff', padding: '16px', borderRadius: '8px', boxShadow: '0 4px 6px rgba(22, 163, 74, 0.2)' }}>
+                                <div style={{ fontWeight: 800, fontSize: '1.1rem', marginBottom: '4px' }}>
+                                    ¡AHORRARÍAS {(acceleratedResult.mesesAhorrados / 12).toFixed(1)} AÑOS!
+                                </div>
+                                <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>
+                                    Y {formatoMoneda(acceleratedResult.interesAhorrado)} en intereses
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{ backgroundColor: '#dcfce7', color: '#166534', padding: '16px', borderRadius: '8px', border: '1px dashed #bbf7d0', fontSize: '0.9rem', fontWeight: 600 }}>
+                                Mueve el control para ver cuánto ahorrarías depositando un poco extra cada mes.
+                            </div>
+                        )}
                     </div>
 
                     {renderAmortizationTable()}

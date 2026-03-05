@@ -81,10 +81,10 @@ export class HipotecaFuerteStrategy extends BaseMortgageStrategy {
         const n_meses = termYears * 12;
         const DIAS_POR_MES_ESTANDAR = 30.40;
         const DIAS_BASE_ANUAL = 360;
-        const diasMes1 = 31;
+        const diasMes1 = 30.00; // Banorte calcula el primer mes sobre 30 días exactos
 
         const i_mensual_teorica = (i_anual / DIAS_BASE_ANUAL) * DIAS_POR_MES_ESTANDAR;
-        const cuotaBase = round2(montoCredito * (i_mensual_teorica * Math.pow(1 + i_mensual_teorica, n_meses)) / (Math.pow(1 + i_mensual_teorica, n_meses) - 1));
+        const cuotaBaseExacta = montoCredito * (i_mensual_teorica * Math.pow(1 + i_mensual_teorica, n_meses)) / (Math.pow(1 + i_mensual_teorica, n_meses) - 1);
 
         const tabla = [];
         let saldo = round2(montoCredito);
@@ -93,9 +93,9 @@ export class HipotecaFuerteStrategy extends BaseMortgageStrategy {
             const diasMes = mes === 1 ? diasMes1 : DIAS_POR_MES_ESTANDAR;
 
             const interesReal = round2(saldo * (i_anual / DIAS_BASE_ANUAL) * diasMes);
-            const interesTeorico = round2(saldo * (i_anual / DIAS_BASE_ANUAL) * DIAS_POR_MES_ESTANDAR);
+            const interesTeoricoExacto = saldo * (i_anual / DIAS_BASE_ANUAL) * DIAS_POR_MES_ESTANDAR;
 
-            let capital = round2(cuotaBase - interesTeorico);
+            let capital = round2(cuotaBaseExacta - interesTeoricoExacto);
 
             if (capital > saldo || mes === n_meses) {
                 capital = saldo;
@@ -128,5 +128,90 @@ export class HipotecaFuerteStrategy extends BaseMortgageStrategy {
         }
 
         return { error: false, table: tabla };
+    }
+
+    calculateAhorroAbonosCapital(propertyPrice, downPayment, termYears, abonoMensualExtra) {
+        // Obtenemos el escenario base sin tocar el código original
+        const base = this.generateAmortizationTable(propertyPrice, downPayment, termYears);
+        if (base.error) return base;
+
+        const montoCredito = propertyPrice - downPayment;
+        const round2 = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
+
+        const i_anual = this.config.tasaInteresAnual;
+        const n_meses = termYears * 12;
+        const DIAS_POR_MES_ESTANDAR = 30.40;
+        const DIAS_BASE_ANUAL = 360;
+        const diasMes1 = 30.00; // Banorte calcula el primer mes sobre 30 días exactos
+
+        const i_mensual_teorica = (i_anual / DIAS_BASE_ANUAL) * DIAS_POR_MES_ESTANDAR;
+        const cuotaBaseExacta = montoCredito * (i_mensual_teorica * Math.pow(1 + i_mensual_teorica, n_meses)) / (Math.pow(1 + i_mensual_teorica, n_meses) - 1);
+
+        let saldo = round2(montoCredito);
+        let mesesAcelerados = 0;
+        let totalInteresAcelerado = 0;
+        let totalSegurosAcelerado = 0;
+        let totalCapitalAcelerado = 0;
+
+        // Simulamos la tabla con el capital extra forzado
+        for (let mes = 1; mes <= n_meses; mes++) {
+            if (saldo <= 0) break; // Terminado antes de tiempo
+
+            mesesAcelerados++;
+            const diasMes = mes === 1 ? diasMes1 : DIAS_POR_MES_ESTANDAR;
+
+            const interesReal = round2(saldo * (i_anual / DIAS_BASE_ANUAL) * diasMes);
+            const interesTeoricoExacto = saldo * (i_anual / DIAS_BASE_ANUAL) * DIAS_POR_MES_ESTANDAR;
+            totalInteresAcelerado += interesReal;
+
+            // Inyección del abono extra directamente a capital
+            let capital = round2(cuotaBaseExacta - interesTeoricoExacto) + abonoMensualExtra;
+
+            if (capital > saldo) {
+                capital = saldo; // Liquidación total en este mes
+            }
+
+            totalCapitalAcelerado += capital;
+
+            const factorDiasSeguro = mes === 1 ? (diasMes / 30) : 1;
+            const seguroVida = round2(saldo * this.config.factorSeguroVida * factorDiasSeguro);
+            const seguroDanos = round2(propertyPrice * this.config.factorSeguroDanos * factorDiasSeguro);
+            const administracion = this.config.comisionAutorizacionDiferida;
+            const segurosComisiones = round2(seguroVida + seguroDanos + administracion);
+
+            totalSegurosAcelerado += segurosComisiones;
+
+            saldo = round2(saldo - capital);
+            if (saldo < 0) saldo = 0;
+        }
+
+        // Cálculos Base
+        let totalInteresBase = 0;
+        let totalSegurosBase = 0;
+        let totalCapitalBase = 0;
+        base.table.forEach(row => {
+            totalInteresBase += row.interes;
+            totalSegurosBase += row.segurosComisiones;
+            totalCapitalBase += row.capital;
+        });
+
+        const mesesAhorrados = n_meses - mesesAcelerados;
+        const interesAhorrado = totalInteresBase - totalInteresAcelerado;
+        const segurosAhorrados = totalSegurosBase - totalSegurosAcelerado;
+
+        return {
+            error: false,
+            abonoMensualExtra,
+            mesesOriginales: n_meses,
+            mesesNuevos: mesesAcelerados,
+            mesesAhorrados,
+            interesOriginal: round2(totalInteresBase),
+            interesNuevo: round2(totalInteresAcelerado),
+            interesAhorrado: round2(interesAhorrado),
+            segurosOriginal: round2(totalSegurosBase),
+            segurosNuevo: round2(totalSegurosAcelerado),
+            segurosAhorrado: round2(segurosAhorrados),
+            capitalTotal: round2(totalCapitalBase)
+        };
     }
 }
