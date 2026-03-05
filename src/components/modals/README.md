@@ -28,6 +28,11 @@ Permite a los usuarios seleccionar su ciudad o región de interés mediante una 
 ### [FilterModal.jsx](file:///c:/Users/novat/inmueble-advisor/src/components/modals/FilterModal.jsx)
 Provides complex filtering options for the catalog (Price range, Model type, etc.).
 
+### [MortgageSimulatorModal.jsx](file:///c:/Users/novat/inmueble-advisor/src/components/modals/MortgageSimulatorModal.jsx)
+Simulador hipotecario reactivo y de alta fidelidad.
+- **UX:** Layout vertical estilo *Single-Page* (sin pestañas). Cálculos instantáneos al mover sliders de precio y enganche.
+- **Features:** Tarjeta Hero para la mensualidad, semáforo visual de Salud Financiera, gráfico tipo Donut de desglose.
+
 ### [HighlightsModal.jsx](file:///c:/Users/novat/inmueble-advisor/src/components/modals/HighlightsModal.jsx)
 Displays key highlights or features of a development/model.
 

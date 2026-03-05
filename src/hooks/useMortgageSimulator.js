@@ -10,12 +10,7 @@ export const useMortgageSimulator = () => {
     const simulate = useCallback(async (propertyPrice, downPayment, termYears) => {
         setIsLoading(true);
         setErrorMessages([]);
-        setResult(null);
-
         try {
-            // Simulated delay for realism/UX in UI although logic is synchronous
-            await new Promise(resolve => setTimeout(resolve, 800));
-
             const simulation = mortgageSimulator.getSimulation(propertyPrice, downPayment, termYears);
 
             if (simulation.error) {

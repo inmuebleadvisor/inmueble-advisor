@@ -31,14 +31,14 @@ describe('HipotecaFuerteStrategy', () => {
         expect(resultado.messages[0]).toContain("enganche debe ser al menos del 10%");
     });
 
-    it('debería rechazar un enganche mayor a lo permitido (aforo menor a 50%)', () => {
+    it('debería rechazar un enganche mayor a lo permitido (aforo menor a 75%)', () => {
         const precio = 1000000;
-        const enganche = 600000; // 60% de enganche
+        const enganche = 300000; // 30% de enganche, máximo es 25%
         const plazo = 20;
 
         const resultado = strategy.calculateMensualidad(precio, enganche, plazo);
         expect(resultado.error).toBe(true);
-        expect(resultado.messages[0]).toContain("enganche no puede superar el 50%");
+        expect(resultado.messages[0]).toContain("enganche no puede superar el 25%");
     });
 
     it('debería rechazar un plazo de crédito no soportado', () => {

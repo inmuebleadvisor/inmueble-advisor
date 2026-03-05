@@ -5,7 +5,7 @@ export const MORTGAGE_PRODUCTS = {
         nombre: 'Hipoteca Fuerte',
         tasaInteresAnual: 0.1015, // 10.15% anual actual
         aforoMaximo: 0.90, // Mínimo 10% enganche
-        aforoMinimo: 0.50, // Máximo 50% enganche
+        aforoMinimo: 0.75, // Máximo 25% enganche
         plazosAceptados: [5, 10, 15, 20],
         plazoDefault: 20,
         // Gastos Iniciales
