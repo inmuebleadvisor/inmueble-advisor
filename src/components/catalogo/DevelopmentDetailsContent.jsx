@@ -10,6 +10,7 @@ import { useService } from '../../hooks/useService';
 import '../../styles/components/DevelopmentDetails.css';
 // import Modal from '../shared/Modal'; // Removed: LeadCaptureForm is now self-contained
 import LeadCaptureForm from '../leads/LeadCaptureForm';
+import MortgageSimulatorModal from '../modals/MortgageSimulatorModal';
 import { getFunctions, httpsCallable } from 'firebase/functions'; // CAPI: PageView/Contact Intent
 import { useUser } from '../../context/UserContext'; // ✅ Import User Context
 
@@ -31,6 +32,7 @@ export default function DevelopmentDetailsContent({
     const [initialImageIndex, setInitialImageIndex] = useState(0);
     const [activeIndex, setActiveIndex] = useState(0); // Fixed missing state
     const [isLeadFormOpen, setIsLeadFormOpen] = useState(false); // New state for modal
+    const [isSimulatorOpen, setIsSimulatorOpen] = useState(false); // State para Simulador
 
     // 🟢 Didáctico: Gatillo de autenticación para desarrollos
     const handleOpenLeadForm = async () => {
@@ -136,8 +138,19 @@ export default function DevelopmentDetailsContent({
                     <FavoriteBtn modeloId={desarrollo.id} />
                 </div>
 
-                <div className="dev-details__status-badge">
-                    {desarrollo.status || 'En Venta'}
+                <div style={{ position: 'absolute', bottom: '30px', right: '24px', zIndex: 5, display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'flex-end' }}>
+                    <div className="dev-details__status-badge" style={{ position: 'relative', bottom: 'auto', right: 'auto', boxShadow: 'none' }}>
+                        {desarrollo.status || 'En Venta'}
+                    </div>
+                    <button
+                        onClick={() => setIsSimulatorOpen(true)}
+                        style={{ backgroundColor: '#0f172a', color: 'white', padding: '8px 18px', borderRadius: '50px', fontSize: '0.85rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.2)', boxShadow: '0 4px 15px rgba(0,0,0,0.4)', textTransform: 'uppercase', transition: 'transform 0.2s, background-color 0.2s', letterSpacing: '0.5px' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.backgroundColor = '#1e293b'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.backgroundColor = '#0f172a'; }}
+                    >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><line x1="12" y1="14" x2="12" y2="14.01"></line><line x1="8" y1="14" x2="8" y2="14.01"></line><line x1="12" y1="18" x2="12" y2="18.01"></line><line x1="8" y1="18" x2="8" y2="18.01"></line></svg>
+                        Simulador
+                    </button>
                 </div>
 
                 <div className="dev-details__header-gradient"></div>
@@ -209,6 +222,14 @@ export default function DevelopmentDetailsContent({
                         // Optional: trigger a success toast or lightweight feedback if needed, 
                         // though confetti handles the main "reward".
                     }}
+                />
+            )}
+
+            {/* MORTGAGE SIMULATOR MODAL */}
+            {isSimulatorOpen && (
+                <MortgageSimulatorModal
+                    initialPrice={precioDesde ? Number(precioDesde.replace(/[^0-9.-]+/g, "")) : 1000000}
+                    onClose={() => setIsSimulatorOpen(false)}
                 />
             )}
         </div>

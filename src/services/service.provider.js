@@ -33,6 +33,10 @@ import { FinancialService } from './financial.service';
 import { AppointmentService } from './appointment.service';
 import { DevelopmentService } from './development.service';
 
+// Mortgage Simulator
+import { MortgageSimulatorService } from './mortgage/MortgageSimulatorService';
+import { HipotecaFuerteStrategy } from './mortgage/HipotecaFuerteStrategy';
+import { MORTGAGE_PRODUCTS } from '../config/mortgageProducts';
 
 // 1. Instantiate Repositories
 import { ConfigRepository } from '../repositories/config.repository';
@@ -66,6 +70,11 @@ export const financialService = new FinancialService();
 export const appointmentService = new AppointmentService();
 export const developmentService = new DevelopmentService();
 
+// Instantiate Mortgage Simulator with Default Strategy
+export const mortgageSimulatorService = new MortgageSimulatorService(
+    new HipotecaFuerteStrategy(MORTGAGE_PRODUCTS.HIPOTECA_FUERTE_BANORTE)
+);
+
 
 // New Services
 export const adminService = new AdminService(userRepository, leadRepository, catalogRepository);
@@ -94,5 +103,6 @@ export const services = {
     analytics: analyticsService,
     financial: financialService,
     appointment: appointmentService,
-    development: developmentService
+    development: developmentService,
+    mortgageSimulator: mortgageSimulatorService
 };
