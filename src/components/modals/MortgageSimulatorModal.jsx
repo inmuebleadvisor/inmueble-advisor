@@ -15,7 +15,7 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, onClose
     const [downPayment, setDownPayment] = useState(initialPrice * 0.10); // 10% base
     const [term, setTerm] = useState(20); // 20 years base
 
-    const [activeTab, setActiveTab] = useState('simular'); // 'simular' | 'resultado'
+    const [activeTab, setActiveTab] = useState('simular'); // 'simular' | 'resultado' | 'tabla'
 
     // Evita el scroll del body al abrir
     useEffect(() => {
@@ -65,6 +65,14 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, onClose
                         >
                             Resultado
                         </button>
+                        <button
+                            className={`mortgage-tab ${activeTab === 'tabla' ? 'mortgage-tab--active' : ''}`}
+                            onClick={() => result ? setActiveTab('tabla') : null}
+                            disabled={!result}
+                            style={{ opacity: !result ? 0.5 : 1, cursor: !result ? 'not-allowed' : 'pointer' }}
+                        >
+                            Tabla de Pagos
+                        </button>
                     </div>
 
                     {activeTab === 'simular' ? (
@@ -94,7 +102,7 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, onClose
                                         value={downPayment}
                                         onChange={(e) => setDownPayment(e.target.value)}
                                         min="0"
-                                        max={price}
+                                        max={price * 0.50}
                                         required
                                     />
                                 </div>
@@ -132,11 +140,23 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, onClose
                                 </button>
                             </div>
                         </form>
-                    ) : (
+                    ) : activeTab === 'resultado' ? (
                         <div className="mortgage-result">
                             <div className="mortgage-result__hero">
                                 <div className="mortgage-result__hero-label">Mensualidad Estimada</div>
                                 <div className="mortgage-result__payment">{formatoMoneda(result?.mensualidad)}</div>
+                            </div>
+
+                            <div style={{ backgroundColor: '#f0fdf4', padding: '16px', borderRadius: '8px', border: '1px solid #bbf7d0', marginBottom: '24px', textAlign: 'center' }}>
+                                <div style={{ fontSize: '0.875rem', color: '#166534', fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px' }}>
+                                    Desembolso Inicial Requerido
+                                </div>
+                                <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#14532d' }}>
+                                    {formatoMoneda(result?.desembolsoInicial)}
+                                </div>
+                                <div style={{ fontSize: '0.75rem', color: '#15803d', marginTop: '6px' }}>
+                                    Incluye tu enganche ({formatoMoneda(result?.desgloseDesembolso?.enganche)}), gastos notariales ({formatoMoneda(result?.desgloseDesembolso?.gastosNotariales)}), avalúo y comisión de apertura.
+                                </div>
                             </div>
 
                             <div className="mortgage-result__grid">
@@ -162,7 +182,36 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, onClose
                                 * Este cálculo es únicamente una simulación informativa con fines ilustrativos y no representa una oferta o un compromiso formal de crédito por parte del banco o Inmueble Advisor. La tasa y mensualidad final están sujetas a evaluación y políticas de la institución financiera.
                             </p>
                         </div>
-                    )}
+                    ) : activeTab === 'tabla' && result?.tablaAmortizacion ? (
+                        <div className="mortgage-table-container" style={{ marginTop: '0px', overflowX: 'auto' }}>
+                            <table className="mortgage-table" style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'right' }}>
+                                <thead>
+                                    <tr style={{ backgroundColor: '#f1f5f9', color: '#475569', textTransform: 'uppercase', fontSize: '0.75rem', fontWeight: 700 }}>
+                                        <th style={{ padding: '12px 8px', textAlign: 'center' }}>Mes</th>
+                                        <th style={{ padding: '12px 8px' }}>Saldo Inicial</th>
+                                        <th style={{ padding: '12px 8px', color: '#16a34a' }}>A Capital</th>
+                                        <th style={{ padding: '12px 8px', color: '#ea580c' }}>A Interés</th>
+                                        <th style={{ padding: '12px 8px' }}>Seguros/Com.</th>
+                                        <th style={{ padding: '12px 8px', color: '#1e3a8a' }}>Pago Mensual</th>
+                                        <th style={{ padding: '12px 8px' }}>Saldo Final</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {result.tablaAmortizacion.map((row) => (
+                                        <tr key={row.mes} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                            <td style={{ padding: '12px 8px', textAlign: 'center', fontWeight: '600' }}>{row.mes}</td>
+                                            <td style={{ padding: '12px 8px' }}>{formatoMoneda(row.saldoInicial)}</td>
+                                            <td style={{ padding: '12px 8px', color: '#16a34a', fontWeight: '500' }}>+{formatoMoneda(row.capital)}</td>
+                                            <td style={{ padding: '12px 8px', color: '#ea580c' }}>{formatoMoneda(row.interes)}</td>
+                                            <td style={{ padding: '12px 8px' }}>{formatoMoneda(row.segurosComisiones)}</td>
+                                            <td style={{ padding: '12px 8px', color: '#1e3a8a', fontWeight: '700' }}>{formatoMoneda(row.pagoMensual)}</td>
+                                            <td style={{ padding: '12px 8px', color: '#475569' }}>{formatoMoneda(row.saldoFinal)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : null}
                 </div>
             </div>
         </div>
