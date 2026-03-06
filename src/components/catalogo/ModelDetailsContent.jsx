@@ -276,6 +276,7 @@ export default function ModelDetailsContent({
                     propertyData={{
                         title: modelo.nombre_modelo || 'Modelo',
                         subtitle: modelo.tipoVivienda || 'Vivienda',
+                        deliveryStatus: typeof modelo.esPreventa === 'boolean' ? (modelo.esPreventa ? 'Preventa' : 'Entrega Inmediata') : '',
                         image: modelo.imagenes?.[0] || '',
                         bedrooms: modelo.recamaras,
                         bathrooms: modelo.banos,

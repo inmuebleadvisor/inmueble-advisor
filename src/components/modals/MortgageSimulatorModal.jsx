@@ -271,17 +271,15 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, propert
                             )}
                             <div className="mortgage-modal__property-info">
                                 <div className="mortgage-modal__property-header">
+                                    {propertyData.subtitle && (
+                                        <div className="mortgage-modal__property-type-text">
+                                            {propertyData.subtitle}
+                                            {propertyData.deliveryStatus && ` - ${propertyData.deliveryStatus}`}
+                                        </div>
+                                    )}
                                     <h3 className="mortgage-modal__property-title">
                                         {propertyData.title}
-                                        {propertyData.subtitle && propertyData.bedrooms && (
-                                            <span className="mortgage-modal__property-type">{propertyData.subtitle}</span>
-                                        )}
                                     </h3>
-                                    {(!propertyData.bedrooms && propertyData.subtitle) && (
-                                        <p className="mortgage-modal__property-location">
-                                            {propertyData.subtitle}
-                                        </p>
-                                    )}
                                 </div>
 
                                 {propertyData.bedrooms && (

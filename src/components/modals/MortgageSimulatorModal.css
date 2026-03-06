@@ -634,23 +634,11 @@
     gap: 8px;
 }
 
-.mortgage-modal__property-location {
-    font-size: 0.9rem;
+.mortgage-modal__property-type-text {
+    font-size: 0.95rem;
     color: #64748b;
     margin: 0;
-    font-weight: 500;
-}
-
-.mortgage-modal__property-type {
-    font-size: 0.70rem;
-    color: #3b82f6;
-    background-color: #eff6ff;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border: 1px solid #bfdbfe;
+    font-weight: 600;
 }
 
 .mortgage-modal__property-features {
