@@ -13,6 +13,15 @@ vi.mock('../../hooks/useMortgageSimulator', () => ({
     }),
 }));
 
+// Mock del hook de PDF para evitar errores de renderizado en vitest
+vi.mock('../../hooks/useShareSimulatorPDF', () => ({
+    useShareSimulatorPDF: () => ({
+        isGeneratingPDF: false,
+        errorPDF: null,
+        generateAndSharePDF: vi.fn(),
+    }),
+}));
+
 describe('MortgageSimulatorModal', () => {
     it('renders the mortgage simulator modal correctly', () => {
         const handleClose = vi.fn();

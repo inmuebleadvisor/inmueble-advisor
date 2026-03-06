@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useMortgageSimulator } from '../../hooks/useMortgageSimulator';
+import { useShareSimulatorPDF } from '../../hooks/useShareSimulatorPDF';
 import { formatoMoneda } from '../../utils/formatters';
 import './MortgageSimulatorModal.css';
 
@@ -8,7 +9,8 @@ const Icons = {
     Calculator: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><line x1="12" y1="14" x2="12" y2="14.01"></line><line x1="8" y1="14" x2="8" y2="14.01"></line><line x1="12" y1="18" x2="12" y2="18.01"></line><line x1="8" y1="18" x2="8" y2="18.01"></line></svg>,
     Bed: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4v16" /><path d="M2 8h18a2 2 0 0 1 2 2v10" /><path d="M2 17h20" /><path d="M6 8v9" /></svg>,
     Bath: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5" /><line x1="10" y1="5" x2="8" y2="7" /><line x1="2" y1="12" x2="22" y2="12" /><line x1="7" y1="19" x2="7" y2="21" /><line x1="17" y1="19" x2="17" y2="21" /></svg>,
-    Area: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" /></svg>
+    Area: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" /></svg>,
+    Share: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
 };
 
 export default function MortgageSimulatorModal({ initialPrice = 1000000, propertyData = null, onClose }) {
@@ -19,6 +21,9 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, propert
     const [downPayment, setDownPayment] = useState(initialPrice * 0.10); // 10% base
     const [term, setTerm] = useState(20); // 20 years base
     const [hasModifiedPrice, setHasModifiedPrice] = useState(false);
+
+    // Hook to handle PDF Sharing 
+    const { generateAndSharePDF, isGeneratingPDF } = useShareSimulatorPDF();
 
     // Inicializar income con el valor guardado si existe, de lo contrario un valor temporal (se ajustará con minIncome)
     const [savedIncome, setSavedIncome] = useState(() => {
@@ -240,6 +245,21 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, propert
         );
     };
 
+    const handleSharePDF = async () => {
+        const payload = {
+            propertyData,
+            hasModifiedPrice,
+            price,
+            term,
+            downPayment,
+            result,
+            promedioMensualidad,
+            extraPayment,
+            acceleratedResult
+        };
+
+        await generateAndSharePDF(payload);
+    };
 
     return (
         <div className="mortgage-modal-overlay" onClick={onClose}>
@@ -257,9 +277,30 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, propert
                             </div>
                         </div>
                     </div>
-                    <button onClick={onClose} className="mortgage-modal__close-btn" aria-label="Cerrar">
-                        <Icons.Close />
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                            onClick={handleSharePDF}
+                            className={`mortgage-modal__share-btn ${isGeneratingPDF ? 'is-loading' : ''}`}
+                            aria-label="Compartir en PDF"
+                            title="Descargar PDF"
+                            disabled={isGeneratingPDF}
+                        >
+                            {isGeneratingPDF ? (
+                                <>
+                                    <div className="mortgage-modal__spinner"></div>
+                                    <span className="mortgage-modal__btn-text">Generando PDF...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Icons.Share />
+                                    <span className="mortgage-modal__btn-text">Compartir PDF</span>
+                                </>
+                            )}
+                        </button>
+                        <button onClick={onClose} className="mortgage-modal__close-btn" aria-label="Cerrar">
+                            <Icons.Close />
+                        </button>
+                    </div>
                 </header>
 
                 <div className="mortgage-modal__body">

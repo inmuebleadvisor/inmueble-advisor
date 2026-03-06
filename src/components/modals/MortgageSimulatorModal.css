@@ -106,6 +106,36 @@
     color: #0f172a;
 }
 
+.mortgage-modal__share-btn:hover:not(:disabled) {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    border-color: #cbd5e1;
+}
+
+.mortgage-modal__share-btn:disabled {
+    cursor: wait;
+    opacity: 0.8;
+}
+
+.mortgage-modal__spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e2e8f0;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: simSpinner 0.8s linear infinite;
+}
+
+@keyframes simSpinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.mortgage-modal__btn-text {
+    display: none;
+}
+
 .mortgage-modal__body {
     padding: 24px;
     overflow-y: auto;
