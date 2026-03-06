@@ -387,16 +387,17 @@
     font-weight: 500;
 }
 
-/* --- Dashboard Grid --- */
-.mortgage-result-dashboard {
+/* --- Dashboard Controls Grid --- */
+.mortgage-controls-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 20px;
 }
 
 @media (min-width: 640px) {
-    .mortgage-result-dashboard {
+    .mortgage-controls-grid {
         grid-template-columns: 1fr 1fr;
+        gap: 24px 40px;
     }
 }
 
