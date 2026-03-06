@@ -18,6 +18,7 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, propert
     const [price, setPrice] = useState(initialPrice);
     const [downPayment, setDownPayment] = useState(initialPrice * 0.10); // 10% base
     const [term, setTerm] = useState(20); // 20 years base
+    const [hasModifiedPrice, setHasModifiedPrice] = useState(false);
 
     // Inicializar income con el valor guardado si existe, de lo contrario un valor temporal (se ajustará con minIncome)
     const [savedIncome, setSavedIncome] = useState(() => {
@@ -262,8 +263,8 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, propert
                 </header>
 
                 <div className="mortgage-modal__body">
-                    {/* Property Header (Inyectado si existe propertyData) */}
-                    {propertyData && (
+                    {/* Property Header (Inyectado si existe propertyData y no se ha modificado el precio original) */}
+                    {propertyData && !hasModifiedPrice && (
                         <div className="mortgage-modal__property-card">
                             {propertyData.image && (
                                 <img src={propertyData.image} alt={propertyData.title} className="mortgage-modal__property-thumb" />
@@ -324,6 +325,7 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, propert
 
                                                 setPrice(newPrice);
                                                 setDownPayment(newPrice * currentDownPaymentRatio);
+                                                setHasModifiedPrice(true);
                                             }}
                                             min={500000}
                                             max={6000000}
