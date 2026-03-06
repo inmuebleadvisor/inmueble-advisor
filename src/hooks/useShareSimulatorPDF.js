@@ -29,7 +29,7 @@ export const useShareSimulatorPDF = () => {
 
             // 1. Lazy load dependencias pesadas
             const { jsPDF } = await import('jspdf');
-            await import('jspdf-autotable');
+            const { default: autoTable } = await import('jspdf-autotable');
 
             // 2. Init Default Document A4 Vertical
             const doc = new jsPDF({
@@ -83,7 +83,7 @@ export const useShareSimulatorPDF = () => {
             // Summary Table Top (High-level data)
             const engancheEstimado = result?.desembolsoInicial || (downPayment + (price * 0.051) + 5800 + 750);
 
-            doc.autoTable({
+            autoTable(doc, {
                 startY: currentY,
                 theme: 'grid',
                 headStyles: { fillColor: [59, 130, 246], textColor: 255 }, // blue-500
@@ -117,7 +117,7 @@ export const useShareSimulatorPDF = () => {
 
                 const agnosAhorrados = (acceleratedResult.mesesAhorrados / 12).toFixed(1);
 
-                doc.autoTable({
+                autoTable(doc, {
                     startY: currentY,
                     theme: 'plain',
                     styles: { cellPadding: 2, fontSize: 10, textColor: [34, 197, 94] }, // green-500
@@ -153,7 +153,7 @@ export const useShareSimulatorPDF = () => {
                     formatoMoneda(row.saldoFinal)
                 ]);
 
-                doc.autoTable({
+                autoTable(doc, {
                     startY: currentY,
                     head: [['Mes', 'Saldo Inicial', 'Pago Mensual', 'Interés', 'Capital', 'Saldo Final']],
                     body: tableBody,
@@ -203,7 +203,7 @@ export const useShareSimulatorPDF = () => {
             console.error('Error generando PDF:', error);
             if (error.name !== 'AbortError') {
                 setErrorPDF('Hubo un problema procesando el archivo PDF.');
-                alert('No pudimos generar el PDF. Por favor, revisa tu conexión e intenta de nuevo.');
+                alert('No pudimos generar el PDF.\n\nDetalle técnico: ' + error.message);
             }
         } finally {
             setIsGeneratingPDF(false);
