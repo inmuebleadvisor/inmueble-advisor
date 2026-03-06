@@ -1,4 +1,5 @@
 import { BaseMortgageStrategy } from './BaseMortgageStrategy';
+import { round2 } from '../../utils/math';
 
 export class HipotecaFuerteStrategy extends BaseMortgageStrategy {
     constructor(config) {
