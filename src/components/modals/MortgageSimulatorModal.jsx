@@ -265,29 +265,36 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, propert
                     {/* Property Header (Inyectado si existe propertyData) */}
                     {propertyData && (
                         <div className="mortgage-modal__property-card">
-                            {propertyData.image && (
-                                <img src={propertyData.image} alt={propertyData.title} className="mortgage-modal__property-thumb" />
-                            )}
-                            <div className="mortgage-modal__property-info">
+                            <div className="mortgage-modal__property-header">
                                 <h3 className="mortgage-modal__property-title">{propertyData.title}</h3>
                                 {propertyData.subtitle && <p className="mortgage-modal__property-subtitle">{propertyData.subtitle}</p>}
+                            </div>
 
-                                <div className="mortgage-modal__property-features">
-                                    {propertyData.bedrooms && (
-                                        <span className="mortgage-modal__property-feat">
-                                            <Icons.Bed /> {propertyData.bedrooms} Rec
-                                        </span>
+                            <div className="mortgage-modal__property-body">
+                                {propertyData.image && (
+                                    <img src={propertyData.image} alt={propertyData.title} className="mortgage-modal__property-thumb" />
+                                )}
+                                <div className="mortgage-modal__property-info">
+                                    {propertyData.subtitle && propertyData.bedrooms && (
+                                        <span className="mortgage-modal__property-type">{propertyData.subtitle}</span>
                                     )}
-                                    {propertyData.bathrooms && (
-                                        <span className="mortgage-modal__property-feat">
-                                            <Icons.Bath /> {propertyData.bathrooms} Baños
-                                        </span>
-                                    )}
-                                    {propertyData.area && (
-                                        <span className="mortgage-modal__property-feat">
-                                            <Icons.Area /> {propertyData.area} m²
-                                        </span>
-                                    )}
+                                    <div className="mortgage-modal__property-features">
+                                        {propertyData.bedrooms && (
+                                            <span className="mortgage-modal__property-feat">
+                                                <Icons.Bed /> {propertyData.bedrooms} Habitaciones
+                                            </span>
+                                        )}
+                                        {propertyData.bathrooms && (
+                                            <span className="mortgage-modal__property-feat">
+                                                <Icons.Bath /> {propertyData.bathrooms} Baños
+                                            </span>
+                                        )}
+                                        {propertyData.area && (
+                                            <span className="mortgage-modal__property-feat">
+                                                <Icons.Area /> {propertyData.area} m² construidos
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
