@@ -275,6 +275,7 @@ export default function ModelDetailsContent({
                     initialPrice={modelo.precioNumerico}
                     propertyData={{
                         title: modelo.nombre_modelo || 'Modelo',
+                        developmentName: desarrollo?.nombre || '',
                         subtitle: modelo.tipoVivienda || 'Vivienda',
                         deliveryStatus: typeof modelo.esPreventa === 'boolean' ? (modelo.esPreventa ? 'Preventa' : 'Entrega Inmediata') : '',
                         image: modelo.imagenes?.[0] || '',

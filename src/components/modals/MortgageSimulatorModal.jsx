@@ -279,6 +279,11 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, propert
                                     )}
                                     <h3 className="mortgage-modal__property-title">
                                         {propertyData.title}
+                                        {propertyData.developmentName && (
+                                            <span style={{ fontWeight: 600, color: '#64748b', fontSize: '0.95em' }}>
+                                                en {propertyData.developmentName}
+                                            </span>
+                                        )}
                                     </h3>
                                 </div>
 
