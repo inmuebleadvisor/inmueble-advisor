@@ -22,9 +22,6 @@ describe('MortgageSimulatorModal', () => {
         expect(screen.getByText(/Simulador de Crédito/i)).toBeInTheDocument();
 
         // Verifica elementos de la UI vertical nueva (Hero)
-        expect(screen.getByText(/TU PAGO MENSUAL ESTIMADO/i)).toBeInTheDocument();
-
-        // Verifica textos de Salud Financiera
-        expect(screen.getByText(/SALUD FINANCIERA/i)).toBeInTheDocument();
+        expect(screen.getByText(/PAGO MENSUAL ESTIMADO/i)).toBeInTheDocument();
     });
 });

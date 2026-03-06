@@ -585,3 +585,84 @@
 .mortgage-text-link:hover {
     color: #2563eb;
 }
+
+/* --- Property Header (Dynamic Injection) --- */
+.mortgage-modal__property-card {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.mortgage-modal__property-thumb {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.mortgage-modal__property-info {
+    flex: 1;
+}
+
+.mortgage-modal__property-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 4px 0;
+    line-height: 1.2;
+}
+
+.mortgage-modal__property-subtitle {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin: 0 0 8px 0;
+    font-weight: 500;
+}
+
+.mortgage-modal__property-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.mortgage-modal__property-feat {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: #475569;
+    font-weight: 600;
+    background-color: #e2e8f0;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.mortgage-modal__property-feat svg {
+    color: #3b82f6;
+}
+
+@media (max-width: 480px) {
+    .mortgage-modal__property-card {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+        padding: 20px 16px;
+    }
+
+    .mortgage-modal__property-thumb {
+        width: 100%;
+        max-width: 200px;
+        height: 120px;
+        margin-bottom: 8px;
+    }
+
+    .mortgage-modal__property-features {
+        justify-content: center;
+    }
+}

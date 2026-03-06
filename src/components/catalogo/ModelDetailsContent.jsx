@@ -273,6 +273,14 @@ export default function ModelDetailsContent({
             {isSimulatorOpen && (
                 <MortgageSimulatorModal
                     initialPrice={modelo.precioNumerico}
+                    propertyData={{
+                        title: modelo.nombre_modelo || 'Modelo',
+                        subtitle: modelo.tipoVivienda || 'Vivienda',
+                        image: modelo.imagenes?.[0] || '',
+                        bedrooms: modelo.recamaras,
+                        bathrooms: modelo.banos,
+                        area: modelo.m2 || modelo.superficieConstruccion || modelo.superficieTotal
+                    }}
                     onClose={() => setIsSimulatorOpen(false)}
                 />
             )}

@@ -5,10 +5,13 @@ import './MortgageSimulatorModal.css';
 
 const Icons = {
     Close: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
-    Calculator: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><line x1="12" y1="14" x2="12" y2="14.01"></line><line x1="8" y1="14" x2="8" y2="14.01"></line><line x1="12" y1="18" x2="12" y2="18.01"></line><line x1="8" y1="18" x2="8" y2="18.01"></line></svg>
+    Calculator: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><line x1="12" y1="14" x2="12" y2="14.01"></line><line x1="8" y1="14" x2="8" y2="14.01"></line><line x1="12" y1="18" x2="12" y2="18.01"></line><line x1="8" y1="18" x2="8" y2="18.01"></line></svg>,
+    Bed: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4v16" /><path d="M2 8h18a2 2 0 0 1 2 2v10" /><path d="M2 17h20" /><path d="M6 8v9" /></svg>,
+    Bath: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5" /><line x1="10" y1="5" x2="8" y2="7" /><line x1="2" y1="12" x2="22" y2="12" /><line x1="7" y1="19" x2="7" y2="21" /><line x1="17" y1="19" x2="17" y2="21" /></svg>,
+    Area: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" /></svg>
 };
 
-export default function MortgageSimulatorModal({ initialPrice = 1000000, onClose }) {
+export default function MortgageSimulatorModal({ initialPrice = 1000000, propertyData = null, onClose }) {
     const { simulate, simulateAccelerated, isLoading, result, errorMessages } = useMortgageSimulator();
     const lastValidMensualidad = React.useRef(0);
 
@@ -259,6 +262,37 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, onClose
                 </header>
 
                 <div className="mortgage-modal__body">
+                    {/* Property Header (Inyectado si existe propertyData) */}
+                    {propertyData && (
+                        <div className="mortgage-modal__property-card">
+                            {propertyData.image && (
+                                <img src={propertyData.image} alt={propertyData.title} className="mortgage-modal__property-thumb" />
+                            )}
+                            <div className="mortgage-modal__property-info">
+                                <h3 className="mortgage-modal__property-title">{propertyData.title}</h3>
+                                {propertyData.subtitle && <p className="mortgage-modal__property-subtitle">{propertyData.subtitle}</p>}
+
+                                <div className="mortgage-modal__property-features">
+                                    {propertyData.bedrooms && (
+                                        <span className="mortgage-modal__property-feat">
+                                            <Icons.Bed /> {propertyData.bedrooms} Rec
+                                        </span>
+                                    )}
+                                    {propertyData.bathrooms && (
+                                        <span className="mortgage-modal__property-feat">
+                                            <Icons.Bath /> {propertyData.bathrooms} Baños
+                                        </span>
+                                    )}
+                                    {propertyData.area && (
+                                        <span className="mortgage-modal__property-feat">
+                                            <Icons.Area /> {propertyData.area} m²
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Tus Controles y Gráfico */}
                     <div className="mortgage-dashboard-card mb-5 mt-4">
 

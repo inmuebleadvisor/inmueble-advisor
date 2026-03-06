@@ -229,6 +229,11 @@ export default function DevelopmentDetailsContent({
             {isSimulatorOpen && (
                 <MortgageSimulatorModal
                     initialPrice={precioDesde ? Number(precioDesde.replace(/[^0-9.-]+/g, "")) : 1000000}
+                    propertyData={{
+                        title: desarrollo.nombre || 'Desarrollo',
+                        subtitle: desarrollo.ciudad || '',
+                        image: desarrollo.imagenPrincipal || desarrollo.imagenes?.[0] || ''
+                    }}
                     onClose={() => setIsSimulatorOpen(false)}
                 />
             )}
