@@ -265,37 +265,39 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, propert
                     {/* Property Header (Inyectado si existe propertyData) */}
                     {propertyData && (
                         <div className="mortgage-modal__property-card">
-                            <div className="mortgage-modal__property-header">
-                                <h3 className="mortgage-modal__property-title">{propertyData.title}</h3>
-                                {propertyData.subtitle && <p className="mortgage-modal__property-subtitle">{propertyData.subtitle}</p>}
-                            </div>
-
-                            <div className="mortgage-modal__property-body">
-                                {propertyData.image && (
-                                    <img src={propertyData.image} alt={propertyData.title} className="mortgage-modal__property-thumb" />
-                                )}
-                                <div className="mortgage-modal__property-info">
-                                    {propertyData.subtitle && propertyData.bedrooms && (
-                                        <span className="mortgage-modal__property-type">{propertyData.subtitle}</span>
+                            {propertyData.image && (
+                                <img src={propertyData.image} alt={propertyData.title} className="mortgage-modal__property-thumb" />
+                            )}
+                            <div className="mortgage-modal__property-info">
+                                <div className="mortgage-modal__property-header">
+                                    <h3 className="mortgage-modal__property-title">
+                                        {propertyData.title}
+                                        {propertyData.subtitle && propertyData.bedrooms && (
+                                            <span className="mortgage-modal__property-type">{propertyData.subtitle}</span>
+                                        )}
+                                    </h3>
+                                    {(!propertyData.bedrooms && propertyData.subtitle) && (
+                                        <p className="mortgage-modal__property-location">
+                                            {propertyData.subtitle}
+                                        </p>
                                     )}
+                                </div>
+
+                                {propertyData.bedrooms && (
                                     <div className="mortgage-modal__property-features">
-                                        {propertyData.bedrooms && (
-                                            <span className="mortgage-modal__property-feat">
-                                                <Icons.Bed /> {propertyData.bedrooms} Habitaciones
-                                            </span>
-                                        )}
-                                        {propertyData.bathrooms && (
-                                            <span className="mortgage-modal__property-feat">
-                                                <Icons.Bath /> {propertyData.bathrooms} Baños
-                                            </span>
-                                        )}
+                                        <span className="mortgage-modal__property-feat">
+                                            <Icons.Bed /> <span><strong>{propertyData.bedrooms}</strong> Hab.</span>
+                                        </span>
+                                        <span className="mortgage-modal__property-feat">
+                                            <Icons.Bath /> <span><strong>{propertyData.bathrooms}</strong> Baños</span>
+                                        </span>
                                         {propertyData.area && (
                                             <span className="mortgage-modal__property-feat">
-                                                <Icons.Area /> {propertyData.area} m² construidos
+                                                <Icons.Area /> <span><strong>{propertyData.area}</strong> m²</span>
                                             </span>
                                         )}
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </div>
                     )}
