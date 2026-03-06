@@ -132,7 +132,7 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, propert
         const offsetSeguros = -(dashCapital + dashInteres);
 
         return (
-            <div className="mortgage-chart-wrapper" style={{ justifyContent: 'flex-start', margin: '20px 0', backgroundColor: '#ffffff', padding: '16px', borderRadius: '12px', border: '1px solid #bbf7d0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <div className="mortgage-chart-wrapper" style={{ justifyContent: 'flex-start', margin: '0', backgroundColor: '#ffffff', padding: '16px', borderRadius: '12px', border: '1px solid #bbf7d0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                 <div className="mortgage-donut-container">
                     <svg viewBox="0 0 100 100" className="mortgage-donut">
                         <circle cx="50" cy="50" r={r} fill="transparent" stroke="#f1f5f9" strokeWidth="10" />
@@ -459,22 +459,24 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, propert
                             </div>
                         </div>
 
-                        {renderDonutChart()}
+                        <div className="mortgage-savings-grid" style={{ marginTop: '24px' }}>
+                            {renderDonutChart()}
 
-                        {acceleratedResult && acceleratedResult.mesesAhorrados > 0 ? (
-                            <div style={{ backgroundColor: '#16a34a', color: '#fff', padding: '16px', borderRadius: '8px', boxShadow: '0 4px 6px rgba(22, 163, 74, 0.2)' }}>
-                                <div style={{ fontWeight: 800, fontSize: '1.1rem', marginBottom: '4px' }}>
-                                    ¡AHORRARÍAS {(acceleratedResult.mesesAhorrados / 12).toFixed(1)} AÑOS!
+                            {acceleratedResult && acceleratedResult.mesesAhorrados > 0 ? (
+                                <div className="mortgage-savings-box mortgage-savings-box--success">
+                                    <div style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: '4px' }}>
+                                        ¡AHORRARÍAS {(acceleratedResult.mesesAhorrados / 12).toFixed(1)} AÑOS!
+                                    </div>
+                                    <div style={{ fontSize: '1rem', fontWeight: 600 }}>
+                                        Y {formatoMoneda(acceleratedResult.interesAhorrado)} en intereses
+                                    </div>
                                 </div>
-                                <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>
-                                    Y {formatoMoneda(acceleratedResult.interesAhorrado)} en intereses
+                            ) : (
+                                <div className="mortgage-savings-box mortgage-savings-box--empty">
+                                    Mueve el control para ver cuánto ahorrarías depositando un poco extra cada mes.
                                 </div>
-                            </div>
-                        ) : (
-                            <div style={{ backgroundColor: '#dcfce7', color: '#166534', padding: '16px', borderRadius: '8px', border: '1px dashed #bbf7d0', fontSize: '0.9rem', fontWeight: 600 }}>
-                                Mueve el control para ver cuánto ahorrarías depositando un poco extra cada mes.
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
 
                     {renderAmortizationTable()}
