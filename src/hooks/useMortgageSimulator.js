@@ -26,8 +26,18 @@ export const useMortgageSimulator = () => {
         }
     }, [mortgageSimulator]);
 
+    const simulateAccelerated = useCallback((propertyPrice, downPayment, termYears, extraPayment) => {
+        try {
+            return mortgageSimulator.getAcceleratedSimulation(propertyPrice, downPayment, termYears, extraPayment);
+        } catch (err) {
+            console.error("Simulation Accelerated error: ", err);
+            return { error: true, messages: ["Error interno"] };
+        }
+    }, [mortgageSimulator]);
+
     return {
         simulate,
+        simulateAccelerated,
         isLoading,
         result,
         errorMessages

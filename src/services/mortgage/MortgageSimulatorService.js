@@ -27,4 +27,8 @@ export class MortgageSimulatorService {
     getAmortizationTable(propertyPrice, downPayment, termYears) {
         return this.strategy.generateAmortizationTable(propertyPrice, downPayment, termYears);
     }
+
+    getAcceleratedSimulation(propertyPrice, downPayment, termYears, abonoMensualExtra) {
+        return this.strategy.calculateAhorroAbonosCapital(propertyPrice, downPayment, termYears, abonoMensualExtra);
+    }
 }
