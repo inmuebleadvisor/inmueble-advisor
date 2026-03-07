@@ -23,4 +23,21 @@ export default defineConfig({
     include: ['src/**/test_*.?(c|m)[jt]s?(x)', 'src/**/*.{test,spec}.?(c|m)[jt]s?(x)'],
   },
 
+  server: {
+    proxy: {
+      // Proxy para imágenes de Firebase Storage en desarrollo local
+      // Elimina el bloqueo CORS ya que la petición viaja Vite (Node) → Firebase, no browser → Firebase
+      '/img-proxy': {
+        target: 'https://storage.googleapis.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/img-proxy\/storage\.googleapis\.com/, ''),
+      },
+      '/img-proxy-firebase': {
+        target: 'https://firebasestorage.googleapis.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/img-proxy-firebase\/firebasestorage\.googleapis\.com/, ''),
+      },
+    }
+  },
+
 })

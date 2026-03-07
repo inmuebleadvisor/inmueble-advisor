@@ -1,0 +1,19 @@
+[
+    {
+        "origin": [
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "https://inmuebleadvisor.com",
+            "https://www.inmuebleadvisor.com"
+        ],
+        "method": [
+            "GET",
+            "HEAD"
+        ],
+        "responseHeader": [
+            "Content-Type",
+            "Access-Control-Allow-Origin"
+        ],
+        "maxAgeSeconds": 3600
+    }
+]

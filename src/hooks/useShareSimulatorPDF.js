@@ -1,24 +1,63 @@
 import { useState } from 'react';
 import { formatoMoneda } from '../utils/formatters';
+import logoInmuebleAdvisor from '../assets/logo-inmueble-advisor.png';
 
-// Helper local para convertir imágenes URL (Firebase, Web) en Base64 compatible con jsPDF
-const getBase64ImageFromUrl = async (imageUrl) => {
-    try {
-        const res = await fetch(imageUrl, {
-            mode: 'cors',
-            cache: 'no-cache'
-        });
-        const blob = await res.blob();
-        return await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
-    } catch (err) {
-        console.warn("Could not load image for PDF (CORS/Network Error)", err);
-        return null;
+// En desarrollo (localhost), redirige las imágenes de Firebase Storage a través del proxy de Vite
+// para evitar bloqueos CORS. En producción, usa la URL directa (CORS del bucket ya configurado).
+const resolveImageUrl = (url) => {
+    if (!url) return null;
+    const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!isDev) return url;
+
+    // storage.googleapis.com → /img-proxy/...
+    if (url.includes('storage.googleapis.com')) {
+        return url.replace('https://storage.googleapis.com', '/img-proxy/storage.googleapis.com');
     }
+    // firebasestorage.googleapis.com → /img-proxy-firebase/...
+    if (url.includes('firebasestorage.googleapis.com')) {
+        return url.replace('https://firebasestorage.googleapis.com', '/img-proxy-firebase/firebasestorage.googleapis.com');
+    }
+    return url;
+};
+
+// Helper local para convertir imágenes URL en Base64 compatible con jsPDF
+// Se utiliza Canvas para sortear limitaciones de Fetch y asegurar compatibilidad de formato.
+const getBase64ImageFromUrl = (imageUrl) => {
+    // Timeout de 5 segundos para no bloquear el PDF
+    const timeout = new Promise((resolve) => setTimeout(() => {
+        console.warn('[PDF] ⏱ Timeout cargando imagen:', imageUrl?.substring(0, 80));
+        resolve(null);
+    }, 5000));
+
+    const loadImage = new Promise((resolve) => {
+        const img = new Image();
+        img.setAttribute('crossOrigin', 'anonymous');
+
+        img.onload = () => {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                const dataURL = canvas.toDataURL('image/png');
+                console.log('[PDF] ✅ Imagen OK:', imageUrl?.substring(0, 80));
+                resolve(dataURL);
+            } catch (securityErr) {
+                console.warn('[PDF] ❌ Canvas tainted (CORS pendiente):', imageUrl?.substring(0, 80), securityErr.message);
+                resolve(null);
+            }
+        };
+
+        img.onerror = (err) => {
+            console.warn('[PDF] ❌ Error cargando imagen:', imageUrl?.substring(0, 80), err);
+            resolve(null);
+        };
+
+        img.src = imageUrl;
+    });
+
+    return Promise.race([loadImage, timeout]);
 };
 
 /**
@@ -58,14 +97,27 @@ export const useShareSimulatorPDF = () => {
             });
 
             const marginX = 14;
-            let currentY = 20;
+            const logoWidth = 45; // mm
+            const logoHeight = 15; // mm
+            const pageWidth = 210;
+            let currentY = 26;
 
             // Brand top decorator bar - Premium touch
             doc.setFillColor(30, 41, 59); // slate-800
             doc.rect(0, 0, 210, 8, 'F');
 
+            // --- 0. Logotipo Institucional (Esquina Superior Derecha) ---
+            const LOGO_IA_URL = "https://firebasestorage.googleapis.com/v0/b/inmueble-advisor-app.firebasestorage.app/o/Institucional%2FLogo%20Inmueble%20Advisor%20PNG.png?alt=media&token=d123edd6-31b1-4087-bcb3-afddb58b4d0f";
+
+            try {
+                // El logo es un import local (no tiene CORS). Se usa directamente.
+                doc.addImage(logoInmuebleAdvisor, 'PNG', pageWidth - marginX - logoWidth, 11, logoWidth, logoHeight);
+            } catch (err) {
+                console.warn("Could not add logo to PDF", err);
+            }
+
             // Header Info
-            doc.setFontSize(24);
+            doc.setFontSize(26);
             doc.setTextColor(15, 23, 42); // slate-900
             doc.setFont('helvetica', 'bold');
             doc.text('Cotización Hipotecaria', marginX, currentY);
@@ -75,49 +127,66 @@ export const useShareSimulatorPDF = () => {
             doc.setTextColor(100, 116, 139); // slate-500
             doc.setFont('helvetica', 'normal');
             doc.text('Generado por Inmueble Advisor (Métricas de Referencia)', marginX, currentY);
-            currentY += 12;
+            currentY += 15;
 
             // --- Tarjeta de Propiedad ---
             if (propertyData && !hasModifiedPrice) {
-                // Dibujar "Card" redondeada
-                doc.setFillColor(248, 250, 252); // slate-50
-                doc.setDrawColor(226, 232, 240); // slate-200
-                doc.roundedRect(marginX, currentY, 182, 35, 3, 3, 'FD');
+                // Aumentamos la card para la fila extra de características
+                doc.setFillColor(248, 250, 252);
+                doc.setDrawColor(226, 232, 240);
+                doc.roundedRect(marginX, currentY, 182, 50, 3, 3, 'FD');
 
-                let textStartX = marginX + 6;
+                let textStartX = marginX + 8;
 
                 if (propertyData.image) {
-                    const base64Img = await getBase64ImageFromUrl(propertyData.image);
+                    const resolvedUrl = resolveImageUrl(propertyData.image);
+                    const base64Img = await getBase64ImageFromUrl(resolvedUrl);
                     if (base64Img) {
                         try {
-                            doc.addImage(base64Img, 'JPEG', marginX + 5, currentY + 5, 35, 25);
-                            textStartX = marginX + 45;
+                            doc.addImage(base64Img, 'JPEG', marginX + 6, currentY + 6, 44, 38);
+                            textStartX = marginX + 56;
                         } catch (e) {
                             console.warn("Fallo incrustando imagen PDF", e);
                         }
                     }
                 }
 
-                doc.setFontSize(13);
+                doc.setFontSize(15);
                 doc.setTextColor(15, 23, 42);
                 doc.setFont('helvetica', 'bold');
-                doc.text(propertyData.title || '', textStartX, currentY + 12);
+                doc.text(propertyData.title || '', textStartX, currentY + 13);
 
                 if (propertyData.developmentName) {
-                    doc.setFontSize(10);
+                    doc.setFontSize(11);
                     doc.setTextColor(71, 85, 105);
                     doc.setFont('helvetica', 'normal');
-                    doc.text(`Desarrollo: ${propertyData.developmentName}`, textStartX, currentY + 19);
+                    doc.text(`Desarrollo: ${propertyData.developmentName}`, textStartX, currentY + 21);
                 }
 
                 if (propertyData.subtitle) {
-                    doc.setFontSize(9);
+                    doc.setFontSize(10);
                     doc.setTextColor(100, 116, 139);
                     const subtypeText = propertyData.subtitle + (propertyData.deliveryStatus ? ` - ${propertyData.deliveryStatus}` : '');
-                    doc.text(subtypeText, textStartX, currentY + 25);
+                    doc.text(subtypeText, textStartX, currentY + 29);
                 }
 
-                currentY += 42;
+                // --- Fila de características: recámaras, baños, m² ---
+                const features = [];
+                if (propertyData.bedrooms) features.push(`${propertyData.bedrooms} Rec.`);
+                if (propertyData.bathrooms) features.push(`${propertyData.bathrooms} Baños`);
+                if (propertyData.area) features.push(`${propertyData.area} m²`);
+
+                if (features.length > 0) {
+                    doc.setFontSize(9);
+                    doc.setTextColor(71, 85, 105);
+                    doc.setFont('helvetica', 'normal');
+                    // Separador visual
+                    doc.setDrawColor(226, 232, 240);
+                    doc.line(textStartX, currentY + 33, marginX + 177, currentY + 33);
+                    doc.text(features.join('   |   '), textStartX, currentY + 42);
+                }
+
+                currentY += 58;
             } else {
                 currentY += 5;
             }
@@ -136,196 +205,114 @@ export const useShareSimulatorPDF = () => {
             // Titulos
             doc.text('Valor Propiedad', marginX + 5, currentY + 8);
             doc.text('Enganche Total', marginX + 5 + sectionWidth, currentY + 8);
-            doc.text('Plazo', marginX + 5 + sectionWidth * 2, currentY + 8);
-            doc.text('Mensualidad', marginX + 5 + sectionWidth * 3, currentY + 8);
+            doc.text('Plazo', marginX + 5 + (sectionWidth * 2), currentY + 8);
+            doc.text('Mensualidad', marginX + 5 + (sectionWidth * 3), currentY + 8);
 
-            // Valores corporativos
+            // Valores con color azul para métricas clave
             doc.setFontSize(11);
             doc.setTextColor(15, 23, 42);
             doc.setFont('helvetica', 'bold');
             doc.text(formatoMoneda(price), marginX + 5, currentY + 16);
             doc.text(formatoMoneda(engancheEstimado), marginX + 5 + sectionWidth, currentY + 16);
-            doc.text(`${term} años`, marginX + 5 + sectionWidth * 2, currentY + 16);
+            doc.text(`${term} años`, marginX + 5 + (sectionWidth * 2), currentY + 16);
 
-            doc.setTextColor(37, 99, 235); // blue-600 para mensualidad destacada
-            doc.text(formatoMoneda(promedioMensualidad), marginX + 5 + sectionWidth * 3, currentY + 16);
+            // Mensualidad en AZUL
+            doc.setTextColor(37, 99, 235); // blue-600
+            doc.text(formatoMoneda(promedioMensualidad), marginX + 5 + (sectionWidth * 3), currentY + 16);
 
-            currentY += 32;
+            currentY += 30;
 
-            // --- Gráfico de Barras Apiladas (Distribución de Pago) ---
-            if (result && result.tablaAmortizacion) {
-                let sumCapital = 0, sumInteres = 0, sumSeguros = 0;
-                result.tablaAmortizacion.forEach(r => {
-                    sumCapital += r.capital;
-                    sumInteres += r.interes;
-                    sumSeguros += r.segurosComisiones;
-                });
 
-                const activeCapital = (acceleratedResult && extraPayment > 0) ? acceleratedResult.capitalTotal : sumCapital;
-                const activeInteres = (acceleratedResult && extraPayment > 0) ? acceleratedResult.interesNuevo : sumInteres;
-                const activeSeguros = (acceleratedResult && extraPayment > 0) ? acceleratedResult.segurosNuevo : sumSeguros;
-                const totalDesembolso = activeCapital + activeInteres + activeSeguros;
-
-                if (totalDesembolso > 0) {
-                    doc.setFontSize(12);
-                    doc.setTextColor(15, 23, 42);
-                    doc.setFont('helvetica', 'bold');
-                    doc.text('Distribución Estimada del Crédito', marginX, currentY);
-                    currentY += 8;
-
-                    const wCapital = (activeCapital / totalDesembolso) * 182;
-                    const wInteres = (activeInteres / totalDesembolso) * 182;
-                    const wSeguros = (activeSeguros / totalDesembolso) * 182;
-
-                    const barY = currentY;
-                    const barH = 6;
-
-                    // Cap Verde
-                    doc.setFillColor(16, 185, 129); // emerald-500
-                    doc.rect(marginX, barY, wCapital, barH, 'F');
-
-                    // Int Naranja
-                    let curX = marginX + wCapital;
-                    doc.setFillColor(245, 158, 11); // amber-500
-                    doc.rect(curX, barY, wInteres, barH, 'F');
-
-                    // Seg Gris
-                    curX += wInteres;
-                    doc.setFillColor(148, 163, 184); // slate-400
-                    doc.rect(curX, barY, wSeguros, barH, 'F');
-
-                    currentY += 12;
-
-                    // Leyenda (Puntitos vectoriales)
-                    doc.setFontSize(9);
-                    doc.setFont('helvetica', 'normal');
-
-                    const percCap = ((activeCapital / totalDesembolso) * 100).toFixed(0);
-                    const percInt = ((activeInteres / totalDesembolso) * 100).toFixed(0);
-                    const percSeg = ((activeSeguros / totalDesembolso) * 100).toFixed(0);
-
-                    let lx = marginX;
-                    doc.setFillColor(16, 185, 129); doc.circle(lx + 2, currentY - 1, 2, 'F');
-                    doc.setTextColor(71, 85, 105); doc.text(`Capital (${percCap}%) ${formatoMoneda(activeCapital)}`, lx + 6, currentY);
-
-                    lx += 60;
-                    doc.setFillColor(245, 158, 11); doc.circle(lx + 2, currentY - 1, 2, 'F');
-                    doc.text(`Intereses (${percInt}%) ${formatoMoneda(activeInteres)}`, lx + 6, currentY);
-
-                    lx += 65;
-                    doc.setFillColor(148, 163, 184); doc.circle(lx + 2, currentY - 1, 2, 'F');
-                    doc.text(`Seguros (${percSeg}%)`, lx + 6, currentY);
-
-                    currentY += 15;
-                }
-            }
-
-            // --- Opción de Ahorro por Pago Extra ---
+            // --- Ahorro Acelerado (Sección Condicional) ---
             if (acceleratedResult && acceleratedResult.mesesAhorrados > 0) {
-                doc.setFillColor(254, 242, 242); // red-50
-                doc.setDrawColor(254, 202, 202); // red-200
-                doc.roundedRect(marginX, currentY, 182, 20, 2, 2, 'FD');
+                doc.setFillColor(240, 253, 244); // green-50
+                doc.setDrawColor(187, 247, 208); // green-200
+                doc.roundedRect(marginX, currentY, 182, 18, 2, 2, 'FD');
 
                 doc.setFontSize(10);
-                doc.setTextColor(220, 38, 38); // red-600
+                doc.setTextColor(21, 128, 61); // green-700
                 doc.setFont('helvetica', 'bold');
-                doc.text(`Con ${formatoMoneda(extraPayment)} extra a capital cada mes:`, marginX + 5, currentY + 7);
+                doc.text(`¡Posible Plan de Ahorro! Pago Extra Mensual: ${formatoMoneda(extraPayment)}`, marginX + 5, currentY + 7);
 
+                doc.setFontSize(9);
                 doc.setFont('helvetica', 'normal');
-                doc.setTextColor(153, 27, 27); // red-800
-                const agnosAhorrados = (acceleratedResult.mesesAhorrados / 12).toFixed(1);
-                doc.text(`Terminas ${agnosAhorrados} años antes de pagar tu hipoteca | Ahorras ${formatoMoneda(acceleratedResult.interesAhorrado)} en intereses puros.`, marginX + 5, currentY + 14);
-
+                const savingText = `Ahorrarías ${formatoMoneda(acceleratedResult.interesAhorrado)} en intereses y terminarías ${(acceleratedResult.mesesAhorrados / 12).toFixed(1)} años antes.`;
+                doc.text(savingText, marginX + 5, currentY + 13);
                 currentY += 28;
             }
 
-            // --- AutoTable Clean & Premium ---
-            if (result && result.tablaAmortizacion) {
-                // Table title margin
-                doc.setFontSize(12);
-                doc.setTextColor(15, 23, 42); // slate-900
-                doc.setFont('helvetica', 'bold');
-                doc.text('Tabla de Pagos del Crédito', marginX, currentY);
+            // --- Tabla de Pagos ---
+            doc.setFontSize(12);
+            doc.setTextColor(15, 23, 42);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Tabla de Pagos del Crédito', marginX, currentY);
+            currentY += 5;
+
+            // Nota aclaratoria cuando hay plan de ahorro activo
+            if (acceleratedResult && acceleratedResult.mesesAhorrados > 0) {
+                doc.setFontSize(9);
+                doc.setTextColor(100, 116, 139); // slate-500
+                doc.setFont('helvetica', 'italic');
+                doc.text('*Pagos en base a crédito base sin considerar Plan de ahorro', marginX, currentY);
                 currentY += 6;
-
-                autoTable(doc, {
-                    startY: currentY,
-                    head: [['Mes', 'Saldo Inicial', 'Interés', 'Capital', 'Comis/Segs', 'Pago Total', 'Saldo Final']],
-                    body: result.tablaAmortizacion.map(row => [
-                        row.mes,
-                        formatoMoneda(row.saldoInicial),
-                        formatoMoneda(row.interes),
-                        formatoMoneda(row.capital),
-                        formatoMoneda(row.segurosComisiones),
-                        formatoMoneda(row.pagoMensual),
-                        formatoMoneda(row.saldoFinal)
-                    ]),
-                    theme: 'plain',
-                    headStyles: {
-                        fillColor: [241, 245, 249],
-                        textColor: [71, 85, 105],
-                        fontStyle: 'bold',
-                        halign: 'right',
-                        lineWidth: { bottom: 0.5 },
-                        lineColor: [203, 213, 225]
-                    },
-                    bodyStyles: {
-                        textColor: [51, 65, 85],
-                        halign: 'right',
-                        lineWidth: { bottom: 0.1 },
-                        lineColor: [226, 232, 240]
-                    },
-                    columnStyles: {
-                        0: { halign: 'center', fontStyle: 'bold', textColor: [100, 116, 139] },
-                        5: { fontStyle: 'bold', textColor: [15, 23, 42] } // Highlight pagoMensual
-                    },
-                    margin: { left: marginX, right: marginX },
-                    didDrawPage: (data) => {
-                        // Header deco bar repetida
-                        doc.setFillColor(30, 41, 59);
-                        doc.rect(0, 0, 210, 8, 'F');
-
-                        // Pie de pagina
-                        const str = 'Página ' + doc.internal.getNumberOfPages();
-                        doc.setFontSize(8);
-                        doc.setTextColor(148, 163, 184);
-                        doc.text(
-                            str,
-                            data.settings.margin.left,
-                            doc.internal.pageSize.height - 10
-                        );
-                    }
-                });
             }
 
-            // 4. Salida del Blob
-            const pdfBlob = doc.output('blob');
-            const file = new File([pdfBlob], 'Simulacion_Credito_InmuebleAdvisor.pdf', { type: 'application/pdf' });
+            const tableRows = result.tablaAmortizacion.map(row => [
+                row.mes,
+                formatoMoneda(row.saldoInicial),
+                formatoMoneda(row.interes),
+                formatoMoneda(row.capital),
+                formatoMoneda(row.segurosComisiones),
+                formatoMoneda(row.pagoMensual),
+                formatoMoneda(row.saldoFinal)
+            ]);
 
-            // 5. Estrategia Nativa y Descarga
+            autoTable(doc, {
+                startY: currentY,
+                head: [['Mes', 'Saldo Inicial', 'Interés', 'Capital', 'Comis/Segs', 'Pago Total', 'Saldo Final']],
+                body: tableRows.slice(0, 180), // Limitar a un par de hojas para evitar PDF pesado
+                theme: 'striped',
+                headStyles: { fillColor: [241, 245, 249], textColor: [71, 85, 105], fontStyle: 'bold' },
+                styles: { fontSize: 8, cellPadding: 2 },
+                columnStyles: {
+                    0: { halign: 'center' },
+                    5: { fontStyle: 'bold' }
+                },
+                margin: { left: marginX, right: marginX }
+            });
+
+            // Footer
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(148, 163, 184);
+                doc.text(`Cotización sujeta a aprobación de crédito. Valores informativos. | Página ${i} de ${pageCount}`, marginX, 285);
+                doc.text('inmuebleadvisor.com', 170, 285);
+            }
+
+            // 3. Share or Save
+            const pdfBlob = doc.output('blob');
+            const file = new File([pdfBlob], 'Simulacion_IA.pdf', { type: 'application/pdf' });
+
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 await navigator.share({
-                    title: 'Simulación Hipotecaria',
-                    text: 'Te comparto el detalle extendido del cálculo hipotecario.',
+                    title: 'Simulación Inmueble Advisor',
+                    text: 'Te comparto la proyección financiera de tu inversión.',
                     files: [file]
                 });
             } else {
                 const url = URL.createObjectURL(pdfBlob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'Simulacion_Hipotecaria_InmuebleAdvisor.pdf';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'Simulacion_InmuebleAdvisor.pdf';
+                link.click();
                 URL.revokeObjectURL(url);
             }
 
         } catch (error) {
-            console.error('Error generando PDF Premium:', error);
-            if (error.name !== 'AbortError') {
-                setErrorPDF('Hubo un problema procesando el archivo PDF.');
-                alert('No pudimos generar el PDF.\n\nDetalle técnico: ' + error.message);
-            }
+            console.error('Error generating PDF:', error);
+            setErrorPDF('No pudimos generar el PDF.');
         } finally {
             setIsGeneratingPDF(false);
         }
@@ -333,4 +320,3 @@ export const useShareSimulatorPDF = () => {
 
     return { generateAndSharePDF, isGeneratingPDF, errorPDF };
 };
-
