@@ -693,14 +693,20 @@
 }
 
 /* SCROLL REVEAL STYLES */
-/* SCROLL REVEAL STYLES */
 .catalogo__grid>article {
   opacity: 0;
-  transform: translateX(48px);
-  /* Desplazamiento lateral: múltiplo de 8px */
+  /* Móvil: entrada lateral sutil (múltiplo de 8px) */
+  transform: translateX(32px);
   transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: opacity, transform;
+}
+
+@media (min-width: 768px) {
+  .catalogo__grid>article {
+    /* Escritorio: entrada lateral más pronunciada */
+    transform: translateX(48px);
+  }
 }
 
 .catalogo__grid>article.sr-visible {
