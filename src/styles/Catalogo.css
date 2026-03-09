@@ -696,8 +696,8 @@
 /* SCROLL REVEAL STYLES */
 .catalogo__grid>article {
   opacity: 0;
-  transform: translateY(32px);
-  /* Múltiplo de 8px según STYLES_GUIDE */
+  transform: translateX(48px);
+  /* Desplazamiento lateral: múltiplo de 8px */
   transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: opacity, transform;
@@ -705,7 +705,7 @@
 
 .catalogo__grid>article.sr-visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateX(0);
 }
 
 

@@ -103,7 +103,7 @@ export default function Catalogo() {
   const enrichedDevelopments = useDevelopmentCatalog(modelosFiltrados, desarrollos);
 
   // Scroll Reveal for Development Cards
-  useScrollReveal('.catalogo__grid > article', { origin: 'bottom', interval: 100 }, [enrichedDevelopments, viewMode]);
+  useScrollReveal('.catalogo__grid > article', { origin: 'right', interval: 100 }, [enrichedDevelopments, viewMode]);
 
   // --- RENDER ---
   if (loading) {
