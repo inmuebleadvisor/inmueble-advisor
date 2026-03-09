@@ -5,7 +5,7 @@ import { FINANZAS } from '../../config/constants';
 
 const formatoMoneda = (val) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
 
-export default function FinanciamientoWidget({ precio }) {
+export default function FinanciamientoWidget({ precio, onSimulate }) {
   if (!precio) return null;
 
   const enganche = precio * FINANZAS.PORCENTAJE_ENGANCHE_MINIMO;
@@ -23,7 +23,13 @@ export default function FinanciamientoWidget({ precio }) {
         <strong style={{ color: 'var(--primary-color)' }}>{formatoMoneda(mensualidadAprox)}</strong>
       </div>
       <p style={styles.disclaimer}>*Estimación bancaria a 20 años. Sujeto a historial crediticio.</p>
-      <button className="btn btn-primary btn-full" style={{ marginTop: '15px' }}>Solicitar Cotización</button>
+      <button
+        className="btn btn-primary btn-full"
+        style={{ marginTop: '15px' }}
+        onClick={onSimulate}
+      >
+        Calcular Hipoteca
+      </button>
     </div>
   );
 }

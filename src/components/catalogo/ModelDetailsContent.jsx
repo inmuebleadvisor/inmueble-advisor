@@ -216,7 +216,10 @@ export default function ModelDetailsContent({
                     <p className="model-details__mortgage-intro">
                         Estimación de mensualidad para <strong>{modelo.nombre_modelo}</strong>:
                     </p>
-                    <FinanciamientoWidget precio={modelo.precioNumerico} />
+                    <FinanciamientoWidget
+                        precio={modelo.precioNumerico}
+                        onSimulate={() => setIsSimulatorOpen(true)}
+                    />
                 </section>
 
                 {/* --- SECCIÓN 3: CONTEXTO --- */}
