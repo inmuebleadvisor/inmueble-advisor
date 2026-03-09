@@ -15,6 +15,7 @@ Hooks genéricos que resuelven problemas específicos y pueden usarse en múltip
 -   **`useForm`**: Manejo de formularios y validaciones.
 -   **`useAuth`**: Acceso rápido al contexto de usuario.
 -   **`useAnalytics`**: Abstracción del servicio de analítica (PostHog). Expone métodos `identifyUser` y `trackEvent`.
+-   **`useShareSimulatorPDF`**: Generador de PDF de alta fidelidad para la corrida financiera del simulador. Utiliza carga perezosa (lazy load) de `jsPDF` y se integra con la Web Share API si el dispositivo lo soporta.
 
 ### `useCatalogFilter`
 Maneja la lógica de filtrado del catálogo, sincronizando el estado con la navegación (`location.state`), parámetros de URL (`URLSearchParams`) y el Perfil del Usuario.
@@ -40,6 +41,9 @@ Transforma la lista plana de modelos en una estructura jerárquica de Desarrollo
 ### `useDebounce`
 Hook utilitario para retrasar la actualización de un valor hasta que el usuario deja de interactuar.
 **Uso:** Búsquedas en tiempo real, sliders de precio.
+
+### `useMortgageSimulator` (ViewModel)
+Maneja el estado interactivo del `MortgageSimulatorModal`. Realiza los cálculos financieros (enganche, plazos, ahorro acelerado) reactivos al input del usuario, e instancia la clase de servicio correspondiente u obtiene configuraciones bancarias.
 
 ## Regla de Oro: Separación UI/Lógica
 Un componente de Vista (`screen`) no debería tener `useEffect` complejos ni lógica de estado masiva. Mueve esa lógica a un Custom Hook aquí.

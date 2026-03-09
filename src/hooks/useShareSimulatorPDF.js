@@ -2,63 +2,7 @@ import { useState } from 'react';
 import { formatoMoneda } from '../utils/formatters';
 import logoInmuebleAdvisor from '../assets/logo-inmueble-advisor.png';
 
-// En desarrollo (localhost), redirige las imágenes de Firebase Storage a través del proxy de Vite
-// para evitar bloqueos CORS. En producción, usa la URL directa (CORS del bucket ya configurado).
-const resolveImageUrl = (url) => {
-    if (!url) return null;
-    const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    if (!isDev) return url;
-
-    // storage.googleapis.com → /img-proxy/...
-    if (url.includes('storage.googleapis.com')) {
-        return url.replace('https://storage.googleapis.com', '/img-proxy/storage.googleapis.com');
-    }
-    // firebasestorage.googleapis.com → /img-proxy-firebase/...
-    if (url.includes('firebasestorage.googleapis.com')) {
-        return url.replace('https://firebasestorage.googleapis.com', '/img-proxy-firebase/firebasestorage.googleapis.com');
-    }
-    return url;
-};
-
-// Helper local para convertir imágenes URL en Base64 compatible con jsPDF
-// Se utiliza Canvas para sortear limitaciones de Fetch y asegurar compatibilidad de formato.
-const getBase64ImageFromUrl = (imageUrl) => {
-    // Timeout de 5 segundos para no bloquear el PDF
-    const timeout = new Promise((resolve) => setTimeout(() => {
-        console.warn('[PDF] ⏱ Timeout cargando imagen:', imageUrl?.substring(0, 80));
-        resolve(null);
-    }, 5000));
-
-    const loadImage = new Promise((resolve) => {
-        const img = new Image();
-        img.setAttribute('crossOrigin', 'anonymous');
-
-        img.onload = () => {
-            try {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                const dataURL = canvas.toDataURL('image/png');
-                console.log('[PDF] ✅ Imagen OK:', imageUrl?.substring(0, 80));
-                resolve(dataURL);
-            } catch (securityErr) {
-                console.warn('[PDF] ❌ Canvas tainted (CORS pendiente):', imageUrl?.substring(0, 80), securityErr.message);
-                resolve(null);
-            }
-        };
-
-        img.onerror = (err) => {
-            console.warn('[PDF] ❌ Error cargando imagen:', imageUrl?.substring(0, 80), err);
-            resolve(null);
-        };
-
-        img.src = imageUrl;
-    });
-
-    return Promise.race([loadImage, timeout]);
-};
+import { resolveImageUrl, getBase64ImageFromUrl } from '../utils/imageUtils';
 
 /**
  * Custom Hook para generar simulación hipotecaria PDF con diseño Premium
@@ -78,7 +22,11 @@ export const useShareSimulatorPDF = () => {
             result,
             promedioMensualidad,
             extraPayment,
-            acceleratedResult
+            acceleratedResult,
+            bankName = 'BANORTE',
+            productName = 'Hipoteca Fuerte',
+            interestRate = '10.15%',
+            catValue = '12.3%'
         } = dataPayload;
 
         try {
@@ -120,13 +68,13 @@ export const useShareSimulatorPDF = () => {
             doc.setFontSize(26);
             doc.setTextColor(15, 23, 42); // slate-900
             doc.setFont('helvetica', 'bold');
-            doc.text('Cotización Hipotecaria', marginX, currentY);
+            doc.text('Precotización Hipotecaria', marginX, currentY);
             currentY += 8;
 
             doc.setFontSize(10);
             doc.setTextColor(100, 116, 139); // slate-500
             doc.setFont('helvetica', 'normal');
-            doc.text('Generado por Inmueble Advisor (Métricas de Referencia)', marginX, currentY);
+            doc.text(`Generado por Inmueble Advisor en base a ${productName} de: ${bankName}`, marginX, currentY);
             currentY += 15;
 
             // --- Tarjeta de Propiedad ---
@@ -184,6 +132,12 @@ export const useShareSimulatorPDF = () => {
                     doc.setDrawColor(226, 232, 240);
                     doc.line(textStartX, currentY + 33, marginX + 177, currentY + 33);
                     doc.text(features.join('   |   '), textStartX, currentY + 42);
+
+                    // Enlace a la propiedad
+                    if (propertyData.url) {
+                        doc.setTextColor(37, 99, 235); // blue-600
+                        doc.text('Ver modelo en línea', marginX + 177, currentY + 42, { align: 'right', url: propertyData.url });
+                    }
                 }
 
                 currentY += 58;
@@ -197,28 +151,32 @@ export const useShareSimulatorPDF = () => {
             doc.setFillColor(241, 245, 249); // slate-100 banner
             doc.roundedRect(marginX, currentY, 182, 22, 2, 2, 'F');
 
-            doc.setFontSize(9);
+            doc.setFontSize(8); // Reducir un poco para que quepan 6 columnas
             doc.setTextColor(100, 116, 139);
             doc.setFont('helvetica', 'normal');
 
-            const sectionWidth = 182 / 4;
+            const sectionWidth = 182 / 6;
             // Titulos
-            doc.text('Valor Propiedad', marginX + 5, currentY + 8);
-            doc.text('Enganche Total', marginX + 5 + sectionWidth, currentY + 8);
-            doc.text('Plazo', marginX + 5 + (sectionWidth * 2), currentY + 8);
-            doc.text('Mensualidad', marginX + 5 + (sectionWidth * 3), currentY + 8);
+            doc.text('Valor Propiedad', marginX + 4, currentY + 8);
+            doc.text('Enganche Total', marginX + 4 + sectionWidth, currentY + 8);
+            doc.text('Plazo', marginX + 4 + (sectionWidth * 2), currentY + 8);
+            doc.text('Tasa Anual', marginX + 4 + (sectionWidth * 3), currentY + 8);
+            doc.text('CAT Promedio', marginX + 4 + (sectionWidth * 4), currentY + 8);
+            doc.text('Mensualidad', marginX + 4 + (sectionWidth * 5), currentY + 8);
 
-            // Valores con color azul para métricas clave
-            doc.setFontSize(11);
+            // Valores
+            doc.setFontSize(10);
             doc.setTextColor(15, 23, 42);
             doc.setFont('helvetica', 'bold');
-            doc.text(formatoMoneda(price), marginX + 5, currentY + 16);
-            doc.text(formatoMoneda(engancheEstimado), marginX + 5 + sectionWidth, currentY + 16);
-            doc.text(`${term} años`, marginX + 5 + (sectionWidth * 2), currentY + 16);
+            doc.text(formatoMoneda(price), marginX + 4, currentY + 16);
+            doc.text(formatoMoneda(engancheEstimado), marginX + 4 + sectionWidth, currentY + 16);
+            doc.text(`${term} años`, marginX + 4 + (sectionWidth * 2), currentY + 16);
+            doc.text(interestRate, marginX + 4 + (sectionWidth * 3), currentY + 16);
+            doc.text(catValue, marginX + 4 + (sectionWidth * 4), currentY + 16);
 
             // Mensualidad en AZUL
             doc.setTextColor(37, 99, 235); // blue-600
-            doc.text(formatoMoneda(promedioMensualidad), marginX + 5 + (sectionWidth * 3), currentY + 16);
+            doc.text(formatoMoneda(promedioMensualidad), marginX + 4 + (sectionWidth * 5), currentY + 16);
 
             currentY += 30;
 
@@ -288,7 +246,7 @@ export const useShareSimulatorPDF = () => {
                 doc.setFontSize(8);
                 doc.setTextColor(148, 163, 184);
                 doc.text(`Cotización sujeta a aprobación de crédito. Valores informativos. | Página ${i} de ${pageCount}`, marginX, 285);
-                doc.text('inmuebleadvisor.com', 170, 285);
+                doc.text('inmuebleadvisor.com', 170, 285, { url: 'https://inmuebleadvisor.com' });
             }
 
             // 3. Share or Save

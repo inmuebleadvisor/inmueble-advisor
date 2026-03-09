@@ -31,7 +31,7 @@ Provides complex filtering options for the catalog (Price range, Model type, etc
 ### [MortgageSimulatorModal.jsx](file:///c:/Users/novat/inmueble-advisor/src/components/modals/MortgageSimulatorModal.jsx)
 Simulador hipotecario reactivo y de alta fidelidad basado en el producto "Hipoteca Fuerte" de Banorte.
 - **UX:** Layout vertical estilo *Single-Page* con cálculos exactos (precisión bancaria). Abonos extra dinámicos con gráfico de ahorro.
-- **Features:** Tarjeta Hero para la mensualidad, desglose detallado de Monto de Crédito vs Efectivo Necesario, y tabla de amortización completa.
+- **Features:** Tarjeta Hero para la mensualidad, desglose detallado de Monto de Crédito vs Efectivo Necesario, tabla de amortización completa, y capacidad de **descargar/compartir en PDF** generada en tiempo real mediante el hook `useShareSimulatorPDF`.
 
 ### [HighlightsModal.jsx](file:///c:/Users/novat/inmueble-advisor/src/components/modals/HighlightsModal.jsx)
 Displays key highlights or features of a development/model.

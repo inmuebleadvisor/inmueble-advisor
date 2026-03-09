@@ -23,7 +23,17 @@ Este módulo contiene los componentes visuales encargados de presentar la oferta
 *   **Archivo:** `AmenidadesList.jsx`
 *   **Propósito:** Renderizado estandarizado de la lista de características de una propiedad.
 
-### 4. MapCatalogView
+### 4. DevelopmentDetailsContent
+*   **Archivo:** `DevelopmentDetailsContent.jsx`
+*   **Propósito:** Contenedor de la vista de detalle de un Desarrollo (Hero image, tabs, información principal).
+*   **Integración:** Actúa como punto de entrada al `MortgageSimulatorModal`, pasando los valores del desarrollo (precio "desde", nombre, imagen promocional) para pre-llenar la cotización.
+
+### 5. ModelDetailsContent
+*   **Archivo:** `ModelDetailsContent.jsx`
+*   **Propósito:** Vista de detalle individual de un Modelo de propiedad (Galería, especificaciones, amenidades del modelo).
+*   **Integración:** Punto de entrada directo al `MortgageSimulatorModal`, pasando el precio específico del modelo y sus características exactas para una estimación precisa.
+
+### 6. MapCatalogView
 *   **Archivo:** `MapCatalogView.jsx`
 *   **CSS:** `MapCatalogView.css`
 *   **Propósito:** Vista de mapa interactiva con Leaflet para localizar desarrollos.

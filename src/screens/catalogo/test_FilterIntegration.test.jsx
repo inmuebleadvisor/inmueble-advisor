@@ -83,7 +83,7 @@ describe('Catalog Filter Integration', () => {
         renderWithRouter(<Catalogo />);
 
         // 1. Verify Filter Button exists
-        const filterBtn = screen.getByText(/Filtros/i);
+        const filterBtn = screen.getByRole('button', { name: /Filtros/i });
         expect(filterBtn).toBeInTheDocument();
         console.log('Filter button found');
 

@@ -255,7 +255,11 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, propert
             result,
             promedioMensualidad,
             extraPayment,
-            acceleratedResult
+            acceleratedResult,
+            bankName: 'BANORTE',
+            productName: 'Hipoteca Fuerte',
+            interestRate: '10.15%',
+            catValue: '12.3%'
         };
 
         await generateAndSharePDF(payload);

@@ -281,7 +281,8 @@ export default function ModelDetailsContent({
                         image: modelo.imagenes?.[0] || '',
                         bedrooms: modelo.recamaras,
                         bathrooms: modelo.banos,
-                        area: modelo.m2 || modelo.superficieConstruccion || modelo.superficieTotal
+                        area: modelo.m2 || modelo.superficieConstruccion || modelo.superficieTotal,
+                        url: window.location.href
                     }}
                     onClose={() => setIsSimulatorOpen(false)}
                 />
