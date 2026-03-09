@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useMortgageSimulator } from '../../hooks/useMortgageSimulator';
 import { useShareSimulatorPDF } from '../../hooks/useShareSimulatorPDF';
 import { formatoMoneda } from '../../utils/formatters';
+import { MortgageDonutChart } from '../mortgage/MortgageDonutChart';
+import { AmortizationTable } from '../mortgage/AmortizationTable';
+import { SimulatorControls } from '../mortgage/SimulatorControls';
 import './MortgageSimulatorModal.css';
 
 const Icons = {
@@ -110,140 +113,8 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, propert
     if (leftPos > 100) leftPos = 100;
     if (leftPos < 0) leftPos = 0;
 
-    const renderDonutChart = () => {
-        if (!result) return null;
-
-        const activeCapital = (acceleratedResult && acceleratedResult.capitalTotal > 0) ? acceleratedResult.capitalTotal : totalCapital;
-        const activeInteres = (acceleratedResult && extraPayment > 0) ? acceleratedResult.interesNuevo : totalInteres;
-        const activeSeguros = (acceleratedResult && extraPayment > 0) ? acceleratedResult.segurosNuevo : totalSeguros;
-
-        const total = activeCapital + activeInteres + activeSeguros;
-        if (total === 0) return null;
-
-        const pCapital = total > 0 ? (activeCapital / total) * 100 : 0;
-        const pInteres = total > 0 ? (activeInteres / total) * 100 : 0;
-        const pSeguros = total > 0 ? (activeSeguros / total) * 100 : 0;
-
-        const r = 45;
-        const circ = 2 * Math.PI * r;
-
-        // Offsets
-        const dashCapital = (pCapital / 100) * circ;
-        const dashInteres = (pInteres / 100) * circ;
-        const dashSeguros = (pSeguros / 100) * circ;
-
-        // La suma de los anteriores para ir recorriendo el offset en negativo
-        const offsetInteres = -dashCapital;
-        const offsetSeguros = -(dashCapital + dashInteres);
-
-        return (
-            <div className="mortgage-chart-wrapper" style={{ justifyContent: 'flex-start', margin: '0', backgroundColor: '#ffffff', padding: '16px', borderRadius: '12px', border: '1px solid #bbf7d0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-                <div className="mortgage-donut-container">
-                    <svg viewBox="0 0 100 100" className="mortgage-donut">
-                        <circle cx="50" cy="50" r={r} fill="transparent" stroke="#f1f5f9" strokeWidth="10" />
-
-                        {/* Capital - Verde */}
-                        <circle cx="50" cy="50" r={r} fill="transparent" stroke="#10b981" strokeWidth="10"
-                            strokeDasharray={`${dashCapital} ${circ}`} strokeDashoffset={0} />
-
-                        {/* Interés - Naranja */}
-                        <circle cx="50" cy="50" r={r} fill="transparent" stroke="#f59e0b" strokeWidth="10"
-                            strokeDasharray={`${dashInteres} ${circ}`} strokeDashoffset={offsetInteres} />
-
-                        {/* Seguros - Azul/Gris */}
-                        <circle cx="50" cy="50" r={r} fill="transparent" stroke="#94a3b8" strokeWidth="10"
-                            strokeDasharray={`${dashSeguros} ${circ}`} strokeDashoffset={offsetSeguros} />
-                    </svg>
-                </div>
-                <div className="mortgage-chart-legend" style={{ textAlign: 'left' }}>
-                    <div className="chart-legend-item">
-                        <span className="legend-dot" style={{ backgroundColor: '#10b981' }}></span>
-                        <div>
-                            <div className="legend-label">Capital ({isNaN(pCapital) ? 0 : pCapital.toFixed(0)}%)</div>
-                            <div className="legend-value">{formatoMoneda(activeCapital || 0)}</div>
-                        </div>
-                    </div>
-                    <div className="chart-legend-item">
-                        <span className="legend-dot" style={{ backgroundColor: '#f59e0b' }}></span>
-                        <div>
-                            <div className="legend-label">Intereses ({isNaN(pInteres) ? 0 : pInteres.toFixed(0)}%)</div>
-                            <div className="legend-value">{formatoMoneda(activeInteres || 0)}</div>
-                        </div>
-                    </div>
-                    <div className="chart-legend-item" style={{ marginBottom: 0 }}>
-                        <span className="legend-dot" style={{ backgroundColor: '#94a3b8' }}></span>
-                        <div>
-                            <div className="legend-label">Seguros ({isNaN(pSeguros) ? 0 : pSeguros.toFixed(0)}%)</div>
-                            <div className="legend-value">{formatoMoneda(activeSeguros || 0)}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    const renderAmortizationTable = () => {
-        if (!result || !result.tablaAmortizacion) return null;
-
-        return (
-            <div className="mortgage-dashboard-card mb-4 mt-4">
-                <div style={{ marginBottom: '20px' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', marginBottom: '4px' }}>Tabla de Pagos</h3>
-                    <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>El detalle de cada mes de tu crédito.</p>
-                    {extraPayment > 0 && (
-                        <p style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 600, marginTop: '8px', fontStyle: 'italic' }}>
-                            *Pagos en base a crédito base sin considerar abonos extras
-                        </p>
-                    )}
-                </div>
-
-                <div style={{ overflowX: 'auto', margin: '0 -20px', padding: '0 20px' }}>
-                    <table className="mortgage-table">
-                        <thead>
-                            <tr>
-                                <th>MES</th>
-                                <th>SALDO INICIAL</th>
-                                <th>A CAPITAL</th>
-                                <th>A INTERÉS</th>
-                                <th>COMPLEMENTOS</th>
-                                <th className="col-highlight">PAGO TOTAL</th>
-                                <th>SALDO FINAL</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {(showFullTable ? result.tablaAmortizacion : result.tablaAmortizacion.slice(0, 12)).map((row) => (
-                                <tr key={row.mes}>
-                                    <td style={{ fontWeight: 700, color: '#64748b' }}>{row.mes}</td>
-                                    <td>{formatoMoneda(row.saldoInicial)}</td>
-                                    <td className="col-capital">+ {formatoMoneda(row.capital)}</td>
-                                    <td className="col-interest">{formatoMoneda(row.interes)}</td>
-                                    <td className="col-insurance">{formatoMoneda(row.segurosComisiones)}</td>
-                                    <td className="col-highlight-cell">{formatoMoneda(row.pagoMensual)}</td>
-                                    <td style={{ fontWeight: 700 }}>{formatoMoneda(row.saldoFinal)}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    {result.tablaAmortizacion.length > 12 && (
-                        <div style={{ textAlign: 'center', marginTop: '20px', paddingBottom: '10px' }}>
-                            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
-                                {showFullTable
-                                    ? `Mostrando todos los ${result.tablaAmortizacion.length} meses.`
-                                    : `Mostrando primeros 12 meses de ${result.tablaAmortizacion.length}.`}
-                            </span>
-                            <button
-                                onClick={() => setShowFullTable(!showFullTable)}
-                                className="mortgage-text-link"
-                                style={{ marginLeft: '8px' }}
-                            >
-                                {showFullTable ? 'Ver menos' : 'Ver todo el detalle'}
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </div>
-        );
-    };
+    // La lógica visual de `renderDonutChart` y `renderAmortizationTable` ha sido encapsulada 
+    // en src/components/mortgage para apegarse al MANUALDEARQUITECTURA y reglas SRP.
 
     const handleSharePDF = async () => {
         const payload = {
@@ -256,10 +127,10 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, propert
             promedioMensualidad,
             extraPayment,
             acceleratedResult,
-            bankName: 'BANORTE',
-            productName: 'Hipoteca Fuerte',
-            interestRate: '10.15%',
-            catValue: '12.3%'
+            bankName: result?.banco || 'BANORTE',
+            productName: result?.nombreProducto || 'Hipoteca Fuerte',
+            interestRate: result?.tasaAsignada ? `${(result.tasaAsignada * 100).toFixed(2)}%` : '10.15%',
+            catValue: result?.catValue || '12.3%'
         };
 
         await generateAndSharePDF(payload);
@@ -353,104 +224,20 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, propert
 
                     {/* Tus Controles y Gráfico */}
                     <div className="mortgage-dashboard-card mb-5 mt-4">
-                        <div className="mortgage-controls-grid">
-                            {/* Price Control */}
-                            <div className="mortgage-form__group" style={{ marginBottom: 0 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
-                                    <label className="mortgage-form__label" style={{ marginBottom: 0, fontSize: '0.8rem' }}>VALOR DE LA CASA</label>
-                                    <span style={{ fontWeight: 800, color: '#0f172a', fontSize: '1rem' }}>{formatoMoneda(price)}</span>
-                                </div>
-                                <div className="mortgage-slider-wrapper" style={{ marginTop: '4px' }}>
-                                    <input
-                                        type="range"
-                                        className="mortgage-slider"
-                                        value={price}
-                                        onChange={(e) => {
-                                            const newPrice = Number(e.target.value);
-                                            const currentDownPaymentRatio = price > 0 ? (downPayment / price) : 0.10;
-
-                                            setPrice(newPrice);
-                                            setDownPayment(newPrice * currentDownPaymentRatio);
-                                            setHasModifiedPrice(true);
-                                        }}
-                                        min={500000}
-                                        max={6000000}
-                                        step={50000}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Downpayment Control */}
-                            <div className="mortgage-form__group" style={{ marginBottom: 0 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
-                                    <label className="mortgage-form__label" style={{ marginBottom: 0, fontSize: '0.75rem', display: 'flex', alignItems: 'center' }}>
-                                        ENGANCHE + ESCRITURA + APERTURA
-                                        <span className="mortgage-tooltip">?
-                                            <span className="mortgage-tooltip__text">Es el total de efectivo que utilizarás para comprar la casa. El mínimo es el 15% del valor de la vivienda</span>
-                                        </span>
-                                    </label>
-                                    <span style={{ fontWeight: 800, color: '#0f172a', fontSize: '1rem' }}>
-                                        {formatoMoneda(result?.desembolsoInicial || (downPayment + (price * 0.051) + 5800 + 750))}
-                                    </span>
-                                </div>
-                                <div className="mortgage-slider-wrapper" style={{ marginTop: '4px' }}>
-                                    <input
-                                        type="range"
-                                        className="mortgage-slider"
-                                        value={downPayment}
-                                        onChange={(e) => setDownPayment(Number(e.target.value))}
-                                        min={price * 0.10}
-                                        max={price * 0.50}
-                                        step={1000}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Income Control */}
-                            <div className="mortgage-form__group" style={{ marginBottom: 0 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
-                                    <label className="mortgage-form__label" style={{ marginBottom: 0, fontSize: '0.8rem', display: 'flex', alignItems: 'center' }}>
-                                        {income <= minIncome ? 'INGRESO FAMILIAR MÍNIMO' : 'INGRESO FAMILIAR'}
-                                        <span className="mortgage-tooltip">?
-                                            <span className="mortgage-tooltip__text">Es clave, el banco no te permite pagar más del 40% de tu ingreso</span>
-                                        </span>
-                                    </label>
-                                    <span style={{ fontWeight: 800, color: '#0f172a', fontSize: '1rem' }}>{formatoMoneda(income)}</span>
-                                </div>
-                                <div className="mortgage-slider-wrapper" style={{ marginTop: '4px' }}>
-                                    <input
-                                        type="range"
-                                        className="mortgage-slider"
-                                        value={income}
-                                        onChange={(e) => {
-                                            const newIncome = Number(e.target.value);
-                                            setIncome(newIncome);
-                                            setSavedIncome(newIncome);
-                                            localStorage.setItem('userMortgageIncome', newIncome);
-                                        }}
-                                        min={minIncome}
-                                        max={minIncome * 3}
-                                        step={500}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Plazo (Pills) */}
-                            <div className="mortgage-form__group" style={{ marginBottom: 0 }}>
-                                <label className="mortgage-form__label" style={{ fontSize: '0.8rem' }}>PLAZO (AÑOS)</label>
-                                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                                    {[5, 10, 15, 20].map(y => (
-                                        <button
-                                            key={y}
-                                            onClick={() => setTerm(y)}
-                                            className={`mortgage-pill ${Number(term) === y ? 'active' : ''}`}
-                                        >
-                                            {y}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+                        <SimulatorControls
+                            price={price}
+                            setPrice={setPrice}
+                            setHasModifiedPrice={setHasModifiedPrice}
+                            downPayment={downPayment}
+                            setDownPayment={setDownPayment}
+                            result={result}
+                            income={income}
+                            setIncome={setIncome}
+                            setSavedIncome={setSavedIncome}
+                            minIncome={minIncome}
+                            term={term}
+                            setTerm={setTerm}
+                        />
                     </div>
 
                     {/* Hero Card */}
@@ -505,7 +292,14 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, propert
                         </div>
 
                         <div className="mortgage-savings-grid" style={{ marginTop: '24px' }}>
-                            {renderDonutChart()}
+                            <MortgageDonutChart
+                                result={result}
+                                totalCapital={totalCapital}
+                                totalInteres={totalInteres}
+                                totalSeguros={totalSeguros}
+                                acceleratedResult={acceleratedResult}
+                                extraPayment={extraPayment}
+                            />
 
                             {acceleratedResult && acceleratedResult.mesesAhorrados > 0 ? (
                                 <div className="mortgage-savings-box mortgage-savings-box--success">
@@ -524,7 +318,7 @@ export default function MortgageSimulatorModal({ initialPrice = 1000000, propert
                         </div>
                     </div>
 
-                    {renderAmortizationTable()}
+                    <AmortizationTable result={result} extraPayment={extraPayment} />
 
                     <p className="mortgage-result__disclaimer" style={{ marginTop: '32px', fontSize: '0.75rem', color: '#94a3b8', textAlign: 'center', fontStyle: 'italic', lineHeight: '1.5' }}>
                         * Este cálculo es únicamente una simulación informativa con fines ilustrativos y no representa una oferta o un compromiso formal de crédito por parte del banco o Inmueble Advisor. La tasa y mensualidad final están sujetas a evaluación y políticas de la institución financiera.

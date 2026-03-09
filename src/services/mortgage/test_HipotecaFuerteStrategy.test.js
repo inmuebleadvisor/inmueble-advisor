@@ -1,10 +1,28 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll, afterAll, vi } from 'vitest';
 import { HipotecaFuerteStrategy } from './HipotecaFuerteStrategy';
 import { MORTGAGE_PRODUCTS } from '../../config/mortgageProducts';
 
 describe('HipotecaFuerteStrategy', () => {
     const config = MORTGAGE_PRODUCTS.HIPOTECA_FUERTE_BANORTE;
-    const strategy = new HipotecaFuerteStrategy(config);
+    let strategy;
+
+    beforeAll(() => {
+        // Mockeamos la fecha para que siempre sea el día 5 del mes.
+        // Fórmula del simulador: 35 - díaActual (5) = 30 días.
+        // Esto asegura que los cálculos históricos sobre 30 días exactos no se rompan
+        // independientemente del día real en que se ejecute la suite de pruebas.
+        vi.useFakeTimers();
+        const mockDate = new Date(2026, 0, 5, 12, 0, 0); // 5 de Enero 2026
+        vi.setSystemTime(mockDate);
+    });
+
+    afterAll(() => {
+        vi.useRealTimers();
+    });
+
+    beforeEach(() => {
+        strategy = new HipotecaFuerteStrategy(config);
+    });
 
     it('debería retornar éxito al calcular mensualidad con parámetros válidos (enganche 20%)', () => {
         const precio = 1000000;

@@ -80,14 +80,18 @@ B. Frontend (React/Vite) - Capas de Servicio:
 
 Ventaja con Gemini: Al trabajar en Backend, Gemini buscará Use Cases en `/core`. Al trabajar en Frontend, buscará Servicios en `/services`.
 
-5. Pruebas Automatizadas como Especificación
-Regla: El código debe tener una alta cobertura de pruebas (Unitarias, de Integración y, si es necesario, End-to-End).
+5. Testing Pragmático y de Alto Valor (Cost-Efficient Testing)
+Regla: Las pruebas automatizadas deben guiarse por el principio de Costo-Beneficio. No se busca una alta cobertura general, sino proteger el "Core" del negocio.
 
-Propósito Didáctico: Las pruebas no solo validan el código, sino que también actúan como una especificación ejecutable.
+Criterios de Aplicación Obligatoria (Alto Valor):
+- Lógica de Negocio Compleja: Cálculos financieros (ej. Simulador Hipotecario), motores de filtros masivos, y transformaciones crudas de datos que afectan analítica.
+- Arquitectura Backend y Persistencia: Funciones Cloud (GCP) y repositorios que modifiquen bases de datos transaccionales, evitando la inyección de datos corruptos.
 
-Si le pides a Gemini que refactorice una función, el suite de pruebas le indica a la IA (y al desarrollador) exactamente lo que se espera que haga la función.
+Zonas de Exclusión / Validación Manual (Bajo Valor):
+- Capa Visual y UI: Integraciones puramente estéticas (CSS, Modales, PDFs generados por frontend como jsPDF). Su verificación debe ser manual utilizando el navegador, para no gastar recursos y lidiar con la fragilidad de un mock sobre el DOM.
+- Integración de Terceros: No escribir pruebas para verificar que una librería hace lo que ya dice hacer.
 
-Todo el código generado o modificado por el agente de codificación debe pasar todas las pruebas existentes antes de su integración.
+Si le pides a Gemini que modifique o cree código, el agente debe priorizar la corrección del funcionamiento real en vivo y se abstendrá de escribir tests para integraciones visuales, salvo instrucción directa. Todo el código del Backend protegido sí debe estar respaldado y pasar sus pruebas antes de avanzar.
 
 6. Configuración de Entorno Declarativa (I.A.C.)
 Regla: Se utiliza Infraestructura como Código (IaC) centrada en el ecosistema Firebase.

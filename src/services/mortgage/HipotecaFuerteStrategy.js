@@ -82,7 +82,9 @@ export class HipotecaFuerteStrategy extends BaseMortgageStrategy {
         const n_meses = termYears * 12;
         const DIAS_POR_MES_ESTANDAR = 30.40;
         const DIAS_BASE_ANUAL = 360;
-        const diasMes1 = 30.00; // Banorte calcula el primer mes sobre 30 días exactos
+        const currentDate = new Date();
+        const currentDay = currentDate.getDate();
+        const diasMes1 = Math.max(1, 35 - currentDay); // Banorte calcula: 35 - día actual de cotización
 
         const i_mensual_teorica = (i_anual / DIAS_BASE_ANUAL) * DIAS_POR_MES_ESTANDAR;
         const cuotaBaseExacta = montoCredito * (i_mensual_teorica * Math.pow(1 + i_mensual_teorica, n_meses)) / (Math.pow(1 + i_mensual_teorica, n_meses) - 1);
@@ -143,7 +145,9 @@ export class HipotecaFuerteStrategy extends BaseMortgageStrategy {
         const n_meses = termYears * 12;
         const DIAS_POR_MES_ESTANDAR = 30.40;
         const DIAS_BASE_ANUAL = 360;
-        const diasMes1 = 30.00; // Banorte calcula el primer mes sobre 30 días exactos
+        const currentDate = new Date();
+        const currentDay = currentDate.getDate();
+        const diasMes1 = Math.max(1, 35 - currentDay); // Banorte calcula: 35 - día actual de cotización
 
         const i_mensual_teorica = (i_anual / DIAS_BASE_ANUAL) * DIAS_POR_MES_ESTANDAR;
         const cuotaBaseExacta = montoCredito * (i_mensual_teorica * Math.pow(1 + i_mensual_teorica, n_meses)) / (Math.pow(1 + i_mensual_teorica, n_meses) - 1);

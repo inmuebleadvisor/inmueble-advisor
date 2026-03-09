@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { formatoMoneda } from '../utils/formatters';
-import logoInmuebleAdvisor from '../assets/logo-inmueble-advisor.png';
+import { THEME_ASSETS } from '../config/theme.config';
 
 import { resolveImageUrl, getBase64ImageFromUrl } from '../utils/imageUtils';
 
@@ -55,11 +55,17 @@ export const useShareSimulatorPDF = () => {
             doc.rect(0, 0, 210, 8, 'F');
 
             // --- 0. Logotipo Institucional (Esquina Superior Derecha) ---
-            const LOGO_IA_URL = "https://firebasestorage.googleapis.com/v0/b/inmueble-advisor-app.firebasestorage.app/o/Institucional%2FLogo%20Inmueble%20Advisor%20PNG.png?alt=media&token=d123edd6-31b1-4087-bcb3-afddb58b4d0f";
-
             try {
-                // El logo es un import local (no tiene CORS). Se usa directamente.
-                doc.addImage(logoInmuebleAdvisor, 'PNG', pageWidth - marginX - logoWidth, 11, logoWidth, logoHeight);
+                // Usamos el logo institucional definido en el tema
+                const logoBase64 = await getBase64ImageFromUrl(THEME_ASSETS.logoDark);
+                if (logoBase64) {
+                    const logoX = pageWidth - marginX - logoWidth;
+                    const logoY = 11;
+                    // Se usa JPEG/PNG dependiendo de la fuente, addImage detecta base64.
+                    doc.addImage(logoBase64, 'PNG', logoX, logoY, logoWidth, logoHeight);
+                    // Añadimos el enlace sobre la imagen
+                    doc.link(logoX, logoY, logoWidth, logoHeight, { url: 'https://inmuebleadvisor.com' });
+                }
             } catch (err) {
                 console.warn("Could not add logo to PDF", err);
             }
@@ -136,7 +142,8 @@ export const useShareSimulatorPDF = () => {
                     // Enlace a la propiedad
                     if (propertyData.url) {
                         doc.setTextColor(37, 99, 235); // blue-600
-                        doc.text('Ver modelo en línea', marginX + 177, currentY + 42, { align: 'right', url: propertyData.url });
+                        const safeUrl = propertyData.url.startsWith('http') ? propertyData.url : `https://${propertyData.url}`;
+                        doc.textWithLink('Ver modelo en línea', marginX + 177, currentY + 42, { url: safeUrl, align: 'right' });
                     }
                 }
 
@@ -145,58 +152,135 @@ export const useShareSimulatorPDF = () => {
                 currentY += 5;
             }
 
-            // --- Tarjeta de Resumen Rápido (Top Data Bar) ---
+            // --- Sección: Datos del Crédito ---
             const engancheEstimado = result?.desembolsoInicial || (downPayment + (price * 0.051) + 5800 + 750);
+            const centerX = pageWidth / 2;
 
-            doc.setFillColor(241, 245, 249); // slate-100 banner
+            doc.setFontSize(11);
+            doc.setTextColor(15, 23, 42); // slate-900
+            doc.setFont('helvetica', 'bold');
+            doc.text('Datos del Crédito', centerX, currentY, { align: 'center' });
+            currentY += 5;
+
+            doc.setFillColor(248, 250, 252); // slate-50
             doc.roundedRect(marginX, currentY, 182, 22, 2, 2, 'F');
 
-            doc.setFontSize(8); // Reducir un poco para que quepan 6 columnas
+            doc.setFontSize(8);
             doc.setTextColor(100, 116, 139);
             doc.setFont('helvetica', 'normal');
 
-            const sectionWidth = 182 / 6;
-            // Titulos
-            doc.text('Valor Propiedad', marginX + 4, currentY + 8);
-            doc.text('Enganche Total', marginX + 4 + sectionWidth, currentY + 8);
-            doc.text('Plazo', marginX + 4 + (sectionWidth * 2), currentY + 8);
-            doc.text('Tasa Anual', marginX + 4 + (sectionWidth * 3), currentY + 8);
-            doc.text('CAT Promedio', marginX + 4 + (sectionWidth * 4), currentY + 8);
-            doc.text('Mensualidad', marginX + 4 + (sectionWidth * 5), currentY + 8);
+            const colWidth = 182 / 4;
+            // Titulos Datos Crédito - CENTRADOS
+            doc.text('Valor Vivienda', marginX + (colWidth / 2), currentY + 8, { align: 'center' });
+            doc.text('Enganche Total', marginX + colWidth + (colWidth / 2), currentY + 8, { align: 'center' });
+            doc.text('Monto Préstamo', marginX + (colWidth * 2) + (colWidth / 2), currentY + 8, { align: 'center' });
+            doc.text('Plazo', marginX + (colWidth * 3) + (colWidth / 2), currentY + 8, { align: 'center' });
 
-            // Valores
+            // Valores Datos Crédito - CENTRADOS
             doc.setFontSize(10);
             doc.setTextColor(15, 23, 42);
             doc.setFont('helvetica', 'bold');
-            doc.text(formatoMoneda(price), marginX + 4, currentY + 16);
-            doc.text(formatoMoneda(engancheEstimado), marginX + 4 + sectionWidth, currentY + 16);
-            doc.text(`${term} años`, marginX + 4 + (sectionWidth * 2), currentY + 16);
-            doc.text(interestRate, marginX + 4 + (sectionWidth * 3), currentY + 16);
-            doc.text(catValue, marginX + 4 + (sectionWidth * 4), currentY + 16);
+            doc.text(formatoMoneda(price), marginX + (colWidth / 2), currentY + 16, { align: 'center' });
+            doc.text(formatoMoneda(engancheEstimado), marginX + colWidth + (colWidth / 2), currentY + 16, { align: 'center' });
+            doc.text(formatoMoneda(result?.montoCredito || (price - downPayment)), marginX + (colWidth * 2) + (colWidth / 2), currentY + 16, { align: 'center' });
+            doc.text(`${term} años`, marginX + (colWidth * 3) + (colWidth / 2), currentY + 16, { align: 'center' });
 
-            // Mensualidad en AZUL
+            currentY += 32;
+
+            // --- Sección: Condiciones Financieras ---
+            doc.setFontSize(11);
+            doc.setTextColor(15, 23, 42);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Condiciones Financieras', centerX, currentY, { align: 'center' });
+            currentY += 5;
+
+            doc.setFillColor(248, 250, 252); // slate-50
+            doc.roundedRect(marginX, currentY, 182, 22, 2, 2, 'F');
+
+            doc.setFontSize(8);
+            doc.setTextColor(100, 116, 139);
+            doc.setFont('helvetica', 'normal');
+
+            const colWidthFin = 182 / 3;
+            // Titulos Condiciones - CENTRADOS
+            doc.text('Tasa Anual', marginX + (colWidthFin / 2), currentY + 8, { align: 'center' });
+            doc.text('CAT Promedio', marginX + colWidthFin + (colWidthFin / 2), currentY + 8, { align: 'center' });
+            doc.text('Mensualidad', marginX + (colWidthFin * 2) + (colWidthFin / 2), currentY + 8, { align: 'center' });
+
+            // Valores Condiciones - CENTRADOS
+            doc.setFontSize(10);
+            doc.setTextColor(15, 23, 42);
+            doc.setFont('helvetica', 'bold');
+            doc.text(interestRate, marginX + (colWidthFin / 2), currentY + 16, { align: 'center' });
+            doc.text(catValue, marginX + colWidthFin + (colWidthFin / 2), currentY + 16, { align: 'center' });
+
+            // Mensualidad en AZUL - CENTRADA
             doc.setTextColor(37, 99, 235); // blue-600
-            doc.text(formatoMoneda(promedioMensualidad), marginX + 4 + (sectionWidth * 5), currentY + 16);
+            doc.text(formatoMoneda(promedioMensualidad), marginX + (colWidthFin * 2) + (colWidthFin / 2), currentY + 16, { align: 'center' });
 
-            currentY += 30;
+            currentY += 32;
 
 
             // --- Ahorro Acelerado (Sección Condicional) ---
             if (acceleratedResult && acceleratedResult.mesesAhorrados > 0) {
+                const boxHeight = 22;
                 doc.setFillColor(240, 253, 244); // green-50
                 doc.setDrawColor(187, 247, 208); // green-200
-                doc.roundedRect(marginX, currentY, 182, 18, 2, 2, 'FD');
+                doc.roundedRect(marginX, currentY, 182, boxHeight, 2, 2, 'FD');
 
-                doc.setFontSize(10);
+                const centerX = pageWidth / 2;
+
+                // Encabezado centrado
+                doc.setFontSize(11);
                 doc.setTextColor(21, 128, 61); // green-700
                 doc.setFont('helvetica', 'bold');
-                doc.text(`¡Posible Plan de Ahorro! Pago Extra Mensual: ${formatoMoneda(extraPayment)}`, marginX + 5, currentY + 7);
+                doc.text('¿Quieres pagar menos intereses?', centerX, currentY + 8, { align: 'center' });
 
-                doc.setFontSize(9);
+                // Segunda línea con números en negrita y texto normal, todo centrado
+                doc.setFontSize(9.5);
+                doc.setTextColor(21, 128, 61);
+
+                // Fragmentos de texto
+                const p1 = "Si abonas ";
+                const p2 = `${formatoMoneda(extraPayment)}`;
+                const p3 = " extras cada mes. Ahorrarías ";
+                const p4 = `${formatoMoneda(acceleratedResult.interesAhorrado)}`;
+                const p5 = " en intereses y terminarías de pagar ";
+                const p6 = `${(acceleratedResult.mesesAhorrados / 12).toFixed(1)}`;
+                const p7 = " años antes.";
+
+                // Cálculo de anchos para centrado manual
                 doc.setFont('helvetica', 'normal');
-                const savingText = `Ahorrarías ${formatoMoneda(acceleratedResult.interesAhorrado)} en intereses y terminarías ${(acceleratedResult.mesesAhorrados / 12).toFixed(1)} años antes.`;
-                doc.text(savingText, marginX + 5, currentY + 13);
-                currentY += 28;
+                const w1 = doc.getTextWidth(p1);
+                const w3 = doc.getTextWidth(p3);
+                const w5 = doc.getTextWidth(p5);
+                const w7 = doc.getTextWidth(p7);
+                doc.setFont('helvetica', 'bold');
+                const w2 = doc.getTextWidth(p2);
+                const w4 = doc.getTextWidth(p4);
+                const w6 = doc.getTextWidth(p6);
+
+                const totalLineWidth = w1 + w2 + w3 + w4 + w5 + w6 + w7;
+                let drawX = centerX - (totalLineWidth / 2);
+                const textY = currentY + 15;
+
+                // Renderizado por partes (Chunk rendering)
+                doc.setFont('helvetica', 'normal');
+                doc.text(p1, drawX, textY); drawX += w1;
+                doc.setFont('helvetica', 'bold');
+                doc.text(p2, drawX, textY); drawX += w2;
+                doc.setFont('helvetica', 'normal');
+                doc.text(p3, drawX, textY); drawX += w3;
+                doc.setFont('helvetica', 'bold');
+                doc.text(p4, drawX, textY); drawX += w4;
+                doc.setFont('helvetica', 'normal');
+                doc.text(p5, drawX, textY); drawX += w5;
+                doc.setFont('helvetica', 'bold');
+                doc.text(p6, drawX, textY); drawX += w6;
+                doc.setFont('helvetica', 'normal');
+                doc.text(p7, drawX, textY);
+
+                currentY += boxHeight + 10;
             }
 
             // --- Tabla de Pagos ---
@@ -228,25 +312,55 @@ export const useShareSimulatorPDF = () => {
             autoTable(doc, {
                 startY: currentY,
                 head: [['Mes', 'Saldo Inicial', 'Interés', 'Capital', 'Comis/Segs', 'Pago Total', 'Saldo Final']],
-                body: tableRows.slice(0, 180), // Limitar a un par de hojas para evitar PDF pesado
+                body: tableRows.slice(0, 240), // Mostramos hasta 20 años de tabla
                 theme: 'striped',
                 headStyles: { fillColor: [241, 245, 249], textColor: [71, 85, 105], fontStyle: 'bold' },
-                styles: { fontSize: 8, cellPadding: 2 },
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 2.5, // Más espacio entre celdas (aire visual)
+                    valign: 'middle'
+                },
                 columnStyles: {
                     0: { halign: 'center' },
                     5: { fontStyle: 'bold' }
                 },
-                margin: { left: marginX, right: marginX }
+                margin: {
+                    left: marginX,
+                    right: marginX,
+                    bottom: 35 // Margen inferior amplio para no chocar con el pie de página
+                },
+                pageBreak: 'auto'
             });
 
             // Footer
             const pageCount = doc.internal.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
-                doc.setFontSize(8);
-                doc.setTextColor(148, 163, 184);
-                doc.text(`Cotización sujeta a aprobación de crédito. Valores informativos. | Página ${i} de ${pageCount}`, marginX, 285);
-                doc.text('inmuebleadvisor.com', 170, 285, { url: 'https://inmuebleadvisor.com' });
+                doc.setFontSize(7);
+                doc.setTextColor(148, 163, 184); // slate-400
+
+                const footerY = 282;
+                const footerLineY = 278;
+                const rightMarginX = pageWidth - marginX;
+
+                // Línea decorativa superior en el footer
+                doc.setDrawColor(226, 232, 240); // slate-200
+                doc.setLineWidth(0.1);
+                doc.line(marginX, footerLineY, rightMarginX, footerLineY);
+
+                const disclaimer = "La presente información es únicamente para fines ilustrativos, no representa ningún ofrecimiento formal por parte de Inmueble Advisor. El CAT es para fines informativos y de comparación exclusivamente.";
+                const wrappedDisclaimer = doc.splitTextToSize(disclaimer, 150);
+
+                // Texto legal a la izquierda
+                doc.text(wrappedDisclaimer, marginX, footerY);
+
+                // Paginación y Enlace a la derecha
+                doc.text(`Página ${i} de ${pageCount}`, rightMarginX, footerY, { align: 'right' });
+                doc.setTextColor(37, 99, 235); // blue-600 para el link
+                doc.textWithLink('inmuebleadvisor.com', rightMarginX, footerY + 4, {
+                    url: 'https://inmuebleadvisor.com',
+                    align: 'right'
+                });
             }
 
             // 3. Share or Save
