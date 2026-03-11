@@ -71,10 +71,10 @@ function App() {
           <CatalogProvider>
             {/* ⭐ AÑADIMOS EL NUEVO PROVEEDOR AQUÍ */}
             <FavoritesProvider>
-              {/* ⭐ MODAL DE SELECCIÓN DE CIUDAD (Global) */}
-              <CitySelectorModal />
 
               <BrowserRouter>
+                {/* ⭐ MODAL DE SELECCIÓN DE CIUDAD (Global) */}
+                <CitySelectorModal />
                 <ScrollToTop /> {/* ✅ Reset Scroll Restoration */}
                 <MetaTracker /> {/* ✅ Rastreo Unificado de PageView */}
                 <AnalyticsTracker />

@@ -166,6 +166,16 @@ export class CatalogService {
     }
   }
 
+  async obtenerInformacionModelo(id) {
+    try {
+      const modeloData = await this.repository.getModeloById(id);
+      return modeloData;
+    } catch (error) {
+      console.error("Error en detalle modelo:", error);
+      return null;
+    }
+  }
+
   /**
    * Enriches the advisor's personal inventory list with full catalog data.
    * @param {Array} listaInventarioUsuario - List of minimal inventory items from user profile

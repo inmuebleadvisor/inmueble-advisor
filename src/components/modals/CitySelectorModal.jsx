@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
 import { useService } from '../../hooks/useService';
 import { useUser } from '../../context/UserContext';
@@ -13,6 +14,11 @@ const CitySelectorModal = () => {
     const { catalog: catalogService } = useService();
     const [ciudades, setCiudades] = useState([]);
     const [loading, setLoading] = useState(true);
+    const location = useLocation();
+
+    // Bypass for direct model/development links
+    const isDirectItemRoute = location.pathname.startsWith('/desarrollo/') || location.pathname.startsWith('/modelo/');
+
 
     useEffect(() => {
         /**
@@ -20,6 +26,7 @@ const CitySelectorModal = () => {
          * Desacoplado mediante el patrón de Inyección de Dependencias.
          */
         const fetchCiudades = async () => {
+            if (selectedCity || isDirectItemRoute) return;
             try {
                 const lista = await catalogService.obtenerCiudadesDisponibles();
                 setCiudades(lista);
@@ -30,10 +37,10 @@ const CitySelectorModal = () => {
             }
         };
         fetchCiudades();
-    }, [catalogService]);
+    }, [catalogService, selectedCity, isDirectItemRoute]);
 
-    // Si el usuario ya tiene una ciudad seleccionada, no mostramos el selector
-    if (selectedCity) return null;
+    // Si el usuario ya tiene una ciudad seleccionada o estamos cargando la ruta directa, no mostramos el selector
+    if (selectedCity || isDirectItemRoute) return null;
 
     return (
         <div className="city-selector-modal">

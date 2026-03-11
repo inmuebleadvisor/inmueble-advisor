@@ -103,6 +103,18 @@ export class CatalogRepository {
         }
     }
 
+    async getModeloById(id) {
+        try {
+            const docRef = doc(this.db, "modelos", String(id).trim());
+            const docSnap = await getDoc(docRef);
+            if (!docSnap.exists()) return null;
+            return mapModelo(docSnap);
+        } catch (error) {
+            console.error(`Error en CatalogRepository.getModeloById(${id}):`, error);
+            throw error;
+        }
+    }
+
     async getAllDevelopers() {
         try {
             const snap = await getDocs(collection(this.db, "desarrolladores"));

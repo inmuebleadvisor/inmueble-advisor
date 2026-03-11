@@ -22,14 +22,15 @@ const formatoMoneda = (val) => {
 export default function DetalleModelo() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, userProfile, trackBehavior } = useUser(); // ✅ Get User Context for PII
-  const { meta: metaService } = useService(); // ✅ Inject Meta Service
+  const { user, userProfile, trackBehavior, selectedCity, updateSelectedCity } = useUser(); // ✅ Get User Context for PII
+  const { meta: metaService, catalog: catalogService } = useService(); // ✅ Inject Meta Service & Catalog Service
   const { loadingCatalog, getModeloById, getDesarrolloById, modelos } = useCatalog();
 
   // Estados de datos
   const [modelo, setModelo] = useState(null);
   const [desarrollo, setDesarrollo] = useState(null);
   const [modelosHermanos, setModelosHermanos] = useState([]);
+  const [loading, setLoading] = useState(true);
 
 
 
@@ -44,22 +45,29 @@ export default function DetalleModelo() {
   useEffect(() => {
     if (loadingCatalog) return;
 
-    // A. Buscar el modelo actual
-    const modeloEncontrado = getModeloById(id);
+    const fetchModelDetails = async () => {
+      setLoading(true);
+      try {
+        // A. Buscar el modelo actual
+        let modeloEncontrado = getModeloById(id);
 
-    if (modeloEncontrado) {
-      setModelo(modeloEncontrado);
-      trackBehavior('view_item', { item_id: id, item_name: modeloEncontrado.nombre_modelo });
+        if (!modeloEncontrado) {
+          modeloEncontrado = await catalogService.obtenerInformacionModelo(id);
+        }
 
-      // ============================================
-      // 🚀 META ADS HYBRID TRACKING (ViewContent)
-      // ============================================
-      const trackMetaViewContent = async () => {
-        try {
-          // 1. Generate Unique Event ID
-          const eventId = metaService.generateEventId();
-          const price = Number(modeloEncontrado.precioNumerico) || 0;
-          const contentName = `${modeloEncontrado.nombre_modelo} (${modeloEncontrado.nombreDesarrollo || 'Modelo'})`;
+        if (modeloEncontrado) {
+          setModelo(modeloEncontrado);
+          trackBehavior('view_item', { item_id: id, item_name: modeloEncontrado.nombre_modelo });
+
+          // ============================================
+          // 🚀 META ADS HYBRID TRACKING (ViewContent)
+          // ============================================
+          const trackMetaViewContent = async () => {
+            try {
+              // 1. Generate Unique Event ID
+              const eventId = metaService.generateEventId();
+              const price = Number(modeloEncontrado.precioNumerico) || 0;
+              const contentName = `${modeloEncontrado.nombre_modelo} (${modeloEncontrado.nombreDesarrollo || 'Modelo'})`;
 
           // 2. Browser Pixel (Standard)
           metaService.track('ViewContent', {
@@ -130,6 +138,11 @@ export default function DetalleModelo() {
 
         if (devData && String(devData.id) !== String(modeloEncontrado.id)) {
           setDesarrollo(devData);
+
+          // Extraer la ciudad de desarrollo y actualizar el contexto de usuario global
+          if (devData.ubicacion?.ciudad && devData.ubicacion.ciudad !== selectedCity) {
+            updateSelectedCity(devData.ubicacion.ciudad);
+          }
         } else {
           setDesarrollo(null);
         }
@@ -141,18 +154,24 @@ export default function DetalleModelo() {
         });
         setModelosHermanos(hermanos);
       } else {
-        setDesarrollo(null);
-        setModelosHermanos([]);
+          setDesarrollo(null);
+          setModelosHermanos([]);
+        }
+      } else {
+        setModelo(null);
       }
-    } else {
-      setModelo(null);
+    } catch (err) {
+      console.error("Error obteniendo modelo directamente:", err);
+    } finally {
+      setLoading(false);
     }
+   };
+   
+   fetchModelDetails();
 
+  }, [id, loadingCatalog, getModeloById, getDesarrolloById, modelos, catalogService, selectedCity, updateSelectedCity]);
 
-
-  }, [id, loadingCatalog, getModeloById, getDesarrolloById, modelos]);
-
-  if (loadingCatalog) return <div style={styles.centerContainer}><p>Cargando catálogo...</p></div>;
+  if (loadingCatalog || loading) return <div style={styles.centerContainer}><p>Cargando modelo...</p></div>;
   if (!modelo) return <div style={styles.errorContainer}><h2>Propiedad no disponible</h2></div>;
 
   return (

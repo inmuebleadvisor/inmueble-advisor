@@ -12,7 +12,7 @@ import DevelopmentDetailsContent from '../../components/catalogo/DevelopmentDeta
 
 export default function DetalleDesarrollo() {
   const { id } = useParams();
-  const { user, userProfile, trackBehavior } = useUser(); // ✅ Get User Context
+  const { user, userProfile, trackBehavior, selectedCity, updateSelectedCity } = useUser(); // ✅ Get User Context
   const { loadingCatalog } = useCatalog();
   const { catalog: catalogService, meta: metaService } = useService(); // ✅ SERVICE INJECTION
   const navigate = useNavigate();
@@ -33,6 +33,11 @@ export default function DetalleDesarrollo() {
         setDesarrollo(data);
 
         if (data) {
+          // Extraer la ciudad de desarrollo y actualizar el contexto de usuario global
+          if (data.ubicacion?.ciudad && data.ubicacion.ciudad !== selectedCity) {
+            updateSelectedCity(data.ubicacion.ciudad);
+          }
+
           trackBehavior('view_development', { id: id, name: data.nombre });
 
           // 1. Generate Unique Event ID for Deduplication

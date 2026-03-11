@@ -20,13 +20,14 @@ const mockAuthService = {
     logout: vi.fn(),
 };
 
-// Mock del servicio de analíticas
+import { MemoryRouter } from 'react-router-dom';
+
 const mockAnalyticsService = {
     trackEvent: vi.fn(),
     trackPageView: vi.fn(),
 };
 
-const renderWithProviders = (ui) => {
+const renderWithProviders = (ui, initialEntries = ['/']) => {
     localStorage.clear(); // Limpiar rastro de selecciones previas
     return render(
         <ServiceProvider overrideServices={{
@@ -35,7 +36,9 @@ const renderWithProviders = (ui) => {
             analytics: mockAnalyticsService
         }}>
             <UserProvider>
-                {ui}
+                <MemoryRouter initialEntries={initialEntries}>
+                    {ui}
+                </MemoryRouter>
             </UserProvider>
         </ServiceProvider>
     );
@@ -77,5 +80,15 @@ describe('CitySelectorModal', () => {
         // En un test real, el componente se desmontaría o cambiaría el estado global.
         // Dado que estamos usando UserProvider real, podemos verificar si el componente sigue ahí 
         // o si se llamó a la lógica interna (aunque aquí lo ideal es ver que la ciudad se guardó).
+    });
+
+    it('no debe mostrarse si la ruta comienza con /desarrollo/', () => {
+        renderWithProviders(<CitySelectorModal />, ['/desarrollo/123']);
+        expect(screen.queryByText(/Selecciona tu ciudad/i)).not.toBeInTheDocument();
+    });
+
+    it('no debe mostrarse si la ruta comienza con /modelo/', () => {
+        renderWithProviders(<CitySelectorModal />, ['/modelo/456']);
+        expect(screen.queryByText(/Selecciona tu ciudad/i)).not.toBeInTheDocument();
     });
 });
