@@ -1,105 +1,153 @@
 /* src/styles/ModelDetailsContent.css */
 /* Block: model-details — Orquestador de layout del detalle de modelo */
-/* Nota: Los estilos de cada subcomponente viven en src/styles/model-details/ */
 
 .model-details {
     background-color: var(--bg-main);
     min-height: 100%;
-    padding-bottom: 64px;
+    /* Padding inferior solo en móvil para no tapar contenido con la barra fija */
+    padding-bottom: 96px; 
     font-family: 'Outfit', sans-serif;
 }
 
-/* Modificador: cuando se renderiza dentro de un modal */
-.model-details--modal {
-    min-height: auto;
-    padding-bottom: 40px;
-}
-
-/* ── Contenido principal: sube sobre el gradiente del header ── */
+/* ── Contenedor máximo (max-w-7xl mx-auto px-4 lg:py-8 py-0) ── */
 .model-details__content {
-    padding: 0 24px;
-    position: relative;
-    z-index: 60;
-    margin-top: -32px; /* Overlap decorativo sobre el gradiente */
-    max-width: 1200px;  /* Contenedor máximo per STYLES_GUIDE */
+    /* FIX #6: max-width alineado al estándar del STYLES_GUIDE (1200px) */
+    max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
+    padding: 0 16px;
+    position: relative;
+    /* FIX #3: z-index eliminado — este contenedor no es una capa flotante */
 }
 
-/* ── Secciones genéricas ── */
+/* ── GRID PRINCIPAL (Marketplace Layout) ── */
+/* 1 columna en móvil, 3 columnas en escritorio (2 para contenido, 1 para sidebar) */
+.model-details__layout-wrapper {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+}
+
+/* ── COLUMNA IZQUIERDA: GALERÍA Y DETALLES (lg:col-span-2) ── */
+.model-details__main-column {
+    display: flex;
+    flex-direction: column;
+    gap: 40px; /* lg:space-y-10 */
+}
+
+/* ── COLUMNA DERECHA: SIDEBAR (aside hidden lg:block) ── */
+.model-details__sidebar-column {
+    display: none; /* Oculto en móvil */
+}
+
+/* ── Secciones divisorias ── */
 .model-details__section {
-    margin-bottom: 32px;
     display: block;
 }
 
-/* Secciones que requieren separador visual superior */
 .model-details__section--bordered {
-    margin-top: 40px;
-    border-top: 1px solid rgba(0, 57, 106, 0.08);
+    border-top: 1px solid rgba(0, 57, 106, 0.08); /* border-gray-100 */
     padding-top: 32px;
+    margin-top: 8px; /* space-y-6 lg:px-0 pt-8 */
 }
 
 /* ── Títulos de sección ── */
 .model-details__section-title {
-    font-size: 1.3rem;
-    font-weight: 700;
+    font-size: 1.25rem; /* text-xl lg:text-3xl */
+    font-weight: 800; /* font-black */
     color: var(--text-main);
-    margin-bottom: 16px;
-}
-
-/* ── Encabezado de contexto (nombre del desarrollo) ── */
-.model-details__context-header {
-    margin-bottom: 24px;
-    padding-left: 16px;
-    border-left: 4px solid var(--primary-color);
-}
-
-.model-details__context-label {
-    display: block;
-    font-size: 0.75rem;
-    color: #64748b;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 4px;
+    letter-spacing: -0.025em; /* tracking-tight */
+    margin-bottom: 24px;
 }
 
-.model-details__context-title {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--text-main);
-    margin: 0;
-}
-
-/* ── Texto introductorio de hipoteca ── */
-.model-details__mortgage-intro {
-    font-size: 0.9rem;
-    color: #64748b;
+/* ── Breadcrumbs ── */
+.model-details__breadcrumbs {
+    display: none; /* hidden sm:flex */
+    font-size: 0.625rem; /* text-[10px] */
+    text-transform: uppercase;
+    letter-spacing: 0.1em; /* tracking-widest */
+    color: #94a3b8; /* text-gray-400 */
     margin-bottom: 16px;
+    font-weight: 700;
 }
 
-/* ── Sección de cross-selling (fondo levemente diferenciado) ── */
+.model-details__breadcrumbs span {
+    margin: 0 8px;
+}
+
+.model-details__breadcrumb-link {
+    color: inherit;
+    text-decoration: none;
+    /* FIX #7: Easing unificado al estándar del STYLES_GUIDE */
+    transition: color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.model-details__breadcrumb-link:hover {
+    color: var(--text-main); /* hover:text-gray-600 */
+}
+
+.model-details__breadcrumb-current {
+    color: var(--primary-color); /* text-blue-600 */
+}
+
+/* ── SECCIÓN DE SIMILARES (Cross-sell grid responsivo) ── */
 .model-details__cross-sell {
-    background-color: var(--bg-secondary);
-    margin: 40px -24px 0;
-    padding: 40px 24px;
-    border-top: 1px solid rgba(0, 57, 106, 0.08);
+    margin-top: 80px; /* mt-20 */
 }
 
 .model-details__cross-sell-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 24px;
+    grid-template-columns: 1fr;
+    gap: 32px;
 }
 
-/* --- Responsive (móvil < 768px) --- */
-@media (max-width: 767px) {
-    .model-details__content {
-        padding: 0 16px;
-        margin-top: -24px;
+.model-details__mobile-pricing {
+    margin-top: 32px;
+}
+
+/* FIX #5: Breakpoints unificados al STYLES_GUIDE (< 768px Móvil | >= 768px Escritorio) */
+@media (min-width: 768px) {
+    .model-details__breadcrumbs {
+        display: flex;
+        align-items: center;
     }
 
-    .model-details__cross-sell {
-        margin: 32px -16px 0;
-        padding: 32px 16px;
+    .model-details {
+        padding-bottom: 0;
     }
+
+    .model-details__content {
+        padding-top: 32px;
+    }
+
+    .model-details__layout-wrapper {
+        /* Grid de 3 columnas en escritorio: 2 contenido + 1 sidebar */
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .model-details__main-column {
+        grid-column: span 2 / span 2;
+    }
+
+    .model-details__mobile-pricing {
+        display: none; /* Ocultar pricing inline en escritorio */
+    }
+
+    .model-details__sidebar-column {
+        display: block; /* Sidebar visible en escritorio */
+    }
+
+    .model-details__cross-sell-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* --- Sticky Sidebar Wrapper --- */
+.model-details__sticky-wrapper {
+    position: sticky;
+    top: 96px; /* sticky top-24 */
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }

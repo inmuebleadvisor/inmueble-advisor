@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <!-- Meta viewport: Vital para que el diseño se adapte a dispositivos móviles -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace Responsivo - Casa Lirio</title>
+    
+    <!-- Cargamos Tailwind CSS desde CDN para el estilizado rápido y moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fuente Inter: Muy común en marketplaces por su alta legibilidad -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Aplicamos la fuente base a todo el documento */
+        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; }
+        
+        /* Ocultamos las barras de scroll en carruseles de fotos para un look más limpio */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Efecto de degradado para textos que van sobre imágenes */
+        .img-overlay {
+            background: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.8) 100%);
+        }
+    </style>
+</head>
+<body class="pb-24 lg:pb-0"> <!-- Padding inferior solo en móvil para no tapar contenido con la barra fija -->
+
+    <!-- NAVBAR RESPONSIVA -->
+    <!-- En desktop se ve completa, en móvil es minimalista -->
+    <header class="bg-white border-b border-gray-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <!-- Branding con estilo de plataforma tecnológica -->
+                <div class="text-blue-600 font-black text-xl tracking-tighter uppercase">
+                    MARKET<span class="text-gray-900">PRO</span>
+                </div>
+                <!-- Menú oculto en móvil (hidden) y visible en pantallas grandes (lg:flex) -->
+                <nav class="hidden lg:flex gap-6 text-sm font-semibold text-gray-500">
+                    <a href="#" class="hover:text-blue-600 transition-colors">Comprar</a>
+                    <a href="#" class="hover:text-blue-600 transition-colors">Rentar</a>
+                    <a href="#" class="hover:text-blue-600 transition-colors">Vender</a>
+                    <a href="#" class="hover:text-blue-600 transition-colors">Créditos</a>
+                </nav>
+            </div>
+            <div class="flex items-center gap-2 sm:gap-4">
+                <button class="hidden sm:block text-sm font-bold text-gray-700 hover:text-blue-600">Listar Propiedad</button>
+                <div class="h-9 w-9 bg-blue-100 rounded-full flex items-center justify-center text-xs font-bold text-blue-700 border border-blue-200">IV</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 lg:py-8 py-0">
+        
+        <!-- BREADCRUMBS (Migas de pan) -->
+        <!-- Útiles para SEO y navegación, se ocultan en pantallas muy pequeñas -->
+        <nav class="hidden sm:flex text-[10px] uppercase tracking-widest text-gray-400 mb-4 gap-2 font-bold">
+            <a href="#" class="hover:text-gray-600">Culiacán</a> <span>/</span>
+            <a href="#" class="hover:text-gray-600">Provenza</a> <span>/</span>
+            <span class="text-blue-600">Casa Lirio</span>
+        </nav>
+
+        <!-- GRID PRINCIPAL -->
+        <!-- 1 columna en móvil, 3 columnas en escritorio (2 para contenido, 1 para sidebar) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- COLUMNA IZQUIERDA: GALERÍA Y DETALLES -->
+            <div class="lg:col-span-2 space-y-6 lg:space-y-10">
+                
+                <!-- SECCIÓN DE GALERÍA -->
+                <section class="-mx-4 lg:mx-0">
+                    <div class="relative aspect-[4/3] lg:aspect-video bg-gray-200 lg:rounded-2xl overflow-hidden shadow-lg">
+                        <!-- Imagen destacada -->
+                        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1200" 
+                             alt="Fachada Casa Lirio" 
+                             class="w-full h-full object-cover">
+                        <div class="absolute inset-0 img-overlay lg:hidden"></div>
+                        
+                        <!-- Badges flotantes -->
+                        <div class="absolute top-4 left-4 flex gap-2">
+                            <span class="bg-green-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg uppercase">Entrega Inmediata</span>
+                        </div>
+                        
+                        <!-- Contador de fotos (Look de App) -->
+                        <div class="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white text-[10px] px-3 py-1.5 rounded-lg font-bold">
+                            1 / 12 FOTOS
+                        </div>
+                    </div>
+                    
+                    <!-- Miniaturas: Visibles en Desktop para navegación rápida -->
+                    <div class="hidden lg:flex gap-3 mt-4 overflow-x-auto hide-scrollbar">
+                        <div class="w-24 h-16 rounded-lg overflow-hidden border-2 border-blue-600 flex-shrink-0 cursor-pointer">
+                            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=200" class="w-full h-full object-cover">
+                        </div>
+                        <div class="w-24 h-16 rounded-lg overflow-hidden opacity-60 hover:opacity-100 transition-opacity flex-shrink-0 cursor-pointer">
+                            <img src="https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&q=80&w=200" class="w-full h-full object-cover">
+                        </div>
+                        <div class="w-24 h-16 rounded-lg overflow-hidden opacity-60 hover:opacity-100 transition-opacity flex-shrink-0 cursor-pointer">
+                            <img src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80&w=200" class="w-full h-full object-cover">
+                        </div>
+                        <div class="w-24 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-xs font-bold text-gray-400 border border-dashed border-gray-300 cursor-pointer">
+                            +9
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TÍTULO Y CARACTERÍSTICAS (MÓVIL) -->
+                <section class="space-y-4 px-2 lg:px-0">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h1 class="text-3xl lg:text-4xl font-black text-gray-900 tracking-tight">Casa Lirio</h1>
+                            <p class="text-gray-500 font-medium flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                Blvd Provenza, Culiacán
+                            </p>
+                        </div>
+                        <!-- Precio solo visible en esta sección para Móvil -->
+                        <div class="lg:hidden text-right">
+                            <span class="block text-2xl font-black text-blue-600">$3.89M</span>
+                            <span class="text-[10px] text-gray-400 font-bold uppercase">Precio Lista</span>
+                        </div>
+                    </div>
+
+                    <!-- Grid de Atributos: 2 columnas en móvil, 4 en escritorio -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+                        <div class="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm flex flex-col items-center text-center">
+                            <span class="text-2xl mb-1">🛏️</span>
+                            <span class="text-sm font-black text-gray-900">3 Rec.</span>
+                            <span class="text-[10px] text-gray-400 uppercase font-bold tracking-tighter">Habitaciones</span>
+                        </div>
+                        <div class="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm flex flex-col items-center text-center">
+                            <span class="text-2xl mb-1">🚿</span>
+                            <span class="text-sm font-black text-gray-900">2.5 Baños</span>
+                            <span class="text-[10px] text-gray-400 uppercase font-bold tracking-tighter">Servicios</span>
+                        </div>
+                        <div class="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm flex flex-col items-center text-center">
+                            <span class="text-2xl mb-1">📐</span>
+                            <span class="text-sm font-black text-gray-900">169 m²</span>
+                            <span class="text-[10px] text-gray-400 uppercase font-bold tracking-tighter">Construcción</span>
+                        </div>
+                        <div class="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm flex flex-col items-center text-center">
+                            <span class="text-2xl mb-1">🌳</span>
+                            <span class="text-sm font-black text-gray-900">114 m²</span>
+                            <span class="text-[10px] text-gray-400 uppercase font-bold tracking-tighter">Terreno</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- DESCRIPCIÓN Y AMENIDADES -->
+                <section class="space-y-6 px-2 lg:px-0 border-t border-gray-100 pt-8">
+                    <h2 class="text-xl font-black text-gray-900 uppercase tracking-tight">Descripción de la Propiedad</h2>
+                    <p class="text-gray-600 leading-relaxed">
+                        Modelo <span class="text-blue-600 font-bold italic">Lirio</span>: Una joya arquitectónica dentro de Residencial Provenza. Esta casa destaca por su aprovechamiento de luz natural y espacios abiertos. Ideal para quienes buscan seguridad y confort en una zona de alta plusvalía.
+                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm font-medium text-gray-700">
+                        <div class="flex items-center gap-2"><span class="text-green-500 font-bold">✓</span> Cochera semitechada (2 autos)</div>
+                        <div class="flex items-center gap-2"><span class="text-green-500 font-bold">✓</span> Walk-in closet en rec. principal</div>
+                        <div class="flex items-center gap-2"><span class="text-green-500 font-bold">✓</span> Sala de TV / Estancia</div>
+                        <div class="flex items-center gap-2"><span class="text-green-500 font-bold">✓</span> Área de lavado techada</div>
+                    </div>
+                </section>
+
+                <!-- MAPA MOCKUP -->
+                <section class="space-y-4 px-2 lg:px-0">
+                    <h2 class="text-xl font-black text-gray-900 uppercase tracking-tight">Ubicación exacta</h2>
+                    <div class="w-full h-64 bg-gray-200 rounded-2xl overflow-hidden relative shadow-inner border border-gray-200">
+                        <!-- Imagen de mapa placeholder -->
+                        <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=1200" class="w-full h-full object-cover opacity-40 grayscale">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="bg-white p-3 rounded-full shadow-2xl animate-bounce">
+                                <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zM7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 2.88-2.88 7.19-5 9.88C9.92 16.21 7 11.85 7 9z"/></svg>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- COLUMNA DERECHA: SIDEBAR (VISIBLE SOLO EN ESCRITORIO) -->
+            <aside class="hidden lg:block">
+                <div class="sticky top-24 space-y-6">
+                    
+                    <!-- Tarjeta de Acción Principal -->
+                    <div class="bg-white p-8 rounded-3xl shadow-2xl border border-gray-100 space-y-6">
+                        <div class="flex justify-between items-start">
+                            <div class="space-y-1">
+                                <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">Precio Especial</span>
+                                <h2 class="text-4xl font-black text-gray-900 tracking-tighter">$3,890,000</h2>
+                                <p class="text-xs text-gray-400 font-bold uppercase tracking-widest">Moneda Nacional MXN</p>
+                            </div>
+                        </div>
+
+                        <!-- Info del Asesor Integrada -->
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
+                            <div class="h-12 w-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-black border-2 border-white shadow-md">IV</div>
+                            <div>
+                                <p class="text-xs text-gray-400 font-bold uppercase">Asesor Senior</p>
+                                <p class="text-sm font-black text-gray-900">Ivan Valle</p>
+                                <p class="text-[10px] text-yellow-500 font-bold">★★★★★ <span class="text-gray-400">(22)</span></p>
+                            </div>
+                        </div>
+
+                        <!-- Botones de Conversión -->
+                        <div class="space-y-3">
+                            <button class="w-full py-4 bg-green-500 hover:bg-green-600 text-white font-black rounded-2xl transition-all shadow-lg shadow-green-100 flex items-center justify-center gap-2 active:scale-95">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                                Contactar por WhatsApp
+                            </button>
+                            <button class="w-full py-4 border-2 border-blue-600 text-blue-600 font-black rounded-2xl hover:bg-blue-50 transition-all active:scale-95">
+                                Agendar Recorrido
+                            </button>
+                            <p class="text-[10px] text-center text-gray-400 font-bold uppercase pt-2 tracking-widest italic">* Sujeto a disponibilidad</p>
+                        </div>
+                    </div>
+
+                    <!-- Calculadora Rápida -->
+                    <div class="bg-blue-600 p-8 rounded-3xl text-white shadow-xl shadow-blue-100">
+                        <h3 class="font-black text-xl mb-6 flex items-center gap-2 italic uppercase tracking-tighter">
+                            <span>💳</span> Plan Hipotecario
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center opacity-80">
+                                <span class="text-xs font-bold">Enganche inicial</span>
+                                <span class="text-sm font-black">$389,000</span>
+                            </div>
+                            <div class="flex justify-between items-center border-t border-white/20 pt-4">
+                                <span class="text-sm font-bold">Pago mensual</span>
+                                <span class="text-3xl font-black italic">$38,511</span>
+                            </div>
+                            <button class="w-full py-3 bg-white text-blue-600 font-black rounded-xl hover:bg-gray-100 transition-colors uppercase text-xs tracking-widest mt-4">
+                                Pre-calificar Crédito
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </aside>
+        </div>
+
+        <!-- SECCIÓN DE SIMILARES (Grid responsivo) -->
+        <section class="mt-20 space-y-8 px-2 lg:px-0">
+            <h2 class="text-2xl lg:text-3xl font-black text-gray-900 uppercase tracking-tight">Otras opciones que te encantarán</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Card Malva -->
+                <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 group">
+                    <div class="h-56 bg-gray-200 relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1600607687940-c52fb036999c?auto=format&fit=crop&q=80&w=600" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-black text-gray-900 uppercase">Malva</div>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-2xl font-black text-gray-900">$4,450,000</span>
+                            <span class="text-[10px] text-blue-600 font-black tracking-widest uppercase italic">Venta</span>
+                        </div>
+                        <p class="text-xs text-gray-400 font-bold uppercase tracking-widest">Salida a Imala • Culiacán</p>
+                        <div class="flex gap-4 text-[10px] text-gray-500 font-black uppercase border-t border-gray-50 pt-4">
+                            <span>🛏 3 Rec.</span>
+                            <span>🚿 3.5 Baños</span>
+                            <span>📐 185 m²</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card Rosa -->
+                <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 group">
+                    <div class="h-56 bg-gray-200 relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&q=80&w=600" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-black text-gray-900 uppercase">Rosa</div>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-2xl font-black text-gray-900">$3,380,000</span>
+                            <span class="text-[10px] text-blue-600 font-black tracking-widest uppercase italic">Venta</span>
+                        </div>
+                        <p class="text-xs text-gray-400 font-bold uppercase tracking-widest">Salida a Imala • Culiacán</p>
+                        <div class="flex gap-4 text-[10px] text-gray-500 font-black uppercase border-t border-gray-50 pt-4">
+                            <span>🛏 3 Rec.</span>
+                            <span>🚿 2.5 Baños</span>
+                            <span>📐 155 m²</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-gray-100 mt-24 py-16 px-4">
+        <div class="max-w-7xl mx-auto flex flex-col items-center gap-8">
+            <div class="text-gray-400 font-black tracking-tighter text-2xl uppercase">MARKET<span class="text-gray-200">PRO</span></div>
+            <div class="flex flex-wrap justify-center gap-8 text-[10px] font-black uppercase text-gray-400 tracking-widest">
+                <a href="#" class="hover:text-blue-600 transition-colors">Términos</a>
+                <a href="#" class="hover:text-blue-600 transition-colors">Aviso de Privacidad</a>
+                <a href="#" class="hover:text-blue-600 transition-colors">Ayuda</a>
+                <a href="#" class="hover:text-blue-600 transition-colors">Inversionistas</a>
+            </div>
+            <p class="text-[10px] text-gray-300 font-bold uppercase tracking-widest">© 2026 Inmueble Advisor. Smart Real Estate Technology.</p>
+        </div>
+    </footer>
+
+    <!-- BARRA DE ACCIÓN FIJA PARA MÓVIL (VISIBLE SOLO EN LG:HIDDEN) -->
+    <!-- Se oculta automáticamente cuando la pantalla es grande -->
+    <div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 pb-8 z-[100] flex gap-3 shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
+        
+        <!-- Botón de WhatsApp -->
+        <button class="flex-[1.8] bg-green-500 hover:bg-green-600 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-green-100">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            <span class="text-xs font-black uppercase tracking-widest">WhatsApp</span>
+        </button>
+        
+        <!-- Botón de Agendar -->
+        <button class="flex-1 bg-gray-900 hover:bg-black text-white font-black py-4 rounded-2xl flex items-center justify-center text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-gray-200">
+            Agendar
+        </button>
+
+    </div>
+
+</body>
+</html>

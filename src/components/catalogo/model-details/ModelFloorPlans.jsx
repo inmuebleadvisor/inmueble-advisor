@@ -1,84 +1,95 @@
-import React from 'react';
-import Delightbox from '../../common/Delightbox';
+import React, { useState } from 'react';
 import '../../../styles/model-details/ModelFloorPlans.css';
-
-// Ícono de lupa (SVG, sin dependencia externa)
-const MagnifyIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        <line x1="11" y1="8" x2="11" y2="14" />
-        <line x1="8" y1="11" x2="14" y2="11" />
-    </svg>
-);
+import Delightbox from '../../common/Delightbox';
 
 /**
- * @component ModelFloorPlans
- * @description Cuadrícula de planos arquitectónicos del modelo.
+ * @component ModelFloorPlans (Marketplace Layout)
+ * @description Muestra los planos arquitectónicos en una cuadrícula (grid)
+ * con tarjetas interactivas de fondo blanco y esquinas redondeadas.
  *
- * Responsabilidades (SRP):
- *  - Renderizar la grilla de thumbnails de planos.
- *  - Gestionar el estado del lightbox (Delightbox) de planos.
- *  - Mostrar overlay de lupa al hacer hover sobre cada plano.
- *
- * Si el modelo no tiene plantas definidas, este componente NO se monta (el
- * Orquestador lo controla con un condicional).
- *
- * @param {string[]} plantas - Arreglo de URLs de imágenes de plantas.
- * @param {string}   nombreModelo - Nombre del modelo (para texto descriptivo).
+ * @param {Array}  plantas      - Array de objetos { planta_url, nombre_planta }
+ * @param {string} nombreModelo - Nombre del modelo para el subtítulo
  */
 export default function ModelFloorPlans({ plantas = [], nombreModelo }) {
-    const [isOpen, setIsOpen] = React.useState(false);
-    const [activeIndex, setActiveIndex] = React.useState(0);
+    // -1 = cerrado; >= 0 = índice activo en Delightbox
+    const [lightboxIndex, setLightboxIndex] = useState(-1);
 
-    const handleOpen = (index) => {
-        setActiveIndex(index);
-        setIsOpen(true);
-    };
+    if (!plantas || plantas.length === 0) return null;
+
+    // FIX BUG 1 & 7: Formateamos los items en el formato que Delightbox espera
+    // Delightbox API: { isOpen, images: [{url, type}], initialIndex, onClose }
+    const validPlantas = plantas
+        .filter(p => p && p.planta_url)
+        .map(p => ({
+            url: p.planta_url,
+            caption: p.nombre_planta || 'Planta arquitectónica',
+            type: 'image'
+        }));
+
+    if (validPlantas.length === 0) return null;
+
+    const handleOpenLightbox  = (index) => setLightboxIndex(index);
+    const handleCloseLightbox = ()      => setLightboxIndex(-1);
 
     return (
-        <section className="model-floor-plans" aria-labelledby="floor-plans-heading">
-            <h3 id="floor-plans-heading" className="model-floor-plans__title">
-                Distribución y Planos
-            </h3>
-            <p className="model-floor-plans__subtitle">
-                Consulta la distribución arquitectónica de {nombreModelo}.
-            </p>
+        <div className="model-floor-plans">
+            
+            <header>
+                <h2 className="model-floor-plans__title">Planos Arquitectónicos</h2>
+                <p className="model-floor-plans__subtitle">
+                    Conoce a detalle la distribución del modelo {nombreModelo}
+                </p>
+            </header>
 
-            {/* Cuadrícula de thumbnails */}
-            <ul className="model-floor-plans__grid" role="list">
-                {plantas.map((url, index) => (
-                    <li key={index} className="model-floor-plans__item">
-                        <button
+            {/* FIX BUG 7: Delightbox fuera del <ul> para que el HTML sea válido */}
+            <ul className="model-floor-plans__grid">
+                {validPlantas.map((planta, i) => (
+                    <li key={`planta-${i}`} className="model-floor-plans__item">
+                        
+                        <div 
                             className="model-floor-plans__card"
-                            onClick={() => handleOpen(index)}
-                            aria-label={`Ver planta ${index + 1} en tamaño completo`}
+                            onClick={() => handleOpenLightbox(i)}
+                            tabIndex={0}
+                            role="button"
+                            aria-label={`Ver ${planta.caption}`}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleOpenLightbox(i);
+                                }
+                            }}
                         >
                             <div className="model-floor-plans__img-wrapper">
                                 <img
-                                    src={url}
-                                    alt={`Planta ${index + 1} de ${nombreModelo}`}
+                                    src={planta.url}
+                                    alt={planta.caption}
                                     className="model-floor-plans__img"
                                     loading="lazy"
                                 />
-                                {/* Overlay con lupa visible al hover (definido en CSS) */}
-                                <div className="model-floor-plans__overlay" aria-hidden="true">
-                                    <MagnifyIcon />
+                                <div className="model-floor-plans__overlay">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00396a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="11" cy="11" r="8" />
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                        <line x1="11" y1="8" x2="11" y2="14" />
+                                        <line x1="8" y1="11" x2="14" y2="11" />
+                                    </svg>
                                 </div>
                             </div>
-                            <span className="model-floor-plans__label">Planta {index + 1}</span>
-                        </button>
+                            
+                            <span className="model-floor-plans__label">{planta.caption}</span>
+                        </div>
                     </li>
                 ))}
             </ul>
 
-            {/* Lightbox de planos */}
+            {/* FIX BUG 1: Props correctas para Delightbox — isOpen, images, initialIndex */}
             <Delightbox
-                isOpen={isOpen}
-                images={plantas}
-                initialIndex={activeIndex}
-                onClose={() => setIsOpen(false)}
+                isOpen={lightboxIndex >= 0}
+                images={validPlantas}
+                initialIndex={lightboxIndex >= 0 ? lightboxIndex : 0}
+                onClose={handleCloseLightbox}
             />
-        </section>
+            
+        </div>
     );
 }

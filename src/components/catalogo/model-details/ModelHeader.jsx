@@ -1,58 +1,125 @@
-import React from 'react';
-import Carousel from '../Carousel';
+import React, { useState } from 'react';
+import { ChevronLeft } from 'lucide-react';
 import '../../../styles/model-details/ModelHeader.css';
 
-// Icono de regreso definido localmente (SVG puro, sin dependencia de librería externa)
-const BackIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M19 12H5M12 19l-7-7 7-7" />
-    </svg>
-);
-
 /**
- * @component ModelHeader
- * @description Encabezado inmersivo del detalle de modelo.
+ * @component ModelHeader (ahora fungiendo como ModelGallery)
+ * @description Componente visual para la galería de imágenes del modelo (Estilo Marketplace).
+ * Presenta un contenedor principal (Hero) con aspect ratio, insignias, y miniaturas en desktop.
+ * 
+ * RESPONSABILIDAD: Mostrar las imágenes provistas. NO maneja resolución de
+ * qué imagen mostrar, eso lo hace el ModelPresentationService.
  *
- * Responsabilidades (SRP):
- *  - Renderizar el carrusel de medios (fotos/video).
- *  - Mostrar el botón de regreso (sólo en vista de pantalla completa).
- *  - Mostrar el badge de estado (Pre-venta / Entrega Inmediata).
- *  - Renderizar el gradiente de transición hacia el contenido.
- *
- * No contiene lógica de negocio. Consume datos formateados del padre (Orquestador).
- *
- * @param {Array}    galeriaItems - Arreglo de {url, type} para el carrusel.
- * @param {boolean}  esPreventa   - Estado del modelo para el badge.
- * @param {boolean}  isModal      - Oculta el botón de regreso si es un modal.
- * @param {Function} onBack       - Callback al presionar el botón de regreso.
- * @param {Object}   headerRef    - Ref de React para detectar el scroll (useStickyPanel).
+ * @param {Array}    galeriaItems - Arreglo de URLs de imágenes o videos
+ * @param {boolean}  esPreventa   - Determina si se muestra insignia de preventa
+ * @param {boolean}  isModal      - Modifica si mostramos botón de regresar
+ * @param {Function} onBack       - Callback para regresar en navegación
  */
-export default function ModelHeader({ galeriaItems, esPreventa, isModal, onBack, headerRef }) {
-    const badgeLabel = esPreventa ? 'PRE-VENTA' : 'ENTREGA INMEDIATA';
-    const badgeColor = esPreventa ? '#dcb23a' : '#10b981';
+export default function ModelHeader({ galeriaItems = [], esPreventa, isModal, onBack }) {
+    const [activeIndex, setActiveIndex] = useState(0);
+
+    if (!galeriaItems || galeriaItems.length === 0) return null;
+
+    const mainMedia = galeriaItems[activeIndex];
+    
+    // Helper preventivo para extraer URL ya sea de string o objeto Firestore
+    const getMediaUrl = (media) => {
+        if (!media) return '';
+        if (typeof media === 'string') return media;
+        return media.url || media.src || media.downloadURL || media.fileUrl || '';
+    };
+    
+    const mainMediaUrl = getMediaUrl(mainMedia);
+
+    // Mostramos máximo 4 miniaturas, la 4ta podría ser "+X fotos"
+    const maxThumbnails = 4;
+    const arrayCount = galeriaItems.length;
+    const showMoreThumb = arrayCount > maxThumbnails;
+    const visibleThumbs = showMoreThumb ? galeriaItems.slice(0, 3) : galeriaItems;
+    const remainingCount = arrayCount - 3;
 
     return (
-        <header ref={headerRef} className="model-header">
-            <Carousel items={galeriaItems} />
-
-            {/* Botón de regreso: visible solo fuera de contexto modal */}
-            {!isModal && onBack && (
-                <button onClick={onBack} className="model-header__back-btn" aria-label="Volver al catálogo">
-                    <BackIcon />
+        <div className={`model-gallery ${(!isModal && onBack) ? 'model-gallery--with-backbtn' : ''}`}>
+            
+            {/* ── BOTÓN VOLVER (Condicional) ── */}
+            {(!isModal && onBack) && (
+                <button
+                    onClick={onBack}
+                    className="model-gallery__back-btn"
+                    aria-label="Volver atrás"
+                >
+                    <ChevronLeft size={24} strokeWidth={2.5} />
                 </button>
             )}
 
-            {/* Badge de estado: Pre-venta o Entrega Inmediata */}
-            <span
-                className="model-header__status-badge"
-                style={{ backgroundColor: badgeColor }}
-                aria-label={`Estado del modelo: ${badgeLabel}`}
-            >
-                {badgeLabel}
-            </span>
+            {/* ── STAGE (Visor Principal) ── */}
+            <div className="model-gallery__stage">
+                
+                {/* 1. Imagen Actual */}
+                {mainMediaUrl.includes('.mp4') ? (
+                    <video
+                        src={mainMediaUrl}
+                        className="model-gallery__image"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                    />
+                ) : (
+                    <img
+                        src={mainMediaUrl}
+                        alt="Vista de la propiedad"
+                        className="model-gallery__image"
+                    />
+                )}
 
-            {/* Gradiente de transición hacia el contenido principal */}
-            <div className="model-header__gradient" aria-hidden="true" />
-        </header>
+                {/* 2. Degradado Inferior (Solo móvil p/ no chocar con textos si hubiera) */}
+                <div className="model-gallery__overlay" />
+
+                {/* 3. Badges Superiores */}
+                <div className="model-gallery__badges-layer">
+                    <span className="model-gallery__badge">Disponible</span>
+                    {esPreventa && (
+                        <span className="model-gallery__badge model-gallery__badge--preventa">Preventa</span>
+                    )}
+                </div>
+
+                {/* 4. Contador de Fotos */}
+                <div className="model-gallery__counter">
+                    {activeIndex + 1} / {arrayCount} FOTOS
+                </div>
+            </div>
+
+            {/* ── MINIATURAS (Visibles en Desktop) ── */}
+            {arrayCount > 1 && (
+                <div className="model-gallery__thumbnails">
+                    {visibleThumbs.map((item, index) => (
+                        <div 
+                            key={`thumb-${index}`}
+                            className={`model-gallery__thumb ${index === activeIndex ? 'model-gallery__thumb--active' : ''}`}
+                            onClick={() => setActiveIndex(index)}
+                        >
+                            {/* Simplificación: mostramos img miniatura. Si es vd, mostramos poster o ignora */}
+                            {getMediaUrl(item).includes('.mp4') ? (
+                                <video src={getMediaUrl(item)} className="model-gallery__thumb-img" muted />
+                            ) : (
+                                <img src={getMediaUrl(item)} alt={`Thumbnail ${index + 1}`} className="model-gallery__thumb-img" />
+                            )}
+                        </div>
+                    ))}
+                    
+                    {/* Botón de "Ver Más" */}
+                    {showMoreThumb && (
+                        <div 
+                            className="model-gallery__thumb-more"
+                            onClick={() => setActiveIndex(3)} /* Demo: pasa a la 4ta img */
+                        >
+                            +{remainingCount}
+                        </div>
+                    )}
+                </div>
+            )}
+            
+        </div>
     );
 }

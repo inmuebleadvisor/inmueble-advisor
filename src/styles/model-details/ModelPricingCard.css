@@ -1,145 +1,190 @@
 /* src/styles/model-details/ModelPricingCard.css */
-/* Block: model-pricing-card — Tarjeta de precio principal (Glassmorphism) */
+/* Block: model-sidebar-card — Contenedor Principal de Conversión en Desktop/Mobile */
 
-.model-pricing-card {
+.model-sidebar-card {
+    background-color: #ffffff; /* bg-white */
+    border-radius: 24px; /* rounded-3xl */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); /* shadow-2xl */
+    border: 1px solid rgba(0, 57, 106, 0.08); /* border-gray-100 */
+    padding: 32px; /* p-8 */
+    display: flex;
+    flex-direction: column;
+    gap: 24px; /* space-y-6 */
+}
+
+/* En móvil reducimos las sombras y padding para que parezca flow natural */
+.model-sidebar-card--mobile {
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
+    border-bottom: 1px solid rgba(0, 57, 106, 0.08);
+    padding: 16px 0 24px;
+}
+
+/* ── 1. Cabecera (Precio y Título) ── */
+.model-sidebar-card__header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+}
+
+.model-sidebar-card__price-label {
+    display: block;
+    font-size: 0.625rem; /* text-[10px] */
+    font-weight: 900; /* font-black */
+    color: var(--primary-color); /* text-blue-600 */
+    text-transform: uppercase;
+    letter-spacing: 0.1em; /* tracking-widest */
+}
+
+.model-sidebar-card__price-value {
+    display: block;
+    font-size: 2.25rem; /* text-4xl */
+    font-weight: 900; /* font-black */
+    color: var(--text-main); /* text-gray-900 */
+    letter-spacing: -0.05em; /* tracking-tighter */
+    margin: 4px 0;
+}
+
+.model-sidebar-card__currency {
+    display: block;
+    font-size: 0.75rem;
+    /* FIX #2: color variable en lugar de #94a3b8 */
+    color: var(--text-secondary, #94a3b8);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* ── 2. Info del Asesor Integrada (Mockup Marketplace) ── */
+.model-sidebar-card__agent {
+    display: flex;
+    align-items: center;
     gap: 16px;
-    margin-bottom: 24px;
-    /* Light glassmorphism sobre fondo blanco */
-    background-color: #ffffff;
-    backdrop-filter: blur(10px);
-    padding: 24px;
+    padding: 16px;
+    /* FIX #2: color variable en lugar de #f8fafc */
+    background-color: var(--bg-secondary);
     border-radius: 16px;
-    border: 1px solid rgba(0, 57, 106, 0.08);
-    box-shadow: 0 4px 24px rgba(0, 57, 106, 0.08);
 }
 
-/* ── Columna izquierda (contenido principal) ── */
-.model-pricing-card__left {
-    flex: 1;
-    min-width: 0; /* Evita overflow en flex */
-}
-
-.model-pricing-card__name {
-    font-size: 1.75rem;
-    font-weight: 800;
-    color: var(--base-brand-blue);
-    margin: 0 0 16px 0;
-    line-height: 1.2;
-}
-
-/* ── Bloque de precio ── */
-.model-pricing-card__price-box {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-bottom: 16px;
-}
-
-.model-pricing-card__price-label {
-    font-size: 0.7rem;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    font-weight: 700;
-}
-
-.model-pricing-card__price-val {
-    font-size: 1.85rem;
-    font-weight: 800;
-    color: var(--primary-color);
-    line-height: 1.1;
-}
-
-.model-pricing-card__price-maintenance {
-    font-size: 0.82rem;
-    color: #64748b;
-    font-style: italic;
-}
-
-/* ── Highlights ── */
-.model-pricing-card__highlights {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 16px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.model-pricing-card__highlight-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--base-brand-blue);
-    font-size: 0.88rem;
-    font-weight: 500;
-}
-
-.model-pricing-card__check-icon {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background-color: rgba(220, 178, 58, 0.15);
-    color: var(--primary-color);
-}
-
-/* ── CTA Principal ── */
-.model-pricing-card__cta {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
+.model-sidebar-card__agent-avatar {
+    width: 48px;
+    height: 48px;
     background-color: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: #ffffff;
-    border: none;
-    border-radius: 12px;
-    padding: 14px 24px;
-    font-size: 0.95rem;
+    font-weight: 900;
+    border: 2px solid #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.model-sidebar-card__agent-role {
+    font-size: 0.75rem;
+    /* FIX #2: color variable en lugar de #94a3b8 */
+    color: var(--text-secondary, #94a3b8);
     font-weight: 700;
-    cursor: pointer;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 4px 16px rgba(0, 57, 106, 0.25);
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 2px;
 }
 
-.model-pricing-card__cta:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 57, 106, 0.35);
+.model-sidebar-card__agent-name {
+    font-size: 0.875rem; /* text-sm */
+    font-weight: 900;
+    color: var(--text-main);
+    margin-bottom: 2px;
 }
 
-/* ── Botón de favoritos (columna derecha) ── */
-.model-pricing-card__fav {
-    flex-shrink: 0;
+.model-sidebar-card__agent-rating {
+    font-size: 0.625rem; /* text-[10px] */
+    color: #eab308; /* text-yellow-500 */
+    font-weight: 700;
+}
+
+.model-sidebar-card__agent-rating span {
+    /* FIX #2: color variable en lugar de #94a3b8 */
+    color: var(--text-secondary, #94a3b8);
+    margin-left: 4px;
+}
+
+/* ── 3. Botones de Conversión ── */
+.model-sidebar-card__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* FIX #4: 12px → 8px (múltiplo de 8px) */
+}
+
+/* Botón Primario (WhatsApp Verde) */
+.model-sidebar-card__btn-primary {
+    width: 100%;
+    padding: 16px; /* py-4 */
+    background-color: var(--status-success); /* bg-green-500 */
+    color: #ffffff;
+    font-family: inherit;
+    font-weight: 900;
+    border: none;
+    border-radius: 16px; /* rounded-2xl */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.3); /* shadow-green-100 análogo */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.model-sidebar-card__btn-primary:hover {
+    background-color: #16a34a; /* bg-green-600 */
+}
+
+.model-sidebar-card__btn-primary:active {
+    transform: scale(0.95);
+}
+
+/* Botón Secundario (Agendar - Outlined) */
+.model-sidebar-card__btn-secondary {
+    width: 100%;
+    padding: 16px;
+    background-color: transparent;
+    color: var(--primary-color);
+    font-family: inherit;
+    font-weight: 900;
+    border: 2px solid var(--primary-color);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.model-sidebar-card__btn-secondary:hover {
+    /* FIX #2: color variable en lugar de #eff6ff */
+    background-color: var(--bg-secondary);
+}
+
+.model-sidebar-card__btn-secondary:active {
+    transform: scale(0.95);
+}
+
+/* Disclaimer / Texto Legal */
+.model-sidebar-card__disclaimer {
+    font-size: 0.625rem;
+    text-align: center;
+    /* FIX #2: color variable en lugar de #94a3b8 */
+    color: var(--text-secondary, #94a3b8);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-style: italic;
+    margin-top: 8px;
+}
+
+/* Mantenimiento mensual */
+.model-sidebar-card__maintenance {
+    font-size: 0.75rem;
+    /* FIX #2: color variable en lugar de #64748b */
+    color: var(--text-secondary, #64748b);
+    font-weight: 600;
     margin-top: 4px;
 }
 
-/* --- Responsive (móvil < 768px) --- */
-@media (max-width: 767px) {
-    .model-pricing-card {
-        flex-direction: column;
-        padding: 16px;
-    }
-
-    .model-pricing-card__name {
-        font-size: 1.4rem;
-    }
-
-    .model-pricing-card__price-val {
-        font-size: 1.5rem;
-    }
-
-    .model-pricing-card__fav {
-        align-self: flex-end;
-        margin-top: -56px; /* Alinea con el nombre en mobile */
-    }
-}

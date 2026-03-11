@@ -1,93 +1,93 @@
 import React from 'react';
-import FavoriteBtn from '../../common/FavoriteBtn';
 import '../../../styles/model-details/ModelPricingCard.css';
-
-// Icono calculadora (SVG, sin dependencia externa)
-const CalculatorIcon = () => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
-        <line x1="8" y1="6" x2="16" y2="6" />
-        <line x1="16" y1="14" x2="16" y2="18" />
-        <line x1="12" y1="14" x2="12" y2="14.01" />
-        <line x1="8"  y1="14" x2="8"  y2="14.01" />
-        <line x1="12" y1="18" x2="12" y2="18.01" />
-        <line x1="8"  y1="18" x2="8"  y2="18.01" />
-    </svg>
-);
-
-const CheckIcon = () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="20 6 9 17 4 12" />
-    </svg>
-);
+import { useWhatsAppContact } from '../../../hooks/useWhatsAppContact';
 
 /**
- * @component ModelPricingCard
- * @description Tarjeta de precio principal del detalle de modelo.
+ * @component ModelPricingCard (Marketplace Sidebar)
+ * @description Tarjeta de conversión principal. En escritorio sirve como el
+ * Sticky Sidebar. En móvil asume un rol inline.
  *
- * Responsabilidades (SRP):
- *  - Mostrar el nombre del modelo, precio formateado y cuota de mantenimiento.
- *  - Renderizar los highlights del modelo.
- *  - Exponer el botón de favoritos.
- *  - Contener el CTA principal: "Simular Crédito".
+ * BOTÓN WHATSAPP: Usa el hook `useWhatsAppContact` (DRY) que genera la URL
+ * contextual correcta y dispara el tracking de Meta Pixel+CAPI.
  *
- * No formatea datos, recibe todo listo del Orquestador (ModelDetailsContent).
- *
- * @param {string}   modelName       - Nombre completo del modelo.
- * @param {string}   precioFormateado - Precio listo para mostrar (MXN string).
- * @param {string}   [mantenimientoFormateado] - Cuota mensual (string nullable).
- * @param {Array}    [highlights=[]] - Lista de highlights del modelo.
- * @param {string}   modeloId        - ID del modelo para FavoriteBtn.
- * @param {Function} onSimulate      - Callback al presionar "Simular Crédito".
+ * @param {string}   precioFormateado         - Precio ya formateado por ModelPresentationService
+ * @param {string}   mantenimientoFormateado  - Mantenimiento formateado (opcional)
+ * @param {Function} onSchedule               - Abre el flujo de agendar recorrido / LeadCaptureForm
+ * @param {boolean}  isDesktopSidebar         - Aplica estilos de tarjeta flotante en desktop
  */
 export default function ModelPricingCard({
-    modelName,
     precioFormateado,
     mantenimientoFormateado,
-    highlights = [],
-    modeloId,
-    onSimulate
+    onSchedule,
+    isDesktopSidebar = false
 }) {
-    return (
-        <div className="model-pricing-card">
-            {/* Sección izquierda: Nombre, precio e highlights */}
-            <div className="model-pricing-card__left">
-                <h1 className="model-pricing-card__name">{modelName}</h1>
+    if (!precioFormateado) return null;
 
-                <div className="model-pricing-card__price-box">
-                    <span className="model-pricing-card__price-label">Precio de Lista</span>
-                    <span className="model-pricing-card__price-val">{precioFormateado}</span>
+    // DRY: lógica de WhatsApp centralizada en el hook reutilizable
+    const { whatsappUrl, handleWhatsAppClick } = useWhatsAppContact();
+
+    const IconoWhatsApp = () => (
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+    );
+
+    return (
+        <div className={`model-sidebar-card ${!isDesktopSidebar ? 'model-sidebar-card--mobile' : ''}`}>
+            
+            {/* 1. Encabezado de Precio */}
+            <div className="model-sidebar-card__header">
+                <div>
+                    <span className="model-sidebar-card__price-label">Precio Especial</span>
+                    <p className="model-sidebar-card__price-value">{precioFormateado}</p>
+                    <p className="model-sidebar-card__currency">Moneda Nacional MXN</p>
                     {mantenimientoFormateado && (
-                        <span className="model-pricing-card__price-maintenance">
-                            + {mantenimientoFormateado} mant. mensual
-                        </span>
+                        <p className="model-sidebar-card__maintenance">
+                            + {mantenimientoFormateado}/mes mantenimiento
+                        </p>
                     )}
                 </div>
+            </div>
 
-                {highlights.length > 0 && (
-                    <ul className="model-pricing-card__highlights" aria-label="Puntos destacados del modelo">
-                        {highlights.map((highlight, i) => (
-                            <li key={i} className="model-pricing-card__highlight-item">
-                                <span className="model-pricing-card__check-icon" aria-hidden="true">
-                                    <CheckIcon />
-                                </span>
-                                <span className="model-pricing-card__highlight-text">{highlight}</span>
-                            </li>
-                        ))}
-                    </ul>
-                )}
+            {/* 2. Tarjeta de Asesor (UX Trust) */}
+            <div className="model-sidebar-card__agent">
+                <div className="model-sidebar-card__agent-avatar">IV</div>
+                <div>
+                    <p className="model-sidebar-card__agent-role">Asesor Senior</p>
+                    <p className="model-sidebar-card__agent-name">Ivan Valle</p>
+                    <p className="model-sidebar-card__agent-rating">
+                        ★★★★★ <span>(22 reseñas)</span>
+                    </p>
+                </div>
+            </div>
 
-                {/* CTA principal: abre el simulador hipotecario */}
-                <button className="model-pricing-card__cta" onClick={onSimulate}>
-                    <CalculatorIcon />
-                    <span>Simular Crédito</span>
+            {/* 3. Acciones de Conversión */}
+            <div className="model-sidebar-card__actions">
+                <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="model-sidebar-card__btn-primary"
+                    aria-label="Contactar por WhatsApp"
+                    onClick={handleWhatsAppClick}
+                >
+                    <IconoWhatsApp />
+                    Contactar por WhatsApp
+                </a>
+                
+                <button 
+                    className="model-sidebar-card__btn-secondary"
+                    onClick={onSchedule}
+                    aria-label="Agenda tu recorrido"
+                >
+                    Agenda tu Recorrido
                 </button>
+
+                <p className="model-sidebar-card__disclaimer">
+                    * Sujeto a disponibilidad
+                </p>
             </div>
 
-            {/* Sección derecha: Botón de favoritos */}
-            <div className="model-pricing-card__fav">
-                <FavoriteBtn modeloId={modeloId} />
-            </div>
         </div>
     );
 }

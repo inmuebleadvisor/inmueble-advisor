@@ -1,28 +1,33 @@
 /* src/styles/model-details/ModelFloorPlans.css */
-/* Block: model-floor-plans — Grilla de planos arquitectónicos */
+/* Block: model-floor-plans — Grilla de planos arquitectónicos (Marketplace Layout) */
 
 .model-floor-plans {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .model-floor-plans__title {
-    font-size: 1.3rem;
-    font-weight: 700;
+    font-size: 1.25rem; /* text-xl */
+    font-weight: 900; /* font-black */
     color: var(--text-main);
-    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: -0.025em; /* tracking-tight */
+    margin: 0;
 }
 
 .model-floor-plans__subtitle {
-    font-size: 0.9rem;
-    color: #64748b;
-    margin-bottom: 16px;
-    line-height: 1.6;
+    font-size: 0.875rem; /* text-sm */
+    color: #64748b; /* text-gray-500 */
+    font-weight: 500;
+    margin: 0;
 }
 
-/* ── Grilla (auto-fill para adaptarse a cualquier número de plantas) ── */
+/* ── Grilla ── */
 .model-floor-plans__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
+    /* Móvil: 2 cols min-ancho, Desktop auto-fill */
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 16px;
     list-style: none;
     padding: 0;
@@ -39,19 +44,20 @@
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    background-color: var(--bg-secondary);
-    border: 1px solid rgba(0, 57, 106, 0.08);
-    border-radius: 12px;
-    padding: 8px;
+    
+    background-color: #ffffff; /* bg-white */
+    border: 1px solid rgba(0, 57, 106, 0.08); /* border-gray-100 */
+    border-radius: 16px; /* rounded-2xl */
+    padding: 12px;
     cursor: pointer;
     text-align: center;
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .model-floor-plans__card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 57, 106, 0.1);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 /* ── Imagen con relación de aspecto cuadrada ── */
@@ -59,23 +65,25 @@
     width: 100%;
     aspect-ratio: 1 / 1;
     position: relative;
-    border-radius: 8px;
+    border-radius: 8px; /* rounded-lg */
     overflow: hidden;
-    background-color: #ffffff;
+    background-color: #f1f5f9; /* fondo sutil */
 }
 
 .model-floor-plans__img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    padding: 4px;
+    padding: 8px;
+    mix-blend-mode: multiply; /* Para q planos de fondo blanco se mezclen con el fondo gris sutil de la tarjeta */
 }
 
 /* ── Overlay de lupa (visible al hover del card) ── */
 .model-floor-plans__overlay {
     position: absolute;
     inset: 0;
-    background-color: rgba(0, 57, 106, 0.35);
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(2px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -88,15 +96,8 @@
 }
 
 .model-floor-plans__label {
-    font-size: 0.82rem;
-    color: #475569;
-    font-weight: 600;
-}
-
-/* --- Responsive (móvil < 768px) --- */
-@media (max-width: 767px) {
-    .model-floor-plans__grid {
-        grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
-        gap: 12px;
-    }
+    font-size: 0.75rem; /* text-xs */
+    color: var(--text-main);
+    font-weight: 900; /* font-black */
+    text-transform: uppercase;
 }

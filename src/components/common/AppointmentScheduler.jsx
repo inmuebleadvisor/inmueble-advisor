@@ -131,8 +131,8 @@ const AppointmentScheduler = ({ onSelect, initialDate, className = '' }) => {
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-                    {slots.length > 0 ? (
-                        slots.map((slot, idx) => {
+                    {availableSlots.length > 0 ? (
+                        availableSlots.map((slot, idx) => {
                             const isSelected = selectedTime === slot.value;
                             return (
                                 <button

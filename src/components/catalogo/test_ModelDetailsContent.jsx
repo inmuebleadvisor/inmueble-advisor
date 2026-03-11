@@ -23,12 +23,13 @@ vi.mock('../../hooks/useStickyPanel');
 // Subcomponentes visuales: stubs mínimos para aislar el orquestador
 vi.mock('./model-details/ModelHeader',      () => ({ default: () => <div data-testid="model-header" /> }));
 vi.mock('./model-details/ModelPricingCard', () => ({
-    default: ({ onSimulate }) => (
+    default: ({ onSchedule }) => (
         <div data-testid="model-pricing-card">
-            <button onClick={onSimulate}>Simular Crédito</button>
+            <button onClick={onSchedule}>Agenda tu Recorrido</button>
         </div>
     )
 }));
+vi.mock('./model-details/ModelHeaderInfo',  () => ({ default: () => <div data-testid="model-header-info" /> }));
 vi.mock('./model-details/ModelDescription', () => ({ default: () => <div data-testid="model-description" /> }));
 vi.mock('./model-details/ModelFloorPlans',  () => ({ default: () => <div data-testid="model-floor-plans" /> }));
 
@@ -77,36 +78,39 @@ describe('ModelDetailsContent — Triggers de Orquestación', () => {
         render(<ModelDetailsContent modelo={mockModelo} />);
 
         expect(screen.getByTestId('model-header')).toBeInTheDocument();
-        expect(screen.getByTestId('model-pricing-card')).toBeInTheDocument();
+        expect(screen.getByTestId('model-header-info')).toBeInTheDocument();
+        expect(screen.getAllByTestId('model-pricing-card').length).toBe(2);
         expect(screen.getByTestId('model-description')).toBeInTheDocument();
     });
 
-    it('abre el SimulatorModal al hacer click en "Simular Crédito"', async () => {
+    it('abre LeadCaptureForm al hacer click en "Agenda tu Recorrido"', async () => {
         useUser.mockReturnValue({ user: { uid: '123' }, loginWithGoogle: mockLoginWithGoogle });
 
         render(<ModelDetailsContent modelo={mockModelo} />);
 
-        fireEvent.click(screen.getByText('Simular Crédito'));
+        const buttons = screen.getAllByText('Agenda tu Recorrido');
+        fireEvent.click(buttons[0]);
 
         await waitFor(() => {
-            expect(screen.getByTestId('simulator-modal')).toBeInTheDocument();
+            expect(screen.getByTestId('lead-form')).toBeInTheDocument();
         });
     });
 
-    it('cierra el SimulatorModal al llamar onClose', async () => {
+    it('cierra el LeadCaptureForm al llamar onCancel', async () => {
         useUser.mockReturnValue({ user: { uid: '123' }, loginWithGoogle: mockLoginWithGoogle });
 
         render(<ModelDetailsContent modelo={mockModelo} />);
-        fireEvent.click(screen.getByText('Simular Crédito'));
-        await waitFor(() => expect(screen.getByTestId('simulator-modal')).toBeInTheDocument());
+        const buttons = screen.getAllByText('Agenda tu Recorrido');
+        fireEvent.click(buttons[0]);
+        await waitFor(() => expect(screen.getByTestId('lead-form')).toBeInTheDocument());
 
         fireEvent.click(screen.getByText('Cerrar'));
-        await waitFor(() => expect(screen.queryByTestId('simulator-modal')).not.toBeInTheDocument());
+        await waitFor(() => expect(screen.queryByTestId('lead-form')).not.toBeInTheDocument());
     });
 
-    it('dispara loginWithGoogle si el usuario es anónimo y presiona el FAB', async () => {
+    it('dispara loginWithGoogle si el usuario es anónimo y presiona el botón Agendar', async () => {
         useUser.mockReturnValue({ user: null, loginWithGoogle: mockLoginWithGoogle });
-        useStickyPanel.mockReturnValue(true); // Muestra el FAB
+        useStickyPanel.mockReturnValue(true); // Muestra la barra inferior
 
         render(<ModelDetailsContent modelo={mockModelo} />);
 

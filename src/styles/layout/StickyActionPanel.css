@@ -1,0 +1,75 @@
+/* src/styles/layout/StickyActionPanel.css */
+/* Block: sticky-panel — Barra de Acción Fija para Móvil (Marketplace Layout) */
+
+/* ── Envoltura Pegajosa Fija (Bottom) ── */
+.sticky-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #ffffff;
+    border-top: 1px solid rgba(0, 57, 106, 0.08);
+    /* FIX #4: Espaciado redondeado al grid de 8px */
+    padding: 8px 16px;
+    /* FIX #3: Z-Index corregido a escala oficial STYLES_GUIDE (nivel Navbar/Sticky = 1000) */
+    z-index: 1000;
+    display: flex;
+    gap: 8px; /* FIX #4: 10px → 8px (múltiplo de 8px) */
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.08);
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sticky-panel--visible {
+    transform: translateY(0);
+}
+
+/* ── Botones ── */
+.sticky-panel__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sticky-panel__icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.sticky-panel__btn:active {
+    transform: scale(0.95);
+}
+
+/* 1. Botón Principal (WhatsApp) - Ocupa más ancho (flex: 1.8) */
+.sticky-panel__btn--primary {
+    flex: 1.8;
+    background-color: var(--status-success);
+    color: #ffffff;
+    box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.3);
+}
+
+/* 2. Botón Secundario (Agendar) */
+.sticky-panel__btn--secondary {
+    flex: 1;
+    background-color: var(--text-main);
+    color: #ffffff;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Responsive Desktop (≥ 1024px) --- */
+@media (min-width: 1024px) {
+    .sticky-panel {
+        display: none !important;
+    }
+}

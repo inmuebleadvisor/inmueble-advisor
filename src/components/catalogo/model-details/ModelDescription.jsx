@@ -1,53 +1,57 @@
 import React from 'react';
-import CaracteristicasBox from '../../common/CaracteristicasBox';
-import AmenidadesList from '../AmenidadesList';
 import '../../../styles/model-details/ModelDescription.css';
 
 /**
- * @component ModelDescription
- * @description Sección descriptiva del modelo.
+ * @component ModelDescription (Marketplace Layout)
+ * @description Muestra el párrafo descriptivo de la propiedad y la cuadrícula
+ * de amenidades con íconos de check verdes.
  *
- * Responsabilidades (SRP):
- *  - Mostrar el resumen de características físicas (recámaras, baños, m²).
- *  - Renderizar la descripción textual del modelo.
- *  - Listar amenidades exclusivas si existen.
+ * Prioridad de texto:
+ *  1. modelo.descripcion  (dato real de Firestore)
+ *  2. Texto genérico de fallback (si no hay descripción cargada)
  *
- * No contiene lógica de negocio ni llamadas a servicios.
- *
- * @param {Object} modelo - Objeto completo del modelo con propiedades de características.
+ * @param {Object} modelo - Objeto del modelo con descripcion, amenidades, caracteristicas
  */
 export default function ModelDescription({ modelo }) {
     if (!modelo) return null;
 
-    const descripcionFallback = `Conoce el modelo ${modelo.nombre_modelo}, diseñado para tu comodidad.`;
+    // FIX BUG 4: Usar descripción real como principal, genérico solo como fallback
+    const descripcionTexto = modelo.descripcion
+        ? modelo.descripcion
+        : `Modelo ${modelo.nombre_modelo}: Una excelente propiedad diseñada con gran aprovechamiento de sus espacios y luz natural. Ideal para quienes buscan seguridad y confort en una zona de alta plusvalía.`;
+
+    // Construir lista de amenidades desde múltiples fuentes posibles en Firestore
+    const amenidades = [];
+    
+    // Opción 1: Array directo de amenidades
+    if (Array.isArray(modelo.amenidades) && modelo.amenidades.length > 0) {
+        amenidades.push(...modelo.amenidades);
+    }
+    
+    // Opción 2: Estacionamientos como amenidad fabricada
+    const estacionamientos = modelo.estacionamientos || modelo.caracteristicas?.estacionamientos;
+    if (estacionamientos > 0 && !amenidades.some(a => a.toLowerCase().includes('estacionamiento') || a.toLowerCase().includes('cochera'))) {
+        amenidades.push(`Cochera para ${estacionamientos} auto${estacionamientos > 1 ? 's' : ''}`);
+    }
 
     return (
-        <section className="model-description" aria-labelledby="model-description-heading">
-            {/* Cuadro de características (recámaras, baños, m², niveles) */}
-            <CaracteristicasBox
-                recamaras={modelo.recamaras}
-                banos={modelo.banos}
-                m2={modelo.m2}
-                niveles={modelo.niveles}
-                terreno={modelo.terreno}
-            />
-
-            <hr className="model-description__divider" />
-
-            <h3 id="model-description-heading" className="model-description__title">
-                Descripción del Modelo
-            </h3>
+        <div className="model-description">
+            <h2 className="model-description__title">Descripción de la Propiedad</h2>
+            
             <p className="model-description__text">
-                {modelo.descripcion || descripcionFallback}
+                {descripcionTexto}
             </p>
 
-            {/* Lista de amenidades (condicional) */}
-            {modelo.amenidades?.length > 0 && (
-                <div className="model-description__amenidades">
-                    <h4 className="model-description__amenidades-label">Amenidades Exclusivas:</h4>
-                    <AmenidadesList amenidades={modelo.amenidades} />
+            {amenidades.length > 0 && (
+                <div className="model-description__feature-grid">
+                    {amenidades.map((amenidad, idx) => (
+                        <div key={idx} className="model-description__feature-item">
+                            <span className="model-description__feature-icon">✓</span>
+                            {amenidad}
+                        </div>
+                    ))}
                 </div>
             )}
-        </section>
+        </div>
     );
 }

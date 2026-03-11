@@ -1,40 +1,63 @@
 /* src/styles/model-details/ModelDescription.css */
-/* Block: model-description — Sección de características, descripción y amenidades */
+/* Block: model-description — Descripción textual y amenidades (Marketplace Layout) */
 
 .model-description {
-    display: block;
+    /* El espacio top-border viene de .model-details__section--bordered */
+    display: flex;
+    flex-direction: column;
+    gap: 24px; /* space-y-6 */
 }
 
-/* Separador visual entre CaracteristicasBox y descripción textual */
-.model-description__divider {
-    border: none;
-    border-top: 1px solid rgba(0, 57, 106, 0.1);
-    margin: 24px 0;
-}
-
+/* ── Título de sección ── */
 .model-description__title {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--text-main);
-    margin-bottom: 8px;
-}
-
-.model-description__text {
-    color: #475569;
-    line-height: 1.75;
-    font-size: 0.97rem;
-}
-
-/* ── Amenidades ── */
-.model-description__amenidades {
-    margin-top: 24px;
-}
-
-.model-description__amenidades-label {
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: #64748b;
+    font-size: 1.25rem; /* text-xl */
+    font-weight: 900; /* font-black */
+    color: var(--text-main); /* text-gray-900 */
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
+    letter-spacing: -0.025em; /* tracking-tight */
+    margin: 0;
+}
+
+/* ── Párrafo descriptivo ── */
+.model-description__text {
+    font-size: 1rem;
+    line-height: 1.625; /* leading-relaxed */
+    color: #475569; /* text-gray-600 */
+    margin: 0;
+}
+
+.model-description__text-highlight {
+    color: var(--primary-color); /* text-blue-600 */
+    font-weight: 700;
+    font-style: italic;
+}
+
+/* ── Grilla de Amenidades (Features) ── */
+.model-description__feature-grid {
+    display: grid;
+    /* Móvil: 1 col, Tablet/Desktop: 2 cols */
+    grid-template-columns: 1fr;
+    gap: 12px; /* gap-3 */
+    font-size: 0.875rem; /* text-sm */
+    font-weight: 500;
+    color: #334155; /* text-gray-700 */
+}
+
+.model-description__feature-item {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* gap-2 */
+}
+
+.model-description__feature-icon {
+    color: var(--status-success); /* text-green-500 */
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+/* --- Responsive (Desktop > 640px) --- */
+@media (min-width: 640px) {
+    .model-description__feature-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
