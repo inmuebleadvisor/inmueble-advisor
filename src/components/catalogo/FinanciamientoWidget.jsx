@@ -13,7 +13,7 @@ export default function FinanciamientoWidget({ precio, onSimulate }) {
 
   return (
     <div style={styles.card}>
-      <h3 style={styles.title}>💰 Cálculo Rápido</h3>
+      <h3 style={styles.title}>💰 Plan Hipotecarío</h3>
       <div style={styles.row}>
         <span>Enganche (10%):</span>
         <strong>{formatoMoneda(enganche)}</strong>
@@ -28,15 +28,15 @@ export default function FinanciamientoWidget({ precio, onSimulate }) {
         style={{ marginTop: '15px' }}
         onClick={onSimulate}
       >
-        Calcular Hipoteca
+        Pre-Calificar Crédito.
       </button>
     </div>
   );
 }
 
 const styles = {
-  card: { backgroundColor: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '25px' },
-  title: { margin: '0 0 15px 0', fontSize: '1.1rem', color: '#334155' },
-  row: { display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '0.95rem', color: '#475569' },
-  disclaimer: { fontSize: '0.7rem', color: '#94a3b8', marginTop: '10px', fontStyle: 'italic' },
+  card: { backgroundColor: 'var(--bg-secondary)', padding: '24px', borderRadius: '24px', border: '1px solid rgba(0, 57, 106, 0.08)', marginBottom: '24px' },
+  title: { margin: '0 0 16px 0', fontSize: '1.1rem', color: 'var(--text-main)', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.05em' },
+  row: { display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '0.95rem', color: 'var(--text-secondary)' },
+  disclaimer: { fontSize: '0.7rem', color: 'var(--text-secondary)', opacity: 0.7, marginTop: '12px', fontStyle: 'italic' },
 };
