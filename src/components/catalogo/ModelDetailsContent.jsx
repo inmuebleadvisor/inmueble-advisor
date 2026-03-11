@@ -126,6 +126,12 @@ export default function ModelDetailsContent({
                                     mantenimientoFormateado={mantenimientoFmt}
                                     onSchedule={handleOpenLeadForm}
                                 />
+                                <div style={{ marginTop: '24px' }}>
+                                    <FinanciamientoWidget
+                                        precio={modelo.precioNumerico}
+                                        onSimulate={() => setIsSimulatorOpen(true)}
+                                    />
+                                </div>
                              </div>
                         </section>
 
