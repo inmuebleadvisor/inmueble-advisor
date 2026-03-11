@@ -101,6 +101,41 @@ export class CatalogService {
     }
   }
 
+  /**
+   * Obtiene los desarrollos destacados, ordenados cronológicamente por actualización.
+   * @param {string|null} ciudadFilter - Ciudad para filtrar (opcional)
+   * @param {number} limit - Límite de desarrollos a retornar
+   * @returns {Promise<Array>} Lista ordenada de desarrollos
+   */
+  async obtenerDesarrollosDestacados(ciudadFilter = null, limit = 8) {
+    const desarrollos = await this.obtenerInventarioDesarrollos();
+    
+    let filtered = desarrollos;
+    if (ciudadFilter) {
+      filtered = desarrollos.filter(d => 
+        d.ubicacion?.ciudad?.trim().toLowerCase() === ciudadFilter.trim().toLowerCase()
+      );
+    }
+
+    // Ordenar por updatedAt descendente (más recientes primero)
+    const sorted = [...filtered].sort((a, b) => {
+      const getTime = (val) => {
+        if (!val) return 0;
+        if (typeof val.toMillis === 'function') return val.toMillis();
+        if (val.seconds) return val.seconds * 1000;
+        if (val instanceof Date) return val.getTime();
+        if (typeof val === 'string' || typeof val === 'number') {
+           const d = new Date(val);
+           return isNaN(d.getTime()) ? 0 : d.getTime();
+        }
+        return 0;
+      };
+      return getTime(b.updatedAt) - getTime(a.updatedAt);
+    });
+
+    return sorted.slice(0, limit);
+  }
+
   async obtenerTopAmenidades() {
     const desarrollos = await this.obtenerInventarioDesarrollos();
     const conteo = {};

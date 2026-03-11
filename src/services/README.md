@@ -8,7 +8,7 @@ The `src/services` directory contains the core business logic of the frontend ap
 ### 1. Catalog Service
 *   **File:** `catalog.service.js`
 *   **Purpose:** Manages the inventory of developments and models. Handles caching, data enrichment, and quality filtering.
-*   **Key Methods:** `obtenerDatosUnificados()`, `filterCatalog()`, `enrichModels()`, `applyQualityFilters()`.
+*   **Key Methods:** `obtenerDatosUnificados()`, `filterCatalog()`, `enrichModels()`, `applyQualityFilters()`, `obtenerDesarrollosDestacados()`.
 
 
 ### 2. Auth Service

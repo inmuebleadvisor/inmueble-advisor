@@ -19,6 +19,7 @@ vi.mock('react-router-dom', async () => {
 describe('FeaturedDevelopers Component', () => {
     const mockCatalog = {
         obtenerInventarioDesarrollos: vi.fn(),
+        obtenerDesarrollosDestacados: vi.fn(),
     };
 
     const mockTrackBehavior = vi.fn();
@@ -35,6 +36,11 @@ describe('FeaturedDevelopers Component', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockCatalog.obtenerInventarioDesarrollos.mockResolvedValue(mockDevelopers);
+        mockCatalog.obtenerDesarrollosDestacados.mockImplementation((city) => {
+             if (city === 'Tulum') return [mockDevelopers[0]];
+             if (!city) return mockDevelopers;
+             return [];
+        });
     });
 
     const renderComponent = (userCtx = mockUserContext) => {

@@ -18,17 +18,8 @@ export default function FeaturedDevelopers() {
     useEffect(() => {
         const fetchDevs = async () => {
             try {
-                const allDevs = await catalog.obtenerInventarioDesarrollos();
-
-                // Filtrar por ciudad si existe una seleccionada
-                let filtered = allDevs;
-                if (selectedCity) {
-                    filtered = allDevs.filter(d =>
-                        d.ubicacion?.ciudad?.trim().toLowerCase() === selectedCity.trim().toLowerCase()
-                    );
-                }
-
-                setDevelopers(filtered.slice(0, 8));
+                const destacados = await catalog.obtenerDesarrollosDestacados(selectedCity, 8);
+                setDevelopers(destacados);
             } catch (error) {
                 console.error("Error fetching developers:", error);
             }

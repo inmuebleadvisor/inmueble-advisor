@@ -24,6 +24,7 @@ export const mapDesarrollo = (docSnapshot) => {
         zona: data.ubicacion?.zona || '',
         latitud: parseCoord(data.ubicacion?.latitud),
         longitud: parseCoord(data.ubicacion?.longitud),
+        updatedAt: data.updatedAt || null,
         activo: data.activo !== false
     };
 };
