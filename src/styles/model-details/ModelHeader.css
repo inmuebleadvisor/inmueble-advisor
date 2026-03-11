@@ -167,6 +167,44 @@
     left: 64px;
 }
 
+/* ── Botones de Navegación (Desktop) ── */
+.model-gallery__nav-btn {
+    display: none; /* Oculto en móvil por defecto, priorizamos swipe tactil */
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(4px);
+    border: none;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 15;
+    color: var(--text-main);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.model-gallery__nav-btn:hover {
+    background-color: #fff;
+    transform: translateY(-50%) scale(1.05);
+}
+
+.model-gallery__nav-btn:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.model-gallery__nav-btn--prev {
+    left: 16px;
+}
+
+.model-gallery__nav-btn--next {
+    right: 16px;
+}
+
 /* --- Responsive Desktop (> 1024px) --- */
 @media (min-width: 1024px) {
     .model-gallery {
@@ -181,6 +219,9 @@
         display: none; /* Overlay no necesario en desktop pq texto va separado */
     }
     .model-gallery__thumbnails {
+        display: flex; /* Visibles en desktop */
+    }
+    .model-gallery__nav-btn {
         display: flex; /* Visibles en desktop */
     }
 }
