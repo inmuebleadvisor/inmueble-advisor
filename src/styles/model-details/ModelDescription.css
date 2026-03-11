@@ -1,0 +1,40 @@
+/* src/styles/model-details/ModelDescription.css */
+/* Block: model-description — Sección de características, descripción y amenidades */
+
+.model-description {
+    display: block;
+}
+
+/* Separador visual entre CaracteristicasBox y descripción textual */
+.model-description__divider {
+    border: none;
+    border-top: 1px solid rgba(0, 57, 106, 0.1);
+    margin: 24px 0;
+}
+
+.model-description__title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 8px;
+}
+
+.model-description__text {
+    color: #475569;
+    line-height: 1.75;
+    font-size: 0.97rem;
+}
+
+/* ── Amenidades ── */
+.model-description__amenidades {
+    margin-top: 24px;
+}
+
+.model-description__amenidades-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}

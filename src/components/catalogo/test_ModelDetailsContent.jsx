@@ -1,4 +1,14 @@
-
+/**
+ * @file test_ModelDetailsContent.jsx
+ * @description Pruebas de alto valor para el componente Orquestador ModelDetailsContent.
+ *
+ * ALCANCE (per MANUALDEARQUITECTURA.md - Numeral 5):
+ *  ✅ Se prueban: Triggers de negocio / lógica de estado (auth, apertura de modales).
+ *  🚫 No se prueban: Estilos, renderizado estético, subcomponentes visuales.
+ *
+ * MOCKS: Todos los subcomponentes visuales son reemplazados por stubs mínimos
+ * para aislar el comportamiento del orquestador sin depender del DOM.
+ */
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -6,89 +16,124 @@ import ModelDetailsContent from './ModelDetailsContent';
 import { useUser } from '../../context/UserContext';
 import { useStickyPanel } from '../../hooks/useStickyPanel';
 
-// Mocks
+// ── Mocks ──────────────────────────────────────────────────────────────────
 vi.mock('../../context/UserContext');
 vi.mock('../../hooks/useStickyPanel');
-vi.mock('../leads/LeadCaptureForm', () => ({
-    default: ({ onCancel }) => <div data-testid="lead-form">Lead Form <button onClick={onCancel}>Close</button></div>
+
+// Subcomponentes visuales: stubs mínimos para aislar el orquestador
+vi.mock('./model-details/ModelHeader',      () => ({ default: () => <div data-testid="model-header" /> }));
+vi.mock('./model-details/ModelPricingCard', () => ({
+    default: ({ onSimulate }) => (
+        <div data-testid="model-pricing-card">
+            <button onClick={onSimulate}>Simular Crédito</button>
+        </div>
+    )
 }));
-vi.mock('./Carousel', () => ({ default: () => <div data-testid="carousel" /> }));
-vi.mock('../common/CaracteristicasBox', () => ({ default: () => <div /> }));
-vi.mock('./AmenidadesList', () => ({ default: () => <div /> }));
-vi.mock('./FinanciamientoWidget', () => ({ default: () => <div /> }));
-vi.mock('./DevelopmentInfoSection', () => ({ default: () => <div /> }));
-vi.mock('../common/FavoriteBtn', () => ({ default: () => <div /> }));
-vi.mock('../layout/StickyActionPanel', () => ({
-    default: ({ onMainAction }) => <button onClick={onMainAction}>Sticky Button</button>
+vi.mock('./model-details/ModelDescription', () => ({ default: () => <div data-testid="model-description" /> }));
+vi.mock('./model-details/ModelFloorPlans',  () => ({ default: () => <div data-testid="model-floor-plans" /> }));
+
+// Componentes compartidos
+vi.mock('../leads/LeadCaptureForm', () => ({
+    default: ({ onCancel }) => (
+        <div data-testid="lead-form">
+            <button onClick={onCancel}>Cerrar</button>
+        </div>
+    )
+}));
+vi.mock('../modals/MortgageSimulatorModal', () => ({
+    default: ({ onClose }) => (
+        <div data-testid="simulator-modal">
+            <button onClick={onClose}>Cerrar</button>
+        </div>
+    )
+}));
+vi.mock('./FinanciamientoWidget',           () => ({ default: () => <div /> }));
+vi.mock('./DevelopmentInfoSection',         () => ({ default: () => <div /> }));
+vi.mock('../layout/StickyActionPanel',      () => ({
+    default: ({ onMainAction }) => <button onClick={onMainAction}>FAB Cotizar</button>
 }));
 
-describe('ModelDetailsContent Auth Triggers', () => {
+// ── Fixture ────────────────────────────────────────────────────────────────
+const mockModelo = {
+    id: 'modelo-1',
+    nombre_modelo: 'Aura',
+    precioNumerico: 1500000,
+    imagenes: [],
+    plants: []
+};
+
+describe('ModelDetailsContent — Triggers de Orquestación', () => {
     const mockLoginWithGoogle = vi.fn();
-    const mockModelo = {
-        id: 'modelo-1',
-        nombre_modelo: 'Modelo Test',
-        precioNumerico: 1500000,
-        imagenes: []
-    };
 
     beforeEach(() => {
         vi.clearAllMocks();
+        // Por defecto: sin sticky panel visible
         useStickyPanel.mockReturnValue(false);
     });
 
-    it('triggers login if anonymous user clicks "Cotizar / Agendar"', async () => {
-        useUser.mockReturnValue({
-            user: null,
-            loginWithGoogle: mockLoginWithGoogle
-        });
+    it('monta los subcomponentes principales correctamente', () => {
+        useUser.mockReturnValue({ user: { uid: '123' }, loginWithGoogle: mockLoginWithGoogle });
 
         render(<ModelDetailsContent modelo={mockModelo} />);
 
-        const agendarBtn = screen.getByText(/Cotizar \/ Agendar/i);
-        fireEvent.click(agendarBtn);
-
-        expect(mockLoginWithGoogle).toHaveBeenCalledTimes(1);
+        expect(screen.getByTestId('model-header')).toBeInTheDocument();
+        expect(screen.getByTestId('model-pricing-card')).toBeInTheDocument();
+        expect(screen.getByTestId('model-description')).toBeInTheDocument();
     });
 
-    it('opens form directly if user is already logged in', async () => {
-        useUser.mockReturnValue({
-            user: { uid: '123' },
-            loginWithGoogle: mockLoginWithGoogle
-        });
+    it('abre el SimulatorModal al hacer click en "Simular Crédito"', async () => {
+        useUser.mockReturnValue({ user: { uid: '123' }, loginWithGoogle: mockLoginWithGoogle });
 
         render(<ModelDetailsContent modelo={mockModelo} />);
 
-        const agendarBtn = screen.getByText(/Cotizar \/ Agendar/i);
-        fireEvent.click(agendarBtn);
-
-        expect(mockLoginWithGoogle).not.toHaveBeenCalled();
-        expect(screen.getByTestId('lead-form')).toBeInTheDocument();
-    });
-
-    it('opens form after successful login', async () => {
-        useUser.mockReturnValue({
-            user: null,
-            loginWithGoogle: mockLoginWithGoogle.mockResolvedValue({ uid: 'new-user' })
-        });
-
-        const { rerender } = render(<ModelDetailsContent modelo={mockModelo} />);
-
-        const agendarBtn = screen.getByText(/Cotizar \/ Agendar/i);
-        fireEvent.click(agendarBtn);
+        fireEvent.click(screen.getByText('Simular Crédito'));
 
         await waitFor(() => {
-            expect(mockLoginWithGoogle).toHaveBeenCalled();
+            expect(screen.getByTestId('simulator-modal')).toBeInTheDocument();
         });
+    });
 
-        // Simular que el usuario ahora existe tras el login exitoso
-        useUser.mockReturnValue({
-            user: { uid: 'new-user' },
-            loginWithGoogle: mockLoginWithGoogle
+    it('cierra el SimulatorModal al llamar onClose', async () => {
+        useUser.mockReturnValue({ user: { uid: '123' }, loginWithGoogle: mockLoginWithGoogle });
+
+        render(<ModelDetailsContent modelo={mockModelo} />);
+        fireEvent.click(screen.getByText('Simular Crédito'));
+        await waitFor(() => expect(screen.getByTestId('simulator-modal')).toBeInTheDocument());
+
+        fireEvent.click(screen.getByText('Cerrar'));
+        await waitFor(() => expect(screen.queryByTestId('simulator-modal')).not.toBeInTheDocument());
+    });
+
+    it('dispara loginWithGoogle si el usuario es anónimo y presiona el FAB', async () => {
+        useUser.mockReturnValue({ user: null, loginWithGoogle: mockLoginWithGoogle });
+        useStickyPanel.mockReturnValue(true); // Muestra el FAB
+
+        render(<ModelDetailsContent modelo={mockModelo} />);
+
+        fireEvent.click(screen.getByText('FAB Cotizar'));
+
+        await waitFor(() => {
+            expect(mockLoginWithGoogle).toHaveBeenCalledTimes(1);
         });
-        rerender(<ModelDetailsContent modelo={mockModelo} />);
+    });
 
-        // El estado local isLeadFormOpen ya debería ser true en el componente real
-        // pero en el test verificamos que el renderizado condicional funcione
-        expect(screen.getByTestId('lead-form')).toBeInTheDocument();
+    it('abre LeadCaptureForm directamente si el usuario ya está autenticado', async () => {
+        useUser.mockReturnValue({ user: { uid: '123' }, loginWithGoogle: mockLoginWithGoogle });
+        useStickyPanel.mockReturnValue(true); // Muestra el FAB
+
+        render(<ModelDetailsContent modelo={mockModelo} />);
+
+        fireEvent.click(screen.getByText('FAB Cotizar'));
+
+        await waitFor(() => {
+            expect(mockLoginWithGoogle).not.toHaveBeenCalled();
+            expect(screen.getByTestId('lead-form')).toBeInTheDocument();
+        });
+    });
+
+    it('no renderiza nada si modelo es null', () => {
+        useUser.mockReturnValue({ user: null, loginWithGoogle: mockLoginWithGoogle });
+        const { container } = render(<ModelDetailsContent modelo={null} />);
+        expect(container).toBeEmptyDOMElement();
     });
 });

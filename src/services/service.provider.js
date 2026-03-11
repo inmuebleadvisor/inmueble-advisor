@@ -38,6 +38,9 @@ import { MortgageSimulatorService } from './mortgage/MortgageSimulatorService';
 import { HipotecaFuerteStrategy } from './mortgage/HipotecaFuerteStrategy';
 import { MORTGAGE_PRODUCTS } from '../config/mortgageProducts';
 
+// Catalogo / Presentation
+import { ModelPresentationService } from './catalogo/ModelPresentationService';
+
 // 1. Instantiate Repositories
 import { ConfigRepository } from '../repositories/config.repository';
 import { CatalogRepository } from '../repositories/catalog.repository';
@@ -75,6 +78,9 @@ export const mortgageSimulatorService = new MortgageSimulatorService(
     new HipotecaFuerteStrategy(MORTGAGE_PRODUCTS.HIPOTECA_FUERTE_BANORTE)
 );
 
+// Catalogo Presentation Service (no external dependencies)
+export const modelPresentationService = new ModelPresentationService();
+
 
 // New Services
 export const adminService = new AdminService(userRepository, leadRepository, catalogRepository);
@@ -104,5 +110,6 @@ export const services = {
     financial: financialService,
     appointment: appointmentService,
     development: developmentService,
-    mortgageSimulator: mortgageSimulatorService
+    mortgageSimulator: mortgageSimulatorService,
+    modelPresentation: modelPresentationService
 };

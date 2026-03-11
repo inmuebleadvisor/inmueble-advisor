@@ -1,34 +1,52 @@
-﻿import React, { useMemo } from 'react';
-import { IMAGES } from '../../config/constants';
-import Carousel from './Carousel';
-import CaracteristicasBox from '../common/CaracteristicasBox';
-import AmenidadesList from './AmenidadesList';
-import FinanciamientoWidget from './FinanciamientoWidget';
-import DevelopmentInfoSection from './DevelopmentInfoSection';
-import PropertyCard from './PropertyCard';
-import FavoriteBtn from '../common/FavoriteBtn';
-import StickyActionPanel from '../layout/StickyActionPanel';
-import Delightbox from '../common/Delightbox';
+import React from 'react';
+import { useMemo } from 'react';
+
+// ── Subcomponentes (SRP) ────────────────────────────────────────────────────
+import ModelHeader      from './model-details/ModelHeader';
+import ModelPricingCard from './model-details/ModelPricingCard';
+import ModelDescription from './model-details/ModelDescription';
+import ModelFloorPlans  from './model-details/ModelFloorPlans';
+
+// ── Componentes compartidos ─────────────────────────────────────────────────
+import FinanciamientoWidget    from './FinanciamientoWidget';
+import DevelopmentInfoSection  from './DevelopmentInfoSection';
+import PropertyCard            from './PropertyCard';
+import StickyActionPanel       from '../layout/StickyActionPanel';
+import LeadCaptureForm         from '../leads/LeadCaptureForm';
+import MortgageSimulatorModal  from '../modals/MortgageSimulatorModal';
+
+// ── Hooks / Contexto ─────────────────────────────────────────────────────────
 import { useStickyPanel } from '../../hooks/useStickyPanel';
-import { useUser } from '../../context/UserContext'; // 🟢 Didáctico: Importamos el contexto de usuario
-import '../../styles/ModelDetailsContent.css'; // BEM Styles relocated
-// import Modal from '../modals/Modal'; // Generic Modal
-import LeadCaptureForm from '../leads/LeadCaptureForm'; // New Capture Form
-import MortgageSimulatorModal from '../modals/MortgageSimulatorModal'; // Importando Simulador
+import { useUser }        from '../../context/UserContext';
 
-// Icons defined locally since they are small UI helpers
-const Icons = {
-    Back: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>,
-    Check: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>,
-    Calendar: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>,
-    Calculator: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><line x1="12" y1="14" x2="12" y2="14.01"></line><line x1="8" y1="14" x2="8" y2="14.01"></line><line x1="12" y1="18" x2="12" y2="18.01"></line><line x1="8" y1="18" x2="8" y2="18.01"></line></svg>
-};
+// ── Servicio de presentación (Inyección de Dependencias) ────────────────────
+// 🟢 Didáctico: No importamos la clase directamente. El service.provider.js
+// ya instanció el servicio y lo expuso como singleton. Lo consumimos desde ahí
+// para respetar el patrón de Composition Root.
+import { modelPresentationService } from '../../services/service.provider';
 
-const formatoMoneda = (val) => {
-    if (!val || isNaN(val)) return 'Precio Pendiente';
-    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val);
-};
+// ── Estilos del orquestador ─────────────────────────────────────────────────
+import '../../styles/ModelDetailsContent.css';
 
+/**
+ * @component ModelDetailsContent
+ * @description Componente Orquestador del detalle de un modelo.
+ *
+ * RESPONSABILIDAD ÚNICA: Coordinar y ensamblar los subcomponentes visuales.
+ * Este componente NO formatea datos ni contiene lógica de negocio.
+ * Toda esa responsabilidad recae en `ModelPresentationService`.
+ *
+ * Arquitectura:
+ *  - Consume `modelPresentationService` (Inyección de Dependencias).
+ *  - Delega renderizado a subcomponentes especializados (SRP).
+ *  - Gestiona los estados de UI de alto nivel (modales abiertos/cerrados).
+ *
+ * @param {Object}   modelo           - Objeto del modelo inmobiliario.
+ * @param {Object}   [desarrollo]     - Objeto del desarrollo/fraccionamiento.
+ * @param {Object[]} [modelosHermanos=[]] - Otros modelos del mismo desarrollo.
+ * @param {Function} [onBack]         - Callback de navegación atrás.
+ * @param {boolean}  [isModal=false]  - Si está montado dentro de un modal.
+ */
 export default function ModelDetailsContent({
     modelo,
     desarrollo,
@@ -36,182 +54,87 @@ export default function ModelDetailsContent({
     onBack,
     isModal = false
 }) {
-    // State for floor plans lightbox
-    const [isFloorPlanOpen, setIsFloorPlanOpen] = React.useState(false);
-    const [floorPlanIndex, setFloorPlanIndex] = React.useState(0);
-
-    // Lead Form Modal State
-    const [isLeadFormOpen, setIsLeadFormOpen] = React.useState(false);
+    // ── Estado de UI (modales) ──────────────────────────────────────────────
+    const [isLeadFormOpen,  setIsLeadFormOpen]  = React.useState(false);
     const [isSimulatorOpen, setIsSimulatorOpen] = React.useState(false);
 
-    // 🟢 Didáctico: Accedemos a la sesión y al método de login
+    // ── Contexto de usuario (para el trigger de autenticación) ─────────────
     const { user, loginWithGoogle } = useUser();
 
+    // ── Ref para el panel sticky (detecta cuando el header sale del viewport) ─
     const headerRef = React.useRef(null);
-    const showFab = useStickyPanel(headerRef);
+    const showFab   = useStickyPanel(headerRef);
 
-    // 🟢 Didáctico: Esta función actúa como un "Gatillo de Autenticación"
+    // ── Datos derivados via Servicio (sin lógica en el componente) ──────────
+    // 🟢 Didáctico: useMemo garantiza que el servicio sólo recalcule los datos
+    // cuando cambia el modelo, evitando recálculos en cada re-render.
+    const galeriaItems       = useMemo(() => modelPresentationService.getGaleriaImagenes(modelo), [modelo]);
+    const precioFormateado   = useMemo(() => modelPresentationService.formatoMoneda(modelo?.precioNumerico), [modelo]);
+    const mantenimientoFmt   = useMemo(() => {
+        const val = modelo?.precios?.mantenimientoMensual;
+        return val > 0 ? modelPresentationService.formatoMoneda(val) : null;
+    }, [modelo]);
+    const simulatorPayload   = useMemo(() => modelPresentationService.buildSimulatorPayload(modelo, desarrollo), [modelo, desarrollo]);
+
+    // ── Trigger de autenticación antes de abrir el formulario de captación ──
     const handleOpenLeadForm = async () => {
         if (!user) {
             try {
-                // Si el usuario no está logueado, lanzamos el popup
                 const logueado = await loginWithGoogle();
-                if (!logueado) return; // Si cancela, no hacemos nada
-            } catch (error) {
-                console.error("Login cancelado o fallido");
+                if (!logueado) return;
+            } catch {
+                console.error('[ModelDetails] Login cancelado o fallido');
                 return;
             }
         }
-        // Si ya hay usuario o se logueó con éxito, abrimos el formulario
         setIsLeadFormOpen(true);
     };
-
-    const galeriaImagenes = useMemo(() => {
-        if (!modelo) return [];
-        const items = (modelo.imagenes || []).map(url => ({ url, type: 'image' }));
-        if (modelo.media?.video || modelo.media?.videoPromocional || modelo.video) {
-            const vid = modelo.media?.video || modelo.media?.videoPromocional || modelo.video;
-            items.unshift({ url: vid, type: 'video' });
-        }
-        if (items.length === 0) {
-            items.push({ url: IMAGES.FALLBACK_PROPERTY, type: 'image' });
-        }
-        return items;
-    }, [modelo]);
 
     if (!modelo) return null;
 
     return (
-        <div className={`model-details ${isModal ? 'model-details--modal' : ''}`}>
+        <article className={`model-details ${isModal ? 'model-details--modal' : ''}`}>
 
-            {/* --- HEADER --- */}
-            <header ref={headerRef} className="model-details__header">
-                <Carousel items={galeriaImagenes} />
-
-                {!isModal && onBack && (
-                    <button onClick={onBack} className="model-details__back-btn" aria-label="Volver">
-                        <Icons.Back />
-                    </button>
-                )}
-
-                <span className="model-details__status-badge" style={{ backgroundColor: modelo.esPreventa ? '#f59e0b' : '#10b981' }}>
-                    {modelo.esPreventa ? 'PRE-VENTA' : 'ENTREGA INMEDIATA'}
-                </span>
-                <div className="model-details__header-gradient"></div>
-            </header>
+            {/* ── HEADER: Carrusel + Badge + Botón Volver ── */}
+            <ModelHeader
+                galeriaItems={galeriaItems}
+                esPreventa={modelo.esPreventa}
+                isModal={isModal}
+                onBack={onBack}
+                headerRef={headerRef}
+            />
 
             <main className="model-details__content">
 
-                {/* --- SECCIÓN 1: DATOS --- */}
+                {/* ── SECCIÓN 1: PRICING CARD ── */}
                 <section className="model-details__section">
-                    <div className="model-details__title-card">
-                        <div className="model-details__title-left">
-                            <h1 className="model-details__name">
-                                {modelo.tipoVivienda ? `${modelo.tipoVivienda} ` : ''}
-                                {modelo.nombre_modelo}
-                            </h1>
-                            <div className="model-details__price-box">
-                                <span className="model-details__price-label">Precio de Lista</span>
-                                <span className="model-details__price-val">{formatoMoneda(modelo.precioNumerico)}</span>
-                                {modelo.precios?.mantenimientoMensual > 0 && (
-                                    <span className="model-details__price-maintenance">+ {formatoMoneda(modelo.precios.mantenimientoMensual)} mant. mensual</span>
-                                )}
-
-                                {modelo.highlights && modelo.highlights.length > 0 && (
-                                    <div className="model-details__highlights">
-                                        {modelo.highlights.map((highlight, index) => (
-                                            <div key={index} className="model-details__highlight-item">
-                                                <div className="model-details__check-icon">
-                                                    <Icons.Check />
-                                                </div>
-                                                <span className="model-details__highlight-text">{highlight}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            <button
-                                className="model-details__cta-primary"
-                                onClick={() => setIsSimulatorOpen(true)}
-                            >
-                                <Icons.Calculator />
-                                <span>Simular Crédito</span>
-                            </button>
-                        </div>
-
-                        <div className="model-details__fav-wrapper">
-                            <FavoriteBtn modeloId={modelo.id} className="model-details__fav-btn-override" />
-                        </div>
-                    </div>
-
-                    <CaracteristicasBox
-                        recamaras={modelo.recamaras}
-                        banos={modelo.banos}
-                        m2={modelo.m2}
-                        niveles={modelo.niveles}
-                        terreno={modelo.terreno}
+                    <ModelPricingCard
+                        modelName={`${modelo.tipoVivienda ? modelo.tipoVivienda + ' ' : ''}${modelo.nombre_modelo}`}
+                        precioFormateado={precioFormateado}
+                        mantenimientoFormateado={mantenimientoFmt}
+                        highlights={modelo.highlights || []}
+                        modeloId={modelo.id}
+                        onSimulate={() => setIsSimulatorOpen(true)}
                     />
-
-                    <hr className="model-details__divider" />
-
-                    <h3 className="model-details__section-title">Descripción del Modelo</h3>
-                    <p className="model-details__description">
-                        {modelo.descripcion || `Conoce el modelo ${modelo.nombre_modelo}, diseñado para tu comodidad.`}
-                    </p>
-                    {modelo.amenidades && modelo.amenidades.length > 0 && (
-                        <div style={{ marginTop: '20px' }}>
-                            <h4 className="model-details__amenities-title">Amenidades Exclusivas:</h4>
-                            <AmenidadesList amenidades={modelo.amenidades} />
-                        </div>
-                    )}
                 </section>
 
-                {/* --- SECCIÓN 1.5: PLANOS --- */}
-                {modelo.plantas && modelo.plantas.length > 0 && (
+                {/* ── SECCIÓN 2: DESCRIPCIÓN Y CARACTERÍSTICAS ── */}
+                <section className="model-details__section">
+                    <ModelDescription modelo={modelo} />
+                </section>
+
+                {/* ── SECCIÓN 3: PLANOS (condicional) ── */}
+                {modelo.plantas?.length > 0 && (
                     <section className="model-details__section">
-                        <h3 className="model-details__section-title">Distribución y Planos</h3>
-                        <p className="model-details__description" style={{ marginBottom: '20px' }}>
-                            Consulta la distribución arquitectónica de {modelo.nombre_modelo}.
-                        </p>
-
-                        <div className="model-details__floor-plans-grid">
-                            {modelo.plantas.map((url, index) => (
-                                <button
-                                    key={index}
-                                    className="model-details__floor-plan-card"
-                                    onClick={() => {
-                                        setFloorPlanIndex(index);
-                                        setIsFloorPlanOpen(true);
-                                    }}
-                                >
-                                    <div className="model-details__floor-plan-wrapper">
-                                        <img
-                                            src={url}
-                                            alt={`Planta ${index + 1}`}
-                                            className="model-details__floor-plan-img"
-                                            loading="lazy"
-                                        />
-                                        <div className="model-details__magnify-overlay">
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
-                                        </div>
-                                    </div>
-                                    <span className="model-details__floor-plan-label">Planta {index + 1}</span>
-                                </button>
-                            ))}
-                        </div>
-
-                        <Delightbox
-                            isOpen={isFloorPlanOpen}
-                            images={modelo.plantas}
-                            initialIndex={floorPlanIndex}
-                            onClose={() => setIsFloorPlanOpen(false)}
+                        <ModelFloorPlans
+                            plantas={modelo.plantas}
+                            nombreModelo={modelo.nombre_modelo}
                         />
                     </section>
                 )}
 
-                {/* --- SECCIÓN 2: FINANCIAMIENTO --- */}
-                <section className="model-details__section model-details__section--border-top">
+                {/* ── SECCIÓN 4: SIMULADOR HIPOTECARIO ── */}
+                <section className="model-details__section model-details__section--bordered">
                     <h3 className="model-details__section-title">Calcula tu Hipoteca</h3>
                     <p className="model-details__mortgage-intro">
                         Estimación de mensualidad para <strong>{modelo.nombre_modelo}</strong>:
@@ -222,28 +145,26 @@ export default function ModelDetailsContent({
                     />
                 </section>
 
-                {/* --- SECCIÓN 3: CONTEXTO --- */}
+                {/* ── SECCIÓN 5: CONTEXTO DEL DESARROLLO (condicional) ── */}
                 {desarrollo && (
-                    <section className="model-details__section model-details__section--border-top">
-                        <div className="model-details__context-header">
+                    <section className="model-details__section model-details__section--bordered">
+                        <header className="model-details__context-header">
                             <span className="model-details__context-label">Ubicado en el desarrollo:</span>
                             <h2 className="model-details__context-title">{desarrollo.nombre}</h2>
-                        </div>
+                        </header>
                         <DevelopmentInfoSection desarrollo={desarrollo} />
                     </section>
                 )}
 
-                {/* --- SECCIÓN 4: CROSS-SELLING --- */}
+                {/* ── SECCIÓN 6: CROSS-SELLING (condicional) ── */}
                 {modelosHermanos.length > 0 && (
-                    <section className="model-details__models-section">
-                        <h3 className="model-details__section-title">Otras opciones en {desarrollo ? desarrollo.nombre : 'este desarrollo'}</h3>
-                        <div className="model-details__models-grid">
+                    <section className="model-details__cross-sell" aria-label="Otros modelos disponibles">
+                        <h3 className="model-details__section-title">
+                            Otras opciones en {desarrollo?.nombre || 'este desarrollo'}
+                        </h3>
+                        <div className="model-details__cross-sell-grid">
                             {modelosHermanos.map((hermano) => (
-                                <PropertyCard
-                                    key={hermano.id}
-                                    item={hermano}
-                                    showDevName={false}
-                                />
+                                <PropertyCard key={hermano.id} item={hermano} showDevName={false} />
                             ))}
                         </div>
                     </section>
@@ -251,47 +172,34 @@ export default function ModelDetailsContent({
 
             </main>
 
-            {/* FLOATING ACTION BUTTON (Sticky Bottom) - Shows only after scroll */}
+            {/* ── FAB STICKY (aparece tras hacer scroll más allá del header) ── */}
             {showFab && (
                 <StickyActionPanel
-                    price={formatoMoneda(modelo.precioNumerico)}
+                    price={precioFormateado}
                     label="Precio de Lista"
                     onMainAction={handleOpenLeadForm}
                 />
             )}
 
-            {/* --- LEAD CAPTURE MODAL - Unboxed --- */}
+            {/* ── MODAL: FORMULARIO DE CAPTACIÓN ── */}
             {isLeadFormOpen && (
                 <LeadCaptureForm
                     desarrollo={desarrollo}
                     modelo={modelo}
                     onCancel={() => setIsLeadFormOpen(false)}
-                    onSuccess={() => {
-                        setIsLeadFormOpen(false);
-                        // Confetti handles feedback
-                    }}
+                    onSuccess={() => setIsLeadFormOpen(false)}
                 />
             )}
 
+            {/* ── MODAL: SIMULADOR HIPOTECARIO ── */}
             {isSimulatorOpen && (
                 <MortgageSimulatorModal
                     initialPrice={modelo.precioNumerico}
-                    propertyData={{
-                        title: modelo.nombre_modelo || 'Modelo',
-                        developmentName: desarrollo?.nombre || '',
-                        subtitle: modelo.tipoVivienda || 'Vivienda',
-                        deliveryStatus: typeof modelo.esPreventa === 'boolean' ? (modelo.esPreventa ? 'Preventa' : 'Entrega Inmediata') : '',
-                        image: modelo.imagenes?.[0] || '',
-                        bedrooms: modelo.recamaras,
-                        bathrooms: modelo.banos,
-                        area: modelo.m2 || modelo.superficieConstruccion || modelo.superficieTotal,
-                        url: window.location.href
-                    }}
+                    propertyData={simulatorPayload}
                     onClose={() => setIsSimulatorOpen(false)}
                 />
             )}
-        </div >
+
+        </article>
     );
 }
-
-

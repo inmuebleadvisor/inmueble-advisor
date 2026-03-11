@@ -1,0 +1,145 @@
+/* src/styles/model-details/ModelPricingCard.css */
+/* Block: model-pricing-card — Tarjeta de precio principal (Glassmorphism) */
+
+.model-pricing-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+    /* Light glassmorphism sobre fondo blanco */
+    background-color: #ffffff;
+    backdrop-filter: blur(10px);
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(0, 57, 106, 0.08);
+    box-shadow: 0 4px 24px rgba(0, 57, 106, 0.08);
+}
+
+/* ── Columna izquierda (contenido principal) ── */
+.model-pricing-card__left {
+    flex: 1;
+    min-width: 0; /* Evita overflow en flex */
+}
+
+.model-pricing-card__name {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--base-brand-blue);
+    margin: 0 0 16px 0;
+    line-height: 1.2;
+}
+
+/* ── Bloque de precio ── */
+.model-pricing-card__price-box {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 16px;
+}
+
+.model-pricing-card__price-label {
+    font-size: 0.7rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+}
+
+.model-pricing-card__price-val {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    line-height: 1.1;
+}
+
+.model-pricing-card__price-maintenance {
+    font-size: 0.82rem;
+    color: #64748b;
+    font-style: italic;
+}
+
+/* ── Highlights ── */
+.model-pricing-card__highlights {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.model-pricing-card__highlight-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--base-brand-blue);
+    font-size: 0.88rem;
+    font-weight: 500;
+}
+
+.model-pricing-card__check-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: rgba(220, 178, 58, 0.15);
+    color: var(--primary-color);
+}
+
+/* ── CTA Principal ── */
+.model-pricing-card__cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    background-color: var(--primary-color);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 24px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 16px rgba(0, 57, 106, 0.25);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.model-pricing-card__cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 57, 106, 0.35);
+}
+
+/* ── Botón de favoritos (columna derecha) ── */
+.model-pricing-card__fav {
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+
+/* --- Responsive (móvil < 768px) --- */
+@media (max-width: 767px) {
+    .model-pricing-card {
+        flex-direction: column;
+        padding: 16px;
+    }
+
+    .model-pricing-card__name {
+        font-size: 1.4rem;
+    }
+
+    .model-pricing-card__price-val {
+        font-size: 1.5rem;
+    }
+
+    .model-pricing-card__fav {
+        align-self: flex-end;
+        margin-top: -56px; /* Alinea con el nombre en mobile */
+    }
+}
