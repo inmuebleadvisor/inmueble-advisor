@@ -1,13 +1,15 @@
 import { useMemo } from 'react';
+import { sortModels, sortDevelopments } from '../utils/catalogSorters';
 
 /**
  * Hook to transform a list of filtered models into a list of "enriched" developments.
  * 
  * @param {Array} modelosFiltrados - List of models that passed the user's search filters.
  * @param {Array} desarrollos - Full list of available developments (from Context).
+ * @param {string} sortBy - The current sort criteria.
  * @returns {Array} List of developments that have at least one matching model.
  */
-export const useDevelopmentCatalog = (modelosFiltrados, desarrollos) => {
+export const useDevelopmentCatalog = (modelosFiltrados, desarrollos, sortBy = 'updatedAt_desc') => {
     return useMemo(() => {
         if (!modelosFiltrados || !desarrollos) return [];
 
@@ -36,7 +38,7 @@ export const useDevelopmentCatalog = (modelosFiltrados, desarrollos) => {
             return {
                 ...dev,
                 matchCount: matchingModels.length,
-                matchingModels: matchingModels,
+                matchingModels: sortModels(matchingModels, sortBy),
                 visiblePrice: minMatchingPrice,
                 // Helper to know if this dev is relevant to the current search
                 isRelevant: matchingModels.length > 0
@@ -44,9 +46,9 @@ export const useDevelopmentCatalog = (modelosFiltrados, desarrollos) => {
         });
 
         // 3. Filter out non-relevant developments (those with 0 matching models)
-        // AND Sort by relevance (e.g. ones with most matches first? or just keep default order?)
-        // Default order usually implies "Featured" or "Newest". Let's keep original order but filter.
-        return enrichedDevs.filter(d => d.isRelevant);
+        // AND Sort by required criteria
+        const filteredDevs = enrichedDevs.filter(d => d.isRelevant);
+        return sortDevelopments(filteredDevs, sortBy);
 
-    }, [modelosFiltrados, desarrollos]);
+    }, [modelosFiltrados, desarrollos, sortBy]);
 };

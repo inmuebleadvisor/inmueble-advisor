@@ -77,8 +77,6 @@ export default function DevelopmentCard({ development }) {
 
         handleInitialCheck();
 
-        handleInitialCheck();
-
         const timers = SCROLL_CONFIG.INITIAL_CHECK_TIMERS.map(ms => setTimeout(handleInitialCheck, ms));
         window.addEventListener('resize', checkScroll);
 
@@ -87,6 +85,16 @@ export default function DevelopmentCard({ development }) {
             window.removeEventListener('resize', checkScroll);
         };
     }, [previewModels.length]);
+
+    // [FIX]: Force slider to start at the beginning (scrollLeft = 0)
+    useEffect(() => {
+        if (sliderRef.current) {
+            // Force reset scroll to 0 
+            sliderRef.current.scrollLeft = 0;
+            // Also check scroll state after reset
+            checkScroll();
+        }
+    }, [previewModels]); // Re-run if the models array changes
 
     if (!development) return null;
 
@@ -193,7 +201,7 @@ export default function DevelopmentCard({ development }) {
                     <div className="development-card__models-preview">
                         <span className="development-card__preview-title">{matchCount} Modelos:</span>
                         <div className="development-card__slider-wrapper">
-                            {previewModels.length > 2 && canScrollLeft && (
+                            {previewModels.length > 1 && canScrollLeft && (
                                 <button
                                     className="development-card__nav-btn development-card__nav-btn--left"
                                     onClick={(e) => { e.stopPropagation(); handleScroll('left'); }}
@@ -204,7 +212,7 @@ export default function DevelopmentCard({ development }) {
                             )}
 
                             <div
-                                className={`development-card__model-chips hide-scrollbar ${previewModels.length <= 2 ? 'development-card__model-chips--centered' : ''}`}
+                                className={`development-card__model-chips hide-scrollbar ${previewModels.length === 1 ? 'development-card__model-chips--centered' : ''}`}
                                 ref={sliderRef}
                                 onScroll={checkScroll}
                             >
@@ -233,7 +241,7 @@ export default function DevelopmentCard({ development }) {
                                 ))}
                             </div>
 
-                            {previewModels.length > 2 && canScrollRight && (
+                            {previewModels.length > 1 && canScrollRight && (
                                 <>
                                     <button
                                         className="development-card__nav-btn development-card__nav-btn--right"

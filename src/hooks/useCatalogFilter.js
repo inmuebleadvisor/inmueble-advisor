@@ -130,7 +130,8 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
             })(),
             amenidad: (!isFreshSearch && !location.state?.resetFilters && persisted.amenidad) ? persisted.amenidad : '',
             tipo: (state.tipo) ? state.tipo : ((!isFreshSearch && !location.state?.resetFilters && persisted.tipo) ? persisted.tipo : 'all'),
-            showNoPrice: (!isFreshSearch && !location.state?.resetFilters && persisted.showNoPrice) ? persisted.showNoPrice : false
+            showNoPrice: (!isFreshSearch && !location.state?.resetFilters && persisted.showNoPrice) ? persisted.showNoPrice : false,
+            sortBy: (!isFreshSearch && !location.state?.resetFilters && persisted.sortBy) ? persisted.sortBy : 'updatedAt_desc'
         };
     }, [userProfile, location.search, location.state]);
 
@@ -211,7 +212,8 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
             status: 'all',
             amenidad: '',
             tipo: 'all',
-            showNoPrice: false
+            showNoPrice: false,
+            sortBy: 'updatedAt_desc'
         });
     };
 

@@ -100,7 +100,7 @@ export default function Catalogo() {
   }, [desarrollos, modelosFiltrados, loading, isFavorite, dataMaestra]);
 
   // [NEW] Use ViewModel Hook to group models into developments
-  const enrichedDevelopments = useDevelopmentCatalog(modelosFiltrados, desarrollos);
+  const enrichedDevelopments = useDevelopmentCatalog(modelosFiltrados, desarrollos, filtros.sortBy);
 
   // Scroll Reveal for Development Cards
   useScrollReveal('.catalogo__grid > article', { interval: 60 }, [enrichedDevelopments, viewMode]);
@@ -156,6 +156,7 @@ export default function Catalogo() {
         hayFiltrosActivos={hayFiltrosActivos}
         limpiarTodo={limpiarTodo}
         filtros={filtros}
+        setFiltros={setFiltros}
       />
 
       <FilterModal
