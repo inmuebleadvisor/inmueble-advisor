@@ -128,6 +128,7 @@ export default function DetalleDesarrollo() {
   if (loadingCatalog || loading) {
     return (
       <div className="dev-details dev-details--loading" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <SEOHead title="Desarrollo" description="Cargando información del desarrollo..." />
         <p style={{ color: 'var(--text-secondary)' }}>Cargando desarrollo...</p>
       </div>
     );
@@ -136,6 +137,7 @@ export default function DetalleDesarrollo() {
   if (!desarrollo) {
     return (
       <div className="dev-details dev-details--error" style={{ padding: '40px', textAlign: 'center', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <SEOHead title="Desarrollo no encontrado" description="El desarrollo solicitado no está disponible en nuestro catálogo." noIndex={true} />
         <h2 style={{ color: 'var(--text-main)' }}>Desarrollo no encontrado</h2>
         <button onClick={() => navigate('/catalogo')} className="btn btn-secondary">Volver al Catálogo</button>
       </div>

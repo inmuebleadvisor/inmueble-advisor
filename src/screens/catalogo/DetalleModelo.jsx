@@ -173,8 +173,23 @@ export default function DetalleModelo() {
 
   }, [id, loadingCatalog, getModeloById, getDesarrolloById, modelos, catalogService, selectedCity, updateSelectedCity]);
 
-  if (loadingCatalog || loading) return <div style={styles.centerContainer}><p>Cargando modelo...</p></div>;
-  if (!modelo) return <div style={styles.errorContainer}><h2>Propiedad no disponible</h2></div>;
+  if (loadingCatalog || loading) {
+    return (
+      <div style={styles.centerContainer}>
+        <SEOHead title="Modelo" description="Cargando modelo..." />
+        <p>Cargando modelo...</p>
+      </div>
+    );
+  }
+
+  if (!modelo) {
+    return (
+      <div style={styles.errorContainer}>
+        <SEOHead title="Propiedad no disponible" description="Este modelo ya no se encuentra disponible." noIndex={true} />
+        <h2>Propiedad no disponible</h2>
+      </div>
+    );
+  }
 
   return (
     <>

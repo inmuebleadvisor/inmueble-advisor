@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
  * @description Componente agnóstico encargado de inyectar dinámicamente metadatos SEO en el <head>.
  * Diseñado bajo principios de separación de UI/Negocio.
  */
-export default function SEOHead({ title, description, keywords, ogImage, ogUrl }) {
+export default function SEOHead({ title, description, keywords, ogImage, ogUrl, noIndex }) {
     const siteTitle = title ? `${title} | Inmueble Advisor` : 'Inmueble Advisor | Desarrollos Inmobiliarios y Venta de Casas';
     const siteDescription = description || 'Encuentra tu hogar ideal o excelente oportunidad de inversión en desarrollos inmobiliarios y casas en México.';
     const siteKeywords = keywords || 'Bienes raíces, Venta de casas, Departamentos, Desarrollos inmobiliarios, Preventa, México';
@@ -19,6 +19,7 @@ export default function SEOHead({ title, description, keywords, ogImage, ogUrl }
             <title>{siteTitle}</title>
             <meta name="description" content={siteDescription} />
             {siteKeywords && <meta name="keywords" content={siteKeywords} />}
+            {noIndex && <meta name="robots" content="noindex, nofollow" />}
 
             {/* Open Graph tags (Facebook, LinkedIn, etc.) */}
             <meta property="og:type" content="website" />
@@ -41,5 +42,6 @@ SEOHead.propTypes = {
     description: PropTypes.string,
     keywords: PropTypes.string,
     ogImage: PropTypes.string,
-    ogUrl: PropTypes.string
+    ogUrl: PropTypes.string,
+    noIndex: PropTypes.bool
 };
