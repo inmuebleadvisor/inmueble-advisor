@@ -13,8 +13,9 @@
 .model-gallery__stage {
     position: relative;
     width: 100%;
-    /* Tailwind: aspect-[4/3] en móvil, lg:aspect-video */
-    aspect-ratio: 4 / 3;
+    /* Unificado a 16/9 en móvil y desktop para consistencia de galería
+       y eliminación del CLS (el espacio se reserva antes de cargar la imagen) */
+    aspect-ratio: 16 / 9;
     background-color: #e2e8f0; /* bg-gray-200 */
     overflow: hidden;
     /* Tailwind: shadow-lg */

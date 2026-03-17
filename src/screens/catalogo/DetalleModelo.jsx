@@ -197,6 +197,7 @@ export default function DetalleModelo() {
         title={`${modelo.nombre_modelo} en ${desarrollo ? desarrollo.nombre : 'Venta'}`}
         description={`Conoce el modelo ${modelo.nombre_modelo}${desarrollo ? ` del desarrollo ${desarrollo.nombre}` : ''}. Características, precio y ubicación.`}
         ogImage={modelo.imagenPrincipal || modelo.imagenes?.[0]}
+        noIndex={!modelo.isUniqueContent}
       />
       <StructuredData 
         data={{

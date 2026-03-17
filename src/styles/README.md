@@ -1,6 +1,6 @@
 # 🎨 Inmueble Advisor - Styles System
 
-Este directorio contiene la arquitectura visual de la plataforma, basada en un diseño **Premium Dark Mode** con soporte para temas claros.
+Directorio de estilos de la plataforma. Tema único: **Light Professional** (fondo blanco `#ffffff`, azul corporativo `#00396a`, acentos dorado `#dcb23a`). Ver `STYLES_GUIDE.md` para la fuente de verdad de tokens y reglas BEM.
 
 ## 📄 Recursos Principales
 - **[Guía de Estilos Premium](./STYLES_GUIDE.md)**: Estándares de BEM, diseño atómico y tokens. **LECTURA OBLIGATORIA** antes de modificar el CSS.
@@ -20,7 +20,14 @@ Este directorio contiene la arquitectura visual de la plataforma, basada en un d
 - `Admin.css`: Panel administrativo y tablas de datos.
 - `Catalogo.css`: Filtros y cuadrícula de propiedades.
 - `Onboarding.css`: Flujo secuencial de entrada de clientes.
-- `Mapa.jsx`: Integración con Leaflet y visualización geoespacial.
+
+### `model-details/` — Detalle de Modelo
+- **`ModelHeader.css`**: Galería hero del modelo.
+  - `.model-gallery__stage` → `aspect-ratio: 16/9` (móvil y desktop). Garantiza CLS = 0 reservando espacio antes de que cargue la imagen LCP.
+
+### `components/` — Detalle de Desarrollo
+- **`DevelopmentDetails.css`**: Layout del detalle de proyecto.
+  - `.dev-details__header` → `aspect-ratio: 16/9; height: auto`. Reemplaza el antiguo `height: 380px` fijo que generaba CLS.
 
 ## 🛠 Mantenimiento
 1. **No usar hardcoding**: Usa siempre `var(--nombre-variable)`.

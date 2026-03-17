@@ -9,8 +9,9 @@ import { useStickyPanel } from '../../hooks/useStickyPanel';
 import { useService } from '../../hooks/useService';
 import '../../styles/components/DevelopmentDetails.css';
 // import Modal from '../shared/Modal'; // Removed: LeadCaptureForm is now self-contained
-import LeadCaptureForm from '../leads/LeadCaptureForm';
-import MortgageSimulatorModal from '../modals/MortgageSimulatorModal';
+// Code Splitting: los modales se descargan solo al primer uso del usuario (mejora INP)
+const LeadCaptureForm = React.lazy(() => import('../leads/LeadCaptureForm'));
+const MortgageSimulatorModal = React.lazy(() => import('../modals/MortgageSimulatorModal'));
 import { getFunctions, httpsCallable } from 'firebase/functions'; // CAPI: PageView/Contact Intent
 import { useUser } from '../../context/UserContext'; // ✅ Import User Context
 
@@ -111,6 +112,7 @@ export default function DevelopmentDetailsContent({
                                 src={img}
                                 alt={`${desarrollo.nombre} - vista ${idx}`}
                                 className="dev-details__header-image"
+                                priority={idx === 0}
                             />
                         </div>
                     ))}
@@ -211,31 +213,31 @@ export default function DevelopmentDetailsContent({
                 />
             )}
 
-            {/* LEAD CAPTURE MODAL - Unboxed for full control */}
+            {/* LEAD CAPTURE MODAL */}
             {isLeadFormOpen && (
-                <LeadCaptureForm
-                    desarrollo={desarrollo}
-                    modelo={null}
-                    onCancel={() => setIsLeadFormOpen(false)}
-                    onSuccess={() => {
-                        setIsLeadFormOpen(false);
-                        // Optional: trigger a success toast or lightweight feedback if needed, 
-                        // though confetti handles the main "reward".
-                    }}
-                />
+                <React.Suspense fallback={null}>
+                    <LeadCaptureForm
+                        desarrollo={desarrollo}
+                        modelo={null}
+                        onCancel={() => setIsLeadFormOpen(false)}
+                        onSuccess={() => setIsLeadFormOpen(false)}
+                    />
+                </React.Suspense>
             )}
 
             {/* MORTGAGE SIMULATOR MODAL */}
             {isSimulatorOpen && (
-                <MortgageSimulatorModal
-                    initialPrice={precioDesde ? Number(precioDesde.replace(/[^0-9.-]+/g, "")) : 1000000}
-                    propertyData={{
-                        title: desarrollo.nombre || 'Desarrollo',
-                        subtitle: desarrollo.ciudad || '',
-                        image: desarrollo.imagenPrincipal || desarrollo.imagenes?.[0] || ''
-                    }}
-                    onClose={() => setIsSimulatorOpen(false)}
-                />
+                <React.Suspense fallback={null}>
+                    <MortgageSimulatorModal
+                        initialPrice={precioDesde ? Number(precioDesde.replace(/[^0-9.-]+/g, "")) : 1000000}
+                        propertyData={{
+                            title: desarrollo.nombre || 'Desarrollo',
+                            subtitle: desarrollo.ciudad || '',
+                            image: desarrollo.imagenPrincipal || desarrollo.imagenes?.[0] || ''
+                        }}
+                        onClose={() => setIsSimulatorOpen(false)}
+                    />
+                </React.Suspense>
             )}
         </div>
     );

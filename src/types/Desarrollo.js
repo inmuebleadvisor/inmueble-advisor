@@ -7,6 +7,12 @@ export const mapDesarrollo = (docSnapshot) => {
     return {
         ...data,
         id: docSnapshot.id,
+        /**
+         * isUniqueContent: Controla la directiva noindex del SEO.
+         * - true (default): el desarrollo se indexa normalmente.
+         * - false (explícito en Firestore): se aplica <meta name="robots" content="noindex">.
+         */
+        isUniqueContent: data.isUniqueContent ?? true,
         nombre: data.nombre || 'Desarrollo',
         info_comercial: data.infoComercial || data.info_comercial || {},
         amenidades: Array.isArray(data.caracteristicas?.amenidades) ? data.caracteristicas.amenidades : (Array.isArray(data.amenidades) ? data.amenidades : []),

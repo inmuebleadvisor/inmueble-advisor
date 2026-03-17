@@ -129,6 +129,8 @@ export default function ModelHeader({ galeriaItems = [], esPreventa, isModal, on
                         src={mainMediaUrl}
                         alt="Vista de la propiedad"
                         className="model-gallery__image"
+                        loading={activeIndex === 0 ? "eager" : "lazy"}
+                        fetchPriority={activeIndex === 0 ? "high" : "auto"}
                     />
                 )}
 

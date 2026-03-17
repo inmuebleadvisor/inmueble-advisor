@@ -1,53 +1,105 @@
-# 🏙️ Módulo del Catálogo (Components/Catalogo)
+# Módulo Catálogo — `src/components/catalogo`
 
-Este módulo contiene los componentes visuales encargados de presentar la oferta inmobiliaria (Desarrollos y Modelos) de manera atractiva y funcional.
+Componentes visuales de presentación del inventario inmobiliario. Orquestan UI, no lógica de datos.
 
-## Componentes Principales
+---
 
-### 1. DevelopmentCard
-*   **Archivo:** `DevelopmentCard.jsx`
-*   **CSS:** `DevelopmentCard.css`
-*   **Propósito:** Tarjeta premium que presenta un desarrollo inmobiliario.
-*   **Características:**
-    - Slider de modelos integrados.
-    - Tooltip interactivo de amenidades.
-    - Etiquetas de estado (Preventa, Entrega Inmediata) dinámicas.
-    - Responsive y optimizado para scroll.
-*   **Tests:** `DevelopmentCard.test.jsx`
+## `DevelopmentDetailsContent.jsx`
 
-### 2. PropertyCard (Legacy/Individual)
-*   **Archivo:** `PropertyCard.jsx`
-*   **Propósito:** Presentación individual de modelos de casa/departamento fuera del contexto de slider de desarrollo.
+Orquestador visual del detalle de un **Desarrollo**. Layout: hero carousel + info + lista de modelos.
 
-### 3. AmenidadesList
-*   **Archivo:** `AmenidadesList.jsx`
-*   **Propósito:** Renderizado estandarizado de la lista de características de una propiedad.
+### Props
 
-### 4. DevelopmentDetailsContent
-*   **Archivo:** `DevelopmentDetailsContent.jsx`
-*   **Propósito:** Contenedor de la vista de detalle de un Desarrollo (Hero image, tabs, información principal).
-*   **Integración:** Actúa como punto de entrada al `MortgageSimulatorModal`, pasando los valores del desarrollo (precio "desde", nombre, imagen promocional) para pre-llenar la cotización.
+| Prop | Tipo | Descripción |
+|---|---|---|
+| `desarrollo` | `object` | Objeto mapeado por `mapDesarrollo`. |
+| `onBack` | `function` | Callback para botón de regreso. |
+| `isModal` | `boolean` | Default `false`. Si `true`, adapta el layout para uso dentro de Modal. |
 
-### 5. ModelDetailsContent
-*   **Archivo:** `ModelDetailsContent.jsx`
-*   **Propósito:** Vista de detalle individual de un Modelo de propiedad (Galería, especificaciones, amenidades del modelo).
-*   **Integración:** Punto de entrada directo al `MortgageSimulatorModal`, pasando el precio específico del modelo y sus características exactas para una estimación precisa.
+### Hero Image — LCP
+```jsx
+// El primer item del carrusel activa fetchPriority="high" vía la prop priority
+{galeriaImagenes.map((img, idx) => (
+    <ImageLoader src={img} priority={idx === 0} />
+))}
+```
+El CSS del contenedor usa `aspect-ratio: 16/9` en `.dev-details__header` para reservar espacio y eliminar CLS.
 
-### 6. MapCatalogView
-*   **Archivo:** `MapCatalogView.jsx`
-*   **CSS:** `MapCatalogView.css`
-*   **Propósito:** Vista de mapa interactiva con Leaflet para localizar desarrollos.
-*   **Características:**
-    - Fullscreen dinámico optimizado para móviles con `100dvh`.
-    - Marcadores personalizados con precios y estatus de favoritos.
-    - Leyenda interactiva integrada.
+### Modales — Code Splitting (INP)
+```javascript
+// Importación lazy — solo se descarga cuando el usuario abre el modal
+const LeadCaptureForm = React.lazy(() => import('../leads/LeadCaptureForm'));
+const MortgageSimulatorModal = React.lazy(() => import('../modals/MortgageSimulatorModal'));
+```
+Los modales se renderizan con `<React.Suspense fallback={null}>` para no bloquear la UI.
+
+### Sticky Panel
+`useStickyPanel(headerRef)` activa `StickyActionPanel` (barra inferior móvil) cuando el header sale del viewport.
+
+---
+
+## `ModelDetailsContent.jsx`
+
+Orquestador visual del detalle de un **Modelo**. Layout marketplace: galería + info + aside sticky.
+
+### Props
+
+| Prop | Tipo | Descripción |
+|---|---|---|
+| `modelo` | `object` | Objeto mapeado por `mapModelo`. |
+| `desarrollo` | `object\|null` | Desarrollo padre. Puede ser `null`. |
+| `modelosHermanos` | `object[]` | Modelos del mismo desarrollo, para cross-sell. |
+| `onBack` | `function` | Callback de navegación. |
+| `isModal` | `boolean` | Default `false`. |
+
+### Datos derivados (via `modelPresentationService`)
+- `galeriaItems` — imágenes normalizadas.
+- `precioFormateado` — MXN formateado.
+- `simulatorPayload` — objeto pre-armado para el simulador hipotecario.
+
+### Modales — Code Splitting (INP)
+Mismo patrón `React.lazy` que `DevelopmentDetailsContent`. Ver arriba.
+
+### Autenticación antes de formulario
+`handleOpenLeadForm` → si el usuario no está logueado, lanza `loginWithGoogle()` antes de abrir el form.
+
+---
+
+## `model-details/ModelHeader.jsx`
+
+Galería de imágenes del modelo (stage + thumbnails + swipe + Delightbox).
+
+### Props
+
+| Prop | Tipo | Descripción |
+|---|---|---|
+| `galeriaItems` | `array` | URLs o objetos `{url, type}`. Acepta strings directos o nesting de Firestore. |
+| `esPreventa` | `boolean` | Muestra badge "Preventa". |
+| `isModal` | `boolean` | Oculta botón de regreso. |
+| `onBack` | `function` | Callback botón regreso. |
+
+### LCP — `<img>` del stage principal
+```jsx
+<img
+  loading={activeIndex === 0 ? "eager" : "lazy"}
+  fetchPriority={activeIndex === 0 ? "high" : "auto"}
+/>
+```
+Solo la imagen `activeIndex === 0` (visible en carga) recibe prioridad alta.
+
+### CSS — `ModelHeader.css`
+`.model-gallery__stage { aspect-ratio: 16/9 }` — unificado en móvil y desktop para CLS = 0.
+
+### Interacciones
+- **Swipe táctil:** `onTouchStart/Move/End` con umbral `minSwipeDistance = 50px`.
+- **Desktop:** Botones `ChevronLeft/ChevronRight` (solo visibles ≥1024px via CSS).
+- **Fullscreen:** Click en stage → abre `Delightbox` con todos los ítems.
+
+---
 
 ## Estándares del Módulo
 
-1.  **Metodología BEM:** Es obligatorio el uso de BEM con el prefijo correspondiente al componente (ej. `.development-card__element`).
-2.  **Desacoplamiento:** La lógica de negocio (formateo, etiquetas de estado, selección de imagen de portada) **DEBE** delegarse a `src/services/developmentService.js` o `src/utils/formatters.js`.
-3.  **Configuración de UI:** Ajustes como velocidades de scroll, umbrales de visibilidad y límites de elementos se gestionan a través del objeto `SCROLL_CONFIG` dentro del componente.
-4.  **Premium Experience:** Todas las animaciones deben usar la variable `--ease-premium`.
-
-## Guía de Estilos (CSS)
-Las tarjetas utilizan variables globales definidas en `src/index.css` para asegurar compatibilidad con el **Dark Mode** y temas estacionales.
+1. **BEM obligatorio** en todos los classNames. Prefijo = bloque raíz del archivo CSS.
+2. **Sin lógica de negocio** en los componentes. Delegar a `src/services/`.
+3. **Code Splitting** para cualquier modal o componente pesado importado condicionalmente.
+4. **Animaciones** con `cubic-bezier(0.4, 0, 0.2, 1)` (`--ease-premium`). Velocidades: `0.2s` hover, `0.3s` entradas.

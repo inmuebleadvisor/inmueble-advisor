@@ -150,6 +150,7 @@ export default function DetalleDesarrollo() {
         title={`Desarrollo ${desarrollo.nombre} | Preventa de Casas y Departamentos`}
         description={`Descubre ${desarrollo.nombre}. Departamentos y casas en venta en ${desarrollo.ubicacion?.ciudad || 'México'}. Conoce sus amenidades y modelos.`}
         ogImage={desarrollo.imagen}
+        noIndex={!desarrollo.isUniqueContent}
       />
       <StructuredData 
         data={{

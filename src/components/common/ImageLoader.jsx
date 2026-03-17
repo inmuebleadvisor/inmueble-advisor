@@ -4,6 +4,15 @@ import React, { useState } from 'react';
 
 const FALLBACK_ICON = "https://inmuebleadvisor.com/wp-content/uploads/2025/09/cropped-Icono-Inmueble-Advisor-1.png";
 
+/**
+ * @component ImageLoader
+ * @description Renderiza una imagen con skeleton de carga y soporte para prioridad LCP.
+ * @param {string}  src       - URL de la imagen.
+ * @param {string}  alt       - Texto alternativo accesible.
+ * @param {object}  style     - Estilos inline adicionales.
+ * @param {string}  className - Clase CSS del contenedor.
+ * @param {boolean} priority  - Si true, aplica fetchPriority="high" y loading="eager" para optimizar el LCP.
+ */
 export default function ImageLoader({ src, alt, style, className, priority = false }) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
@@ -30,8 +39,9 @@ export default function ImageLoader({ src, alt, style, className, priority = fal
         // ✅ OPTIMIZACIÓN CRÍTICA:
         // 'async': Permite renderizar el resto de la página mientras decodifica la imagen
         // 'lazy': Solo descarga si está cerca del viewport (a menos que sea priority)
-        decoding="async" 
+        decoding="async"
         loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : "auto"}
         
         onLoad={() => setLoaded(true)}
         onError={() => { setError(true); setLoaded(true); }}

@@ -18,7 +18,10 @@
 .dev-details__header {
     position: relative;
     width: 100%;
-    height: 380px;
+    /* aspect-ratio elimina el CLS: el navegador reserva el espacio
+       antes de que la imagen cargue, sin necesidad de height fijo */
+    aspect-ratio: 16 / 9;
+    height: auto;
     background-color: var(--bg-tertiary);
     overflow: hidden;
 }

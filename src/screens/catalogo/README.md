@@ -1,50 +1,82 @@
-# Módulo: Pantallas del Catálogo (`src/screens/catalogo`)
+# Screens: Catálogo — `src/screens/catalogo`
 
-Este directorio contiene las pantallas principales relacionadas con la visualización y exploración del inventario de desarrollos inmobiliarios.
+Pantallas de navegación del catálogo inmobiliario. Actúan como **orquestadores de datos**: cargan la información, la pasan a componentes de presentación y gestionan el ciclo SEO/Analítica.
 
-## Componentes Principales
+---
 
-### `DetalleDesarrollo.jsx`
-Pantalla de detalle para un desarrollo específico.
-- **Ruta:** `/desarrollo/:id`
-- **Funcionalidad:**
-  - Carga la información completa del desarrollo usando `CatalogService`.
-  - Muestra la galería de imágenes, información técnica, ubicación y modelos disponibles.
-  - Gestiona la navegación y el estado de carga/error.
-  - **Match Quality:** Enriquece la señal enviando datos del usuario logueado (Email, Teléfono, Nombre) protegidos mediante hash en el servidor.
-  - **SEO & Microdatos:** 
-    - Inyecta `SEOHead` con títulos y descripciones optimizados.
-    - Maneja interceptadores de renderizado: previene indexación de textos "Cargando..." e inyecta dinámicamente `<meta name="robots" content="noindex">` si el desarrollo es un Soft 404.
-    - Utiliza `StructuredData` para emitir microdatos de tipo `RealEstateAgent` y calcular el rango de precios dinámico.
+## `DetalleModelo.jsx` — Ruta `/modelo/:id`
 
-### `DevelopmentDetailsContent.jsx`
-Componente visual interno de `DetalleDesarrollo`.
-- **Analítica (Hybrid Tracking):**
-  - Implementa **Meta CAPI** para el evento `PageView`.
-  - Genera su propio `eventId` para asegurar la cobertura incluso si la navegación SPA no dispara el pixel del navegador correctamente o es bloqueado.
-  - **Match Quality:** Enriquece los eventos `PageView` y `Contact` con PII de usuario autenticado.
+### Responsabilidad
+Pantalla de detalle de un modelo de propiedad (prototipo de casa o departamento).
 
-### `Catalogo.jsx`
-Pantalla principal del listado de desarrollos.
-- **Funcionalidad:** Muestra tarjetas de propiedades con filtros básicos.
+### Flujo de datos
+1. Obtiene `id` desde `useParams`.
+2. Busca en cache local (`getModeloById` de `CatalogContext`). Si no existe → llama `catalogService.obtenerInformacionModelo(id)`.
+3. Cuando encuentra el modelo, resuelve el desarrollo padre via `getDesarrolloById(idDesarrollo)` y extrae los modelos hermanos por `idDesarrollo`.
 
-### `DetalleModelo.jsx`
-Pantalla de detalle para un modelo específico (prototipo) dentro de un desarrollo.
-- **Ruta:** `/modelo/:id`
-- **SEO & Microdatos:**
-  - Inyecta `SEOHead` con el nombre del modelo y el desarrollo asociado.
-  - Emplea la misma estrategia de intercepción de Sitelinks en el enrutador para evitar Sitelinks temporales y Soft 404s vía `noIndex`.
-  - Genera microdatos `Product` (Schema.org) incluyendo el precio exacto (`precioNumerico`), moneda (MXN) y disponibilidad para visualización en resultados enriquecidos de Google.
+### SEO
+```jsx
+<SEOHead
+  title={`${modelo.nombre_modelo} en ${desarrollo?.nombre || 'Venta'}`}
+  description="Características, precio y ubicación."
+  ogImage={modelo.imagenPrincipal}
+  noIndex={!modelo.isUniqueContent}   // false explícito en Firestore → noindex
+/>
+```
+- `noIndex` es dinámico. Controlado por el campo `isUniqueContent` del documento Firestore.
+- Default del campo: `true` (indexable). Ver `src/types/Modelo.js`.
 
-### `Mapa.jsx`
-Vista de mapa para la exploración geoespacial de los desarrollos.
-- **Interacción (Hammer Fix):** Implementa una estrategia agresiva para garantizar interactividad instantánea en dispositivos híbridos (Windows Touch):
-  - `tap={false}` en Leaflet para evitar conflictos táctiles.
-  - **Body Scroll Lock:** Bloquea físicamente el scroll de la página (`overflow: hidden`) al montar el mapa para evitar que el primer click sea interpretado como "pan".
-  - **Auto-Focus:** El mapa reclama el foco del navegador al cargar.
-  - **CSS Global:** Requiere overrides específicos en `index.css` (`touch-action: none`, `isolation: isolate`) para evitar que el navegador capture eventos.
-## Dependencias Clave
-- **Services:** `CatalogService` (datos), `MetaAdsService` (tracking client-side).
-- **SEO Elements:** `SEOHead`, `StructuredData`.
-- **Context:** `UserContext` (tracking comportamiento interno), `CatalogContext` (estado global).
-- **Firebase Functions:** `onLeadIntentMETA` (tracking), `generateSitemap` (rastreo orgánico).
+### Structured Data
+Emite schema `Product` con `offers.price` en MXN y `availability: InStock`.
+
+### Meta Hybrid Tracking (ViewContent)
+Dispara ViewContent en browser Pixel + CAPI en mounted. Event deduplication via `eventId` generado por `MetaService`.
+
+### Componentes delegados
+- **`ModelDetailsContent`** — Layout y presentación completa.
+- **`SEOHead`** / **`StructuredData`** — Meta e inyección de JSON-LD.
+
+---
+
+## `DetalleDesarrollo.jsx` — Ruta `/desarrollo/:id`
+
+### Responsabilidad
+Pantalla de detalle de un proyecto inmobiliario completo.
+
+### Flujo de datos
+1. Obtiene `id` desde `useParams`.
+2. Llama directamente `catalogService.obtenerInformacionDesarrollo(id)` — no usa cache local.
+3. Los modelos relacionados vienen dentro de `desarrollo.modelos` (ya incluidos en el response del servicio).
+
+### SEO
+```jsx
+<SEOHead
+  title={`Desarrollo ${desarrollo.nombre} | Preventa...`}
+  description={`...en ${desarrollo.ubicacion?.ciudad}...`}
+  ogImage={desarrollo.imagen}
+  noIndex={!desarrollo.isUniqueContent}  // false explícito en Firestore → noindex
+/>
+```
+- Mismo contrato `isUniqueContent` que `DetalleModelo`. Ver `src/types/Desarrollo.js`.
+
+### Structured Data
+Emite schema `RealEstateAgent` con `address.addressLocality` y `priceRange` calculado desde `modelos`.
+
+### Meta Hybrid Tracking (ViewContent)
+Mismo patrón que `DetalleModelo`. El `minPrice` se calcula como `Math.min(...modelos.map(m => m.precioNumerico))`.
+
+### Componentes delegados
+- **`DevelopmentDetailsContent`** — layout, galería, modelos disponibles.
+- **`SEOHead`** / **`StructuredData`** — Meta e inyección de JSON-LD.
+
+---
+
+## Dependencias compartidas
+
+| Dependencia | Propósito |
+|---|---|
+| `CatalogContext` | Cache y acceso sin re-fetch a modelos/desarrollos ya cargados. |
+| `UserContext` | PII para Advanced Matching de Meta. `trackBehavior` para analytics interno. |
+| `useService()` | Inyección de `catalogService` y `metaService`. |
+| `SEOHead` | Control de metadata y directiva `noindex`. |
+| `StructuredData` | Rich Snippets (JSON-LD). |

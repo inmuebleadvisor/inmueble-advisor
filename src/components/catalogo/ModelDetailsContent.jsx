@@ -14,12 +14,15 @@ import FinanciamientoWidget    from './FinanciamientoWidget';
 import DevelopmentInfoSection  from './DevelopmentInfoSection';
 import PropertyCard            from './PropertyCard';
 import StickyActionPanel       from '../layout/StickyActionPanel'; // Fixed bottom bar en móvil
-import LeadCaptureForm         from '../leads/LeadCaptureForm';
-import MortgageSimulatorModal  from '../modals/MortgageSimulatorModal';
+
 
 // ── Hooks / Contexto ─────────────────────────────────────────────────────────
 import { useUser }        from '../../context/UserContext';
 import { useStickyPanel } from '../../hooks/useStickyPanel';
+
+// ── Code Splitting: modales pesados se descargan solo al primer uso (mejora INP) ──────────
+const LeadCaptureForm        = React.lazy(() => import('../leads/LeadCaptureForm'));
+const MortgageSimulatorModal = React.lazy(() => import('../modals/MortgageSimulatorModal'));
 
 // ── Servicio de presentación (Inyección de Dependencias) ────────────────────
 import { modelPresentationService } from '../../services/service.provider';
@@ -211,19 +214,23 @@ export default function ModelDetailsContent({
 
             {/* ── MODALES ── */}
             {isLeadFormOpen && (
-                <LeadCaptureForm
-                    desarrollo={desarrollo}
-                    modelo={modelo}
-                    onCancel={() => setIsLeadFormOpen(false)}
-                    onSuccess={() => setIsLeadFormOpen(false)}
-                />
+                <React.Suspense fallback={null}>
+                    <LeadCaptureForm
+                        desarrollo={desarrollo}
+                        modelo={modelo}
+                        onCancel={() => setIsLeadFormOpen(false)}
+                        onSuccess={() => setIsLeadFormOpen(false)}
+                    />
+                </React.Suspense>
             )}
             {isSimulatorOpen && (
-                <MortgageSimulatorModal
-                    initialPrice={modelo.precioNumerico}
-                    propertyData={simulatorPayload}
-                    onClose={() => setIsSimulatorOpen(false)}
-                />
+                <React.Suspense fallback={null}>
+                    <MortgageSimulatorModal
+                        initialPrice={modelo.precioNumerico}
+                        propertyData={simulatorPayload}
+                        onClose={() => setIsSimulatorOpen(false)}
+                    />
+                </React.Suspense>
             )}
 
         </article>
