@@ -14,6 +14,7 @@ Pantalla de detalle para un desarrollo específico.
   - **Match Quality:** Enriquece la señal enviando datos del usuario logueado (Email, Teléfono, Nombre) protegidos mediante hash en el servidor.
   - **SEO & Microdatos:** 
     - Inyecta `SEOHead` con títulos y descripciones optimizados.
+    - Maneja interceptadores de renderizado: previene indexación de textos "Cargando..." e inyecta dinámicamente `<meta name="robots" content="noindex">` si el desarrollo es un Soft 404.
     - Utiliza `StructuredData` para emitir microdatos de tipo `RealEstateAgent` y calcular el rango de precios dinámico.
 
 ### `DevelopmentDetailsContent.jsx`
@@ -32,6 +33,7 @@ Pantalla de detalle para un modelo específico (prototipo) dentro de un desarrol
 - **Ruta:** `/modelo/:id`
 - **SEO & Microdatos:**
   - Inyecta `SEOHead` con el nombre del modelo y el desarrollo asociado.
+  - Emplea la misma estrategia de intercepción de Sitelinks en el enrutador para evitar Sitelinks temporales y Soft 404s vía `noIndex`.
   - Genera microdatos `Product` (Schema.org) incluyendo el precio exacto (`precioNumerico`), moneda (MXN) y disponibilidad para visualización en resultados enriquecidos de Google.
 
 ### `Mapa.jsx`

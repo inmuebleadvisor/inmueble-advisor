@@ -8,8 +8,9 @@ Handles unified PageView tracking for Meta Ads (Pixel + CAPI).
 
 ## SEOHead
 Advanced dynamic meta tag manager using `react-helmet-async`.
-- **Purpose:** Controls `<title>`, `<meta name="description">`, and Open Graph (OG/Twitter) preview tags.
+- **Purpose:** Controls `<title>`, `<meta name="description">`, Open Graph (OG/Twitter) preview tags, and `noindex` directives.
 - **Dynamic Context:** Injected on every screen to ensure search engines and social scrapers see relevant content per page.
+- **Update (2026-03-17):** Added `noIndex` prop to intercept Error/Loading states before rendering, preventing Soft 404s and partial DOM indexing.
 
 ## StructuredData
 Semantic microdata injector for Schema.org.
