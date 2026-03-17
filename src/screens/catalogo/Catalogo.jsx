@@ -15,6 +15,7 @@ import PropertyCard from '../../components/catalogo/PropertyCard';
 import SearchBar from '../../components/layout/SearchBar';
 import FilterBar from '../../components/layout/FilterBar';
 import FilterModal from '../../components/modals/FilterModal';
+import SEOHead from '../../components/common/SEOHead';
 
 // Styles
 import '../../styles/Catalogo.css';
@@ -116,6 +117,10 @@ export default function Catalogo() {
 
   return (
     <div className="catalogo animate-fade-in">
+      <SEOHead 
+        title={`Catálogo de Propiedades en ${selectedCity || 'México'}`} 
+        description={`Explora nuestro catálogo completo de casas, departamentos y desarrollos en preventa en ${selectedCity || 'México'}.`}
+      />
 
       <header className="catalogo__header">
         <h1 className="catalogo__title">

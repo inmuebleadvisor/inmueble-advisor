@@ -1,8 +1,8 @@
 // src/App.jsx
 
-// ÚLTIMA MODIFICACION: 02/12/2025
 import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 
 // --- CONTEXTOS GLOBALES ---
 import { UserProvider, useUser } from './context/UserContext';
@@ -65,97 +65,97 @@ function App() {
   }, []);
 
   return (
-    <PostHogProvider client={posthog}>
-      <ServiceProvider>
-        <UserProvider>
-          <CatalogProvider>
-            {/* ⭐ AÑADIMOS EL NUEVO PROVEEDOR AQUÍ */}
-            <FavoritesProvider>
+    <HelmetProvider>
+      <PostHogProvider client={posthog}>
+        <ServiceProvider>
+          <UserProvider>
+            <CatalogProvider>
+              {/* ⭐ AÑADIMOS EL NUEVO PROVEEDOR AQUÍ */}
+              <FavoritesProvider>
 
-              <BrowserRouter>
-                {/* ⭐ MODAL DE SELECCIÓN DE CIUDAD (Global) */}
-                <CitySelectorModal />
-                <ScrollToTop /> {/* ✅ Reset Scroll Restoration */}
-                <MetaTracker /> {/* ✅ Rastreo Unificado de PageView */}
-                <AnalyticsTracker />
-                <Suspense fallback={
-                  <div className="spinner-container">
-                    <div className="spinner" />
-                  </div>
-                }>
-                  <Routes>
-                    <Route path="/" element={<Layout />}>
+                <BrowserRouter>
+                  {/* ⭐ MODAL DE SELECCIÓN DE CIUDAD (Global) */}
+                  <CitySelectorModal />
+                  <ScrollToTop /> {/* ✅ Reset Scroll Restoration */}
+                  <MetaTracker /> {/* ✅ Rastreo Unificado de PageView */}
+                  <AnalyticsTracker />
+                  <Suspense fallback={
+                    <div className="spinner-container">
+                      <div className="spinner" />
+                    </div>
+                  }>
+                    <Routes>
+                      <Route path="/" element={<Layout />}>
 
-                      {/* 1. RUTA PÚBLICA (Home) */}
-                      <Route index element={<Home />} />
+                        {/* 1. RUTA PÚBLICA (Home) */}
+                        <Route index element={<Home />} />
 
-                      {/* 2. PERFIL DE USUARIO (Antes era Index) */}
-                      <Route path="perfil" element={
-                        <ProtectedRoute requireAuth={true}>
-                          <Perfil />
-                        </ProtectedRoute>
-                      } />
+                        {/* 2. PERFIL DE USUARIO (Antes era Index) */}
+                        <Route path="perfil" element={
+                          <ProtectedRoute requireAuth={true}>
+                            <Perfil />
+                          </ProtectedRoute>
+                        } />
 
+                        {/* 3. RUTAS DEL SISTEMA (Protegidas) */}
 
+                        <Route path="catalogo" element={<Catalogo />} />
 
-                      {/* 3. RUTAS DEL SISTEMA (Protegidas) */}
+                        {/* Redirect legacy map route to unified catalog view */}
+                        <Route path="mapa" element={<Navigate to="/catalogo" replace />} />
 
-                      <Route path="catalogo" element={<Catalogo />} />
+                        {/* ⭐ NUEVA RUTA: Ruta para la pantalla de Comparador y Favoritos */}
+                        <Route path="favoritos" element={
+                          <ProtectedRoute requireAuth={true}>
+                            <Favoritos />
+                          </ProtectedRoute>
+                        } />
 
-                      {/* Redirect legacy map route to unified catalog view */}
-                      <Route path="mapa" element={<Navigate to="/catalogo" replace />} />
+                        {/* 6. RUTAS DE DETALLE */}
+                        <Route path="modelo/:id" element={
+                          <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
+                            <RouteRemounter>
+                              <DetalleModelo />
+                            </RouteRemounter>
+                          </ProtectedRoute>
+                        } />
+                        <Route path="desarrollo/:id" element={
+                          <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
+                            <RouteRemounter>
+                              <DetalleDesarrollo />
+                            </RouteRemounter>
+                          </ProtectedRoute>
+                        } />
 
-                      {/* ⭐ NUEVA RUTA: Ruta para la pantalla de Comparador y Favoritos */}
-                      <Route path="favoritos" element={
-                        <ProtectedRoute requireAuth={true}>
-                          <Favoritos />
-                        </ProtectedRoute>
-                      } />
+                        {/* 7. HERRAMIENTAS ADMINISTRATIVAS (Uso interno) */}
+                        {/* Accede manualmente escribiendo /admin-export-tool en la URL */}
+                        <Route path="admin-export-tool" element={<AdminDataExport />} />
 
-                      {/* 6. RUTAS DE DETALLE */}
-                      <Route path="modelo/:id" element={
-                        <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
-                          <RouteRemounter>
-                            <DetalleModelo />
-                          </RouteRemounter>
-                        </ProtectedRoute>
-                      } />
-                      <Route path="desarrollo/:id" element={
-                        <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
-                          <RouteRemounter>
-                            <DetalleDesarrollo />
-                          </RouteRemounter>
-                        </ProtectedRoute>
-                      } />
+                        {/* ✅ NUEVO SISTEMA DE ADMINISTRACIÓN (Layout Anidado) */}
+                        <Route path="administrador" element={
+                          <ProtectedRoute requireAdmin={true}>
+                            <AdminLayout />
+                          </ProtectedRoute>
+                        }>
+                          <Route index element={<AdminHome />} />
+                          <Route path="leads" element={<AdminLeads />} />
+                          <Route path="users" element={<AdminUsers />} />
+                          <Route path="asesores" element={<AdvisorsDirectory />} />
+                        </Route>
 
-                      {/* 7. HERRAMIENTAS ADMINISTRATIVAS (Uso interno) */}
-                      {/* Accede manualmente escribiendo /admin-export-tool en la URL */}
-                      <Route path="admin-export-tool" element={<AdminDataExport />} />
+                        {/* 404 - Redirección por defecto */}
+                        <Route path="*" element={<Navigate to="/" replace />} />
 
-                      {/* ✅ NUEVO SISTEMA DE ADMINISTRACIÓN (Layout Anidado) */}
-                      <Route path="administrador" element={
-                        <ProtectedRoute requireAdmin={true}>
-                          <AdminLayout />
-                        </ProtectedRoute>
-                      }>
-                        <Route index element={<AdminHome />} />
-                        <Route path="leads" element={<AdminLeads />} />
-                        <Route path="users" element={<AdminUsers />} />
-                        <Route path="asesores" element={<AdvisorsDirectory />} />
                       </Route>
-
-                      {/* 404 - Redirección por defecto */}
-                      <Route path="*" element={<Navigate to="/" replace />} />
-
-                    </Route>
-                  </Routes>
-                </Suspense>
-              </BrowserRouter>
-            </FavoritesProvider> {/* ⭐ CERRAMOS EL NUEVO PROVEEDOR */}
-          </CatalogProvider>
-        </UserProvider>
-      </ServiceProvider>
-    </PostHogProvider >
+                    </Routes>
+                  </Suspense>
+                </BrowserRouter>
+              </FavoritesProvider> {/* ⭐ CERRAMOS EL NUEVO PROVEEDOR */}
+            </CatalogProvider>
+          </UserProvider>
+        </ServiceProvider>
+      </PostHogProvider>
+    </HelmetProvider>
   );
 }
 

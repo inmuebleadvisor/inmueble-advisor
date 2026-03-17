@@ -32,6 +32,10 @@
     ],
     "rewrites": [
       {
+        "source": "/sitemap.xml",
+        "function": "generateSitemap"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

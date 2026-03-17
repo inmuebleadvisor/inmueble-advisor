@@ -9,6 +9,8 @@ import { useService } from '../../hooks/useService'; // ✅ Import Service Hook
 
 // Componentes UI
 import ModelDetailsContent from '../../components/catalogo/ModelDetailsContent';
+import SEOHead from '../../components/common/SEOHead';
+import StructuredData from '../../components/common/StructuredData';
 
 const Icons = {
   Back: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
@@ -175,12 +177,39 @@ export default function DetalleModelo() {
   if (!modelo) return <div style={styles.errorContainer}><h2>Propiedad no disponible</h2></div>;
 
   return (
-    <ModelDetailsContent
-      modelo={modelo}
-      desarrollo={desarrollo}
-      modelosHermanos={modelosHermanos}
-      onBack={() => navigate(-1)}
-    />
+    <>
+      <SEOHead 
+        title={`${modelo.nombre_modelo} en ${desarrollo ? desarrollo.nombre : 'Venta'}`}
+        description={`Conoce el modelo ${modelo.nombre_modelo}${desarrollo ? ` del desarrollo ${desarrollo.nombre}` : ''}. Características, precio y ubicación.`}
+        ogImage={modelo.imagenPrincipal || modelo.imagenes?.[0]}
+      />
+      <StructuredData 
+        data={{
+          "@context": "https://schema.org/",
+          "@type": "Product",
+          "name": modelo.nombre_modelo,
+          "image": modelo.imagenPrincipal || modelo.imagenes?.[0],
+          "description": `Modelo ${modelo.nombre_modelo} en venta.`,
+          "brand": {
+            "@type": "Brand",
+            "name": desarrollo ? desarrollo.nombre : "Inmueble Advisor"
+          },
+          "offers": {
+            "@type": "Offer",
+            "url": window.location.href,
+            "priceCurrency": "MXN",
+            "price": modelo.precioNumerico || 0,
+            "availability": "https://schema.org/InStock"
+          }
+        }}
+      />
+      <ModelDetailsContent
+        modelo={modelo}
+        desarrollo={desarrollo}
+        modelosHermanos={modelosHermanos}
+        onBack={() => navigate(-1)}
+      />
+    </>
   );
 }
 

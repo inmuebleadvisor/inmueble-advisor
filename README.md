@@ -47,6 +47,17 @@ npm run build
 - **Facebook Domain Verification**: A meta tag has been added to `index.html` to verify the domain with Meta (Facebook) services.
     - Tag: `<meta name="facebook-domain-verification" content="..." />`
     - Location: `public/index.html` (or root `index.html` in Vite).
+    
+## 🔍 SEO & Crawlability
+
+This application is optimized for search engines using a hybrid dynamic strategy:
+
+-   **Dynamic Head Content**: Managed by `react-helmet-async` for titles, descriptions, and Open Graph tags across all screens.
+-   **Structured Data (JSON-LD)**: Injected on property detail pages using `Schema.org` (Product, RealEstateAgent) for Rich Snippets.
+-   **Serverless Sitemap**: A dynamic `sitemap.xml` is generated in real-time by a Firebase Cloud Function, mapping all active developments and models.
+    - URL: `/sitemap.xml` (Proxied via Firebase Hosting rewrites).
+    - Cache: 12-hour Edge CDN caching to optimize performance and billing.
+-   **Semantic HTML**: Uses `.sr-only` utility for visually-hidden SEO text (e.g., proper H1 hierarchy in Hero sections).
 
 ## 🏗️ Architecture
 

@@ -18,3 +18,5 @@ export { onLeadPageViewMETA } from './interface/callable/onLeadPageViewMETA';
 // Triggers - Catalog Persistence
 export { onModelUpdate } from './interface/triggers/onModelUpdate';
 
+// HTTP Endpoints (SEO)
+export { generateSitemap } from './interface/http/generateSitemap';

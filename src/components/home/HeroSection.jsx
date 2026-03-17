@@ -15,10 +15,14 @@ export default function HeroSection() {
 
     return (
         <>
-            <h1 className="hero-content__title">
+            {/* Title specifically for SEO / Screen Readers */}
+            <h1 className="sr-only">Desarrollos Inmobiliarios y Venta de Casas y Departamentos de Lujo</h1>
+            
+            {/* Visual Title Header */}
+            <div className="hero-content__title" role="heading" aria-level="2">
                 Encuentra tu <span className="hero-content__title-extra"><span className="hero-content__highlight">Sueño</span>,<br />encuentra tu </span>
                 <span className="hero-content__highlight">Hogar</span>
-            </h1>
+            </div>
 
 
             <div className="hero-content__search-wrapper" onClick={() => navigate('/catalogo', { state: { openSearchModal: true } })}>

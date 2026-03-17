@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onModelUpdate = exports.onLeadPageViewMETA = exports.onLeadContactMETA = exports.onLeadIntentMETA = exports.onLeadCreatedMETA = exports.onLeadCreated = exports.notifyNewUser = exports.promoteToAdvisor = void 0;
+exports.generateSitemap = exports.onModelUpdate = exports.onLeadPageViewMETA = exports.onLeadContactMETA = exports.onLeadIntentMETA = exports.onLeadCreatedMETA = exports.onLeadCreated = exports.notifyNewUser = exports.promoteToAdvisor = void 0;
 const admin = __importStar(require("firebase-admin"));
 // Initialize Firebase Admin SDK once
 if (!admin.apps.length) {
@@ -47,4 +47,7 @@ Object.defineProperty(exports, "onLeadPageViewMETA", { enumerable: true, get: fu
 // Triggers - Catalog Persistence
 var onModelUpdate_1 = require("./interface/triggers/onModelUpdate");
 Object.defineProperty(exports, "onModelUpdate", { enumerable: true, get: function () { return onModelUpdate_1.onModelUpdate; } });
+// HTTP Endpoints (SEO)
+var generateSitemap_1 = require("./interface/http/generateSitemap");
+Object.defineProperty(exports, "generateSitemap", { enumerable: true, get: function () { return generateSitemap_1.generateSitemap; } });
 //# sourceMappingURL=index.js.map

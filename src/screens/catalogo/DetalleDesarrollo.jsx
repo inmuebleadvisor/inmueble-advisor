@@ -9,6 +9,8 @@ import { useService } from '../../hooks/useService';
 import { useCatalog } from '../../context/CatalogContext';
 
 import DevelopmentDetailsContent from '../../components/catalogo/DevelopmentDetailsContent';
+import SEOHead from '../../components/common/SEOHead';
+import StructuredData from '../../components/common/StructuredData';
 
 export default function DetalleDesarrollo() {
   const { id } = useParams();
@@ -141,10 +143,30 @@ export default function DetalleDesarrollo() {
   }
 
   return (
-    <DevelopmentDetailsContent
-      desarrollo={desarrollo}
-      onBack={() => navigate(-1)}
-    />
+    <>
+      <SEOHead 
+        title={`Desarrollo ${desarrollo.nombre} | Preventa de Casas y Departamentos`}
+        description={`Descubre ${desarrollo.nombre}. Departamentos y casas en venta en ${desarrollo.ubicacion?.ciudad || 'México'}. Conoce sus amenidades y modelos.`}
+        ogImage={desarrollo.imagen}
+      />
+      <StructuredData 
+        data={{
+          "@context": "https://schema.org/",
+          "@type": "RealEstateAgent",
+          "name": desarrollo.nombre,
+          "image": desarrollo.imagen,
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": desarrollo.ubicacion?.ciudad || "México"
+          },
+          "priceRange": desarrollo.modelos?.length > 0 ? `MXN $${Math.min(...desarrollo.modelos.map(m => m.precioNumerico || 0))}+` : undefined
+        }}
+      />
+      <DevelopmentDetailsContent
+        desarrollo={desarrollo}
+        onBack={() => navigate(-1)}
+      />
+    </>
   );
 }
 

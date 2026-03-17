@@ -86,6 +86,12 @@ Rastrea las visitas a páginas clave (Server-Side).
 *   **Funcionalidad:**
     *   Complementa al Pixel de navegador para asegurar el 100% de cobertura de tráfico.
 
+### 10. `generateSitemap` (HTTP onRequest)
+Generador dinámico de `sitemap.xml` en formato XML estándar.
+*   **Trigger:** Petición HTTP directa (Mapeada en `firebase.json` desde `/sitemap.xml`).
+*   **Caché:** 12 horas (`max-age=43200`) para optimizar costos de lectura en Firestore.
+*   **Lógica:** Consulta recursiva de `desarrollos` y `modelos` activos en Firestore y genera el esquema `<urlset>`.
+
 ### ⚙️ Configuración de Meta CAPI
 
 Para habilitar el rastreo Server-Side correcto:

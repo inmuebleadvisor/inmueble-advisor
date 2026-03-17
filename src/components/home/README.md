@@ -9,6 +9,7 @@ Este directorio contiene los bloques fundamentales que componen la página de in
 *   **Responsabilidad:** Punto de entrada visual. Contiene el título principal y el acceso al buscador global.
 *   **Estilos:** `../../styles/components/home/HeroSection.css`
 *   **Interacción:** Al hacer clic en el buscador, navega al catálogo o abre el modal de filtros.
+*   **SEO:** Implementa un patrón de **H1 invisible** (`.sr-only`) para legibilidad de rastreadores sin romper el diseño visual premium.
 
 ### 2. AffordabilityWidget (Calculadora)
 *   **Archivo:** `AffordabilityWidget.jsx`

@@ -11,11 +11,10 @@ Pantalla de detalle para un desarrollo específico.
   - Carga la información completa del desarrollo usando `CatalogService`.
   - Muestra la galería de imágenes, información técnica, ubicación y modelos disponibles.
   - Gestiona la navegación y el estado de carga/error.
-- **Analítica (Hybrid Tracking):**
-  - Implementa **Meta CAPI** para eventos de navegación (`ViewContent`).
-  - Genera un `eventId` único para deduplicación entre Pixel y Server.
-  - Utiliza `onLeadIntentMETA` (Firebase Callable) para enviar señales de alta intención directamente desde el backend.
   - **Match Quality:** Enriquece la señal enviando datos del usuario logueado (Email, Teléfono, Nombre) protegidos mediante hash en el servidor.
+  - **SEO & Microdatos:** 
+    - Inyecta `SEOHead` con títulos y descripciones optimizados.
+    - Utiliza `StructuredData` para emitir microdatos de tipo `RealEstateAgent` y calcular el rango de precios dinámico.
 
 ### `DevelopmentDetailsContent.jsx`
 Componente visual interno de `DetalleDesarrollo`.
@@ -30,6 +29,10 @@ Pantalla principal del listado de desarrollos.
 
 ### `DetalleModelo.jsx`
 Pantalla de detalle para un modelo específico (prototipo) dentro de un desarrollo.
+- **Ruta:** `/modelo/:id`
+- **SEO & Microdatos:**
+  - Inyecta `SEOHead` con el nombre del modelo y el desarrollo asociado.
+  - Genera microdatos `Product` (Schema.org) incluyendo el precio exacto (`precioNumerico`), moneda (MXN) y disponibilidad para visualización en resultados enriquecidos de Google.
 
 ### `Mapa.jsx`
 Vista de mapa para la exploración geoespacial de los desarrollos.
@@ -40,5 +43,6 @@ Vista de mapa para la exploración geoespacial de los desarrollos.
   - **CSS Global:** Requiere overrides específicos en `index.css` (`touch-action: none`, `isolation: isolate`) para evitar que el navegador capture eventos.
 ## Dependencias Clave
 - **Services:** `CatalogService` (datos), `MetaAdsService` (tracking client-side).
+- **SEO Elements:** `SEOHead`, `StructuredData`.
 - **Context:** `UserContext` (tracking comportamiento interno), `CatalogContext` (estado global).
-- **Firebase Functions:** `onLeadIntentMETA` para eventos server-side.
+- **Firebase Functions:** `onLeadIntentMETA` (tracking), `generateSitemap` (rastreo orgánico).

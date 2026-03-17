@@ -2,6 +2,7 @@ import React from 'react';
 import HeroSection from '../../components/home/HeroSection';
 import AffordabilityWidget from '../../components/home/AffordabilityWidget';
 import FeaturedDevelopers from '../../components/home/FeaturedDevelopers';
+import SEOHead from '../../components/common/SEOHead';
 import '../../styles/screens/Home.css';
 
 /**
@@ -11,7 +12,12 @@ import '../../styles/screens/Home.css';
  */
 export default function Home() {
     return (
-        <div className="home-screen">
+        <>
+            <SEOHead 
+                title="Venta de Casas y Desarrollos Inmobiliarios" 
+                description="Encuentra tu hogar ideal o excelente oportunidad de inversión en desarrollos inmobiliarios en México con Inmueble Advisor." 
+            />
+            <div className="home-screen">
             {/* 1. SECCIÓN HERO (CONTENEDOR MAESTRO) */}
             <header className="home-hero">
                 <div className="home-hero__container">
@@ -27,5 +33,6 @@ export default function Home() {
                 <FeaturedDevelopers />
             </main>
         </div>
+        </>
     );
 }
