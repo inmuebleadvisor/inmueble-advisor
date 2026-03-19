@@ -36,15 +36,7 @@ Eleva el rol del usuario actual a "Asesor", otorgando permisos de acceso al CRM.
 *   **Trigger:** Llamada directa desde el cliente (`onCall`).
 *   **Entrada:** `{}` (El UID se obtiene del contexto de autenticación).
 
-### 2. `scheduledDashboardStats` (Scheduler)
-Genera las estadísticas diarias del Dashboard Administrativo.
-*   **Trigger:** Automático, todos los días a las 00:00 (Midnight).
-*   **Lógica:** Consulta BigQuery (tablas `leads`, `users`, `events`) -> Agrega métricas -> Guarda en Firestore (`dashboard_stats/{YYYY-MM-DD}`).
 
-### 3. `triggerDashboardStats` (Callable)
-Disparador manual para recalcular las estadísticas del día actual. Útil para testing o actualizaciones forzadas.
-*   **Trigger:** Manual desde panel de administración.
-*   **Retorno:** Objeto con las estadísticas generadas.
 
 ### 4. `notifyNewUser` (Trigger)
 Envía una notificación a Telegram cuando se registra un nuevo usuario.

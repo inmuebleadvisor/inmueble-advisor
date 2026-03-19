@@ -1,5 +1,6 @@
 import React from 'react';
 import { Layout, ExternalLink, BarChart2 } from 'lucide-react';
+import '../../styles/screens/AdminHome.css';
 
 /**
  * AdminHome - Looker Studio Integration
@@ -9,39 +10,39 @@ import { Layout, ExternalLink, BarChart2 } from 'lucide-react';
  */
 const AdminHome = () => {
     return (
-        <div className="admin-home admin-home--clean">
+        <div className="admin-home">
             <header className="admin-home__header">
-                <div className="flex items-center gap-3 mb-2">
-                    <BarChart2 className="text-gold-500 w-8 h-8" />
-                    <h1 className="admin-home__title text-2xl font-bold text-slate-800">
+                <div className="admin-home__title-wrapper">
+                    <BarChart2 className="admin-home__title-icon" />
+                    <h1 className="admin-home__title">
                         Análisis y Business Intelligence
                     </h1>
                 </div>
-                <p className="text-slate-500 max-w-2xl">
+                <p className="admin-home__subtitle">
                     Bienvenido al centro de analíticas de Inmueble Advisor. Hemos migrado nuestras estadísticas
                     a <strong>Looker Studio</strong> para ofrecerte reportes más precisos, interactivos y en tiempo real.
                 </p>
             </header>
 
-            <section className="admin-home__looker-container mt-8">
-                <div className="bg-white rounded-2xl border-2 border-dashed border-slate-200 p-12 flex flex-col items-center justify-center text-center">
-                    <div className="bg-slate-50 p-6 rounded-full mb-6">
-                        <Layout className="w-12 h-12 text-slate-300" />
+            <section className="admin-home__looker-container">
+                <div className="admin-home__iframe-wrapper">
+                    <div className="admin-home__icon-wrapper">
+                        <Layout className="admin-home__icon" />
                     </div>
-                    <h2 className="text-xl font-semibold text-slate-700 mb-2">
+                    <h2 className="admin-home__wrapper-title">
                         Looker Studio Dashboard
                     </h2>
-                    <p className="text-slate-500 mb-8 max-w-sm">
+                    <p className="admin-home__wrapper-subtitle">
                         Para visualizar el reporte completo, pega el enlace de inserción (iframe) en el código
                         o utiliza el acceso directo a la consola de Looker.
                     </p>
 
-                    <div className="flex gap-4">
+                    <div className="admin-home__actions">
                         <a
                             href="https://lookerstudio.google.com/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl font-medium hover:bg-slate-800 transition-all shadow-lg shadow-slate-200"
+                            className="admin-home__btn"
                         >
                             Ir a Looker Studio
                             <ExternalLink size={18} />
@@ -51,7 +52,7 @@ const AdminHome = () => {
 
                 {/* 
                    💡 TIP PARA EL USUARIO:
-                   Cuando tengas tu reporte de Looker Studio, reemplaza el div de arriba por:
+                   Cuando tengas tu reporte de Looker Studio, reemplaza el div ".admin-home__iframe-wrapper" de arriba por:
                    <iframe 
                       width="100%" 
                       height="600" 

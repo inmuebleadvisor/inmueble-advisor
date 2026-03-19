@@ -101,8 +101,7 @@ function App() {
 
                         <Route path="catalogo" element={<Catalogo />} />
 
-                        {/* Redirect legacy map route to unified catalog view */}
-                        <Route path="mapa" element={<Navigate to="/catalogo" replace />} />
+
 
                         {/* ⭐ NUEVA RUTA: Ruta para la pantalla de Comparador y Favoritos */}
                         <Route path="favoritos" element={
