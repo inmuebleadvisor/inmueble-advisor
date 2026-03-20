@@ -1,5 +1,6 @@
 import React from 'react';
 import '../../../styles/model-details/ModelDescription.css';
+import { modelPresentationService } from '../../../services/service.provider';
 
 /**
  * @component ModelDescription (Marketplace Layout)
@@ -15,24 +16,9 @@ import '../../../styles/model-details/ModelDescription.css';
 export default function ModelDescription({ modelo }) {
     if (!modelo) return null;
 
-    // FIX BUG 4: Usar descripción real como principal, genérico solo como fallback
-    const descripcionTexto = modelo.descripcion
-        ? modelo.descripcion
-        : `Modelo ${modelo.nombre_modelo}: Una excelente propiedad diseñada con gran aprovechamiento de sus espacios y luz natural. Ideal para quienes buscan seguridad y confort en una zona de alta plusvalía.`;
-
-    // Construir lista de amenidades desde múltiples fuentes posibles en Firestore
-    const amenidades = [];
-    
-    // Opción 1: Array directo de amenidades
-    if (Array.isArray(modelo.amenidades) && modelo.amenidades.length > 0) {
-        amenidades.push(...modelo.amenidades);
-    }
-    
-    // Opción 2: Estacionamientos como amenidad fabricada
-    const estacionamientos = modelo.estacionamientos || modelo.caracteristicas?.estacionamientos;
-    if (estacionamientos > 0 && !amenidades.some(a => a.toLowerCase().includes('estacionamiento') || a.toLowerCase().includes('cochera'))) {
-        amenidades.push(`Cochera para ${estacionamientos} auto${estacionamientos > 1 ? 's' : ''}`);
-    }
+    // DRY: la lógica de descripción fallback y amenidades vive en el servicio
+    // para ser reutilizada tanto por la UI como por el generador de PDF.
+    const { descripcion: descripcionTexto, amenidades } = modelPresentationService.getDescripcionYAmenidades(modelo);
 
     return (
         <div className="model-description">

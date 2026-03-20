@@ -1,5 +1,6 @@
 import React from 'react';
 import '../../../styles/model-details/ModelHeaderInfo.css';
+import { modelPresentationService } from '../../../services/service.provider';
 
 /**
  * @component ModelHeaderInfo (Marketplace Layout)
@@ -16,23 +17,10 @@ import '../../../styles/model-details/ModelHeaderInfo.css';
 export default function ModelHeaderInfo({ modelo, desarrollo }) {
     if (!modelo) return null;
 
-    // FIX BUG 5: Lectura defensiva — campo raíz primero (como usa buildSimulatorPayload),
-    // luego caracteristicas.* como fallback secundario
-    const recamaras    = modelo.recamaras    ?? modelo.caracteristicas?.recamaras    ?? 0;
-    const banos        = modelo.banos        ?? modelo.caracteristicas?.banos        ?? 0;
-    const construccion = modelo.m2
-                      || modelo.superficieConstruccion
-                      || modelo.caracteristicas?.metrosConstruccion
-                      || 0;
-    const terreno      = modelo.superficieTotal
-                      || modelo.terreno
-                      || modelo.caracteristicas?.metrosTerreno
-                      || 0;
-
-    // Formateamos baños: si tiene .5, lo mostramos como "1.5"
-    const banosDisplay = banos % 1 !== 0
-        ? `${Math.floor(banos)}.5`
-        : banos;
+    // DRY: la lógica defensiva vive en ModelPresentationService.getCaracteristicas()
+    // para ser reutilizada tanto por la UI como por el generador de PDF.
+    const { recamaras, banos, construccion, terreno } = modelPresentationService.getCaracteristicas(modelo);
+    const banosDisplay = banos;
 
     return (
         <div className="model-header-info">

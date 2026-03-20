@@ -21,13 +21,21 @@ export const resolveImageUrl = (url) => {
     return url;
 };
 
-// Helper local para convertir imágenes URL en Base64 compatible con jsPDF
-// Se utiliza Canvas para sortear limitaciones de Fetch y asegurar compatibilidad de formato.
+/**
+ * Convierte una imagen URL a base64 compatible con jsPDF.
+ * Retorna un objeto con el dataUrl y las dimensiones naturales de la imagen,
+ * necesarias para calcular proporciones reales sin estiramientos.
+ *
+ * Se utiliza Canvas para sortear limitaciones de Fetch y asegurar compatibilidad de formato.
+ *
+ * @param {string} imageUrl
+ * @returns {Promise<{ dataUrl: string|null, width: number, height: number }>}
+ */
 export const getBase64ImageFromUrl = (imageUrl) => {
     // Timeout de 5 segundos para no bloquear el PDF
     const timeout = new Promise((resolve) => setTimeout(() => {
         console.warn('[PDF] ⏱ Timeout cargando imagen:', imageUrl?.substring(0, 80));
-        resolve(null);
+        resolve({ dataUrl: null, width: 0, height: 0 });
     }, 5000));
 
     const loadImage = new Promise((resolve) => {
@@ -37,22 +45,22 @@ export const getBase64ImageFromUrl = (imageUrl) => {
         img.onload = () => {
             try {
                 const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
+                canvas.width  = img.naturalWidth  || img.width;
+                canvas.height = img.naturalHeight || img.height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0);
-                const dataURL = canvas.toDataURL('image/png');
-                console.log('[PDF] ✅ Imagen OK:', imageUrl?.substring(0, 80));
-                resolve(dataURL);
+                const dataUrl = canvas.toDataURL('image/png');
+                console.log('[PDF] ✅ Imagen OK:', imageUrl?.substring(0, 80), `(${canvas.width}x${canvas.height})`);
+                resolve({ dataUrl, width: canvas.width, height: canvas.height });
             } catch (securityErr) {
                 console.warn('[PDF] ❌ Canvas tainted (CORS pendiente):', imageUrl?.substring(0, 80), securityErr.message);
-                resolve(null);
+                resolve({ dataUrl: null, width: 0, height: 0 });
             }
         };
 
         img.onerror = (err) => {
             console.warn('[PDF] ❌ Error cargando imagen:', imageUrl?.substring(0, 80), err);
-            resolve(null);
+            resolve({ dataUrl: null, width: 0, height: 0 });
         };
 
         img.src = imageUrl;

@@ -19,6 +19,7 @@ import StickyActionPanel       from '../layout/StickyActionPanel'; // Fixed bott
 // ── Hooks / Contexto ─────────────────────────────────────────────────────────
 import { useUser }        from '../../context/UserContext';
 import { useStickyPanel } from '../../hooks/useStickyPanel';
+import { useShareModelPDF } from '../../hooks/useShareModelPDF';
 
 // ── Code Splitting: modales pesados se descargan solo al primer uso (mejora INP) ──────────
 const LeadCaptureForm        = React.lazy(() => import('../leads/LeadCaptureForm'));
@@ -52,6 +53,9 @@ export default function ModelDetailsContent({
     // Observamos el H1 (o inicio del main) para saber cuándo el usuario ya hizo algo de scroll
     const titleRef = React.useRef(null);
     const showFixedBar = useStickyPanel(titleRef);
+
+    // ── Hook de generación de PDF para Ficha del Modelo ──────────────────────────
+    const { generateModelPDF, isGeneratingPDF } = useShareModelPDF();
 
     // ── Datos derivados via Servicio (sin lógica en el componente) ──────────
     const galeriaItems       = useMemo(() => modelPresentationService.getGaleriaImagenes(modelo), [modelo]);
@@ -128,6 +132,8 @@ export default function ModelDetailsContent({
                                     precioFormateado={precioFormateado}
                                     mantenimientoFormateado={mantenimientoFmt}
                                     onSchedule={handleOpenLeadForm}
+                                    onDownloadPDF={() => generateModelPDF(modelo, desarrollo)}
+                                    isGeneratingPDF={isGeneratingPDF}
                                 />
                                 <div style={{ marginTop: '24px' }}>
                                     <FinanciamientoWidget
@@ -172,6 +178,8 @@ export default function ModelDetailsContent({
                                 mantenimientoFormateado={mantenimientoFmt}
                                 onSchedule={handleOpenLeadForm}
                                 isDesktopSidebar={true}
+                                onDownloadPDF={() => generateModelPDF(modelo, desarrollo)}
+                                isGeneratingPDF={isGeneratingPDF}
                             />
 
                             {/* Widget Calculadora Rápida */}

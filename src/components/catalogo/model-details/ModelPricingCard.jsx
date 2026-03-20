@@ -19,7 +19,9 @@ export default function ModelPricingCard({
     precioFormateado,
     mantenimientoFormateado,
     onSchedule,
-    isDesktopSidebar = false
+    isDesktopSidebar = false,
+    onDownloadPDF,
+    isGeneratingPDF = false
 }) {
     if (!precioFormateado) return null;
 
@@ -82,6 +84,21 @@ export default function ModelPricingCard({
                 >
                     Agenda tu Recorrido
                 </button>
+
+                {onDownloadPDF && (
+                    <button
+                        className="model-sidebar-card__btn-pdf"
+                        onClick={onDownloadPDF}
+                        disabled={isGeneratingPDF}
+                        aria-label="Descargar ficha del modelo en PDF"
+                    >
+                        {isGeneratingPDF ? (
+                            <>⏳ Generando PDF...</>
+                        ) : (
+                            <>⬇ Descargar Ficha PDF</>
+                        )}
+                    </button>
+                )}
 
                 <p className="model-sidebar-card__disclaimer">
                     * Sujeto a disponibilidad

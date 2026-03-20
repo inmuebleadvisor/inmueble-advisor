@@ -46,6 +46,63 @@ export class ModelPresentationService {
     }
 
     /**
+     * Extrae las características físicas del modelo con lectura defensiva.
+     * Fuente de verdad única para UI (ModelHeaderInfo) y generador de PDF.
+     * Soporta campos en la raíz del objeto Y anidados en `caracteristicas.*`.
+     *
+     * @param {Object} modelo - Objeto del modelo de Firestore
+     * @returns {{ recamaras: number, banos: number|string, construccion: number, terreno: number }}
+     */
+    getCaracteristicas(modelo) {
+        if (!modelo) return { recamaras: 0, banos: 0, construccion: 0, terreno: 0 };
+
+        const recamaras    = modelo.recamaras    ?? modelo.caracteristicas?.recamaras    ?? 0;
+        const banosRaw     = modelo.banos        ?? modelo.caracteristicas?.banos        ?? 0;
+        const construccion = modelo.m2
+                          || modelo.superficieConstruccion
+                          || modelo.caracteristicas?.metrosConstruccion
+                          || 0;
+        const terreno      = modelo.superficieTotal
+                          || modelo.terreno
+                          || modelo.caracteristicas?.metrosTerreno
+                          || 0;
+
+        // Baños: si tiene fracción .5, mostrarlo como "1.5"
+        const banos = banosRaw % 1 !== 0 ? `${Math.floor(banosRaw)}.5` : banosRaw;
+
+        return { recamaras, banos, construccion, terreno };
+    }
+
+    /**
+     * Resuelve el texto descriptivo y las amenidades del modelo.
+     * Fuente de verdad única para UI (ModelDescription) y generador de PDF.
+     *
+     * @param {Object} modelo - Objeto del modelo de Firestore
+     * @returns {{ descripcion: string, amenidades: string[] }}
+     */
+    getDescripcionYAmenidades(modelo) {
+        if (!modelo) return { descripcion: '', amenidades: [] };
+
+        const descripcion = modelo.descripcion
+            ? modelo.descripcion
+            : `Modelo ${modelo.nombre_modelo}: Una excelente propiedad diseñada con gran aprovechamiento de sus espacios y luz natural. Ideal para quienes buscan seguridad y confort en una zona de alta plusvalía.`;
+
+        const amenidades = [];
+        if (Array.isArray(modelo.amenidades) && modelo.amenidades.length > 0) {
+            amenidades.push(...modelo.amenidades);
+        }
+        const estacionamientos = modelo.estacionamientos || modelo.caracteristicas?.estacionamientos;
+        if (
+            estacionamientos > 0 &&
+            !amenidades.some(a => a.toLowerCase().includes('estacionamiento') || a.toLowerCase().includes('cochera'))
+        ) {
+            amenidades.push(`Cochera para ${estacionamientos} auto${estacionamientos > 1 ? 's' : ''}`);
+        }
+
+        return { descripcion, amenidades };
+    }
+
+    /**
      * Construye el payload mapeado requerido por el componente MortgageSimulatorModal.
      * @param {Object} modelo 
      * @param {Object} desarrollo 

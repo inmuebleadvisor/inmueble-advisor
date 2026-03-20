@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { formatoMoneda } from '../utils/formatters';
 import { THEME_ASSETS } from '../config/theme.config';
-
 import { resolveImageUrl, getBase64ImageFromUrl } from '../utils/imageUtils';
+import { shareOrDownloadPDF } from '../utils/pdfUtils';
 
 /**
  * Custom Hook para generar simulación hipotecaria PDF con diseño Premium
@@ -57,7 +57,7 @@ export const useShareSimulatorPDF = () => {
             // --- 0. Logotipo Institucional (Esquina Superior Derecha) ---
             try {
                 // Usamos el logo institucional definido en el tema
-                const logoBase64 = await getBase64ImageFromUrl(THEME_ASSETS.logoDark);
+                const { dataUrl: logoBase64 } = await getBase64ImageFromUrl(THEME_ASSETS.logoDark);
                 if (logoBase64) {
                     const logoX = pageWidth - marginX - logoWidth;
                     const logoY = 11;
@@ -94,7 +94,7 @@ export const useShareSimulatorPDF = () => {
 
                 if (propertyData.image) {
                     const resolvedUrl = resolveImageUrl(propertyData.image);
-                    const base64Img = await getBase64ImageFromUrl(resolvedUrl);
+                    const { dataUrl: base64Img } = await getBase64ImageFromUrl(resolvedUrl);
                     if (base64Img) {
                         try {
                             doc.addImage(base64Img, 'JPEG', marginX + 6, currentY + 6, 44, 38);
@@ -363,24 +363,13 @@ export const useShareSimulatorPDF = () => {
                 });
             }
 
-            // 3. Share or Save
-            const pdfBlob = doc.output('blob');
-            const file = new File([pdfBlob], 'Simulacion_IA.pdf', { type: 'application/pdf' });
-
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    title: 'Simulación Inmueble Advisor',
-                    text: 'Te comparto la proyección financiera de tu inversión.',
-                    files: [file]
-                });
-            } else {
-                const url = URL.createObjectURL(pdfBlob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = 'Simulacion_InmuebleAdvisor.pdf';
-                link.click();
-                URL.revokeObjectURL(url);
-            }
+            // 3. Compartir o descargar (centralizado en pdfUtils — DRY)
+            await shareOrDownloadPDF(
+                doc,
+                'Simulacion_InmuebleAdvisor.pdf',
+                'Simulación Inmueble Advisor',
+                'Te comparto la proyección financiera de tu inversión.'
+            );
 
         } catch (error) {
             console.error('Error generating PDF:', error);
