@@ -33,8 +33,10 @@
   --base-accent-blue-rgb: 220, 178, 58;
   --base-accent-blue: rgb(var(--base-accent-blue-rgb));
   /* Gold - Enlaces/Highlights */
-  --brand-whatsapp: #25D366;
-  /* WhatsApp Official Brand Color */
+  --brand-green-rgb: 33, 192, 99;
+  --brand-green: rgb(var(--brand-green-rgb));
+  /* Vibrant Green - Inmueble Advisor (#21C063) */
+  --brand-whatsapp: var(--brand-green);
 }
 
 /* --- LIGHT PROFESSIONAL THEME VARIABLES --- */
@@ -54,9 +56,9 @@
   --accent-blue: var(--base-accent-blue);
 
   /* Semantic Status Colors */
-  --status-success-rgb: 16, 185, 129;
-  --status-success: rgb(var(--status-success-rgb));
-  /* Green - Entrega Inmediata */
+  --status-success-rgb: var(--brand-green-rgb);
+  --status-success: var(--brand-green);
+  /* Green - Entrega Inmediata & WhatsApp */
   --status-warning-rgb: 245, 158, 11;
   --status-warning: rgb(var(--status-warning-rgb));
   /* Orange - Preventa */

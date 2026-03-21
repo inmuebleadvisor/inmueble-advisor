@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { formatoMoneda } from '../utils/formatters';
 import { THEME_ASSETS } from '../config/theme.config';
 import { resolveImageUrl, getBase64ImageFromUrl } from '../utils/imageUtils';
-import { shareOrDownloadPDF } from '../utils/pdfUtils';
+import { shareOrDownloadPDF, drawPdfBrandHeader, drawPdfFooter, PDF_COLORS } from '../utils/pdfUtils';
+import { loadRobotoFont } from '../utils/pdfFonts';
 
 /**
  * Custom Hook para generar simulación hipotecaria PDF con diseño Premium
@@ -44,42 +45,27 @@ export const useShareSimulatorPDF = () => {
                 format: 'a4'
             });
 
+            // ── Cargar fuente Roboto para caracteres en español ───────────
+            await loadRobotoFont(doc);
+            const FONT_NAME = 'Roboto';
+
             const marginX = 14;
-            const logoWidth = 45; // mm
-            const logoHeight = 15; // mm
             const pageWidth = 210;
-            let currentY = 26;
+            let currentY = 26; // Restaurado a su valor original
 
-            // Brand top decorator bar - Premium touch
-            doc.setFillColor(30, 41, 59); // slate-800
-            doc.rect(0, 0, 210, 8, 'F');
+            // ── 0. Encabezado de marca (Solo Logo y Barra) ──────────────
+            await drawPdfBrandHeader(doc);
 
-            // --- 0. Logotipo Institucional (Esquina Superior Derecha) ---
-            try {
-                // Usamos el logo institucional definido en el tema
-                const { dataUrl: logoBase64 } = await getBase64ImageFromUrl(THEME_ASSETS.logoDark);
-                if (logoBase64) {
-                    const logoX = pageWidth - marginX - logoWidth;
-                    const logoY = 11;
-                    // Se usa JPEG/PNG dependiendo de la fuente, addImage detecta base64.
-                    doc.addImage(logoBase64, 'PNG', logoX, logoY, logoWidth, logoHeight);
-                    // Añadimos el enlace sobre la imagen
-                    doc.link(logoX, logoY, logoWidth, logoHeight, { url: 'https://inmuebleadvisor.com' });
-                }
-            } catch (err) {
-                console.warn("Could not add logo to PDF", err);
-            }
-
-            // Header Info
+            // Header Info (Restaurado a su posición original independiente)
             doc.setFontSize(26);
-            doc.setTextColor(15, 23, 42); // slate-900
-            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...PDF_COLORS.slate900);
+            doc.setFont(FONT_NAME, 'bold');
             doc.text('Precotización Hipotecaria', marginX, currentY);
             currentY += 8;
 
             doc.setFontSize(10);
-            doc.setTextColor(100, 116, 139); // slate-500
-            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(...PDF_COLORS.slate500);
+            doc.setFont(FONT_NAME, 'normal');
             doc.text(`Generado por Inmueble Advisor en base a ${productName} de: ${bankName}`, marginX, currentY);
             currentY += 15;
 
@@ -329,39 +315,17 @@ export const useShareSimulatorPDF = () => {
                     right: marginX,
                     bottom: 35 // Margen inferior amplio para no chocar con el pie de página
                 },
+                didDrawPage: async (data) => {
+                    // En cada nueva página de la tabla, redibujamos el encabezado de marca
+                    if (data.pageNumber > 1) {
+                        await drawPdfBrandHeader(doc);
+                    }
+                },
                 pageBreak: 'auto'
             });
 
-            // Footer
-            const pageCount = doc.internal.getNumberOfPages();
-            for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                doc.setFontSize(7);
-                doc.setTextColor(148, 163, 184); // slate-400
-
-                const footerY = 282;
-                const footerLineY = 278;
-                const rightMarginX = pageWidth - marginX;
-
-                // Línea decorativa superior en el footer
-                doc.setDrawColor(226, 232, 240); // slate-200
-                doc.setLineWidth(0.1);
-                doc.line(marginX, footerLineY, rightMarginX, footerLineY);
-
-                const disclaimer = "La presente información es únicamente para fines ilustrativos, no representa ningún ofrecimiento formal por parte de Inmueble Advisor. El CAT es para fines informativos y de comparación exclusivamente.";
-                const wrappedDisclaimer = doc.splitTextToSize(disclaimer, 150);
-
-                // Texto legal a la izquierda
-                doc.text(wrappedDisclaimer, marginX, footerY);
-
-                // Paginación y Enlace a la derecha
-                doc.text(`Página ${i} de ${pageCount}`, rightMarginX, footerY, { align: 'right' });
-                doc.setTextColor(37, 99, 235); // blue-600 para el link
-                doc.textWithLink('inmuebleadvisor.com', rightMarginX, footerY + 4, {
-                    url: 'https://inmuebleadvisor.com',
-                    align: 'right'
-                });
-            }
+            // ── Pie de página unificado (Aviso legal, paginación, links) ────────
+            drawPdfFooter(doc);
 
             // 3. Compartir o descargar (centralizado en pdfUtils — DRY)
             await shareOrDownloadPDF(

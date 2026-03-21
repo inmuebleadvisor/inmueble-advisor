@@ -16,6 +16,7 @@ Hooks genéricos que resuelven problemas específicos y pueden usarse en múltip
 -   **`useAuth`**: Acceso rápido al contexto de usuario.
 -   **`useAnalytics`**: Abstracción del servicio de analítica (PostHog). Expone métodos `identifyUser` y `trackEvent`.
 -   **`useShareSimulatorPDF`**: Generador de PDF de alta fidelidad para la corrida financiera del simulador. Utiliza carga perezosa (lazy load) de `jsPDF` y se integra con la Web Share API si el dispositivo lo soporta.
+-   **`useShareModelPDF`**: Generador de PDF de alta fidelidad para fichas técnicas de modelos. Incluye capacidades interactivas (enlaces a páginas espejo), descargas en paralelo (`Promise.all`), renderizado de cuadrícula de planos (2x2) y estructura adaptable (tarjetas apiladas). Utiliza la lógica pura de presentación de `ModelPresentationService`.
 
 ### `useCatalogFilter`
 Maneja la lógica de filtrado del catálogo, sincronizando el estado con la navegación (`location.state`), parámetros de URL (`URLSearchParams`) y el Perfil del Usuario.

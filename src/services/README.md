@@ -33,6 +33,11 @@ The `src/services` directory contains the core business logic of the frontend ap
 *   **Purpose:** Centraliza la lógica de negocio y visualización para los desarrollos inmobiliarios (etiquetas de estado, jerarquía de imágenes).
 *   **Key Methods:** `getDevelopmentStatusTag()`, `getDevelopmentCoverImage()`.
 
+### 7. Model Presentation Service
+*   **File:** `catalogo/ModelPresentationService.js`
+*   **Purpose:** Servicio puro (SRP) que maneja toda la lógica de presentación del detalle de modelos, incluyendo formateo, mapeo defensivo de características, extracciones de descripciones y preparación del payload para el simulador hipotecario. Asegura que la UI de la web y el PDF tengan una única fuente de verdad documental.
+*   **Key Methods:** `getCaracteristicas()`, `getDescripcionYAmenidades()`, `buildSimulatorPayload()`.
+
 
 ## Meta Ads Service Implementation
 *   **File:** `meta.service.js`

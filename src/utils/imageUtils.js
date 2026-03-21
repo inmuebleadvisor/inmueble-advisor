@@ -21,6 +21,9 @@ export const resolveImageUrl = (url) => {
     return url;
 };
 
+// Cache en memoria para evitar re-procesar la misma imagen (ej. Logo en cada página)
+const _imageCache = new Map();
+
 /**
  * Convierte una imagen URL a base64 compatible con jsPDF.
  * Retorna un objeto con el dataUrl y las dimensiones naturales de la imagen,
@@ -31,8 +34,15 @@ export const resolveImageUrl = (url) => {
  * @param {string} imageUrl
  * @returns {Promise<{ dataUrl: string|null, width: number, height: number }>}
  */
-export const getBase64ImageFromUrl = (imageUrl) => {
-    // Timeout de 5 segundos para no bloquear el PDF
+export const getBase64ImageFromUrl = async (imageUrl) => {
+    if (!imageUrl) return { dataUrl: null, width: 0, height: 0 };
+    
+    // 1. Revisar cache
+    if (_imageCache.has(imageUrl)) {
+        return _imageCache.get(imageUrl);
+    }
+
+    // 2. Timeout de 5 segundos para no bloquear el PDF
     const timeout = new Promise((resolve) => setTimeout(() => {
         console.warn('[PDF] ⏱ Timeout cargando imagen:', imageUrl?.substring(0, 80));
         resolve({ dataUrl: null, width: 0, height: 0 });
@@ -66,5 +76,9 @@ export const getBase64ImageFromUrl = (imageUrl) => {
         img.src = imageUrl;
     });
 
-    return Promise.race([loadImage, timeout]);
+    const result = await Promise.race([loadImage, timeout]);
+    if (result.dataUrl) {
+        _imageCache.set(imageUrl, result);
+    }
+    return result;
 };

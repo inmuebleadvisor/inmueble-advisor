@@ -14,6 +14,25 @@ export const FINANZAS = {
   PRECIO_MAXIMO_DEFAULT: 100000000
 };
 
+// --- COLORES DE MARCA (Single Source of Truth) ---
+export const BRAND_COLORS = {
+  // Vibrant Green (#21C063) - Usado en WhatsApp y destacados positivos
+  greenVibrant: {
+    hex: '#21C063',
+    rgb: [33, 192, 99]
+  },
+  // Azul Corporativo
+  primaryBlue: {
+    hex: '#00396a',
+    rgb: [0, 57, 106]
+  },
+  // Dorado Premium
+  premiumGold: {
+    hex: '#dcb23a',
+    rgb: [220, 178, 58]
+  }
+};
+
 // --- OPCIONES DE UI ---
 export const UI_OPCIONES = {
   FILTRO_PRECIO_MAX: 10000000,

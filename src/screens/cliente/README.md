@@ -8,6 +8,7 @@ Este módulo gestiona la experiencia inicial del comprador ("Buyer First"), perm
 2.  **Cálculo Desacoplado:** Utiliza `FinancialService` para determinar el presupuesto máximo real, separando la lógica de negocio de la UI.
 3.  **Motor de Filtrado Unificado:** Implementa `CatalogService.applyQualityFilters` y `CatalogService.enrichModels` para garantizar consistencia total con el catálogo.
 4.  **Confirmación y Registro:** Integración con Google Auth y persistencia del perfil financiero en Firestore.
+5.  **Páginas Espejo (Mirror Pages):** Las rutas dedicadas `/simular/:id` y `/agendar/:id` replican la funcionalidad de los modales para permitir deep linking, integración interactiva desde los PDFs generados, y mejor analítica. Siguiendo el principio DRY, estas páginas instancian directamente los componentes modales internos.
 
 ## 🧠 Lógica de Negocio
 
@@ -26,6 +27,8 @@ Para evitar discrepancias, ambos módulos utilizan la misma tubería de procesam
 ## 📂 Estructura de Archivos
 - `Home.jsx`: Composición principal de la Home Page (Hero + Calculadora + Destacados).
 - `OnboardingCliente.jsx`: Flujo interactivo heredado (actualmente integrado en la Home).
+- `SimuladorPage.jsx`: Página espejo para la calculadora hipotecaria de un modelo específico.
+- `SchedulePage.jsx`: Página espejo para la programación de citas de un modelo específico.
 - `../../styles/screens/Home.css`: Estilos de layout para la página principal.
 - `../../services/catalog.service.js`: Motor de filtrado compartido.
 

@@ -78,40 +78,20 @@ export const useShareModelPDF = () => {
 
             let currentY = 26;
 
-            // 4. Encabezado de marca (barra + logo)
-            await drawPdfBrandHeader(doc);
-
-            // 5. Título del modelo y ubicación (fila completa antes del hero de 2 columnas)
-            const nombreModelo = sanitizePdfText(modelo.nombre_modelo || 'Modelo de Vivienda');
-            const ubicacion    = sanitizePdfText(
-                desarrollo
-                    ? (desarrollo.ciudad ? `${desarrollo.nombre}, ${desarrollo.ciudad}` : desarrollo.nombre)
+            // ── 3B. Preparar datos para el encabezado persistente ────────────
+            const headerInfo = {
+                nombre: sanitizePdfText(modelo.nombre_modelo || 'Modelo'),
+                desarrollo: sanitizePdfText(desarrollo?.nombre || ''),
+                entrega: typeof modelo.esPreventa === 'boolean'
+                    ? (modelo.esPreventa ? 'Preventa' : 'Entrega Inmediata')
                     : ''
-            );
-            const statusLabel = typeof modelo.esPreventa === 'boolean'
-                ? (modelo.esPreventa ? 'Preventa' : 'Entrega Inmediata')
-                : '';
+            };
 
-            doc.setFontSize(22);
-            doc.setTextColor(...PDF_COLORS.slate900);
-            doc.setFont(FONT_NAME, 'bold');
-            doc.text(nombreModelo, MARGIN_X, currentY);
-            currentY += 7;
+            // 4. Encabezado de marca (barra + logo + info modelo)
+            await drawPdfBrandHeader(doc, headerInfo);
 
-            if (ubicacion) {
-                doc.setFontSize(10);
-                doc.setTextColor(...PDF_COLORS.slate500);
-                doc.setFont(FONT_NAME, 'normal');
-                const ubicacionTxt = ubicacion + (statusLabel ? `  -  ${statusLabel}` : '');
-                doc.text(ubicacionTxt, MARGIN_X, currentY);
-                currentY += 5;
-            }
-
-            // Línea divisoria
-            doc.setDrawColor(...PDF_COLORS.slate200);
-            doc.setLineWidth(0.2);
-            doc.line(MARGIN_X, currentY, PAGE_WIDTH - MARGIN_X, currentY);
-            currentY += 6;
+            // 5. Espacio dinámico del header (Margen amplio para evitar colisión)
+            currentY = 45;
 
             // ══════════════════════════════════════════════════════════════════════
             // 6. HERO: Columna Izquierda (Imagen) + Columna Derecha (Tarjeta Precio)
@@ -450,9 +430,9 @@ export const useShareModelPDF = () => {
 
                 if (validResults.length > 0) {
                     doc.addPage();
-                    await drawPdfBrandHeader(doc);
+                    await drawPdfBrandHeader(doc, headerInfo);
 
-                    let plantasY = 26;
+                    let plantasY = 45; // Margen amplio para evitar pelea con el encabezado dinámico
 
                     // ── Título dinámico ────────────────────────────────────────────
                     const tituloPlantas = validResults.length === 1 ? 'Plano Arquitectónico' : 'Planos Arquitectónicos';
