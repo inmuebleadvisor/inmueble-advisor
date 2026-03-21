@@ -31,6 +31,9 @@ export const PDF_COLORS = {
     slate200: [226, 232, 240],
     slate50:  [248, 250, 252],
     blue600:  [37, 99, 235],
+    green600: [22, 163, 74],      // Amenidades destacadas
+    green700: [21, 128, 61],      // Texto de botón WhatsApp
+    green500: [34, 197, 94],      // Fondo botón WhatsApp
 };
 
 /**

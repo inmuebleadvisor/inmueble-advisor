@@ -7,22 +7,22 @@ import Delightbox from '../../common/Delightbox';
  * @description Muestra los planos arquitectónicos en una cuadrícula (grid)
  * con tarjetas interactivas de fondo blanco y esquinas redondeadas.
  *
- * @param {Array}  plantas      - Array de objetos { planta_url, nombre_planta }
+ * @param {Array}  plantas      - Array de strings (URLs directas de las plantas).
+ *                                 Fuente: data.media.plantasArquitectonicas en Firestore.
  * @param {string} nombreModelo - Nombre del modelo para el subtítulo
  */
 export default function ModelFloorPlans({ plantas = [], nombreModelo }) {
-    // -1 = cerrado; >= 0 = índice activo en Delightbox
     const [lightboxIndex, setLightboxIndex] = useState(-1);
 
     if (!plantas || plantas.length === 0) return null;
 
-    // FIX BUG 1 & 7: Formateamos los items en el formato que Delightbox espera
-    // Delightbox API: { isOpen, images: [{url, type}], initialIndex, onClose }
+    // plantas es un array de URL strings (no objetos). Normalizar al formato {url, caption, type}
+    // que Delightbox espera.
     const validPlantas = plantas
-        .filter(p => p && p.planta_url)
-        .map(p => ({
-            url: p.planta_url,
-            caption: p.nombre_planta || 'Planta arquitectónica',
+        .filter(p => typeof p === 'string' && p.trim() !== '')
+        .map((url, i) => ({
+            url,
+            caption: `Plano Arquitectónico ${plantas.length > 1 ? i + 1 : ''}`.trim(),
             type: 'image'
         }));
 

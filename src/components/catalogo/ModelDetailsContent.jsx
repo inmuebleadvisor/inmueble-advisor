@@ -18,6 +18,7 @@ import StickyActionPanel       from '../layout/StickyActionPanel'; // Fixed bott
 
 // ── Hooks / Contexto ─────────────────────────────────────────────────────────
 import { useUser }        from '../../context/UserContext';
+import { useWhatsAppContact }   from '../../hooks/useWhatsAppContact';
 import { useStickyPanel } from '../../hooks/useStickyPanel';
 import { useShareModelPDF } from '../../hooks/useShareModelPDF';
 
@@ -56,6 +57,10 @@ export default function ModelDetailsContent({
 
     // ── Hook de generación de PDF para Ficha del Modelo ──────────────────────────
     const { generateModelPDF, isGeneratingPDF } = useShareModelPDF();
+
+    // DRY: Se extrae aqui (contexto de React valido) y se pasara como parametro
+    // a generateModelPDF para que el generador de jsPDF pueda incrustarlo en el PDF.
+    const { whatsappUrl } = useWhatsAppContact();
 
     // ── Datos derivados via Servicio (sin lógica en el componente) ──────────
     const galeriaItems       = useMemo(() => modelPresentationService.getGaleriaImagenes(modelo), [modelo]);
@@ -132,7 +137,7 @@ export default function ModelDetailsContent({
                                     precioFormateado={precioFormateado}
                                     mantenimientoFormateado={mantenimientoFmt}
                                     onSchedule={handleOpenLeadForm}
-                                    onDownloadPDF={() => generateModelPDF(modelo, desarrollo)}
+                                    onDownloadPDF={() => generateModelPDF(modelo, desarrollo, whatsappUrl)}
                                     isGeneratingPDF={isGeneratingPDF}
                                 />
                                 <div style={{ marginTop: '24px' }}>
@@ -178,7 +183,7 @@ export default function ModelDetailsContent({
                                 mantenimientoFormateado={mantenimientoFmt}
                                 onSchedule={handleOpenLeadForm}
                                 isDesktopSidebar={true}
-                                onDownloadPDF={() => generateModelPDF(modelo, desarrollo)}
+                                onDownloadPDF={() => generateModelPDF(modelo, desarrollo, whatsappUrl)}
                                 isGeneratingPDF={isGeneratingPDF}
                             />
 

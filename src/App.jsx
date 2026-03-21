@@ -38,6 +38,11 @@ const Catalogo = React.lazy(() => import('./screens/catalogo/Catalogo'));
 const DetalleModelo = React.lazy(() => import('./screens/catalogo/DetalleModelo'));
 const DetalleDesarrollo = React.lazy(() => import('./screens/catalogo/DetalleDesarrollo'));
 
+// Página espejo para agendar visita — usada en links de PDFs y campañas externas
+const SchedulePage  = React.lazy(() => import('./screens/cliente/SchedulePage'));
+// Página espejo para el simulador hipotecario — usada en links de PDFs y campañas externas
+const SimuladorPage = React.lazy(() => import('./screens/cliente/SimuladorPage'));
+
 // Screens - Admin (Lazy Loaded)
 const AdminDataExport = React.lazy(() => import('./screens/admin/AdminDataExport'));
 const AdminHome = React.lazy(() => import('./screens/admin/AdminHome'));
@@ -123,6 +128,24 @@ function App() {
                             <RouteRemounter>
                               <DetalleDesarrollo />
                             </RouteRemounter>
+                          </ProtectedRoute>
+                        } />
+
+                        {/* 6b. RUTA DEDICADA DE AGENDADO — Espejo del Modal de cita (DRY)
+                             Usada por PDF ficha técnica y campañas externas para llevar
+                             al usuario directo al formulario de Agenda tu Recorrido. */}
+                        <Route path="agendar/:id" element={
+                          <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
+                            <SchedulePage />
+                          </ProtectedRoute>
+                        } />
+
+                        {/* 6c. RUTA DEDICADA DEL SIMULADOR — Espejo del MortgageSimulatorModal (DRY)
+                             Usada por PDF ficha técnica y campañas externas para llevar
+                             al usuario directo al Simulador de Crédito del modelo. */}
+                        <Route path="simular/:id" element={
+                          <ProtectedRoute requireAuth={UI_OPCIONES.REQUIRE_AUTH_FOR_DETAILS}>
+                            <SimuladorPage />
                           </ProtectedRoute>
                         } />
 
