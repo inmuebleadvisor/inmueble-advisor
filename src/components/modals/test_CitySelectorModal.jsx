@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import CitySelectorModal from './CitySelectorModal';
-import { UserProvider } from '../../context/UserContext';
+import { UserContext } from '../../context/UserContext';
 import { ServiceProvider } from '../../context/ServiceContext';
 
 // Mock del servicio de catálogo
@@ -27,19 +27,20 @@ const mockAnalyticsService = {
     trackPageView: vi.fn(),
 };
 
-const renderWithProviders = (ui, initialEntries = ['/']) => {
+const renderWithProviders = (ui, initialEntries = ['/'], selectedCity = null) => {
     localStorage.clear(); // Limpiar rastro de selecciones previas
+    const mockUpdateCity = vi.fn();
     return render(
         <ServiceProvider overrideServices={{
             catalog: mockCatalogService,
             auth: mockAuthService,
             analytics: mockAnalyticsService
         }}>
-            <UserProvider>
+            <UserContext.Provider value={{ selectedCity, updateSelectedCity: mockUpdateCity }}>
                 <MemoryRouter initialEntries={initialEntries}>
                     {ui}
                 </MemoryRouter>
-            </UserProvider>
+            </UserContext.Provider>
         </ServiceProvider>
     );
 };

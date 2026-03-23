@@ -21,6 +21,7 @@ Specialized modal for displaying property locations using `react-leaflet`.
 
 ### [CitySelectorModal.jsx](file:///c:/Users/novat/inmueble-advisor/src/components/modals/CitySelectorModal.jsx)
 Permite a los usuarios seleccionar su ciudad o región de interés mediante una cuadrícula de botones interactiva.
+- **Estado Actual (Bypass)**: Debido a la estrategia de concentrar el lanzamiento en **Culiacán**, este modal está actualmente sobrepasado automáticamente gracias al comportamiento global del `UserContext`, el cual instancía la preferencia por defecto e impide que se muestre, salvando costos y fricción a los usuarios nuevos.
 - **UX:** Diseñado para selección directa (un solo clic), reduciendo la fricción inicial.
 - **Estándar:** Implementa metodología BEM y estilos Premium con iconografía de Lucide.
 

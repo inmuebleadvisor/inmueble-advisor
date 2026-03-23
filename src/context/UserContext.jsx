@@ -18,7 +18,12 @@ export const UserProvider = ({ children }) => {
 
   // ⭐ NUEVO CONSTEXTO: Ciudad Seleccionada (Global Preference)
   const [selectedCity, setSelectedCity] = useState(() => {
-    return localStorage.getItem('user_selected_city') || null;
+    const saved = localStorage.getItem('user_selected_city');
+    if (!saved) {
+      localStorage.setItem('user_selected_city', 'Culiacán');
+      return 'Culiacán';
+    }
+    return saved;
   });
 
   const updateSelectedCity = (city) => {

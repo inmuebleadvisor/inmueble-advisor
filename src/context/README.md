@@ -4,7 +4,8 @@ Este directorio gestiona el estado global de la aplicación utilizando la API de
 
 ## ¿Cuándo usar Context?
 Usa Context solo para datos que sean verdaderamente "globales" o necesarios en muchos niveles de profundidad del árbol de componentes.
--   **`AuthContext`**: Sesión del usuario actual.
+-   **`UserContext`**: Sesión del usuario actual (anteriormente `AuthContext`) y Preferencias Globales.
+    - **Preferencia de Ciudad Automática**: Por defecto inicializa y asigna `Culiacán` a los nuevos usuarios en `localStorage`, saltándose el proceso de selección y alineándose a la estrategia actual de lanzamiento de ventas.
 ### `CatalogContext`
 Provee el inventario completo (`modelos`, `desarrollos`) y utilidades de búsqueda.
 - **Carga Inteligente**: Solo carga modelos si hay una ciudad seleccionada.
