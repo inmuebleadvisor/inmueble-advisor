@@ -20,3 +20,4 @@ export { onModelUpdate } from './interface/triggers/onModelUpdate';
 
 // HTTP Endpoints (SEO)
 export { generateSitemap } from './interface/http/generateSitemap';
+export { serveDynamicSocialMeta } from './interface/http/serveDynamicSocialMeta';

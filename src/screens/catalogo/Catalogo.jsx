@@ -28,7 +28,7 @@ import '../../styles/Catalogo.css';
  */
 export default function Catalogo() {
   const { userProfile, trackBehavior, selectedCity } = useUser();
-  const { modelos: dataMaestra, amenidades: topAmenidades, loadingCatalog: loading, desarrollos } = useCatalog();
+  const { modelos: dataMaestra, amenidades: topAmenidades, sectores: sectoresDisponibles, loadingCatalog: loading, desarrollos } = useCatalog();
   const { isFavorite } = useFavorites(); // [NEW]
   const location = useLocation();
 
@@ -173,6 +173,7 @@ export default function Catalogo() {
         setSearchTerm={setSearchTerm}
         limpiarTodo={limpiarTodo}
         topAmenidades={topAmenidades}
+        sectoresDisponibles={sectoresDisponibles}
         resultadosCount={modelosFiltrados.length}
       />
 

@@ -18,12 +18,14 @@ export const enrichModels = (models, developments) => {
             ...m,
             colonia: m.colonia || parentDev.ubicacion?.colonia || '',
             zona: m.zona || parentDev.zona || parentDev.ubicacion?.zona || '',
+            sector: m.sector || parentDev.sector || parentDev.ubicacion?.sector || '',
             constructora: m.constructora || parentDev.constructora || '',
             tipoVivienda: m.tipoVivienda || parentDev.tipoVivienda || parentDev.tipo || 'Propiedad',
             ubicacion: {
                 ...m.ubicacion,
                 colonia: m.ubicacion?.colonia || parentDev.ubicacion?.colonia || '',
-                zona: m.ubicacion?.zona || parentDev.ubicacion?.zona || parentDev.zona || ''
+                zona: m.ubicacion?.zona || parentDev.ubicacion?.zona || parentDev.zona || '',
+                sector: m.ubicacion?.sector || parentDev.ubicacion?.sector || parentDev.sector || ''
             }
         };
     });

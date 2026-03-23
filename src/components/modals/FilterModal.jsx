@@ -23,6 +23,7 @@ export default function FilterModal({
     setSearchTerm,
     limpiarTodo,
     topAmenidades,
+    sectoresDisponibles = [],
     resultadosCount
 }) {
     const navigate = useNavigate();
@@ -232,6 +233,37 @@ export default function FilterModal({
                                         {am}
                                     </button>
                                 ))}
+                            </div>
+                        </div>
+
+                        <div className="filter-section">
+                            <label className="filter-section__label">Sectores / Zonas</label>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                <button
+                                    onClick={() => handleFilterChange('sectores', [])}
+                                    className={`amenity-chip ${!filtros.sectores || filtros.sectores.length === 0 ? 'amenity-chip--active' : ''}`}
+                                >
+                                    Todos
+                                </button>
+                                {sectoresDisponibles.map((sector, idx) => {
+                                    const activo = filtros.sectores?.includes(sector);
+                                    return (
+                                        <button
+                                            key={idx}
+                                            onClick={() => {
+                                                const current = Array.isArray(filtros.sectores) ? filtros.sectores : [];
+                                                if (activo) {
+                                                    handleFilterChange('sectores', current.filter(s => s !== sector));
+                                                } else {
+                                                    handleFilterChange('sectores', [...current, sector]);
+                                                }
+                                            }}
+                                            className={`amenity-chip ${activo ? 'amenity-chip--active' : ''}`}
+                                        >
+                                            {sector}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
 

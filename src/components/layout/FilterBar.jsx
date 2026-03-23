@@ -73,6 +73,11 @@ export default function FilterBar({
                         {filtros.habitaciones}+ Rec.
                     </span>
                 )}
+                {Array.isArray(filtros.sectores) && filtros.sectores.length > 0 && (
+                    <span className="chip chip--primary">
+                        {filtros.sectores.length === 1 ? filtros.sectores[0] : `${filtros.sectores.length} Sectores`}
+                    </span>
+                )}
                 {filtros.tipo !== 'all' && (
                     <span className="chip chip--primary">
                         {filtros.tipo === 'casa' ? 'Casas' : 'Deptos'}

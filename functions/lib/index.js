@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateSitemap = exports.onModelUpdate = exports.onLeadPageViewMETA = exports.onLeadContactMETA = exports.onLeadIntentMETA = exports.onLeadCreatedMETA = exports.onLeadCreated = exports.notifyNewUser = exports.promoteToAdvisor = void 0;
+exports.serveDynamicSocialMeta = exports.generateSitemap = exports.onModelUpdate = exports.onLeadPageViewMETA = exports.onLeadContactMETA = exports.onLeadIntentMETA = exports.onLeadCreatedMETA = exports.onLeadCreated = exports.notifyNewUser = exports.promoteToAdvisor = void 0;
 const admin = __importStar(require("firebase-admin"));
 // Initialize Firebase Admin SDK once
 if (!admin.apps.length) {
@@ -50,4 +50,6 @@ Object.defineProperty(exports, "onModelUpdate", { enumerable: true, get: functio
 // HTTP Endpoints (SEO)
 var generateSitemap_1 = require("./interface/http/generateSitemap");
 Object.defineProperty(exports, "generateSitemap", { enumerable: true, get: function () { return generateSitemap_1.generateSitemap; } });
+var serveDynamicSocialMeta_1 = require("./interface/http/serveDynamicSocialMeta");
+Object.defineProperty(exports, "serveDynamicSocialMeta", { enumerable: true, get: function () { return serveDynamicSocialMeta_1.serveDynamicSocialMeta; } });
 //# sourceMappingURL=index.js.map

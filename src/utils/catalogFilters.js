@@ -57,6 +57,19 @@ export const filterCatalog = (dataMaestra, desarrollos, filters, searchTerm) => 
             }
         }
 
+        if (Array.isArray(filters.sectores) && filters.sectores.length > 0) {
+            const sectorModelo = item.sector ? normalizar(item.sector) : '';
+            const sectorDesarrollo = desarrollo?.sector ? normalizar(desarrollo.sector) : '';
+            const objSector = sectorModelo || sectorDesarrollo;
+            
+            const matchSector = filters.sectores.some(s => {
+                const normalizedFiltro = normalizar(s);
+                return objSector && objSector.includes(normalizedFiltro);
+            });
+            
+            if (!matchSector) return false;
+        }
+
         if (filters.amenidad) {
             const amenidadBuscada = normalizar(filters.amenidad);
             const amDesarrollo = Array.isArray(desarrollo?.amenidades) ? desarrollo.amenidades : [];

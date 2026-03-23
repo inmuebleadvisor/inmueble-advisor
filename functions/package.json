@@ -4,6 +4,7 @@
         "lint": "eslint",
         "lint:fix": "eslint --fix",
         "build": "tsc",
+        "postbuild": "node -e \"const fs=require('fs'); if(fs.existsSync('../dist/index.html')) fs.copyFileSync('../dist/index.html', 'lib/index.html'); else console.warn('Warning: ../dist/index.html not found, skipping copy');\"",
         "build:watch": "tsc --watch",
         "serve": "npm run build && firebase emulators:start --only functions",
         "shell": "npm run build && firebase functions:shell",

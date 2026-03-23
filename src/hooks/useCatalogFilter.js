@@ -131,7 +131,8 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
             amenidad: (!isFreshSearch && !location.state?.resetFilters && persisted.amenidad) ? persisted.amenidad : '',
             tipo: (state.tipo) ? state.tipo : ((!isFreshSearch && !location.state?.resetFilters && persisted.tipo) ? persisted.tipo : 'all'),
             showNoPrice: (!isFreshSearch && !location.state?.resetFilters && persisted.showNoPrice) ? persisted.showNoPrice : false,
-            sortBy: (!isFreshSearch && !location.state?.resetFilters && persisted.sortBy) ? persisted.sortBy : 'updatedAt_desc'
+            sortBy: (!isFreshSearch && !location.state?.resetFilters && persisted.sortBy) ? persisted.sortBy : 'updatedAt_desc',
+            sectores: (!isFreshSearch && !location.state?.resetFilters && Array.isArray(persisted.sectores)) ? persisted.sectores : []
         };
     }, [userProfile, location.search, location.state]);
 
@@ -159,7 +160,7 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
         return (
             searchTerm !== '' || isCustomPriceFilter || filtros.habitaciones > 0 ||
             filtros.status !== 'all' || filtros.amenidad !== '' || filtros.tipo !== 'all' ||
-            filtros.showNoPrice === true
+            filtros.showNoPrice === true || (Array.isArray(filtros.sectores) && filtros.sectores.length > 0)
         );
     }, [filtros, searchTerm, userProfile]);
 
@@ -171,6 +172,9 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
         if (debouncedSearchTerm) queryParts.push(debouncedSearchTerm);
         if (debouncedFiltros.amenidad) queryParts.push(debouncedFiltros.amenidad);
         if (debouncedFiltros.tipo !== 'all') queryParts.push(debouncedFiltros.tipo);
+        if (Array.isArray(debouncedFiltros.sectores) && debouncedFiltros.sectores.length > 0) {
+            queryParts.push(debouncedFiltros.sectores.join(','));
+        }
 
         const eventQuery = queryParts.join(' ') || 'catalog_filters';
 
@@ -181,7 +185,8 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
                 max_price: debouncedFiltros.precioMax,
                 rooms: debouncedFiltros.habitaciones,
                 status: debouncedFiltros.status,
-                type: debouncedFiltros.tipo
+                type: debouncedFiltros.tipo,
+                sectores: debouncedFiltros.sectores
             }
         });
     }, [debouncedSearchTerm, debouncedFiltros, hayFiltrosActivos, loading, metaService]);
@@ -213,7 +218,8 @@ export const useCatalogFilter = (dataMaestra, desarrollos, loading) => {
             amenidad: '',
             tipo: 'all',
             showNoPrice: false,
-            sortBy: 'updatedAt_desc'
+            sortBy: 'updatedAt_desc',
+            sectores: []
         });
     };
 

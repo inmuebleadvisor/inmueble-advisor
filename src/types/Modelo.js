@@ -36,6 +36,7 @@ export const mapModelo = (docSnapshot) => {
         m2: Number(data.m2) || 0,
         terreno: Number(data.terreno) || 0,
         zona: data.ubicacion?.zona || '',
+        sector: data.ubicacion?.sector || data.ubicacion?.zona || '',
         ciudad: data.ubicacion?.ciudad || '',
         colonia: data.ubicacion?.colonia || '',
         latitud: parseCoord(data.ubicacion?.latitud),

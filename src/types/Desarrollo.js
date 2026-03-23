@@ -28,6 +28,7 @@ export const mapDesarrollo = (docSnapshot) => {
         },
         ubicacion: data.ubicacion || {},
         zona: data.ubicacion?.zona || '',
+        sector: data.ubicacion?.sector || data.ubicacion?.zona || '',
         latitud: parseCoord(data.ubicacion?.latitud),
         longitud: parseCoord(data.ubicacion?.longitud),
         updatedAt: data.updatedAt || null,

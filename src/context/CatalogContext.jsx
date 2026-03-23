@@ -19,6 +19,7 @@ export const CatalogProvider = ({ children }) => {
   const [modelos, setModelos] = useState([]);
   const [desarrollos, setDesarrollos] = useState([]);
   const [amenidades, setAmenidades] = useState([]);
+  const [sectores, setSectores] = useState([]);
   const [loadingCatalog, setLoadingCatalog] = useState(true);
 
   useEffect(() => {
@@ -33,6 +34,7 @@ export const CatalogProvider = ({ children }) => {
         let modelosResult = [];
         let desarrollosResult = [];
         let amenidadesResult = [];
+        let sectoresResult = [];
         let settingsResult = {};
 
         // 1. Carga Inteligente: Si no hay ciudad filtro, NO cargamos modelos masivos.
@@ -40,25 +42,29 @@ export const CatalogProvider = ({ children }) => {
         if (!selectedCity) {
           // console.log("⏳ Esperando selección de ciudad (Carga de modelos pausada)...");
           // Aún cargamos configuración y desarrollos (ligero) para el sistema
-          const [desarrollosData, amenidadesData, settings] = await Promise.all([
+          const [desarrollosData, amenidadesData, settings, sectoresData] = await Promise.all([
             catalogService.obtenerInventarioDesarrollos(),
             catalogService.obtenerTopAmenidades(),
-            configService.getPlatformSettings()
+            configService.getPlatformSettings(),
+            catalogService.obtenerSectoresDisponibles()
           ]);
           desarrollosResult = desarrollosData;
           amenidadesResult = amenidadesData;
+          sectoresResult = sectoresData;
           settingsResult = settings;
         } else {
           // console.log("🔄 Iniciando carga de catálogo filtrado (Ciudad: " + selectedCity + ")...");
-          const [modelosData, desarrollosData, amenidadesData, settings] = await Promise.all([
+          const [modelosData, desarrollosData, amenidadesData, settings, sectoresData] = await Promise.all([
             catalogService.obtenerDatosUnificados(selectedCity),
             catalogService.obtenerInventarioDesarrollos(),
             catalogService.obtenerTopAmenidades(),
-            configService.getPlatformSettings()
+            configService.getPlatformSettings(),
+            catalogService.obtenerSectoresDisponibles()
           ]);
           modelosResult = modelosData;
           desarrollosResult = desarrollosData;
           amenidadesResult = amenidadesData;
+          sectoresResult = sectoresData;
           settingsResult = settings;
         }
 
@@ -115,6 +121,7 @@ export const CatalogProvider = ({ children }) => {
         setModelos(filteredModels);
         setDesarrollos(filteredDevs);
         setAmenidades(amenidadesResult);
+        setSectores(sectoresResult);
 
         // console.log(`✅ Catálogo cargado (Filtrado): ${filteredModels.length} modelos, ${filteredDevs.length} desarrollos.`);
 
@@ -137,12 +144,13 @@ export const CatalogProvider = ({ children }) => {
     modelos,
     desarrollos,
     amenidades,
+    sectores,
     loadingCatalog,
 
     // Buscadores rápidos en memoria
     getModeloById: (id) => modelos.find(m => m.id === id),
     getDesarrolloById: (id) => desarrollos.find(d => d.id === id),
-  }), [modelos, desarrollos, amenidades, loadingCatalog]);
+  }), [modelos, desarrollos, amenidades, sectores, loadingCatalog]);
 
   return (
     <CatalogContext.Provider value={value}>

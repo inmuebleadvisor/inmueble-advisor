@@ -86,6 +86,22 @@ export class CatalogService {
   }
 
   /**
+   * Obtiene la lista unificada de sectores disponibles.
+   * @returns {Promise<string[]>} Lista ordenada de sectores
+   */
+  async obtenerSectoresDisponibles() {
+    const desarrollos = await this.obtenerInventarioDesarrollos();
+    const sectores = new Set();
+    desarrollos.forEach(d => {
+      const sector = d.sector || d.ubicacion?.sector;
+      if (sector && typeof sector === 'string' && sector.trim() !== '') {
+        sectores.add(sector.trim());
+      }
+    });
+    return Array.from(sectores).sort();
+  }
+
+  /**
    * Retrieves all developments (cached).
    * @returns {Promise<Array>} List of developments
    */
