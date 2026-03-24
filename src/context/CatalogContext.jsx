@@ -59,7 +59,7 @@ export const CatalogProvider = ({ children }) => {
             catalogService.obtenerInventarioDesarrollos(),
             catalogService.obtenerTopAmenidades(),
             configService.getPlatformSettings(),
-            catalogService.obtenerSectoresDisponibles()
+            catalogService.obtenerSectoresDisponibles(selectedCity)
           ]);
           modelosResult = modelosData;
           desarrollosResult = desarrollosData;

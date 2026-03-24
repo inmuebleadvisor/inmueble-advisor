@@ -89,10 +89,14 @@ export class CatalogService {
    * Obtiene la lista unificada de sectores disponibles.
    * @returns {Promise<string[]>} Lista ordenada de sectores
    */
-  async obtenerSectoresDisponibles() {
+  async obtenerSectoresDisponibles(ciudadFilter = null) {
     const desarrollos = await this.obtenerInventarioDesarrollos();
     const sectores = new Set();
     desarrollos.forEach(d => {
+      if (ciudadFilter && d.ubicacion?.ciudad?.trim().toLowerCase() !== ciudadFilter.trim().toLowerCase()) {
+        return; // Skip this development if it doesn't match the selected city
+      }
+
       const sector = d.sector || d.ubicacion?.sector;
       if (sector && typeof sector === 'string' && sector.trim() !== '') {
         sectores.add(sector.trim());
