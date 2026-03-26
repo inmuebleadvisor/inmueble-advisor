@@ -70,6 +70,8 @@ export default function ModelDetailsContent({
         return val > 0 ? modelPresentationService.formatoMoneda(val) : null;
     }, [modelo]);
     const simulatorPayload   = useMemo(() => modelPresentationService.buildSimulatorPayload(modelo, desarrollo), [modelo, desarrollo]);
+    const highlights         = useMemo(() => modelPresentationService.getHighlights(modelo), [modelo]);
+    const infoComercialBullets = useMemo(() => modelPresentationService.getInfoComercial(modelo, desarrollo), [modelo, desarrollo]);
 
     // ── Trigger de autenticación ────────────────────────────────────────────
     const handleOpenLeadForm = async () => {
@@ -130,6 +132,21 @@ export default function ModelDetailsContent({
                         {/* 2. Título General y Características (Grid 4 cards) */}
                         <section className="model-details__section">
                              <ModelHeaderInfo modelo={modelo} desarrollo={desarrollo} />
+
+                             {/* Highlights Promocionales */}
+                             {highlights.length > 0 && (
+                                 <div className="model-details__highlights">
+                                     <h3 className="model-details__highlights-title">Beneficios Exclusivos</h3>
+                                     <ul className="model-details__highlights-list">
+                                         {highlights.map((highlight, idx) => (
+                                             <li key={idx} className="model-details__highlights-item">
+                                                 <span aria-hidden="true" className="model-details__highlights-icon">✨</span>
+                                                 {highlight}
+                                             </li>
+                                         ))}
+                                     </ul>
+                                 </div>
+                             )}
                              
                              {/* Pricing para Mobile Únicamente (el aside centraliza Desktop) */}
                              <div className="model-details__mobile-pricing">
@@ -139,6 +156,7 @@ export default function ModelDetailsContent({
                                     onSchedule={handleOpenLeadForm}
                                     onDownloadPDF={() => generateModelPDF(modelo, desarrollo, whatsappUrl)}
                                     isGeneratingPDF={isGeneratingPDF}
+                                    infoComercialBullets={infoComercialBullets}
                                 />
                                 <div style={{ marginTop: '24px' }}>
                                     <FinanciamientoWidget
@@ -185,6 +203,7 @@ export default function ModelDetailsContent({
                                 isDesktopSidebar={true}
                                 onDownloadPDF={() => generateModelPDF(modelo, desarrollo, whatsappUrl)}
                                 isGeneratingPDF={isGeneratingPDF}
+                                infoComercialBullets={infoComercialBullets}
                             />
 
                             {/* Widget Calculadora Rápida */}

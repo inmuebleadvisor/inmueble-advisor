@@ -19,7 +19,7 @@ export default function ModelHeaderInfo({ modelo, desarrollo }) {
 
     // DRY: la lógica defensiva vive en ModelPresentationService.getCaracteristicas()
     // para ser reutilizada tanto por la UI como por el generador de PDF.
-    const { recamaras, banos, construccion, terreno } = modelPresentationService.getCaracteristicas(modelo);
+    const { recamaras, banos, construccion, terreno, niveles } = modelPresentationService.getCaracteristicas(modelo);
     const banosDisplay = banos;
 
     return (
@@ -28,6 +28,7 @@ export default function ModelHeaderInfo({ modelo, desarrollo }) {
             {/* 1. Encabezado: Título + Ubicación */}
             <header className="model-header-info__header">
                 <div className="model-header-info__title-wrapper">
+                    <span className="model-header-info__subtitle">{modelo.tipoVivienda || 'Propiedad'}</span>
                     <h1 className="model-header-info__title">
                         {modelo.nombre_modelo}
                     </h1>
@@ -73,6 +74,14 @@ export default function ModelHeaderInfo({ modelo, desarrollo }) {
                     <span className="model-header-info__value">{terreno} m²</span>
                     <span className="model-header-info__label">Terreno</span>
                 </div>
+
+                {niveles > 0 && (
+                    <div className="model-header-info__card">
+                        <span className="model-header-info__icon" aria-hidden="true">🏢</span>
+                        <span className="model-header-info__value">{niveles}</span>
+                        <span className="model-header-info__label">Niveles</span>
+                    </div>
+                )}
 
             </div>
 

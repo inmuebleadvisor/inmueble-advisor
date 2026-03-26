@@ -66,11 +66,14 @@ export class ModelPresentationService {
                           || modelo.terreno
                           || modelo.caracteristicas?.metrosTerreno
                           || 0;
+        const niveles      = modelo.niveles
+                          || modelo.caracteristicas?.niveles
+                          || 0;
 
         // Baños: si tiene fracción .5, mostrarlo como "1.5"
         const banos = banosRaw % 1 !== 0 ? `${Math.floor(banosRaw)}.5` : banosRaw;
 
-        return { recamaras, banos, construccion, terreno };
+        return { recamaras, banos, construccion, terreno, niveles };
     }
 
     /**
@@ -85,13 +88,15 @@ export class ModelPresentationService {
 
         const descripcion = modelo.descripcion
             ? modelo.descripcion
-            : `Modelo ${modelo.nombre_modelo}: Una excelente propiedad diseñada con gran aprovechamiento de sus espacios y luz natural. Ideal para quienes buscan seguridad y confort en una zona de alta plusvalía.`;
+            : `Información sobre ${modelo.nombre_modelo || 'este modelo'} no disponible por el momento. Solicite detalles con nuestro asesor.`;
 
         const amenidades = [];
         if (Array.isArray(modelo.amenidades) && modelo.amenidades.length > 0) {
             amenidades.push(...modelo.amenidades);
         }
-        const estacionamientos = modelo.estacionamientos || modelo.caracteristicas?.estacionamientos;
+        
+        // Evitar el supuesto de que se llama 'estacionamientos' cuando la BD dice 'cajones'
+        const estacionamientos = modelo.cajones || modelo.estacionamientos || modelo.caracteristicas?.estacionamientos;
         if (
             estacionamientos > 0 &&
             !amenidades.some(a => a.toLowerCase().includes('estacionamiento') || a.toLowerCase().includes('cochera'))
@@ -100,6 +105,72 @@ export class ModelPresentationService {
         }
 
         return { descripcion, amenidades };
+    }
+
+    /**
+     * Extrae de forma segura los highlights o ganchos de venta de un modelo.
+     * @param {Object} modelo 
+     * @returns {string[]}
+     */
+    getHighlights(modelo) {
+        if (!modelo || !Array.isArray(modelo.highlights)) return [];
+        return modelo.highlights.filter(h => typeof h === 'string' && h.trim() !== '');
+    }
+
+    /**
+     * Extrae los textos promocionales o comerciales del objeto infoComercial.
+     * Devuelve solo los valores que son strings descriptivas para inyectar en conversión.
+     * @param {Object} modelo 
+     * @param {Object} desarrollo 
+     * @returns {string[]}
+     */
+    getInfoComercial(modelo, desarrollo = null) {
+        if (!modelo) return [];
+        const modelInfo = modelo.infoComercial || {};
+        const devInfo = desarrollo?.info_comercial || {};
+        
+        const bullets = [];
+        
+        // No suponemos llaves estáticas; recolectamos cualquier string de valor promo/texto
+        // que no sea un id o fecha técnica, con fallback al desarrollo padre.
+        const knownKeys = ['promocion', 'texto_venta', 'enganche_texto', 'apartado_texto', 'nota', 'bono'];
+        
+        knownKeys.forEach(key => {
+            const val = modelInfo[key] || devInfo[key];
+            if (val && typeof val === 'string' && val.trim() !== '') {
+                bullets.push(val.trim());
+            }
+        });
+
+        // 2. Montos numéricos o mixtos (Apartado, Enganche) con fallback al Desarrollo
+        const apartadoRaw = modelInfo.apartado || modelo.apartado || modelInfo.monto_apartado || modelo.precios?.apartado 
+                            || devInfo.apartado || devInfo.monto_apartado || desarrollo?.precios?.apartado
+                            || modelo.financiamiento?.apartadoMinimo || desarrollo?.financiamiento?.apartadoMinimo;
+                            
+        if (apartadoRaw) {
+            if (typeof apartadoRaw === 'number') {
+                const formateado = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(apartadoRaw);
+                bullets.push(`Aparta desde ${formateado}`);
+            } else if (typeof apartadoRaw === 'string') {
+                bullets.push(`Apartado: ${apartadoRaw}`);
+            }
+        }
+
+        const engancheRaw = modelInfo.enganche || modelo.enganche || modelo.precios?.enganche 
+                            || devInfo.enganche || desarrollo?.enganche || desarrollo?.precios?.enganche;
+                            
+        if (engancheRaw) {
+            if (typeof engancheRaw === 'number' && engancheRaw <= 1) {
+                bullets.push(`Enganche desde ${Math.round(engancheRaw * 100)}%`);
+            } else if (typeof engancheRaw === 'number' && engancheRaw > 1) {
+                const formateado = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(engancheRaw);
+                bullets.push(`Enganche desde ${formateado}`);
+            } else if (typeof engancheRaw === 'string') {
+                bullets.push(`Enganche: ${engancheRaw}`);
+            }
+        }
+
+        return [...new Set(bullets)]; // Deduplicación segura
     }
 
     /**

@@ -83,4 +83,58 @@ describe('ModelPresentationService', () => {
             expect(payload.area).toBe(120);
         });
     });
+
+    describe('getCaracteristicas', () => {
+        it('should correctly extract features and levels', () => {
+            const data = { recamaras: 3, banos: 2.5, m2: 150, terreno: 200, niveles: 2 };
+            const chars = service.getCaracteristicas(data);
+            expect(chars.recamaras).toBe(3);
+            expect(chars.banos).toBe('2.5');
+            expect(chars.construccion).toBe(150);
+            expect(chars.terreno).toBe(200);
+            expect(chars.niveles).toBe(2);
+        });
+
+        it('should handle nested caracteristicas object safely', () => {
+            const data = { caracteristicas: { recamaras: 2, niveles: 1 } };
+            const chars = service.getCaracteristicas(data);
+            expect(chars.recamaras).toBe(2);
+            expect(chars.niveles).toBe(1);
+        });
+    });
+
+    describe('getHighlights', () => {
+        it('should return valid string highlights and ignore invalid ones', () => {
+            const data = { highlights: ['Gran patio', null, '', 'Luz natural'] };
+            const highlights = service.getHighlights(data);
+            expect(highlights).toEqual(['Gran patio', 'Luz natural']);
+        });
+
+        it('should return empty array if no highlights exist', () => {
+            expect(service.getHighlights({})).toEqual([]);
+        });
+    });
+
+    describe('getInfoComercial', () => {
+        it('should extract valid commercial strings from infoComercial', () => {
+            const data = { infoComercial: { promocion: 'Bono $50,000', texto_venta: ' ' } };
+            const bullets = service.getInfoComercial(data);
+            expect(bullets).toContain('Bono $50,000');
+            expect(bullets).not.toContain(' ');
+        });
+
+        it('should format numeric apartado and enganche from both model and dev fallbacks', () => {
+            const modelo = { precios: { apartado: 15000, enganche: 0.10 } };
+            const bullets = service.getInfoComercial(modelo);
+            expect(bullets.some(b => b.includes('Aparta desde') && b.includes('15,000'))).toBeTruthy();
+            expect(bullets.some(b => b.includes('Enganche desde 10%'))).toBeTruthy();
+        });
+
+        it('should fallback to desarrollo if modelo lacks features', () => {
+            const modelo = {};
+            const desarrollo = { financiamiento: { apartadoMinimo: 20000 } };
+            const bullets = service.getInfoComercial(modelo, desarrollo);
+            expect(bullets.some(b => b.includes('Aparta desde') && b.includes('20,000'))).toBeTruthy();
+        });
+    });
 });

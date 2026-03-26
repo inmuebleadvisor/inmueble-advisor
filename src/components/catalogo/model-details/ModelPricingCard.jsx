@@ -21,7 +21,8 @@ export default function ModelPricingCard({
     onSchedule,
     isDesktopSidebar = false,
     onDownloadPDF,
-    isGeneratingPDF = false
+    isGeneratingPDF = false,
+    infoComercialBullets = []
 }) {
     if (!precioFormateado) return null;
 
@@ -37,29 +38,28 @@ export default function ModelPricingCard({
     return (
         <div className={`model-sidebar-card ${!isDesktopSidebar ? 'model-sidebar-card--mobile' : ''}`}>
             
-            {/* 1. Encabezado de Precio */}
+            {/* 1. Encabezado de Precio e Info Comercial */}
             <div className="model-sidebar-card__header">
                 <div>
-                    <span className="model-sidebar-card__price-label">Precio Especial</span>
+                    <span className="model-sidebar-card__price-label">Precio de Lista</span>
                     <p className="model-sidebar-card__price-value">{precioFormateado}</p>
-                    <p className="model-sidebar-card__currency">Moneda Nacional MXN</p>
                     {mantenimientoFormateado && (
                         <p className="model-sidebar-card__maintenance">
                             + {mantenimientoFormateado}/mes mantenimiento
                         </p>
                     )}
-                </div>
-            </div>
 
-            {/* 2. Tarjeta de Asesor (UX Trust) */}
-            <div className="model-sidebar-card__agent">
-                <div className="model-sidebar-card__agent-avatar">IV</div>
-                <div>
-                    <p className="model-sidebar-card__agent-role">Asesor Senior</p>
-                    <p className="model-sidebar-card__agent-name">Ivan Valle</p>
-                    <p className="model-sidebar-card__agent-rating">
-                        ★★★★★ <span>(22 reseñas)</span>
-                    </p>
+                    {/* Promociones y Apartado directamente bajo el mantenimiento */}
+                    {infoComercialBullets && infoComercialBullets.length > 0 && (
+                        <div className="model-sidebar-card__promos">
+                            {infoComercialBullets.map((bullet, idx) => (
+                                <div key={idx} className="model-sidebar-card__promo-item">
+                                    <span aria-hidden="true" style={{ display: 'flex' }}>🏷️</span>
+                                    <p>{bullet}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 

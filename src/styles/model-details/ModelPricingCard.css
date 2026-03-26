@@ -56,57 +56,33 @@
     letter-spacing: 0.1em;
 }
 
-/* ── 2. Info del Asesor Integrada (Mockup Marketplace) ── */
-.model-sidebar-card__agent {
+/* ── 2. Promociones e Info Comercial (Inyectado si existe en DB) ── */
+.model-sidebar-card__promos {
     display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px;
-    /* FIX #2: color variable en lugar de #f8fafc */
-    background-color: var(--bg-secondary);
-    border-radius: 16px;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px; /* Separación con el precio o mantenimiento superior */
 }
 
-.model-sidebar-card__agent-avatar {
-    width: 48px;
-    height: 48px;
-    background-color: var(--primary-color);
-    border-radius: 50%;
+.model-sidebar-card__promo-item {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ffffff;
-    font-weight: 900;
-    border: 2px solid #ffffff;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.model-sidebar-card__agent-role {
-    font-size: 0.75rem;
-    /* FIX #2: color variable en lugar de #94a3b8 */
-    color: var(--text-secondary, #94a3b8);
-    font-weight: 700;
-    text-transform: uppercase;
-    margin-bottom: 2px;
-}
-
-.model-sidebar-card__agent-name {
-    font-size: 0.875rem; /* text-sm */
-    font-weight: 900;
-    color: var(--text-main);
-    margin-bottom: 2px;
-}
-
-.model-sidebar-card__agent-rating {
-    font-size: 0.625rem; /* text-[10px] */
-    color: #eab308; /* text-yellow-500 */
+    align-items: center; /* Alineación perfecta con el texto */
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--status-success, #059669); /* Usando token primary verde */
     font-weight: 700;
 }
 
-.model-sidebar-card__agent-rating span {
-    /* FIX #2: color variable en lugar de #94a3b8 */
-    color: var(--text-secondary, #94a3b8);
-    margin-left: 4px;
+.model-sidebar-card__promo-item span {
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    line-height: 1;
+}
+
+.model-sidebar-card__promo-item p {
+    margin: 0;
+    line-height: 1.3;
 }
 
 /* ── 3. Botones de Conversión ── */

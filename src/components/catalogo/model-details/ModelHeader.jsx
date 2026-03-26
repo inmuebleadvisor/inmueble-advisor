@@ -159,7 +159,6 @@ export default function ModelHeader({ galeriaItems = [], esPreventa, isModal, on
 
                 {/* 3. Badges Superiores */}
                 <div className="model-gallery__badges-layer">
-                    <span className="model-gallery__badge">Disponible</span>
                     {esPreventa && (
                         <span className="model-gallery__badge model-gallery__badge--preventa">Preventa</span>
                     )}

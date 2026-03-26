@@ -9,20 +9,21 @@ export default function FinanciamientoWidget({ precio, onSimulate }) {
   if (!precio) return null;
 
   const enganche = precio * FINANZAS.PORCENTAJE_ENGANCHE_MINIMO;
-  const mensualidadAprox = (precio * 0.9) / 1000000 * FINANZAS.FACTOR_MENSUALIDAD_POR_MILLON;
+  const porcentajeDisplay = Math.round(FINANZAS.PORCENTAJE_ENGANCHE_MINIMO * 100);
+  const mensualidadAprox = (precio * (1 - FINANZAS.PORCENTAJE_ENGANCHE_MINIMO)) / 1000000 * FINANZAS.FACTOR_MENSUALIDAD_POR_MILLON;
 
   return (
     <div style={styles.card}>
-      <h3 style={styles.title}>💰 Plan Hipotecarío</h3>
+      <h3 style={styles.title}>💰 Plan Hipotecario</h3>
       <div style={styles.row}>
-        <span>Enganche (10%):</span>
+        <span>Enganche ({porcentajeDisplay}%):</span>
         <strong>{formatoMoneda(enganche)}</strong>
       </div>
       <div style={styles.row}>
         <span>Mensualidad Aprox:</span>
         <strong style={{ color: 'var(--primary-color)' }}>{formatoMoneda(mensualidadAprox)}</strong>
       </div>
-      <p style={styles.disclaimer}>*Estimación bancaria a 20 años. Sujeto a historial crediticio.</p>
+      <p style={styles.disclaimer}>*Estimación bancaria aproximada. Sujeto a historial crediticio.</p>
       <button
         className="btn btn-primary btn-full"
         style={{ marginTop: '15px' }}

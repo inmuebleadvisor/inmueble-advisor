@@ -71,8 +71,13 @@ export default function DevelopmentInfoSection({ desarrollo }) {
     <div style={styles.container}>
 
 
-      {/* B. DESCRIPCIÓN (Posición 2) */}
+      {/* B. DESCRIPCIÓN Y CONSTRUCTORA (Posición 2) */}
       <section style={styles.section}>
+        {desarrollo.constructora && (
+          <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main)', fontSize: '0.95rem' }}>
+             <strong>👷 Constructora:</strong> <span style={{ fontWeight: '600', color: 'var(--primary-color)' }}>{desarrollo.constructora}</span>
+          </div>
+        )}
         <p style={styles.descriptionText}>
           {desarrollo.descripcion || desarrollo.info_comercial?.descripcion || "Información del desarrollo no disponible."}
         </p>
