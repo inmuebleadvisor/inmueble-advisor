@@ -1,0 +1,177 @@
+/* ==========================================================================
+   📅 UnaCasaParaMi — Landing de Citas (Google Calendar)
+   ==========================================================================
+   Metodología: BEM (Block: appointment)
+   Tokens: Hereda de index.css (--primary-color, --bg-*, --text-*, etc.)
+   Grid: Sistema de 8px (STYLES_GUIDE.md §3)
+   Breakpoints: Móvil < 768px / Desktop >= 768px
+   ========================================================================== */
+
+/* ── BLOQUE PRINCIPAL ──────────────────────────────────────────────────────── */
+.appointment {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-main);
+}
+
+/* ── HERO / INTRODUCCIÓN ───────────────────────────────────────────────────── */
+.appointment__hero {
+  width: 100%;
+  background-color: var(--bg-secondary);
+  padding: 48px 16px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.appointment__hero-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.appointment__title {
+  font-family: var(--font-main);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0 0 16px 0;
+  line-height: 1.2;
+}
+
+.appointment__subtitle {
+  font-family: var(--font-main);
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── CONTENEDOR DEL IFRAME ─────────────────────────────────────────────────── */
+.appointment__embed {
+  width: 100%;
+  padding: 32px 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.appointment__embed-wrapper {
+  width: 100%;
+  max-width: 800px;
+  background-color: var(--bg-main);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+  transition: box-shadow 0.3s var(--ease-premium);
+}
+
+.appointment__embed-wrapper:hover {
+  box-shadow: var(--shadow-glow);
+}
+
+.appointment__iframe {
+  display: block;
+  width: 100%;
+  height: 550px;
+  border: 0;
+}
+
+/* ── TRUST SIGNALS / BADGES DE CONFIANZA ───────────────────────────────────── */
+.appointment__trust {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.appointment__trust-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  transition: transform 0.2s var(--ease-premium),
+              box-shadow 0.2s var(--ease-premium);
+  width: 100%;
+  max-width: 400px;
+}
+
+.appointment__trust-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+.appointment__trust-icon {
+  flex-shrink: 0;
+  color: var(--primary-color);
+}
+
+.appointment__trust-text {
+  font-family: var(--font-main);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-main);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── ESTADO DE CARGA ───────────────────────────────────────────────────────── */
+.appointment__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 550px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  color: var(--text-secondary);
+  font-family: var(--font-main);
+  font-size: 1rem;
+}
+
+/* ==========================================================================
+   RESPONSIVE: Desktop (>= 768px)
+   ========================================================================== */
+@media (min-width: 768px) {
+
+  .appointment__hero {
+    padding: 64px 24px;
+  }
+
+  .appointment__title {
+    font-size: 2.25rem;
+  }
+
+  .appointment__subtitle {
+    font-size: 1.125rem;
+  }
+
+  .appointment__embed {
+    padding: 48px 24px;
+  }
+
+  .appointment__iframe {
+    height: 680px;
+  }
+
+  .appointment__trust {
+    flex-direction: row;
+    justify-content: center;
+    gap: 24px;
+    padding: 32px 24px 64px;
+  }
+
+  .appointment__trust-item {
+    max-width: none;
+    flex: 1;
+    justify-content: center;
+  }
+}

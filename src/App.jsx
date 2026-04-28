@@ -42,6 +42,8 @@ const DetalleDesarrollo = React.lazy(() => import('./screens/catalogo/DetalleDes
 const SchedulePage  = React.lazy(() => import('./screens/cliente/SchedulePage'));
 // Página espejo para el simulador hipotecario — usada en links de PDFs y campañas externas
 const SimuladorPage = React.lazy(() => import('./screens/cliente/SimuladorPage'));
+// Landing pública de agendado de citas vía Google Calendar (sin autenticación)
+const UnaCasaParaMi = React.lazy(() => import('./screens/cliente/UnaCasaParaMi'));
 
 // Screens - Admin (Lazy Loaded)
 const AdminDataExport = React.lazy(() => import('./screens/admin/AdminDataExport'));
@@ -94,6 +96,9 @@ function App() {
 
                         {/* 1. RUTA PÚBLICA (Home) */}
                         <Route index element={<Home />} />
+
+                        {/* 8. LANDING DE CITAS — Google Calendar Appointment (Pública) */}
+                        <Route path="unacasaparami" element={<UnaCasaParaMi />} />
 
                         {/* 2. PERFIL DE USUARIO (Antes era Index) */}
                         <Route path="perfil" element={

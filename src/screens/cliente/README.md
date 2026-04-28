@@ -29,6 +29,8 @@ Para evitar discrepancias, ambos módulos utilizan la misma tubería de procesam
 - `OnboardingCliente.jsx`: Flujo interactivo heredado (actualmente integrado en la Home).
 - `SimuladorPage.jsx`: Página espejo para la calculadora hipotecaria de un modelo específico.
 - `SchedulePage.jsx`: Página espejo para la programación de citas de un modelo específico.
+- `UnaCasaParaMi.jsx`: Landing pública de agendado de citas personalizadas vía Google Calendar (`/unacasaparami`).
+- `test_UnaCasaParaMi.jsx`: Tests unitarios del screen de citas.
 - `../../styles/screens/Home.css`: Estilos de layout para la página principal.
 - `../../services/catalog.service.js`: Motor de filtrado compartido.
 
