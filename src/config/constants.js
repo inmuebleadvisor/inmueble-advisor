@@ -97,3 +97,8 @@ export const STATUS_LABELS = {
   [STATUS.LEAD_REPORTED]: 'Información Enviada',
   [STATUS.LEAD_ASSIGNED_EXTERNAL]: 'En Seguimiento'
 };
+
+// --- TEXTOS GLOBALES ---
+export const APP_STRINGS = {
+  FOOTER_DISCLAIMER: "*La información aquí mostrada es de carácter informativo y proviene de fuentes públicas. Siempre es necesario confirmar la información"
+};

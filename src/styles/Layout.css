@@ -55,6 +55,17 @@
     color: var(--bg-tertiary);
 }
 
+.footer__disclaimer {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    opacity: 0.8;
+    margin-bottom: 10px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.4;
+}
+
 .footer__copy {
     font-size: 0.8rem;
     color: var(--text-secondary);

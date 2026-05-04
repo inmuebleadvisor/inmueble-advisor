@@ -12,12 +12,12 @@
 
 import { THEME_ASSETS } from '../config/theme.config';
 import { getBase64ImageFromUrl } from './imageUtils';
-import { BRAND_COLORS } from '../config/constants';
+import { BRAND_COLORS, APP_STRINGS } from '../config/constants';
 
 // ── Constantes de Marca (Single Source of Truth para el PDF) ────────────────
 const BRAND_URL    = 'https://inmuebleadvisor.com';
 const BRAND_DOMAIN = 'inmuebleadvisor.com';
-const DISCLAIMER   = 'La presente información es únicamente para fines ilustrativos, no representa ningún ofrecimiento formal por parte de Inmueble Advisor.';
+const DISCLAIMER   = APP_STRINGS.FOOTER_DISCLAIMER;
 const PAGE_WIDTH   = 210; // A4 portrait en mm
 const MARGIN_X     = 14;
 const LOGO_WIDTH   = 45;

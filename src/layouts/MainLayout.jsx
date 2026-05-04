@@ -5,6 +5,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import WhatsAppButton from '../components/common/WhatsAppButton/WhatsAppButton';
 import Navbar from '../components/layout/Navbar';
+import { APP_STRINGS } from '../config/constants';
 
 export default function Layout() {
   const { userProfile } = useUser();
@@ -40,6 +41,10 @@ export default function Layout() {
 
               {/* Enlace de Asesor en footer dual - Keeping logic for footer but nav links removed */}
               <span className="footer__link">Inmueble Advisor</span>
+            </div>
+
+            <div className="footer__disclaimer">
+              {APP_STRINGS.FOOTER_DISCLAIMER}
             </div>
 
             <div className="footer__copy">
