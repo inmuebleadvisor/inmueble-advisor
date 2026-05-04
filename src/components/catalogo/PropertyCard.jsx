@@ -161,7 +161,7 @@ export default function PropertyCard({ item, showDevName = true, style }) {
         {/* Precio */}
         <div className="property-card__price-box">
           <div className="property-card__price-header">
-            <span className="property-card__price-label">PRECIO DE LISTA</span>
+            <span className="property-card__price-label">PRECIO DE REFERENCIA</span>
             {precioMostrar > 0 && item.precios?.metroCuadrado && (
               <span className="property-card__price-label">
                 {formatoMoneda(item.precios.metroCuadrado)} m²

@@ -208,7 +208,7 @@ export default function DevelopmentDetailsContent({
             {showActionPanel && (
                 <StickyActionPanel
                     price={precioDesde}
-                    label="Precios desde"
+                    label="Precio de Referencia"
                     onMainAction={handleOpenLeadForm}
                 />
             )}

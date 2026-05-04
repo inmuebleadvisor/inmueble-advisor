@@ -41,7 +41,7 @@ export default function ModelPricingCard({
             {/* 1. Encabezado de Precio e Info Comercial */}
             <div className="model-sidebar-card__header">
                 <div>
-                    <span className="model-sidebar-card__price-label">Precio de Lista</span>
+                    <span className="model-sidebar-card__price-label">Precio de Referencia</span>
                     <p className="model-sidebar-card__price-value">{precioFormateado}</p>
                     {mantenimientoFormateado && (
                         <p className="model-sidebar-card__maintenance">

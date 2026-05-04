@@ -154,7 +154,7 @@ export default function DevelopmentCard({ development }) {
                 {/* PRICE & AMENITIES ROW */}
                 <div className="development-card__info-row">
                     <div>
-                        <div className="development-card__price-label">Desde</div>
+                        <div className="development-card__price-label">PRECIO DE REFERENCIA</div>
                         <div className="development-card__price-value">{formatoMoneda(priceToShow)}</div>
                     </div>
                     <div
